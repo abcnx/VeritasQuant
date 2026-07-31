@@ -1226,3 +1226,31 @@ Records:
         Actor: Codex
         Action: 完成 12 个提交边界崩溃、重启重放及投影重建自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-032RecoveryEvidence.md
+  - WorkItemId: TSK-P1-033
+    PlanTaskId: P1-033
+    Title: 定义 journal、entry、科目、资产单位和会计策略模型
+    Description: 已建立严格、不可变的复式账本事实模型与逐单位平衡契约。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1"]
+    Owner: CE/TL
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-001, P1-014]
+    AcceptanceCriteria: 每种计量单位可独立平衡；金额使用 Decimal；模型含来源与冲正引用
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-033LedgerModelEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T00:35:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 为 P1-034 的原子复式记账提交和 P1-035 的账本投影提供事实契约
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T00:35:00Z"
+        Actor: Codex
+        Action: 完成 journal、分录、科目、计量单位和会计策略契约自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-033LedgerModelEvidence.md
