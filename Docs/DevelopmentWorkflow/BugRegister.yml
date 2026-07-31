@@ -33,8 +33,8 @@ Records:
     ActualBehavior: GitHub Windows runner 使用 cp1252，argparse 输出中文帮助及 VerifyPackage.py 输出中文异常时触发 UnicodeEncodeError，导致仓库外 wheel 验证失败。
     Severity: S2
     Owner: CE/QA
-    Status: VERIFYING
-    NextAction: 推送 UTF-8 标准流修复并验证 GitHub Windows/Linux Quality 与 Security baseline 均成功。
+    Status: FIXED
+    NextAction: 在独立评审中确认 UTF-8 输出策略与 Windows CI 证据；不得仅凭作者验证标记 Released。
     DueDate: 当前 P0-006 验证周期
     EvidenceLinks: [src/veritasquant/application/Entrypoints.py, scripts/VerifyPackage.py, tests/packaging/test_entrypoints.py, tests/unit/scripts/test_engineering_scripts.py, "https://github.com/ACANX/VeritasQuant/actions/runs/30618727287/job/91117929801"]
     AuditHistory:
@@ -46,3 +46,7 @@ Records:
         Actor: Codex
         Action: 正式入口和 VerifyPackage.py 在 main 执行阶段重配置 UTF-8 标准流，并增加 cp1252 子进程回归测试
         Evidence: tests/packaging/test_entrypoints.py
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30619335295 的 Windows Quality、Ubuntu Quality 和 Security baseline 均成功，BUG 修复验证通过
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"

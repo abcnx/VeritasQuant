@@ -42,7 +42,7 @@ Records:
     Owner: QA/SRE
     DueDate: M0 正式评审前
     VerificationMethod: 在全新 Linux runner 从空缓存安装精确锁定依赖，执行 Preflight、静态检查、测试、wheel 构建和仓库外安装；归档 Build ID、JUnit、coverage、工件哈希和退出码。
-    Status: OPEN
+    Status: COMPLETED
     EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/VeritasQuantTechSpec.md]
     AuditHistory:
       - Ts: "2026-07-31T03:55:00Z"
@@ -53,6 +53,10 @@ Records:
         Actor: Codex
         Action: 本地 Ubuntu WSL 验证通过；两次推送 bd62269 触发 GitHub Actions 均被 github.com:443 网络拒绝
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30619335295 的 Ubuntu Quality 成功，并上传 90 天保留 artifact
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295/job/91119868249"
   - ActionId: ACT-P0-004
     Title: 验证远程受保护分支并启用必需 CI 检查
     SourceId: P0-006

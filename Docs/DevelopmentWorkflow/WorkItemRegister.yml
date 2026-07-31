@@ -193,9 +193,9 @@ Records:
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: GitHub Actions 已实际运行且 Ubuntu/Security 成功，但 Windows wheel 验证因 BUG-P0-002 失败；修复提交仍待双平台复跑，并缺受保护分支和必需检查证据
+    BlockedReason: GitHub Actions Run 30619335295 的 Windows/Linux Quality 与 Security 均成功且 artifact 已留存；仍缺受保护分支、必需检查和独立验收证据
     BlockedBy: QA/SRE
-    NextAction: 推送 BUG-P0-002 修复并验证双平台 CI；随后配置受保护分支、必需检查并归档 Run URL、JUnit、coverage 和 artifact 哈希
+    NextAction: 使用 GitHub 管理员权限配置受保护分支和必需检查，并由独立评审审阅 CI 证据
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -222,6 +222,10 @@ Records:
         Actor: Codex
         Action: GitHub Actions Run 30618727287 的 Ubuntu Quality 与 Security 成功，Windows Quality 因 BUG-P0-002 在 wheel 验证失败
         Evidence: Docs/DevelopmentWorkflow/BugRegister.yml
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: BUG-P0-002 修复后 GitHub Actions Run 30619335295 三个 job 均成功；quality artifact 已上传并保留 90 天
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查

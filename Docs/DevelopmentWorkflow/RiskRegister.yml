@@ -48,9 +48,9 @@ Records:
     SourcePlanTaskId: P0-006
     DiscoveredTs: "2026-07-30T18:47:58Z"
     Reporter: Codex
-    Facts: Windows 本地与 Ubuntu WSL Linux 验证均已完成；从当前环境向 GitHub 推送触发 CI 的两次尝试均被 github.com:443 网络连接拒绝，尚无远程 CI 执行记录
-    KnownImpact: 本地双平台验证不等于 GitHub Actions 空缓存运行，合并阻断和 artifact 保留证据不足
-    Unknowns: 远程 CI 的网络出口、仓库管理员权限、分支保护和 artifact 保留策略的实际配置
+    Facts: Windows 本地与 Ubuntu WSL Linux 验证均已完成；GitHub Actions Run 30619335295 的 Windows/Linux Quality 和 Security baseline 均成功，两个质量 artifact 已上传并保留至 2026-10-29
+    KnownImpact: GitHub Actions 双平台构建和 artifact 留存证据已具备；仍无法证明分支保护会阻断未通过的合并
+    Unknowns: 默认分支保护、CodeOwner 和必需检查的实际配置
     Probability: High
     Impact: High
     Severity: S2
@@ -58,7 +58,7 @@ Records:
     AffectedMilestone: M0
     Owner: QA
     Collaborators: [SRE, CE]
-    NextAction: 通过可访问 GitHub 的管理员环境推送 bd62269 并执行 workflow，归档远程运行证据
+    NextAction: 使用 GitHub 管理员权限核验并配置受保护分支、必需检查和禁止管理员普通绕过
     DueDate: 待 QA 指定
     EscalateTs: 待 QA 指定
     Mitigation: 维护双平台 CI 配置和本地预检
@@ -66,7 +66,7 @@ Records:
     ResidualRisk: Linux 验收不能由 Windows 结果替代
     Approval: 不适用
     EvidenceLinks: [.github/workflows/Ci.yml]
-    Status: IDENTIFIED
+    Status: MONITORING
     AuditHistory:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
@@ -76,6 +76,10 @@ Records:
         Actor: Codex
         Action: 两次推送 bd62269 均因 github.com:443 网络连接拒绝失败；Linux 本地验证不受影响
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: 仓库公开后远程 CI 复验成功，风险收敛为分支保护和必需检查的治理证据
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
   - RiskId: RSK-P0-003
     Title: 远程分支保护和合并阻断尚无可验证证据
     SourcePlanTaskId: P0-006
@@ -177,7 +181,7 @@ Records:
     ResidualRisk: 本地安全结果不能替代受保护 CI 的持续门禁
     Approval: ProjectAuthor 于 2026-07-31T04:15:00Z 批准许可证策略
     EvidenceLinks: [Configs/Security/LicensePolicy.yml, .github/workflows/Ci.yml]
-    Status: MONITORING
+    Status: CLOSED
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
@@ -195,6 +199,10 @@ Records:
         Actor: Codex
         Action: Linux 本地秘密和许可证扫描通过；远程 CI 持续门禁证据仍缺失
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:05Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30619335295 的 Security baseline 成功，首次远程安全运行证据已归档
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295/job/91119868193"
   - RiskId: RSK-P0-006
     Title: 追踪矩阵仅有计划映射，后续测试尚未产生执行证据
     SourcePlanTaskId: P0-012
