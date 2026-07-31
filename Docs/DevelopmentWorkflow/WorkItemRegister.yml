@@ -214,6 +214,10 @@ Records:
         Actor: Codex
         Action: 已验证本地 Git 仓库、origin 和 Ubuntu WSL 本地 Linux 验证；远程治理证据仍缺失
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T08:12:00Z"
+        Actor: Codex
+        Action: 两次推送候选提交 bd62269 均因 github.com:443 网络拒绝失败，未能触发远程 CI
+        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查

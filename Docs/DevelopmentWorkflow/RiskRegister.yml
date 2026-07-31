@@ -48,9 +48,9 @@ Records:
     SourcePlanTaskId: P0-006
     DiscoveredTs: "2026-07-30T18:47:58Z"
     Reporter: Codex
-    Facts: 当前仅有 Windows 11 本地环境，尚无远程 CI 执行记录
-    KnownImpact: 双平台构建、大小写敏感和合并阻断证据不足
-    Unknowns: CI 托管平台、仓库权限和产物保留策略
+    Facts: Windows 本地与 Ubuntu WSL Linux 验证均已完成；从当前环境向 GitHub 推送触发 CI 的两次尝试均被 github.com:443 网络连接拒绝，尚无远程 CI 执行记录
+    KnownImpact: 本地双平台验证不等于 GitHub Actions 空缓存运行，合并阻断和 artifact 保留证据不足
+    Unknowns: 远程 CI 的网络出口、仓库管理员权限、分支保护和 artifact 保留策略的实际配置
     Probability: High
     Impact: High
     Severity: S2
@@ -58,7 +58,7 @@ Records:
     AffectedMilestone: M0
     Owner: QA
     Collaborators: [SRE, CE]
-    NextAction: 配置 CI 凭据并执行 workflow
+    NextAction: 通过可访问 GitHub 的管理员环境推送 bd62269 并执行 workflow，归档远程运行证据
     DueDate: 待 QA 指定
     EscalateTs: 待 QA 指定
     Mitigation: 维护双平台 CI 配置和本地预检
@@ -72,6 +72,10 @@ Records:
         Actor: Codex
         Action: 登记风险
         Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+      - Ts: "2026-07-31T08:12:00Z"
+        Actor: Codex
+        Action: 两次推送 bd62269 均因 github.com:443 网络连接拒绝失败；Linux 本地验证不受影响
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - RiskId: RSK-P0-003
     Title: 远程分支保护和合并阻断尚无可验证证据
     SourcePlanTaskId: P0-006

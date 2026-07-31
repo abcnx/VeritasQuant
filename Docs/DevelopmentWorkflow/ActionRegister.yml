@@ -49,6 +49,10 @@ Records:
         Actor: Codex
         Action: 按用户指示将 Linux 实施顺序后移；未改变 M0 的 Linux 验收要求
         Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+      - Ts: "2026-07-31T08:12:00Z"
+        Actor: Codex
+        Action: 本地 Ubuntu WSL 验证通过；两次推送 bd62269 触发 GitHub Actions 均被 github.com:443 网络拒绝
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - ActionId: ACT-P0-004
     Title: 验证远程受保护分支并启用必需 CI 检查
     SourceId: P0-006
