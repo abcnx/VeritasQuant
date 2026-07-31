@@ -1114,3 +1114,31 @@ Records:
         Actor: Codex
         Action: 完成事务与 outbox 原子提交自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-028TransactionEvidence.md
+  - WorkItemId: TSK-P1-029
+    PlanTaskId: P1-029
+    Title: 实现 checkpoint、快照和投影重建
+    Description: 已实现从不可变事实重建可删除投影的 checkpoint 基线。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.2"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-028]
+    AcceptanceCriteria: 删除投影后从事实重建哈希一致；checkpoint 不越过未提交 outbox
+    TestEvidence: [src/veritasquant/core/Checkpoint.py, tests/unit/core/test_checkpoint.py, Docs/DevelopmentWorkflow/P1-029CheckpointEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T14:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 供 P1-030 运行恢复状态机与 P1-031 崩溃注入复用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T14:00:00Z"
+        Actor: Codex
+        Action: 完成 checkpoint、快照和投影重建自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-029CheckpointEvidence.md
