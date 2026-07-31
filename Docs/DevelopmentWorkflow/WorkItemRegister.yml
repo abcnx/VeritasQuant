@@ -1058,3 +1058,31 @@ Records:
         Actor: Codex
         Action: 完成原始对象内容寻址与自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-018RawObjectStoreEvidence.md
+  - WorkItemId: TSK-P1-027
+    PlanTaskId: P1-027
+    Title: 实现 inbox 幂等与内容冲突检测
+    Description: 已实现作用域内幂等键、内容哈希去重和冲突隔离基线。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-005]
+    AcceptanceCriteria: 同键同哈希只处理一次；同键不同哈希隔离并产生审计
+    TestEvidence: [src/veritasquant/core/Inbox.py, tests/unit/core/test_inbox.py, Docs/DevelopmentWorkflow/P1-027InboxEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:45:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-028 事务和 outbox 实现中接入该幂等边界
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:45:00Z"
+        Actor: Codex
+        Action: 完成 inbox 幂等和冲突隔离自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-027InboxEvidence.md
