@@ -251,11 +251,11 @@ Records:
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
     Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T11:43:02Z"
-    Blocked: true
-    BlockedReason: 缺两个失败作业原始日志、bypass 移除审计和独立人类 QA/SRE 签署
-    BlockedBy: SRE/QA
-    NextAction: 管理员归档 bypass 移除审计；非作者人类 QA 下载两份原始日志并复核 PR 非 Draft 差异，再由独立 QA/SRE 签署验收包
+    StatusChangedTs: "2026-07-31T12:00:00Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 原始日志归档、Ruleset 变更审计和独立人类 QA/SRE 签署已延后至后续治理验收，不作为 P0 开发或收尾阻断项
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -278,6 +278,10 @@ Records:
         Actor: Codex
         Action: 截图确认 main bypass list 已为空；保留阻断以等待原始日志、审计和独立人类签署
         Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
+      - Ts: "2026-07-31T12:00:00Z"
+        Actor: ProjectAuthor
+        Action: 延后 P0-007 的原始日志归档、Ruleset 变更审计和独立人类签署；该事项不再阻断 P0 开发或收尾
+        Evidence: 当前任务会话的延后指示
   - WorkItemId: TSK-P0-008
     PlanTaskId: P0-008
     Title: 建立最小 Docker Compose 开发依赖和环境自检命令
