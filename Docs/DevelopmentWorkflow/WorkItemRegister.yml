@@ -1422,3 +1422,31 @@ Records:
         Actor: Codex
         Action: 完成 518880 T+1 卖出限制和拆分数量重算自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-038SecuritiesSettlementEvidence.md
+  - WorkItemId: TSK-P1-039
+    PlanTaskId: P1-039
+    Title: 实现期货乘数、保证金、逐日盯市和到期账务
+    Description: 已实现期货保证金、逐日盯市现金变动和到期未平仓边界计算。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1", "8.1", "14.1"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-014, P1-036]
+    AcceptanceCriteria: 夜盘交易日、保证金压力、盯市、强平候选和到期边界测试通过
+    TestEvidence: [src/veritasquant/accounts/Futures.py, tests/unit/accounts/test_futures.py, Docs/DevelopmentWorkflow/P1-039FuturesEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T02:15:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-050 执行回报原子账务与后续期货夜盘日历中接入盯市和交割 journal
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T02:15:00Z"
+        Actor: Codex
+        Action: 完成保证金压力、合约乘数盯市和到期边界自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-039FuturesEvidence.md
