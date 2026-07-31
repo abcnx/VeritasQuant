@@ -467,15 +467,15 @@ Records:
     EstimatePersonDays: 3
     Dependencies: [P0-001, P0-002, P0-003, P0-004, P0-005, P0-006, P0-007, P0-008, P0-009, P0-010, P0-011, P0-012]
     AcceptanceCriteria: M0 检查表全通过；开放阻断项为 0；基线报告和审批记录已归档
-    TestEvidence: [Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/P0AcceptanceKickoff.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md]
     RiskLinks: [RSK-P0-001, RSK-P0-002, RSK-P0-003, RSK-P0-004, RSK-P0-005, RSK-P0-006]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: 仍缺非作者人类评审与事故替补、受保护分支与必需检查、独立 QA/SRE 验收及正式 M0 Gate 签署
-    BlockedBy: PO/TL/QA/SRE
-    NextAction: 完成 ACT-P0-004、ACT-P0-005、ACT-P0-007 和独立审阅后重新执行 M0 预审
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T12:31:58Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 按 P0 验收启动记录收集独立复核和签署证据；P0-007 的延后治理验收不阻断 P0 开发或收尾
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -486,6 +486,10 @@ Records:
         Actor: Codex
         Action: 补充可填写 M0 Gate 报告和独立角色审阅证据包；任务保持 ANALYZING 且 Gate 结论仍为证据不足
         Evidence: Docs/DevelopmentWorkflow/M0StageGateReport.md
+      - Ts: "2026-07-31T12:31:58Z"
+        Actor: ProjectAuthor
+        Action: 正式开启 P0 验收，冻结 main 候选提交并将任务转为 IN_REVIEW；未宣告 M0 Gate 通过
+        Evidence: Docs/DevelopmentWorkflow/P0AcceptanceKickoff.md
   - WorkItemId: TSK-P1-001
     PlanTaskId: P1-001
     Title: 实现严格 Pydantic 基类和唯一显式 alias 机制

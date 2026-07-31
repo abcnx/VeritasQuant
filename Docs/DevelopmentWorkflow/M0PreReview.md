@@ -4,6 +4,9 @@
 
 - 预审结论：`INSUFFICIENT_EVIDENCE`
 - 本记录不是 M0 Gate 签署，不冻结迭代 Backlog，不产生 Release 或环境晋级。
+- P0 验收已于 2026-07-31T12:31:58Z 启动，候选提交为 `main` 的
+  `1e24643794b1ac8befb7bd1e901e3f8a7098516c`；启动记录见
+  [P0AcceptanceKickoff.md](P0AcceptanceKickoff.md)。
 
 ## 已具备的作者证据
 
