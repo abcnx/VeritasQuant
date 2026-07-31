@@ -14,7 +14,7 @@
 | P0-004 | `src/veritasquant/`、`Apps/`、`Jobs/`、`Migrations/`、`Docker/`、`Configs/`、`Resources/`、`scripts/Preflight.py` | 方案 A、根级平行包和目录边界回归测试 | Linux 证据的非作者审阅。 |
 | P0-005 | `pyproject.toml`、两份精确锁、`VerifyDependencyLocks.py`、依赖政策 | Python 3.13+ 运行/开发分组和可审阅精确锁 | Windows/Linux Python 3.13 空缓存安装的独立审阅。 |
 | P0-006 | `.github/workflows/Ci.yml`、`P0-006CiGovernance.md` | 双平台质量、构建、wheel 与 90 天 artifact | 受保护分支、必需检查和独立验收。 |
-| P0-007 | `Preflight.py` 和正反例测试 | UTF-8、命名、YAML、JSON、`timestamp`、根级包定位 | 受保护远程 CI 的故意违规失败记录和独立 QA 审阅。 |
+| P0-007 | `Preflight.py` 和正反例测试 | UTF-8、命名、YAML、JSON、`timestamp`、根级包定位；PR #2 远程负例结果与清理见 `P0-007RemoteNegativeDrillEvidence.md` | 两个失败 job 的原始日志、Ruleset 绕过设置和 PR 非 Draft 差异的独立 QA/SRE 审阅。 |
 | P0-008 | 无状态 `docker-compose.yml`、自检脚本、运行手册和 Compose 演练证据 | PostgreSQL/Redis healthcheck，`tmpfs` 与 `down --volumes` 清理 | 自动化演练的独立人类 SRE 复核。 |
 | P0-009 | stable ID marker、`CollectTestEvidence.py`、证据规范 | JUnit、coverage、种子、环境和 SHA-256 示例测试 | 独立 QA 使用真实 CI 产物审阅。 |
 | P0-010 | 六类登记表、字段规范和 P0 完整工作项 | ID、状态机引用、责任、时限、证据和审计历史 | ProjectAuthor 已确认临时治理映射；仍缺独立复核与登记系统迁移计划。 |

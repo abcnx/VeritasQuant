@@ -114,12 +114,13 @@ finally {
 1. **前置确认**：管理员先完成上一节规则配置，并以只读界面确认 `main` 的三个检查均为
    required。QA 记录规则 URL 和检查名称。
 2. **隔离分支**：从当时的 `origin/main` 创建唯一分支，例如
-   `p0-gate-negative-timestamp-20260731`。只允许该分支创建 PR，禁止直接推送 `main`。
-3. **最小违规**：仅新增 `Configs/GateDrill/InvalidNaming.yml`，其内容为
-   `invalid_field: true`。该小写项目 YAML 字段违反 PascalCase 规则，
-   `scripts/Preflight.py` 应报告“项目 YAML 字段必须为 PascalCase”并以非零退出。
-4. **创建 PR**：将分支推送并创建以 `main` 为 base 的 Draft PR，标题明确为
-   `P0-007 negative gate drill - do not merge`。不请求业务合并，不使用管理员绕过。
+   `p0-007-negative-gate-20260731`。只允许该分支创建 PR，禁止直接推送 `main`。
+3. **最小违规**：仅新增 `Configs/P0NegativeGate.yml`，其内容为 `Invalid_field: 1`。
+   该字段故意违反 PascalCase 规则，`scripts/Preflight.py` 应只报告
+   `Invalid_field: 项目 YAML 字段必须为 PascalCase` 和 `preflight issues: 1`，并以非零退出。
+4. **创建 PR**：将分支推送并创建以 `main` 为 base 的 PR，标题明确为
+   `P0-007 negative gate drill - do not merge`。可先创建为 Draft，但在验证常规合并门禁前必须
+   转为 ready for review；不请求业务合并，不使用管理员绕过。
 5. **观察而不合并**：等待三个远程检查结束。两项 Quality 应在 Preflight 步骤失败；
    `Security baseline` 可成功。记录 PR URL、每个 job URL、失败日志中违规路径和规则信息、
    分支保护页面中合并被阻止的状态。不得调用 merge API、不得点击管理员绕过、不得执行

@@ -13,12 +13,12 @@
 3. 要求至少一名非作者评审；事件、排序、账本、订单、风控、配置、API 和安全改动另加对应 CodeOwner。
 4. 在两个平台从空缓存运行一次，归档 Build ID、commit、解释器版本、JUnit、coverage、哈希和产物保留链接。
 
-当前目录已可被 Git 识别为仓库，且 `origin` 可访问 `main` 与 `dev` 分支；本地 Ubuntu WSL 的 Linux 构建、测试和仓库外 wheel 验证见 [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md)。GitHub Actions Run `30619335295` 已完成 Windows/Linux Python 3.13 Quality 与 Security baseline，并保留质量工件 90 天；当前仍未取得 GitHub 分支保护管理凭据，不能验证或配置必需检查与合并阻断。详见 `RSK-P0-002` 与 `RSK-P0-003`。
+当前目录已可被 Git 识别为仓库，且 `origin` 可访问 `main` 与 `dev` 分支；本地 Ubuntu WSL 的 Linux 构建、测试和仓库外 wheel 验证见 [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md)。GitHub Actions Run `30619335295` 已完成 Windows/Linux Python 3.13 Quality 与 Security baseline，并保留质量工件 90 天。只读规则查询已确认 `main` 使用三项必需检查、非作者批准、Code Owner 审阅和最近推送者审批限制。修正前截图 `BypassList_2026-07-31 193936.png` 曾显示 `Repository admin = Always allow`；最新截图 `BypassList_2026-07-31 194302.png` 显示 Bypass list 为空。当前普通管理员绕过已移除，仍待管理员变更审计和独立验收，详见 `RSK-P0-003`。
 
 ## 当前执行顺序
 
 `CHG-P0-001` 已获批准。GitHub Actions Run `30619335295` 已完成 Windows/Linux Python 3.13 的空缓存 Quality 和 Security baseline，`ACT-P0-003` 已完成；当前使用已归档的双平台工件支持开发。
 
-受保护分支和必需检查配置作为 `ACT-P0-004` 排入后续。该行动完成前，任何本地测试结果都不能证明合并会被 CI 失败阻断。
+受保护分支和必需检查配置作为 `ACT-P0-004` 排入后续。当前截图已证明 `Repository admin = Always allow` 被移除；管理员仍须归档变更审计信息。在独立验收完成前，本地测试结果或远程失败演练均不能单独构成 P0-006 的验收结论。
 
 该调整不修改 P0-006 的双平台验收标准，也不修改技术方案。分支保护、必需检查和独立验收在 M0 正式评审前仍必须提供；在此之前 M0 只能是 `INSUFFICIENT_EVIDENCE`。

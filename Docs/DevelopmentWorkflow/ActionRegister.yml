@@ -62,7 +62,7 @@ Records:
     SourceId: P0-006
     Owner: SRE
     DueDate: M0 正式评审前
-    VerificationMethod: 验证远程仓库和默认分支；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，禁止普通管理员绕过，并归档规则截图或平台审计链接。
+    VerificationMethod: 验证远程仓库和默认分支；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，移除普通管理员绕过，或归档仅限已命名紧急角色的批准例外和审计链接。
     Status: OPEN
     EvidenceLinks: [Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml]
     AuditHistory:
@@ -74,6 +74,14 @@ Records:
         Actor: Codex
         Action: 已验证 git status、origin 及远程 main/dev 分支；未取得 GitHub 分支保护管理凭据
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T11:39:36Z"
+        Actor: Codex
+        Action: 截图确认 main Ruleset 含 Repository admin = Always allow；行动保持 OPEN，等待移除绕过或归档受限紧急例外
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 193936.png
+      - Ts: "2026-07-31T11:43:02Z"
+        Actor: Codex
+        Action: 截图确认 bypass list 已为空；行动保持 OPEN，等待管理员变更审计和独立验收
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
   - ActionId: ACT-P0-005
     Title: 启动 Docker Desktop Engine 后完成 Compose 启停与清理演练
     SourceId: P0-008

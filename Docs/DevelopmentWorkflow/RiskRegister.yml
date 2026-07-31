@@ -85,24 +85,24 @@ Records:
     SourcePlanTaskId: P0-006
     DiscoveredTs: "2026-07-31T03:30:00Z"
     Reporter: Codex
-    Facts: 当前 git status 可读取有效仓库，origin 可访问且存在 main/dev 分支；未取得 GitHub 分支保护管理凭据，无法验证必需检查或管理员绕过规则
-    KnownImpact: 无法证明 CI 失败会阻断合并，或当前分支保护符合 M0 要求
-    Unknowns: 默认分支保护规则、管理员、CodeOwner 与必需检查的实际配置
+    Facts: 已验证 main Ruleset 为 Active，包含三项必需检查、非作者审批、Code Owner 审阅和最近推送者审批限制；修正前截图显示 Repository admin 为 Always allow，最新截图 Archive/Asset/Image/BypassList_2026-07-31 194302.png 显示 bypass list 为空
+    KnownImpact: 当前全量管理员绕过已移除；在规则变更审计、失败作业原始日志和独立人类验收缺失前，P0-006/P0-007 仍不能正式关闭
+    Unknowns: bypass 移除的审计记录、两个失败 Quality 原始日志的独立复核及人类验收结论
     Probability: High
     Impact: High
     Severity: S2
-    Trigger: 首次 PR 或 M0 评审前仍无可验证分支保护
+    Trigger: M0 评审前出现新的普通管理员绕过，或未完成独立复核
     AffectedMilestone: M0
     Owner: SRE
     Collaborators: [QA, TL]
-    NextAction: 执行 ACT-P0-004，核验并配置受保护主分支及必需检查
+    NextAction: 归档 bypass 移除的审计记录，并完成两个失败作业原始日志和独立复核
     DueDate: 待 SRE 指定
     EscalateTs: 待 PO 指定
-    Mitigation: CI 文件已定义，M0 预审保持证据不足
-    Contingency: 不允许合并或环境晋级
-    ResidualRisk: 本地成功不能替代受保护远程合并证据
+    Mitigation: CI 文件和远程失败演练已存在，最新截图显示 bypass 为空；M0 预审保持证据不足直至审计和独立验收
+    Contingency: 不允许将 dev 提交合并到 main 或执行环境晋级
+    ResidualRisk: 截图只能证明当前 UI 快照，不能替代平台审计记录和独立人类验收
     Approval: 不适用
-    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md]
+    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md, Archive/Asset/Image/BypassList_2026-07-31 193936.png, Archive/Asset/Image/BypassList_2026-07-31 194302.png]
     Status: IDENTIFIED
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -117,6 +117,14 @@ Records:
         Actor: Codex
         Action: 复核后确认本地 Git 与远程可用；风险范围收敛为远程保护规则和合并阻断证据
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T11:39:36Z"
+        Actor: Codex
+        Action: 技术复核截图确认 main Ruleset 的 Repository admin 为 Always allow；风险维持开放并明确普通管理员绕过不合规
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 193936.png
+      - Ts: "2026-07-31T11:43:02Z"
+        Actor: Codex
+        Action: 技术复核更新后截图确认 bypass list 为空；风险保留以等待审计记录和独立验收
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
   - RiskId: RSK-P0-004
     Title: Docker Compose 开发依赖待独立人类复核
     SourcePlanTaskId: P0-008

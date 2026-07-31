@@ -1,19 +1,19 @@
-# 当前仓库唯一已确认的 GitHub 责任账号。新增负责人后应按路径替换或补充团队映射。
-* @ACANX
+# 当前确认的 GitHub 责任账号。具体路径规则必须与根规则同步维护，避免覆盖根规则的责任映射。 
+* @ACANX @abcnx
 
 # 核心交易与数据契约
-/src/veritasquant/core/ @ACANX
-/src/veritasquant/accounts/ @ACANX
-/src/veritasquant/execution/ @ACANX
-/src/veritasquant/risk/ @ACANX
-/src/veritasquant/data/ @ACANX
-/src/veritasquant/strategy/ @ACANX
-/src/veritasquant/application/ @ACANX
-/src/veritasquant/infrastructure/ @ACANX
+/src/veritasquant/core/ @ACANX @abcnx
+/src/veritasquant/accounts/ @ACANX @abcnx
+/src/veritasquant/execution/ @ACANX @abcnx
+/src/veritasquant/risk/ @ACANX @abcnx
+/src/veritasquant/data/ @ACANX @abcnx
+/src/veritasquant/strategy/ @ACANX @abcnx
+/src/veritasquant/application/ @ACANX @abcnx
+/src/veritasquant/infrastructure/ @ACANX @abcnx
 
 # 工程治理、配置与版本化契约
-/.github/ @ACANX
-/Configs/ @ACANX
-/Docs/VeritasQuantTechSpec.md @ACANX
-/Docs/DevelopmentWorkflow/ @ACANX
-/src/veritasquant/resources/Schemas/ @ACANX
+/.github/ @ACANX @abcnx
+/Configs/ @ACANX @abcnx
+/Docs/VeritasQuantTechSpec.md @ACANX @abcnx
+/Docs/DevelopmentWorkflow/ @ACANX @abcnx
+/src/veritasquant/resources/Schemas/ @ACANX @abcnx

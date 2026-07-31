@@ -247,15 +247,15 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-006]
     AcceptanceCriteria: 正反例测试均通过；故意引入违规文件时 CI 明确失败并定位文件或字段
-    TestEvidence: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T09:34:03Z"
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T11:43:02Z"
     Blocked: true
-    BlockedReason: 缺受保护远程 CI 的故意违规失败记录，以及非作者人类 QA 审阅
-    BlockedBy: QA/SRE
-    NextAction: 在具备分支保护的远程 CI 执行故意违规正反例并归档失败定位报告，再由非作者人类 QA 审阅
+    BlockedReason: 缺两个失败作业原始日志、bypass 移除审计和独立人类 QA/SRE 签署
+    BlockedBy: SRE/QA
+    NextAction: 管理员归档 bypass 移除审计；非作者人类 QA 下载两份原始日志并复核 PR 非 Draft 差异，再由独立 QA/SRE 签署验收包
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -266,6 +266,18 @@ Records:
         Actor: Codex
         Action: Python 3.13 基线下完成自动化复验；等待独立人类 QA 审阅
         Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+      - Ts: "2026-07-31T11:27:21Z"
+        Actor: Codex
+        Action: PR #2 的受保护 main 远程负例检查失败后已关闭并清理演练分支；状态转为 IN_REVIEW，未签署验收
+        Evidence: Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md
+      - Ts: "2026-07-31T11:39:36Z"
+        Actor: Codex
+        Action: 截图确认 P0-006 存在 Repository admin = Always allow；P0-007 因依赖未满足恢复为阻断状态
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 193936.png
+      - Ts: "2026-07-31T11:43:02Z"
+        Actor: Codex
+        Action: 截图确认 main bypass list 已为空；保留阻断以等待原始日志、审计和独立人类签署
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
   - WorkItemId: TSK-P0-008
     PlanTaskId: P0-008
     Title: 建立最小 Docker Compose 开发依赖和环境自检命令
