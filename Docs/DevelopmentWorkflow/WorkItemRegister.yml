@@ -974,3 +974,31 @@ Records:
         Actor: Codex
         Action: 完成严格分钟 Bar 契约及自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-015MinuteBarEvidence.md
+  - WorkItemId: TSK-P1-016
+    PlanTaskId: P1-016
+    Title: 实现 MVSV-1 头部与数据行流式解析器
+    Description: 已实现外部 MVSV-1 协议的严格头部和常量内存记录解析。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.2"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-015]
+    AcceptanceCriteria: 样本 15,000 行解析；Count/11列/编码/时区/字段错误能精确定位；不经 float
+    TestEvidence: [src/veritasquant/data/Mvsv.py, tests/unit/data/test_mvsv.py, Docs/DevelopmentWorkflow/P1-016MvsvReaderEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-017 映射和语义校验中将来源记录转换为 MinuteBarSchemaV1
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:30:00Z"
+        Actor: Codex
+        Action: 完成 MVSV-1 流式解析和自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-016MvsvReaderEvidence.md
