@@ -1086,3 +1086,31 @@ Records:
         Actor: Codex
         Action: 完成 inbox 幂等和冲突隔离自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-027InboxEvidence.md
+  - WorkItemId: TSK-P1-028
+    PlanTaskId: P1-028
+    Title: 实现领域事务、outbox 原子写入和确定性发布
+    Description: 已实现领域事实与 outbox 的原子提交和可重试发布基线。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-027]
+    AcceptanceCriteria: 事实与 outbox 同提交；发布失败可重试且无重复领域副作用
+    TestEvidence: [src/veritasquant/core/Transaction.py, tests/unit/core/test_transaction.py, Docs/DevelopmentWorkflow/P1-028TransactionEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:50:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 供 P1-029 checkpoint、账本和订单原子边界复用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:50:00Z"
+        Actor: Codex
+        Action: 完成事务与 outbox 原子提交自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-028TransactionEvidence.md
