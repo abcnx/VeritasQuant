@@ -1142,3 +1142,31 @@ Records:
         Actor: Codex
         Action: 完成 checkpoint、快照和投影重建自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-029CheckpointEvidence.md
+  - WorkItemId: TSK-P1-030
+    PlanTaskId: P1-030
+    Title: 实现回测状态机、暂停、继续、失败和取消
+    Description: 已实现禁止终态回退的回测运行状态机。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.2"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-029]
+    AcceptanceCriteria: 状态不可非法回退；取消不伪装未回滚副作用；结果可查询
+    TestEvidence: [src/veritasquant/core/BacktestRun.py, tests/unit/core/test_backtest_run.py, Docs/DevelopmentWorkflow/P1-030BacktestRunEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T14:05:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 为 P1-031 崩溃注入与未来 BacktestService 提供生命周期契约
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T14:05:00Z"
+        Actor: Codex
+        Action: 完成回测状态机自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-030BacktestRunEvidence.md
