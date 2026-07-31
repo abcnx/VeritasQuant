@@ -118,29 +118,29 @@ Records:
         Action: 复核后确认本地 Git 与远程可用；风险范围收敛为远程保护规则和合并阻断证据
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - RiskId: RSK-P0-004
-    Title: Docker Compose 开发依赖尚无实际健康检查与清理证据
+    Title: Docker Compose 开发依赖待独立人类复核
     SourcePlanTaskId: P0-008
     DiscoveredTs: "2026-07-31T03:30:00Z"
     Reporter: Codex
-    Facts: docker compose config 已通过；启动命令因 Docker Desktop Linux Engine 管道不可用而在创建容器前失败
-    KnownImpact: P0-008 无法证明服务启动、健康检查或停止后清理行为
-    Unknowns: Docker Desktop Engine 启动责任人、镜像拉取策略和隔离开发主机
+    Facts: 自动化技术演练已完成配置、启动、健康检查和清理；两个服务健康、无宿主端口和持久挂载，停止后项目容器、网络和卷均为零
+    KnownImpact: 技术阻断已解除；M0 仍需独立人类 SRE 复核该演练证据
+    Unknowns: 独立人类 SRE 审阅结论
     Probability: Medium
     Impact: Medium
     Severity: S3
-    Trigger: 开发链路需要 PostgreSQL 或 Redis 前仍无演练记录
+    Trigger: M0 评审前仍无独立人类 SRE 对演练证据的复核
     AffectedMilestone: M0
     Owner: SRE
     Collaborators: [QA]
-    NextAction: 执行 ACT-P0-005，在隔离主机执行 start、check、stop 并保存输出
+    NextAction: 执行 ACT-P0-005 的独立人类 SRE 复核并记录结论
     DueDate: 待 SRE 指定
     EscalateTs: 待 SRE 指定
     Mitigation: Compose 使用 tmpfs、无端口和显式 down --volumes
-    Contingency: 在依赖可验证前不让服务依赖本机容器状态
-    ResidualRisk: 静态 Compose 解析不等于容器运行证据
+    Contingency: 在独立验收前不将该演练作为环境晋级依据
+    ResidualRisk: 自动化作者证据不能替代独立验收
     Approval: 不适用
-    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md]
-    Status: IDENTIFIED
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md]
+    Status: MONITORING
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
@@ -158,6 +158,10 @@ Records:
         Actor: Codex
         Action: Docker Engine 已恢复，但 Docker Hub 网络拒绝拉取；新增 ACT-P0-008 处理镜像来源
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:33:58Z"
+        Actor: Codex
+        Action: 自动化 Compose 演练通过，风险收敛为独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
   - RiskId: RSK-P0-005
     Title: 受保护远程 CI 的首次安全运行证据缺失
     SourcePlanTaskId: P0-011

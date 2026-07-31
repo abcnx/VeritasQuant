@@ -1249,7 +1249,7 @@ vq-run-paper-trading = "veritasquant.cli.RunPaperTrading:main"
 
 ### 11.3 技术选型与持久化
 
-首选技术栈：Python 3.10+，`pyproject.toml` 统一管理构建、依赖、测试和工具配置；Pandas/NumPy 用于研究与指标计算，Pydantic 与 YAML 管理配置；TimescaleDB 存储行情，PostgreSQL 存储订单、成交、账户与审计数据；Redis Streams 用于可替换的跨进程事件分发，单机回测可使用内存队列；Prometheus 与 Grafana 用于监控，Streamlit 用于操作界面；Optuna 和 MLflow 用于受控的优化与模型管理；Docker Compose 用于开发及部署环境一致性。
+首选技术栈：Python 3.13+，`pyproject.toml` 统一管理构建、依赖、测试和工具配置；Pandas/NumPy 用于研究与指标计算，Pydantic 与 YAML 管理配置；TimescaleDB 存储行情，PostgreSQL 存储订单、成交、账户与审计数据；Redis Streams 用于可替换的跨进程事件分发，单机回测可使用内存队列；Prometheus 与 Grafana 用于监控，Streamlit 用于操作界面；Optuna 和 MLflow 用于受控的优化与模型管理；Docker Compose 用于开发及部署环境一致性。
 
 数据库中至少保存运行元数据、原始/标准化事件、订单状态迁移、成交、资金与持仓快照、风险决定、策略版本、数据版本和报告索引。生产凭据只存在于环境变量或专用密钥服务，严禁进入策略配置、日志和代码库。
 

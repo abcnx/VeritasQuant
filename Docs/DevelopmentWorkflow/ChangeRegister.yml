@@ -40,3 +40,22 @@ Records:
         Actor: ProjectAuthor
         Action: 批准 Docker 实启演练后移但在 M0 前完成的执行顺序调整
         Evidence: 当前任务会话确认
+  - ChangeId: CHG-P0-003
+    Title: 将 Python 支持基线收窄为 3.13+
+    Owner: PO/TL
+    Approver: ProjectAuthor（当前会话确认，承担 PO/TL）
+    ScopeImpact: 将项目、wheel、CI 和 P0-005 的最低 Python 支持版本由 3.10+ 收窄为 3.13+；不改变事件、账户、风险、执行或 API 契约。Python 3.10 至 3.12 的兼容安装矩阵不再是 P0 验收项。
+    TestPlan: 以 Windows/Linux Python 3.13 从空缓存执行依赖安装、Preflight、静态检查、测试、构建和仓库外 wheel 验证；由 P0-005 契约测试固定 CI 与包元数据版本。
+    RollbackPlan: 若需重新支持较低版本，先更新权威技术方案，恢复对应版本的锁定/兼容代码和双平台 CI 矩阵，并重新执行完整证据闭环。
+    Status: APPROVED
+    TargetDate: 已完成
+    EvidenceLinks: [Docs/VeritasQuantTechSpec.md, pyproject.toml, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, tests/contract/test_p0_engineering_baseline.py]
+    AuditHistory:
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: ProjectAuthor
+        Action: 在当前任务会话决定将 Python 支持承诺收窄为 3.13+
+        Evidence: 当前任务会话确认
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: Codex
+        Action: 同步权威技术方案、包元数据、CI 契约、依赖政策、计划与工作项，并完成自动化复验
+        Evidence: Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md

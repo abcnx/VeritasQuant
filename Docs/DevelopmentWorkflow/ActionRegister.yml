@@ -91,6 +91,10 @@ Records:
         Actor: Codex
         Action: 已启动 Docker Engine；Docker Hub 网络拒绝镜像拉取，容器未创建
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:33:58Z"
+        Actor: Codex
+        Action: 自动化技术演练已通过，行动保持 OPEN 以等待独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
   - ActionId: ACT-P0-006
     Title: 指定单 Agent 开发模式下的人类治理责任人和审批边界
     SourceId: P0-002
@@ -119,12 +123,16 @@ Records:
     DueDate: M0 正式评审前
     VerificationMethod: 指定至少一名未编写受审代码的人类评审者和一名 Incident Commander 替补，记录企业目录引用、审阅范围、确认 UTC 时间与 Gate 回避规则。
     Status: OPEN
-    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md, Docs/DevelopmentWorkflow/M0StageGateReport.md]
     AuditHistory:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: Codex
         Action: 根据已确认的单人角色模型，将独立评审和替补值班单独登记为后续行动
         Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+      - Ts: "2026-07-31T09:51:38Z"
+        Actor: Codex
+        Action: 补充非作者评审、Incident Commander 替补和 Gate 回避的可填写证据包；行动保持 OPEN，未作人类确认
+        Evidence: Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md
   - ActionId: ACT-P0-008
     Title: 为 Docker 开发验证提供可访问的镜像来源
     SourceId: P0-008
@@ -138,3 +146,7 @@ Records:
         Actor: Codex
         Action: 两次 Docker Hub 拉取均被网络拒绝后创建行动项
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:33:58Z"
+        Actor: Codex
+        Action: 精确镜像已成功拉取并完成自动化演练，行动保持 OPEN 以等待独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md

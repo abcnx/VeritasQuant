@@ -95,7 +95,7 @@ Records:
     EstimatePersonDays: 2
     Dependencies: [P0-001]
     AcceptanceCriteria: 新成员在 15 分钟内能定位权威设计、当前计划、决策和风险记录
-    TestEvidence: [Docs/DevelopmentWorkflow/DevelopmentDocumentIndex.md, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/DevelopmentDocumentIndex.md, Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: IN_REVIEW
@@ -114,6 +114,10 @@ Records:
         Actor: ProjectAuthor
         Action: 批准 P0-001 范围后，将依赖解除情况更新为 IN_REVIEW；未执行独立定位演练
         Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+      - Ts: "2026-07-31T09:51:38Z"
+        Actor: Codex
+        Action: 补充独立定位演练的可填写记录；仍待非作者实际执行和复核
+        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
   - WorkItemId: TSK-P0-004
     PlanTaskId: P0-004
     Title: 按方案 A 创建 src 布局、根级目录和占位包
@@ -158,22 +162,26 @@ Records:
     Priority: P0
     EstimatePersonDays: 4
     Dependencies: [P0-004]
-    AcceptanceCriteria: Python 3.10+ 环境可重复安装；运行/开发依赖分组；锁文件差异可审阅
+    AcceptanceCriteria: Python 3.13+ 环境可重复安装；运行/开发依赖分组；锁文件差异可审阅
     TestEvidence: [pyproject.toml, requirements/Runtime.lock, requirements/Development.lock, scripts/VerifyDependencyLocks.py, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002]
     TargetDate: 待基线批准
     Status: IN_REVIEW
     StatusChangedTs: "2026-07-31T09:20:00Z"
-    Blocked: true
-    BlockedReason: P0-004 已有 Linux 3.12 作者验证但尚未正式验收；Python 3.10 和 3.11 兼容安装证据仍缺失
-    BlockedBy: QA/CE
-    NextAction: 在 CI 增加并运行 Python 3.10、3.11、3.12 和 3.13 的批准解释器矩阵
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由独立评审核验 Windows/Linux Python 3.13 空缓存安装、锁定一致性与证据归档
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 将开发锁定项更新为精确版本
         Evidence: requirements/Development.lock
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: Codex
+        Action: 按 ProjectAuthor 当前会话决定将支持基线收窄为 Python 3.13+，并完成自动化复验
+        Evidence: [pyproject.toml, Docs/VeritasQuantTechSpec.md, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md]
   - WorkItemId: TSK-P0-006
     PlanTaskId: P0-006
     Title: 建立 Windows/Linux CI，包含格式、静态类型、单测和 wheel 构建
@@ -243,17 +251,21 @@ Records:
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
     Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
+    StatusChangedTs: "2026-07-31T09:34:03Z"
     Blocked: true
-    BlockedReason: P0-006 尚无实际 CI 运行证据
+    BlockedReason: 缺受保护远程 CI 的故意违规失败记录，以及非作者人类 QA 审阅
     BlockedBy: QA/SRE
-    NextAction: 运行正反例 CI 并保留失败定位报告
+    NextAction: 在具备分支保护的远程 CI 执行故意违规正反例并归档失败定位报告，再由非作者人类 QA 审阅
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 增加根级平行包检查和正反例回归测试
         Evidence: scripts/Preflight.py
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: Codex
+        Action: Python 3.13 基线下完成自动化复验；等待独立人类 QA 审阅
+        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
   - WorkItemId: TSK-P0-008
     PlanTaskId: P0-008
     Title: 建立最小 Docker Compose 开发依赖和环境自检命令
@@ -267,15 +279,15 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-005]
     AcceptanceCriteria: 一条命令启动所需依赖并通过健康检查；停止后无遗留秘密或业务数据
-    TestEvidence: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, scripts/VerifyDevelopmentEnvironment.py, tests/contract/test_p0_engineering_baseline.py]
+    TestEvidence: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, scripts/VerifyDevelopmentEnvironment.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md]
     RiskLinks: [RSK-P0-004]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: Docker Desktop Linux Engine 已启动，但 Docker Hub 镜像下载被网络拒绝；尚无容器健康检查和清理证据
-    BlockedBy: SRE
-    NextAction: 配置可访问的 Docker Hub 网络、镜像代理或预加载镜像后执行 ACT-P0-005，并保存 start、check、stop 输出
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T09:33:58Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由独立人类 SRE 复核运行证据、镜像来源与清理结果，再进入 M0 验收
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -294,6 +306,10 @@ Records:
         Actor: Codex
         Action: Docker Engine 已可访问；两次拉取 postgres/redis 镜像均被 registry-1.docker.io 网络拒绝，未创建容器
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:33:58Z"
+        Actor: Codex
+        Action: 自动化 Compose 启动、健康检查和清理演练通过；转为等待独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
   - WorkItemId: TSK-P0-009
     PlanTaskId: P0-009
     Title: 建立测试目录、稳定测试 ID、报告和证据哈希规范
@@ -310,18 +326,22 @@ Records:
     TestEvidence: [scripts/CollectTestEvidence.py, tests/unit/scripts/test_engineering_scripts.py, Docs/DevelopmentWorkflow/TestEvidencePolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: P0-006 尚无 CI 产物和独立 QA 运行证据
-    BlockedBy: QA
-    NextAction: 由 QA 使用 CI 产物生成并审阅首份证据包
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T09:34:03Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由非作者人类 QA 审阅 Python 3.13 证据包和远程 CI 工件，再记录验收结论
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 实现证据收集器和稳定 ID 示例测试
         Evidence: scripts/CollectTestEvidence.py
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: Codex
+        Action: Python 3.13 基线下完成自动化证据收集和完整测试；等待独立人类 QA 审阅
+        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
   - WorkItemId: TSK-P0-010
     PlanTaskId: P0-010
     Title: 建立需求、任务、缺陷、风险、事故、变更和行动项登记表
@@ -366,12 +386,12 @@ Records:
     TestEvidence: [scripts/ScanSecrets.py, scripts/VerifyLicenses.py, Configs/Security/LicensePolicy.yml, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-005]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: Linux 本地秘密与许可证检查均通过，但尚无受保护远程 CI 漏洞扫描运行证据
-    BlockedBy: SRE
-    NextAction: 在受保护远程 CI 运行 Security baseline，并审阅归档的首次 pip-audit 报告
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T09:34:03Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由独立人类 SRE 审阅 Security baseline、许可证策略和首次审计报告
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -382,6 +402,10 @@ Records:
         Actor: Codex
         Action: 在 Ubuntu WSL 复验秘密扫描和许可证策略，均通过；不替代远程 CI 证据
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:05Z"
+        Actor: Codex
+        Action: GitHub Actions Security baseline 已成功；转为等待独立人类 SRE 审阅
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295/job/91119868193"
   - WorkItemId: TSK-P0-012
     PlanTaskId: P0-012
     Title: 建立本计划任务到技术章节、测试 ID 和 Gate 的追踪矩阵
@@ -398,17 +422,21 @@ Records:
     TestEvidence: [Docs/DevelopmentWorkflow/TraceabilityMatrix.yml, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: P0-009 尚无独立 QA 证据，矩阵中的后续测试仍待实现
-    BlockedBy: QA/TL
-    NextAction: QA 审阅 R-001 至 R-017 映射，并在后续任务完成时回写结果哈希
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T09:34:03Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由非作者人类 QA/TL 审阅 R-001 至 R-017 映射；后续任务完成时回写其 M1/M2 执行结果哈希
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 创建 R-001 至 R-017 计划追踪矩阵
+        Evidence: Docs/DevelopmentWorkflow/TraceabilityMatrix.yml
+      - Ts: "2026-07-31T09:34:03Z"
+        Actor: Codex
+        Action: 自动化核验矩阵完整覆盖 17 项需求；完整执行证据按 LatestGate 归入 M1/M2
         Evidence: Docs/DevelopmentWorkflow/TraceabilityMatrix.yml
   - WorkItemId: TSK-P0-013
     PlanTaskId: P0-013
@@ -423,21 +451,25 @@ Records:
     EstimatePersonDays: 3
     Dependencies: [P0-001, P0-002, P0-003, P0-004, P0-005, P0-006, P0-007, P0-008, P0-009, P0-010, P0-011, P0-012]
     AcceptanceCriteria: M0 检查表全通过；开放阻断项为 0；基线报告和审批记录已归档
-    TestEvidence: [Docs/DevelopmentWorkflow/M0PreReview.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md]
     RiskLinks: [RSK-P0-001, RSK-P0-002, RSK-P0-003, RSK-P0-004, RSK-P0-005, RSK-P0-006]
     TargetDate: 待基线批准
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: P0-001、P0-002、P0-006、P0-008、P0-011 和 P0-012 的外部或独立验收证据不完整
+    BlockedReason: 仍缺非作者人类评审与事故替补、受保护分支与必需检查、独立 QA/SRE 验收及正式 M0 Gate 签署
     BlockedBy: PO/TL/QA/SRE
-    NextAction: 补齐签署、双平台 CI、Docker 实启、许可证批准、QA 审阅后重新执行 M0 预审
+    NextAction: 完成 ACT-P0-004、ACT-P0-005、ACT-P0-007 和独立审阅后重新执行 M0 预审
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 更新 M0 预审检查表，保持证据不足结论
         Evidence: Docs/DevelopmentWorkflow/M0PreReview.md
+      - Ts: "2026-07-31T09:51:38Z"
+        Actor: Codex
+        Action: 补充可填写 M0 Gate 报告和独立角色审阅证据包；任务保持 ANALYZING 且 Gate 结论仍为证据不足
+        Evidence: Docs/DevelopmentWorkflow/M0StageGateReport.md
   - WorkItemId: TSK-P1-001
     PlanTaskId: P1-001
     Title: 实现严格 Pydantic 基类和唯一显式 alias 机制

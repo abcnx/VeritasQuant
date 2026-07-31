@@ -81,3 +81,12 @@ def test_traceability_matrix_covers_all_mandatory_review_contracts() -> None:
         assert row["PlanTaskIds"]
         assert row["TestIds"]
         assert row["LatestGate"]
+
+
+@pytest.mark.stable_id("P0-005-001")
+def test_ci_and_package_metadata_use_python_313_baseline() -> None:
+    workflow = loadYaml(".github/workflows/Ci.yml")
+    quality = workflow["jobs"]["quality"]
+    assert quality["strategy"]["matrix"]["python-version"] == ["3.13"]
+    project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'requires-python = ">=3.13"' in project

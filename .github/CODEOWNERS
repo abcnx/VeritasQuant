@@ -1,0 +1,19 @@
+# 当前仓库唯一已确认的 GitHub 责任账号。新增负责人后应按路径替换或补充团队映射。
+* @ACANX
+
+# 核心交易与数据契约
+/src/veritasquant/core/ @ACANX
+/src/veritasquant/accounts/ @ACANX
+/src/veritasquant/execution/ @ACANX
+/src/veritasquant/risk/ @ACANX
+/src/veritasquant/data/ @ACANX
+/src/veritasquant/strategy/ @ACANX
+/src/veritasquant/application/ @ACANX
+/src/veritasquant/infrastructure/ @ACANX
+
+# 工程治理、配置与版本化契约
+/.github/ @ACANX
+/Configs/ @ACANX
+/Docs/VeritasQuantTechSpec.md @ACANX
+/Docs/DevelopmentWorkflow/ @ACANX
+/src/veritasquant/resources/Schemas/ @ACANX

@@ -10,7 +10,7 @@
 
 VeritasQuant 是一个面向多资产的严格事件驱动量化交易平台，支持多种基金智能定投方案和用户自定义定投规则的历史回测。在进入模拟盘、券商仿真和受控实盘前，必须先产出可复现的研究和回测结果。
 
-规划技术栈为 Python 3.10+、Pydantic/YAML、Pandas/NumPy、PostgreSQL/TimescaleDB、Redis Streams、FastAPI/Streamlit、Prometheus/Grafana、Optuna/MLflow 和 Docker Compose。组件应按核心工作流逐步引入，不得在对应业务流程尚未建立前过早增加基础设施。
+规划技术栈为 Python 3.13+、Pydantic/YAML、Pandas/NumPy、PostgreSQL/TimescaleDB、Redis Streams、FastAPI/Streamlit、Prometheus/Grafana、Optuna/MLflow 和 Docker Compose。组件应按核心工作流逐步引入，不得在对应业务流程尚未建立前过早增加基础设施。
 
 - 所有 Python 相关的开发、测试、构建、运行和部署命令统一使用 `python3` 执行；当前默认开发、测试、运行和部署环境为 Windows 11 上的 Python 3.13。
 
@@ -103,6 +103,7 @@ VeritasQuant 是一个面向多资产的严格事件驱动量化交易平台，�
 ## 文档、命名与编码
 
 - 默认使用简体中文编写文档、界面文案、注释和用户可见的技术说明；仅在代码标识符、事件名、配置键、第三方协议或术语准确性需要时使用英文。
+- Git 提交信息（包括标题和正文）默认使用简体中文；仅当外部协议、固定术语或第三方要求必须使用英文时例外。
 - 开发时须为关键契约字段、参数校验和非直观操作补充简体中文注释；避免对显而易见的赋值或语言惯例作重复说明。
 - 项目中的程序文件、资源文件、文档文件和非 Python 包的组件目录优先使用大驼峰（PascalCase）命名，例如 `EventLoop.py`、`Apps/GuiClient/`、`VeritasQuantOverallArchitecture.svg` 和 `VeritasQuantTechSpec.md`。根级目录 `Apps/`、`Jobs/`、`Migrations/`、`Docker/`、`Configs/` 和 `Resources/` 固定使用首字母大写。Python 包目录使用小写 `snake_case` 以保持导入一致；仅当语言、框架、工具链或第三方协议规定固定名称时保留其约定，例如 `__init__.py`、`pyproject.toml` 和 `docker-compose.yml`，不得为追求形式统一而破坏生态兼容性。
 - `Configs/` 的子目录和项目自有程序配置文件均使用 PascalCase；配置文件优先采用 UTF-8 编码的 `.yml`，例如 `Configs/Environments/Live.yml`，仅当第三方工具明确要求其他扩展名时允许例外。

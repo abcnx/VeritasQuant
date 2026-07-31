@@ -16,7 +16,7 @@
 | 范围、非目标和阶段 Gate | ProjectAuthor/PO | ProjectAuthor | P0 范围和未来签署名单已确认；未通过任何 Gate |
 | 技术方案和变更批准 | ProjectAuthor/TL | ClaudeCode 提供技术材料 | 临时职责已确认；每项实际变更仍须审阅 |
 | 独立 QA 验证 | ProjectAuthor/QA | ProjectAuthor | 临时职责已确认；M0 前仍需 `ACT-P0-007` 的非作者人类复核 |
-| CI、分支保护和安全例外 | ProjectAuthor/SRE | ProjectAuthor | 临时职责已确认；远程 CI 与分支保护证据仍缺失 |
+| CI、分支保护和安全例外 | ProjectAuthor/SRE | ProjectAuthor | 远程 CI 已有成功证据；分支保护与必需检查仍待管理员核验 |
 | 事故指挥和值班响应 | ProjectAuthor/Incident Commander | ProjectAuthor | 临时职责已确认；事故替补仍缺失 |
 
 同一位人类负责人可以在资源受限时承担多个角色，但必须明确记录角色冲突、替补人和 Gate 回避规则；ClaudeCode 不能自我批准其实现或为其作者测试签署独立验收。

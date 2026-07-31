@@ -2,9 +2,9 @@
 
 ## 解释器
 
-- 支持基线：Python 3.10+。
+- 支持基线：Python 3.13+。
 - 当前开发、测试、构建和部署默认解释器：Windows 11 上的 `python3`（Python 3.13）。
-- CI 必须在 Windows 与 Linux 使用相同的 Python 3.13 版本执行最小基线；新增版本矩阵须通过 Change 记录。
+- CI 必须在 Windows 与 Linux 使用相同的 Python 3.13 版本执行最小基线；新增解释器支持须先更新权威技术方案并通过 Change 记录。
 
 ## 依赖分组
 
