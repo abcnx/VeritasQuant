@@ -1254,3 +1254,31 @@ Records:
         Actor: Codex
         Action: 完成 journal、分录、科目、计量单位和会计策略契约自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-033LedgerModelEvidence.md
+  - WorkItemId: TSK-P1-034
+    PlanTaskId: P1-034
+    Title: 实现复式记账提交与逐单位平衡校验
+    Description: 已实现 journal 的原子只追加提交、重复防护与单调序号校验。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-033, P1-028]
+    AcceptanceCriteria: 不平 journal 原子失败；提交序号单调；历史分录不可更新删除
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-034LedgerCommitEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T00:45:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 为 P1-035 的现金、冻结、持仓、成本和盈亏投影提供只追加事实源
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T00:45:00Z"
+        Actor: Codex
+        Action: 完成账本原子提交、逐单位重校验及历史不可变自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-034LedgerCommitEvidence.md

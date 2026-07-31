@@ -13,7 +13,9 @@ from veritasquant.accounts.Ledger import (
     JournalType,
     JournalV1,
     LedgerAccount,
+    LedgerContractError,
     LedgerEntryV1,
+    LedgerStoreV1,
 )
 
 
@@ -104,3 +106,30 @@ def test_accounting_policy_requires_fixed_rounding_and_hash() -> None:
         PolicyHash="a" * 64,
     )
     assert policy.policyVersion == "policy-v1"
+
+
+def test_ledger_store_commits_only_complete_journals_in_monotonic_order() -> None:
+    store = LedgerStoreV1()
+    committed = store.commitJournal(_journal())
+    assert committed.journalId == "journal-1"
+    assert len(store.journals) == 1
+    assert len(store.entries) == 2
+    second = _journal(JournalId="journal-2", CommitSequence=2)
+    assert store.commitJournal(second).commitSequence == 2
+
+
+def test_ledger_store_rejects_invalid_or_duplicate_commit_without_mutation() -> None:
+    store = LedgerStoreV1()
+    valid = _journal()
+    invalid = valid.model_copy(
+        update={"entries": (_entry("entry-1", EntryDirection.Debit), _entry("entry-2", EntryDirection.Credit, Decimal("99")))}
+    )
+    with pytest.raises(ValidationError, match="不平衡"):
+        store.commitJournal(invalid)
+    assert store.journals == ()
+    store.commitJournal(valid)
+    with pytest.raises(LedgerContractError, match="重复记账"):
+        store.commitJournal(valid)
+    with pytest.raises(LedgerContractError, match="序号"):
+        store.commitJournal(_journal(JournalId="journal-2", CommitSequence=3))
+    assert tuple(item.journalId for item in store.journals) == ("journal-1",)

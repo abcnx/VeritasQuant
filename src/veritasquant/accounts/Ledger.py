@@ -179,6 +179,37 @@ class JournalV1(StrictModel):
         return self
 
 
+class LedgerStoreV1:
+    """阶段 1 的只追加账本事实存储；P2 替换为同语义数据库实现。"""
+
+    def __init__(self) -> None:
+        self._journals: list[JournalV1] = []
+        self._journalIds: set[str] = set()
+
+    @property
+    def journals(self) -> tuple[JournalV1, ...]:
+        """返回不可修改的 journal 顺序快照。"""
+        return tuple(self._journals)
+
+    @property
+    def entries(self) -> tuple[LedgerEntryV1, ...]:
+        """按提交顺序返回不可修改的分录快照。"""
+        return tuple(entry for journal in self._journals for entry in journal.entries)
+
+    def commitJournal(self, journal: JournalV1) -> JournalV1:
+        """校验完整 journal 后一次性追加，失败时不改变已有历史。"""
+        # model_copy 可绕过 Pydantic 校验，提交边界必须从 wire 形式重新验证。
+        validatedJournal = JournalV1.model_validate(journal.model_dump(by_alias=True))
+        if validatedJournal.journalId in self._journalIds:
+            raise LedgerContractError("journalId 已提交，禁止覆盖或重复记账")
+        expectedSequence = len(self._journals) + 1
+        if validatedJournal.commitSequence != expectedSequence:
+            raise LedgerContractError(f"账本提交序号必须为 {expectedSequence}")
+        self._journals.append(validatedJournal)
+        self._journalIds.add(validatedJournal.journalId)
+        return validatedJournal
+
+
 EnumType = TypeVar("EnumType", bound=StrEnum)
 
 
