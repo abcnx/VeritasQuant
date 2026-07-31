@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">VeritasQuant 总体架构与确定性事件时序</title>
+  <desc id="desc">上半部分展示历史文件、实时行情和外部事件经适配、标准化、多源归并与逻辑时钟进入按账户组分区的单线程确定性事件循环，再依次连接隔离策略运行器、唯一的风控引擎、订单管理、执行适配器和账户账本；风控引擎内部的预警策略求值器只返回候选建议。下半部分展示行情事件 T 内撮合旧订单、更新状态、分发事件、生成订单意图、风险审批和加入未来撮合队列的严格顺序。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1769AA"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0B7A75"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#A65D00"/>
+    </marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#526174"/>
+    </marker>
+    <style>
+      text {
+        font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .title { font-size: 34px; font-weight: 700; fill: #172033; }
+      .subtitle { font-size: 17px; fill: #526174; }
+      .section-label { font-size: 15px; font-weight: 700; fill: #526174; }
+      .box-title { font-size: 19px; font-weight: 700; fill: #172033; }
+      .box-copy { font-size: 14px; fill: #526174; }
+      .box-copy-strong { font-size: 14px; font-weight: 700; fill: #344256; }
+      .chip { font-size: 13px; font-weight: 700; }
+      .edge-label { font-size: 13px; font-weight: 700; fill: #526174; }
+      .sequence-number { font-size: 14px; font-weight: 700; fill: #FFFFFF; }
+      .sequence-title { font-size: 17px; font-weight: 700; fill: #172033; }
+      .sequence-copy { font-size: 13px; fill: #526174; }
+      .mono { font-family: Consolas, "SFMono-Regular", monospace; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1120" fill="#F7F9FC"/>
+  <rect x="24" y="24" width="1552" height="1072" rx="8" fill="#FFFFFF" stroke="#D8DEE8" stroke-width="2"/>
+
+  <text x="64" y="82" class="title">VeritasQuant 总体架构</text>
+  <text x="64" y="114" class="subtitle">单线程确定性交易内核保证因果顺序，外围模块按吞吐需求异步扩展</text>
+
+  <g aria-label="图例">
+    <line x1="1098" y1="73" x2="1140" y2="73" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="1150" y="78" class="box-copy-strong">同步关键路径</text>
+    <line x1="1280" y1="73" x2="1322" y2="73" stroke="#526174" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arrow-slate)"/>
+    <text x="1332" y="78" class="box-copy-strong">异步旁路</text>
+    <line x1="1098" y1="103" x2="1140" y2="103" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <text x="1150" y="108" class="box-copy-strong">状态反馈</text>
+  </g>
+
+  <text x="64" y="160" class="section-label">事件接入与确定性归并</text>
+  <rect x="48" y="178" width="526" height="476" rx="8" fill="#F9FBFD" stroke="#D8DEE8" stroke-width="2"/>
+
+  <g aria-label="输入源">
+    <rect x="72" y="206" width="144" height="76" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <text x="144" y="236" text-anchor="middle" class="box-title">历史数据</text>
+    <text x="144" y="261" text-anchor="middle" class="box-copy mono">Parquet / 元数据</text>
+
+    <rect x="239" y="206" width="144" height="76" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <text x="311" y="236" text-anchor="middle" class="box-title">实时行情</text>
+    <text x="311" y="261" text-anchor="middle" class="box-copy">交易所 / 数据商</text>
+
+    <rect x="406" y="206" width="144" height="76" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <text x="478" y="236" text-anchor="middle" class="box-title">外部信息</text>
+    <text x="478" y="261" text-anchor="middle" class="box-copy">新闻 · 宏观 · 风险</text>
+  </g>
+
+  <path d="M144 282 V310 H311" fill="none" stroke="#1769AA" stroke-width="3"/>
+  <path d="M311 282 V310" fill="none" stroke="#1769AA" stroke-width="3"/>
+  <path d="M478 282 V310 H311" fill="none" stroke="#A65D00" stroke-width="3"/>
+  <path d="M311 310 V332" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <g aria-label="适配和标准化">
+    <rect x="96" y="334" width="430" height="128" rx="8" fill="#FFFFFF" stroke="#8AB8D8" stroke-width="2"/>
+    <rect x="96" y="334" width="8" height="128" rx="4" fill="#1769AA"/>
+    <text x="124" y="368" class="box-title">数据适配与事件标准化</text>
+    <text x="124" y="398" class="box-copy">流式读取 · 数据校验 · 已完成 Bar 聚合</text>
+    <text x="124" y="427" class="box-copy">RiskSignal → AlertNormalizer / Correlator → AlertEvent</text>
+    <rect x="420" y="350" width="82" height="27" rx="6" fill="#E6F5F3"/>
+    <text x="461" y="369" text-anchor="middle" class="chip" fill="#0B7A75">不可变事件</text>
+  </g>
+
+  <path d="M311 462 V494" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <g aria-label="归并器与共享事件序列">
+    <rect x="96" y="496" width="430" height="126" rx="8" fill="#EAF7F5" stroke="#69AEA8" stroke-width="2"/>
+    <rect x="96" y="496" width="8" height="126" rx="4" fill="#0B7A75"/>
+    <text x="124" y="531" class="box-title">多源归并器 + 共享事件序列</text>
+    <text x="124" y="561" class="box-copy">全局顺序一致，各分区独立提交逻辑时钟</text>
+    <text x="124" y="584" class="box-copy mono">ts · phase · priority · source_rank</text>
+    <text x="124" y="606" class="box-copy mono">source_sequence · event_id</text>
+  </g>
+
+  <path d="M526 559 H622" fill="none" stroke="#1769AA" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <rect x="548" y="529" width="74" height="24" rx="6" fill="#FFFFFF"/>
+  <text x="585" y="546" text-anchor="middle" class="edge-label">最早事件</text>
+
+  <text x="626" y="160" class="section-label">按 account_group_id 分区 · 组内单线程 · 按 account_id 隔离状态</text>
+  <rect x="606" y="178" width="946" height="476" rx="8" fill="#F9FBFD" stroke="#BFC9D7" stroke-width="2"/>
+
+  <g aria-label="事件循环">
+    <rect x="632" y="206" width="286" height="188" rx="8" fill="#EAF7F5" stroke="#69AEA8" stroke-width="2"/>
+    <rect x="632" y="206" width="8" height="188" rx="4" fill="#0B7A75"/>
+    <text x="660" y="243" class="box-title">确定性事件循环</text>
+    <text x="660" y="274" class="box-copy">推进逻辑时钟 · 严格顺序分发</text>
+    <text x="660" y="301" class="box-copy">原始事件与派生事件统一审计</text>
+    <rect x="660" y="326" width="229" height="40" rx="6" fill="#FFFFFF" stroke="#B8D8D4"/>
+    <text x="775" y="351" text-anchor="middle" class="box-copy-strong mono">logical_clock = T (UTC)</text>
+  </g>
+
+  <g aria-label="隔离策略运行器">
+    <rect x="1010" y="206" width="222" height="90" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <rect x="1010" y="206" width="8" height="90" rx="4" fill="#1769AA"/>
+    <text x="1037" y="241" class="box-title">隔离策略运行器</text>
+    <text x="1037" y="269" class="box-copy">只读上下文 · 订单意图</text>
+  </g>
+
+  <path d="M918 251 H1000" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="957" y="239" text-anchor="middle" class="edge-label">当前事件</text>
+
+  <g aria-label="风险引擎">
+    <rect x="1010" y="332" width="222" height="100" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <rect x="1010" y="332" width="8" height="100" rx="4" fill="#A65D00"/>
+    <text x="1037" y="367" class="box-title">风控引擎</text>
+    <text x="1037" y="395" class="box-copy">唯一交易风险决策点</text>
+    <text x="1037" y="417" class="box-copy">内含纯规则求值器</text>
+  </g>
+
+  <path d="M1121 296 V322" fill="none" stroke="#A65D00" stroke-width="3" marker-end="url(#arrow-amber)"/>
+  <text x="1134" y="318" class="edge-label">订单意图</text>
+
+  <g aria-label="订单管理器">
+    <rect x="1010" y="468" width="222" height="100" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <rect x="1010" y="468" width="8" height="100" rx="4" fill="#A65D00"/>
+    <text x="1037" y="503" class="box-title">订单管理器</text>
+    <text x="1037" y="531" class="box-copy">状态迁移 · 资源冻结</text>
+    <text x="1037" y="553" class="box-copy">执行已授权控制</text>
+  </g>
+
+  <path d="M1121 432 V458" fill="none" stroke="#A65D00" stroke-width="3" marker-end="url(#arrow-amber)"/>
+  <text x="1134" y="454" class="edge-label">审批结果</text>
+
+  <g aria-label="执行适配器">
+    <rect x="1294" y="468" width="230" height="100" rx="8" fill="#FCEDEA" stroke="#D99891" stroke-width="2"/>
+    <rect x="1294" y="468" width="8" height="100" rx="4" fill="#B5473E"/>
+    <text x="1321" y="503" class="box-title">撮合 / 券商适配器</text>
+    <text x="1321" y="531" class="box-copy">回测 · 模拟 · 仿真 · 实盘</text>
+    <text x="1321" y="553" class="box-copy">统一执行契约</text>
+  </g>
+
+  <path d="M1232 518 H1284" fill="none" stroke="#A65D00" stroke-width="3" marker-end="url(#arrow-amber)"/>
+  <text x="1258" y="506" text-anchor="middle" class="edge-label">订单</text>
+
+  <g aria-label="多账户交易账本">
+    <rect x="1294" y="300" width="230" height="112" rx="8" fill="#EDF7EE" stroke="#91BE9D" stroke-width="2"/>
+    <rect x="1294" y="300" width="8" height="112" rx="4" fill="#2D7D46"/>
+    <text x="1321" y="335" class="box-title">多账户交易账本</text>
+    <text x="1321" y="363" class="box-copy mono">按 account_id 隔离</text>
+    <text x="1321" y="388" class="box-copy-strong">逐笔固化资金与持仓</text>
+  </g>
+
+  <path d="M1409 468 V422" fill="none" stroke="#B5473E" stroke-width="3" marker-end="url(#arrow-slate)"/>
+  <text x="1422" y="448" class="edge-label">执行回报</text>
+
+  <path d="M1409 300 V190 H775 V196" fill="none" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <rect x="1112" y="179" width="238" height="23" rx="6" fill="#FFFFFF"/>
+  <text x="1231" y="196" text-anchor="middle" class="edge-label">已固化账户状态 / 派生事件</text>
+
+  <path d="M918 370 H970 Q986 370 986 386 V590 Q986 606 1002 606 H1409 Q1425 606 1425 590 V578" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <rect x="1162" y="594" width="238" height="24" rx="6" fill="#FFFFFF"/>
+  <text x="1281" y="611" text-anchor="middle" class="edge-label">行情 T + 此前已生效订单</text>
+
+  <g aria-label="异步外围模块">
+    <rect x="632" y="480" width="286" height="116" rx="8" fill="#F1F3F6" stroke="#BFC9D7" stroke-width="2"/>
+    <rect x="632" y="480" width="8" height="116" rx="4" fill="#526174"/>
+    <text x="660" y="515" class="box-title">异步外围模块</text>
+    <text x="660" y="545" class="box-copy">监控 · 结构化日志 · 快照</text>
+    <text x="660" y="571" class="box-copy">事件归档 · 报告 · 离线优化</text>
+  </g>
+
+  <path d="M775 394 V470" fill="none" stroke="#526174" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arrow-slate)"/>
+  <text x="788" y="452" class="edge-label">复制事件</text>
+
+  <line x1="48" y1="696" x2="1552" y2="696" stroke="#D8DEE8" stroke-width="2"/>
+  <text x="64" y="744" class="section-label">行情事件 T 的确定性处理顺序</text>
+  <text x="64" y="772" class="subtitle">每一步完成后才进入下一步；任何消费者只能读取逻辑时钟内已经固化的状态</text>
+
+  <path d="M155 836 H1448" fill="none" stroke="#C7D1DD" stroke-width="4"/>
+
+  <g aria-label="步骤一，撮合旧订单">
+    <circle cx="155" cy="836" r="21" fill="#0B7A75"/>
+    <text x="155" y="841" text-anchor="middle" class="sequence-number">01</text>
+    <rect x="55" y="870" width="200" height="118" rx="8" fill="#EAF7F5" stroke="#69AEA8" stroke-width="2"/>
+    <text x="75" y="906" class="sequence-title">撮合旧订单</text>
+    <text x="75" y="935" class="sequence-copy">仅处理此前已生效且</text>
+    <text x="75" y="958" class="sequence-copy">满足延迟条件的订单</text>
+  </g>
+
+  <g aria-label="步骤二，逐笔原子记账">
+    <circle cx="413" cy="836" r="21" fill="#2D7D46"/>
+    <text x="413" y="841" text-anchor="middle" class="sequence-number">02</text>
+    <rect x="313" y="870" width="200" height="118" rx="8" fill="#EDF7EE" stroke="#91BE9D" stroke-width="2"/>
+    <text x="333" y="906" class="sequence-title">逐笔原子记账</text>
+    <text x="333" y="935" class="sequence-copy">订单 · 资金余额 · 持仓</text>
+    <text x="333" y="958" class="sequence-copy">费用 · PnL · 策略回调</text>
+  </g>
+
+  <g aria-label="步骤三，分发当前事件">
+    <circle cx="671" cy="836" r="21" fill="#1769AA"/>
+    <text x="671" y="841" text-anchor="middle" class="sequence-number">03</text>
+    <rect x="571" y="870" width="200" height="118" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <text x="591" y="906" class="sequence-title">分发当前事件</text>
+    <text x="591" y="935" class="sequence-copy">策略 · 风险 · 指标</text>
+    <text x="591" y="958" class="sequence-copy">监控按订阅关系消费</text>
+  </g>
+
+  <g aria-label="步骤四，生成订单意图">
+    <circle cx="929" cy="836" r="21" fill="#1769AA"/>
+    <text x="929" y="841" text-anchor="middle" class="sequence-number">04</text>
+    <rect x="829" y="870" width="200" height="118" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <text x="849" y="906" class="sequence-title">生成订单意图</text>
+    <text x="849" y="935" class="sequence-copy">策略仅使用 T 时刻</text>
+    <text x="849" y="958" class="sequence-copy">已经可知的信息</text>
+  </g>
+
+  <g aria-label="步骤五，风险引擎审批">
+    <circle cx="1187" cy="836" r="21" fill="#A65D00"/>
+    <text x="1187" y="841" text-anchor="middle" class="sequence-number">05</text>
+    <rect x="1087" y="870" width="200" height="118" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <text x="1107" y="906" class="sequence-title">风控引擎审批</text>
+    <text x="1107" y="935" class="sequence-copy">结合订单、账户、持仓</text>
+    <text x="1107" y="958" class="sequence-copy">与活动预警形成审计</text>
+  </g>
+
+  <g aria-label="步骤六，进入未来队列">
+    <circle cx="1445" cy="836" r="21" fill="#B5473E"/>
+    <text x="1445" y="841" text-anchor="middle" class="sequence-number">06</text>
+    <rect x="1345" y="870" width="200" height="118" rx="8" fill="#FCEDEA" stroke="#D99891" stroke-width="2"/>
+    <text x="1365" y="906" class="sequence-title">进入未来队列</text>
+    <text x="1365" y="935" class="sequence-copy">获批订单最早在后续</text>
+    <text x="1365" y="958" class="sequence-copy">允许的行情事件中撮合</text>
+  </g>
+
+  <g aria-label="因果边界说明">
+    <rect x="571" y="1016" width="974" height="48" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <rect x="571" y="1016" width="8" height="48" rx="4" fill="#A65D00"/>
+    <text x="600" y="1047" class="box-copy-strong">因果边界：基于当前 Bar 创建的订单不得使用当前 Bar 成交，只能影响未来撮合。</text>
+  </g>
+</svg>

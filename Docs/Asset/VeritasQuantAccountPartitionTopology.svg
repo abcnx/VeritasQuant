@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="940" viewBox="0 0 1600 940" role="img" aria-labelledby="title desc">
+  <title id="title">VeritasQuant 多账户分区与部署拓扑</title>
+  <desc id="desc">共享行情只标准化一次，确定性扇出器按固定分区排名将同一事件写入账户组的独立队列。每个账户组由单活交易工作进程串行更新组内账户，组间可以并行且故障隔离。各组在同一屏障事件产生不可变风险快照，组合风险评估器只读取完整快照集合，并把候选请求交回各组风控引擎决策。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#1769AA"/></marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0B7A75"/></marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#A65D00"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#526174"/></marker>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif; letter-spacing: 0; }
+      .title { font-size: 32px; font-weight: 700; fill: #172033; }
+      .subtitle { font-size: 16px; fill: #526174; }
+      .section { font-size: 15px; font-weight: 700; fill: #526174; }
+      .box-title { font-size: 18px; font-weight: 700; fill: #172033; }
+      .box-copy { font-size: 13px; fill: #526174; }
+      .strong { font-size: 13px; font-weight: 700; fill: #344256; }
+      .edge { font-size: 13px; font-weight: 700; fill: #526174; }
+      .mono { font-family: Consolas, "SFMono-Regular", monospace; }
+    </style>
+  </defs>
+  <rect width="1600" height="940" fill="#F7F9FC"/>
+  <rect x="24" y="24" width="1552" height="892" rx="8" fill="#FFFFFF" stroke="#D8DEE8" stroke-width="2"/>
+  <text x="64" y="78" class="title">多账户分区与部署拓扑</text>
+  <text x="64" y="108" class="subtitle">account_group_id 是首期确定性分区键：组内串行，组间并行，共享事件保持同一 ID 与排序键</text>
+
+  <text x="64" y="154" class="section">共享事件接入与确定性扇出</text>
+  <rect x="60" y="174" width="300" height="112" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+  <text x="88" y="210" class="box-title">事件标准化与持久化</text>
+  <text x="88" y="238" class="box-copy">一次生成 event_id、内容哈希和完整排序键</text>
+  <text x="88" y="264" class="box-copy">行情 · 外部事件 · 全局控制</text>
+
+  <rect x="430" y="174" width="330" height="112" rx="8" fill="#EAF7F5" stroke="#69AEA8" stroke-width="2"/>
+  <text x="458" y="210" class="box-title">持久事件流 + 确定性扇出器</text>
+  <text x="458" y="238" class="box-copy mono">partition_rank: 10 → 20 → 30</text>
+  <text x="458" y="264" class="box-copy">分区投递序号不改变事件信封</text>
+  <line x1="360" y1="230" x2="420" y2="230" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <rect x="1198" y="174" width="342" height="112" rx="8" fill="#F1F3F6" stroke="#BFC9D7" stroke-width="2"/>
+  <text x="1226" y="210" class="box-title">控制面与异步旁路</text>
+  <text x="1226" y="238" class="box-copy">API · 调度 · 监控 · 日志 · 报告</text>
+  <text x="1226" y="264" class="box-copy">只提交命令或读取快照，不直接修改分区状态</text>
+
+  <path d="M595 286 V320 H260 V350" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <path d="M595 286 V350" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <path d="M595 320 H930 V350" fill="none" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="64" y="332" class="section">独立账户组分区与单活交易工作进程</text>
+
+  <g aria-label="账户组 A 回测分区">
+    <rect x="60" y="352" width="400" height="286" rx="8" fill="#F9FBFD" stroke="#8AB8D8" stroke-width="2"/>
+    <rect x="60" y="352" width="8" height="286" rx="4" fill="#1769AA"/>
+    <text x="88" y="389" class="box-title">账户组 A · BACKTEST</text>
+    <text x="88" y="416" class="box-copy mono">partition_rank=10 · fencing_token</text>
+    <rect x="88" y="442" width="344" height="52" rx="6" fill="#EAF3FB" stroke="#8AB8D8"/>
+    <text x="260" y="474" text-anchor="middle" class="strong">独立队列 · inbox/outbox · checkpoint</text>
+    <rect x="88" y="516" width="344" height="54" rx="6" fill="#EAF7F5" stroke="#69AEA8"/>
+    <text x="260" y="549" text-anchor="middle" class="strong">单线程事件循环 + 组内风控引擎</text>
+    <text x="88" y="604" class="box-copy">account_rank: A01 → A02 · 组内组合风险原子评估</text>
+  </g>
+
+  <g aria-label="账户组 B 仿真分区">
+    <rect x="530" y="352" width="400" height="286" rx="8" fill="#F9FBFD" stroke="#69AEA8" stroke-width="2"/>
+    <rect x="530" y="352" width="8" height="286" rx="4" fill="#0B7A75"/>
+    <text x="558" y="389" class="box-title">账户组 B · SIMULATION</text>
+    <text x="558" y="416" class="box-copy mono">partition_rank=20 · fencing_token</text>
+    <rect x="558" y="442" width="344" height="52" rx="6" fill="#EAF3FB" stroke="#8AB8D8"/>
+    <text x="730" y="474" text-anchor="middle" class="strong">独立队列 · inbox/outbox · checkpoint</text>
+    <rect x="558" y="516" width="344" height="54" rx="6" fill="#EAF7F5" stroke="#69AEA8"/>
+    <text x="730" y="549" text-anchor="middle" class="strong">单线程事件循环 + 组内风控引擎</text>
+    <text x="558" y="604" class="box-copy">account_rank: B01 → B02 · 故障只暂停本分区</text>
+  </g>
+
+  <g aria-label="账户组 C 实盘分区">
+    <rect x="1000" y="352" width="400" height="286" rx="8" fill="#F9FBFD" stroke="#E2B56B" stroke-width="2"/>
+    <rect x="1000" y="352" width="8" height="286" rx="4" fill="#A65D00"/>
+    <text x="1028" y="389" class="box-title">账户组 C · LIVE</text>
+    <text x="1028" y="416" class="box-copy mono">partition_rank=30 · 独立凭据与数据库命名空间</text>
+    <rect x="1028" y="442" width="344" height="52" rx="6" fill="#FFF5E5" stroke="#E2B56B"/>
+    <text x="1200" y="474" text-anchor="middle" class="strong">独立队列 · inbox/outbox · checkpoint</text>
+    <rect x="1028" y="516" width="344" height="54" rx="6" fill="#EAF7F5" stroke="#69AEA8"/>
+    <text x="1200" y="549" text-anchor="middle" class="strong">单线程事件循环 + 组内风控引擎</text>
+    <text x="1028" y="604" class="box-copy">account_rank: C01 → C02 · 不与非实盘账户混组</text>
+  </g>
+
+  <path d="M260 638 V690" fill="none" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <path d="M730 638 V690" fill="none" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <path d="M1200 638 V690" fill="none" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+
+  <rect x="166" y="692" width="1128" height="74" rx="8" fill="#EDF7EE" stroke="#91BE9D" stroke-width="2"/>
+  <text x="194" y="724" class="box-title">同一 barrier_event_id 的不可变 AccountRiskSnapshot 集合</text>
+  <text x="194" y="750" class="box-copy">缺失、跨版本或超时不得拼接；维持上一条更严格控制并禁止相关范围新增风险</text>
+
+  <line x1="730" y1="766" x2="730" y2="800" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <rect x="420" y="802" width="620" height="78" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+  <text x="448" y="835" class="box-title">只读跨组组合风险评估器</text>
+  <text x="448" y="861" class="box-copy">输出版本化组合风险请求；各分区风控引擎仍是最终控制发布者</text>
+
+  <rect x="1080" y="802" width="400" height="78" rx="8" fill="#FCEDEA" stroke="#D99891" stroke-width="2"/>
+  <text x="1108" y="835" class="box-title">故障与背压边界</text>
+  <text x="1108" y="861" class="box-copy">分区故障隔离；全局控制、共享行情或流动性失败统一保护</text>
+</svg>

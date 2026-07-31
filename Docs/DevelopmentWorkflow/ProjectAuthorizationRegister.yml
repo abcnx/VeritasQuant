@@ -1,0 +1,28 @@
+RegistryVersion: "1.0"
+RecordType: ProjectAuthorization
+RequiredFields: [AuthorizationId, Grantor, GrantedTo, GrantedTs, Scope, AuthorizedActions, Boundaries, ReviewTrigger, Status, AuditHistory]
+Records:
+  - AuthorizationId: AUTH-DEV-001
+    Grantor: ProjectAuthor
+    GrantedTo: Codex
+    GrantedTs: "2026-07-31T07:46:19Z"
+    Scope: VeritasQuant 仓库、关联的 GitHub 仓库及仅用于本项目开发的临时本地开发依赖环境
+    AuthorizedActions:
+      - 在技术方案、开发计划和已登记工作项范围内自主实施代码、测试、配置、CI 与文档变更
+      - 运行本地构建、测试、静态检查、安全扫描、打包验证和 Docker 临时开发环境演练
+      - 创建和维护工作项、风险、缺陷、变更、行动、证据和进度记录
+      - 配置、触发、重试和核验项目 CI；在不降低既有安全要求的前提下配置受保护分支、必需检查和评审规则
+      - 创建项目分支、提交和 PR，以完成已授权开发任务和保留可追溯证据
+    Boundaries:
+      - 不得自行批准或标记任何 Stage Gate 为 PASS、工作项为 ACCEPTED，或代替非作者独立评审与独立 QA 验收
+      - 不得启用、部署或执行实盘交易，不得变更实盘授权、资金限额、风险例外或生产凭据
+      - 不得删除或覆盖用户数据、历史审计记录、已发布工件或 Archive 内容；确有必要时必须另行确认具体目标和恢复方式
+      - 不得向第三方公开数据、创建付费资源、修改仓库所有权或访问控制，或降低分支保护、CI、安全和审计要求
+      - 平台强制的权限确认、认证或网络限制仍须遵守；无法取得的外部权限必须登记为阻断，不能伪造证据
+    ReviewTrigger: 授权范围、项目所有权、生产环境边界、GitHub 组织权限或技术方案的治理要求发生实质变化时
+    Status: ACTIVE
+    AuditHistory:
+      - Ts: "2026-07-31T07:46:19Z"
+        Actor: ProjectAuthor
+        Action: 授权 Codex 在开发范围内自主决策和执行，避免对常规开发操作重复请求授权
+        Evidence: 当前任务会话

@@ -1,0 +1,4 @@
+RegistryVersion: "1.0"
+RecordType: Incident
+Records: []
+RequiredFields: [IncidentId, Title, Severity, Owner, DetectedTs, Status, NextAction, DueDate, EvidenceLinks, AuditHistory]

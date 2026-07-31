@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">VeritasQuant 崩溃恢复与恢复交易时序</title>
+  <desc id="desc">进程重启后先进入失效保护，恢复协调器校验运行清单和 checkpoint，从不可变事实重建投影，重投 outbox，并与券商逐账户对账。所有差异通过 inbox 正常提交，最后由风控引擎执行健康门禁；回测可自动继续，模拟和仿真按环境策略继续，实盘或存在高等级控制时必须人工授权。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#1769AA"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#0B7A75"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#A65D00"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#B5473E"/>
+    </marker>
+    <style>
+      text {
+        font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+        letter-spacing: 0;
+      }
+      .title { font-size: 32px; font-weight: 700; fill: #172033; }
+      .subtitle { font-size: 16px; fill: #526174; }
+      .actor-title { font-size: 18px; font-weight: 700; fill: #172033; }
+      .actor-copy { font-size: 13px; fill: #526174; }
+      .step { font-size: 14px; font-weight: 700; fill: #344256; }
+      .note-title { font-size: 16px; font-weight: 700; fill: #172033; }
+      .note-copy { font-size: 14px; fill: #526174; }
+      .status { font-size: 13px; font-weight: 700; }
+      .mono { font-family: Consolas, "SFMono-Regular", monospace; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1040" fill="#F7F9FC"/>
+  <rect x="24" y="24" width="1552" height="992" rx="8" fill="#FFFFFF" stroke="#D8DEE8" stroke-width="2"/>
+
+  <text x="64" y="78" class="title">崩溃恢复与恢复交易时序</text>
+  <text x="64" y="108" class="subtitle">快照只用于加速；不可变事实、已提交 checkpoint 与 inbox/outbox 才决定恢复结果</text>
+
+  <g aria-label="恢复协调器">
+    <rect x="60" y="142" width="248" height="82" rx="8" fill="#EAF3FB" stroke="#8AB8D8" stroke-width="2"/>
+    <text x="184" y="176" text-anchor="middle" class="actor-title">恢复协调器</text>
+    <text x="184" y="201" text-anchor="middle" class="actor-copy">启动即进入失效保护</text>
+  </g>
+  <g aria-label="事实库">
+    <rect x="380" y="142" width="248" height="82" rx="8" fill="#EDF7EE" stroke="#91BE9D" stroke-width="2"/>
+    <text x="504" y="176" text-anchor="middle" class="actor-title">PostgreSQL 事实库</text>
+    <text x="504" y="201" text-anchor="middle" class="actor-copy">事实 · 投影 · checkpoint</text>
+  </g>
+  <g aria-label="收件箱和事务外盒">
+    <rect x="700" y="142" width="248" height="82" rx="8" fill="#EAF7F5" stroke="#69AEA8" stroke-width="2"/>
+    <text x="824" y="176" text-anchor="middle" class="actor-title">Inbox / Outbox</text>
+    <text x="824" y="201" text-anchor="middle" class="actor-copy">幂等消费 · 至少一次投递</text>
+  </g>
+  <g aria-label="执行适配器">
+    <rect x="1020" y="142" width="248" height="82" rx="8" fill="#FFF5E5" stroke="#E2B56B" stroke-width="2"/>
+    <text x="1144" y="176" text-anchor="middle" class="actor-title">券商 / 模拟适配器</text>
+    <text x="1144" y="201" text-anchor="middle" class="actor-copy">余额 · 持仓 · 订单 · 成交</text>
+  </g>
+  <g aria-label="风控和健康门禁">
+    <rect x="1340" y="142" width="200" height="82" rx="8" fill="#FCEDEA" stroke="#D99891" stroke-width="2"/>
+    <text x="1440" y="176" text-anchor="middle" class="actor-title">风控引擎</text>
+    <text x="1440" y="201" text-anchor="middle" class="actor-copy">健康门禁 · 恢复授权</text>
+  </g>
+
+  <g stroke="#C7D1DD" stroke-width="2" stroke-dasharray="7 7">
+    <line x1="184" y1="224" x2="184" y2="850"/>
+    <line x1="504" y1="224" x2="504" y2="850"/>
+    <line x1="824" y1="224" x2="824" y2="850"/>
+    <line x1="1144" y1="224" x2="1144" y2="850"/>
+    <line x1="1440" y1="224" x2="1440" y2="850"/>
+  </g>
+
+  <g aria-label="第一步，校验版本和位点">
+    <rect x="74" y="254" width="220" height="34" rx="6" fill="#FCEDEA"/>
+    <text x="184" y="276" text-anchor="middle" class="status" fill="#B5473E">禁止新开仓与外部发送</text>
+    <line x1="196" y1="310" x2="492" y2="310" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="344" y="298" text-anchor="middle" class="step">1. 校验运行清单、版本与最后提交 checkpoint</text>
+    <line x1="492" y1="346" x2="196" y2="346" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <text x="344" y="335" text-anchor="middle" class="actor-copy mono">checkpoint + committed_sequence</text>
+  </g>
+
+  <g aria-label="第二步，从事实序列重建">
+    <line x1="196" y1="402" x2="492" y2="402" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="344" y="390" text-anchor="middle" class="step">2. 读取有效快照并重放不可变事实</text>
+    <line x1="492" y1="438" x2="196" y2="438" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <text x="344" y="427" text-anchor="middle" class="actor-copy">账户投影 · 活动订单 · 活动控制 · 未完成输入</text>
+    <rect x="380" y="454" width="248" height="45" rx="6" fill="#EDF7EE" stroke="#91BE9D"/>
+    <text x="504" y="481" text-anchor="middle" class="actor-copy">快照无效时从事实序列完整重建</text>
+  </g>
+
+  <g aria-label="第三步，重投已提交外盒">
+    <line x1="196" y1="538" x2="812" y2="538" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="504" y="526" text-anchor="middle" class="step">3. 扫描并重投已提交但未确认的 outbox</text>
+    <line x1="836" y1="574" x2="1132" y2="574" stroke="#A65D00" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <text x="984" y="562" text-anchor="middle" class="actor-copy mono">same command_id</text>
+  </g>
+
+  <g aria-label="第四步，券商对账">
+    <line x1="196" y1="626" x2="1132" y2="626" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="664" y="614" text-anchor="middle" class="step">4. 按账户查询余额、持仓、活动订单、成交和未知命令</text>
+    <line x1="1132" y1="662" x2="836" y2="662" stroke="#A65D00" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <text x="984" y="650" text-anchor="middle" class="actor-copy">漏报 / 更正 / 差异</text>
+    <line x1="812" y1="698" x2="516" y2="698" stroke="#0B7A75" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <text x="664" y="686" text-anchor="middle" class="actor-copy">通过正常 inbox 事务补入，禁止直接改投影</text>
+  </g>
+
+  <g aria-label="第五步，健康门禁和恢复授权">
+    <line x1="196" y1="754" x2="1428" y2="754" stroke="#1769AA" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <text x="812" y="742" text-anchor="middle" class="step">5. 校验账本、投影、订单、活动控制、积压、行情与策略沙箱</text>
+    <line x1="1428" y1="798" x2="196" y2="798" stroke="#B5473E" stroke-width="3" marker-end="url(#arrow-red)"/>
+    <text x="812" y="786" text-anchor="middle" class="step">6. 发布恢复控制，或保持保护状态并告警</text>
+  </g>
+
+  <g aria-label="恢复结果分支">
+    <rect x="60" y="872" width="470" height="104" rx="8" fill="#EDF7EE" stroke="#91BE9D" stroke-width="2"/>
+    <rect x="60" y="872" width="8" height="104" rx="4" fill="#2D7D46"/>
+    <text x="88" y="906" class="note-title">门禁通过</text>
+    <text x="88" y="934" class="note-copy">回测确定性继续；模拟和仿真按环境策略恢复。</text>
+    <text x="88" y="958" class="note-copy">实盘仍需满足授权规则，旧订单意图必须重新审批。</text>
+
+    <rect x="564" y="872" width="976" height="104" rx="8" fill="#FCEDEA" stroke="#D99891" stroke-width="2"/>
+    <rect x="564" y="872" width="8" height="104" rx="4" fill="#B5473E"/>
+    <text x="592" y="906" class="note-title">门禁失败、存在 P0/P1 或对账差异</text>
+    <text x="592" y="934" class="note-copy">保持停止新开仓与外部发送；未知发送结果进入 RECONCILIATION_REQUIRED，禁止盲目重发。</text>
+    <text x="592" y="958" class="note-copy">完成对账和健康检查后，由授权人员确认，再由风控引擎发布恢复控制。</text>
+  </g>
+</svg>
