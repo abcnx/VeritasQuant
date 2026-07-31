@@ -1310,3 +1310,31 @@ Records:
         Actor: Codex
         Action: 完成账户账本投影、余额查询和空投影重建哈希自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-035LedgerProjectionEvidence.md
+  - WorkItemId: TSK-P1-036
+    PlanTaskId: P1-036
+    Title: 实现开户余额、入出金、费用、税和冲正 journal
+    Description: 已实现版本绑定的现金流、费用税款和全额冲正 journal 工厂。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-034]
+    AcceptanceCriteria: 各场景借贷平衡；出金不透支；冲正链可遍历且不改原 journal
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-036CashFlowEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T01:15:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 为 P1-037 的订单资金和证券预占及 P1-038/P1-039 的资产账务提供资金流契约
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T01:15:00Z"
+        Actor: Codex
+        Action: 完成现金流、费用税款、透支拒绝和全额冲正自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-036CashFlowEvidence.md

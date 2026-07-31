@@ -25,8 +25,16 @@ class JournalType(StrEnum):
     OrderReservation = "ORDER_RESERVATION"
     OrderRelease = "ORDER_RELEASE"
     Trade = "TRADE"
+    TradeSettlement = "TRADE_SETTLEMENT"
+    FundSubscription = "FUND_SUBSCRIPTION"
+    FundRedemption = "FUND_REDEMPTION"
+    FundDistribution = "FUND_DISTRIBUTION"
     Fee = "FEE"
     Tax = "TAX"
+    Deposit = "DEPOSIT"
+    Withdrawal = "WITHDRAWAL"
+    Interest = "INTEREST"
+    Dividend = "DIVIDEND"
     CorporateAction = "CORPORATE_ACTION"
     MarkToMarket = "MARK_TO_MARKET"
     Margin = "MARGIN"
@@ -291,6 +299,110 @@ class LedgerProjectionStoreV1:
             ]
         )
         return LedgerProjectionSnapshotV1(accountId, lastSequence, balances, projectionHash)
+
+
+class CashJournalFactoryV1:
+    """生成资金流、费用税款和冲正的严格平衡 journal。"""
+
+    def __init__(
+        self,
+        instrumentMetadataVersion: str,
+        feeScheduleVersion: str,
+        accountingPolicyVersion: str,
+    ) -> None:
+        if not all((instrumentMetadataVersion, feeScheduleVersion, accountingPolicyVersion)):
+            raise LedgerContractError("journal 工厂必须绑定全部版本")
+        self._instrumentMetadataVersion = instrumentMetadataVersion
+        self._feeScheduleVersion = feeScheduleVersion
+        self._accountingPolicyVersion = accountingPolicyVersion
+
+    def createOpeningBalance(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal
+    ) -> JournalV1:
+        return self._createCashTransfer(
+            journalId, JournalType.OpeningBalance, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.CashAvailable, EntryDirection.Debit, LedgerAccount.ExternalCapital, EntryDirection.Credit,
+        )
+
+    def createDeposit(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal
+    ) -> JournalV1:
+        return self._createCashTransfer(
+            journalId, JournalType.Deposit, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.CashAvailable, EntryDirection.Debit, LedgerAccount.ExternalCapital, EntryDirection.Credit,
+        )
+
+    def createWithdrawal(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal,
+        availableCash: Decimal,
+    ) -> JournalV1:
+        if amount > availableCash:
+            raise LedgerContractError("出金金额不得超过可用资金")
+        return self._createCashTransfer(
+            journalId, JournalType.Withdrawal, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.ExternalCapital, EntryDirection.Debit, LedgerAccount.CashAvailable, EntryDirection.Credit,
+        )
+
+    def createFee(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal
+    ) -> JournalV1:
+        return self._createCashTransfer(
+            journalId, JournalType.Fee, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.FeeExpense, EntryDirection.Debit, LedgerAccount.CashAvailable, EntryDirection.Credit,
+        )
+
+    def createTax(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal
+    ) -> JournalV1:
+        return self._createCashTransfer(
+            journalId, JournalType.Tax, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.TaxExpense, EntryDirection.Debit, LedgerAccount.CashAvailable, EntryDirection.Credit,
+        )
+
+    def createReversal(self, journalId: str, sourceEventId: str, original: JournalV1, commitSequence: int) -> JournalV1:
+        entries = tuple(
+            LedgerEntryV1(  # type: ignore[call-arg]
+                EntryId=f"{journalId}:{index}",
+                LedgerAccount=entry.ledgerAccount,
+                Direction=EntryDirection.Credit if entry.direction is EntryDirection.Debit else EntryDirection.Debit,
+                Unit=entry.unit,
+                Quantity=entry.quantity,
+                BookCurrency=entry.bookCurrency,
+                BookAmount=entry.bookAmount,
+                CostAmount=entry.costAmount,
+            )
+            for index, entry in enumerate(original.entries, start=1)
+        )
+        return JournalV1(  # type: ignore[call-arg]
+            JournalId=journalId,
+            JournalType=JournalType.Reversal,
+            AccountId=original.accountId,
+            SubaccountId=original.subaccountId,
+            Ts=original.ts,
+            CommitSequence=commitSequence,
+            SourceEventId=sourceEventId,
+            ReversalOfJournalId=original.journalId,
+            InstrumentMetadataVersion=original.instrumentMetadataVersion,
+            FeeScheduleVersion=original.feeScheduleVersion,
+            AccountingPolicyVersion=original.accountingPolicyVersion,
+            Entries=entries,
+        )
+
+    def _createCashTransfer(
+        self, journalId: str, journalType: JournalType, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str,
+        currency: str, amount: Decimal, debitAccount: LedgerAccount, debitDirection: EntryDirection,
+        creditAccount: LedgerAccount, creditDirection: EntryDirection,
+    ) -> JournalV1:
+        unit = AssetUnitV1(UnitId=currency, AssetId=currency, Currency=currency)  # type: ignore[call-arg]
+        entries = (
+            LedgerEntryV1(EntryId=f"{journalId}:1", LedgerAccount=debitAccount, Direction=debitDirection, Unit=unit, Quantity=amount, BookCurrency=currency, BookAmount=amount, CostAmount=Decimal("0")),  # type: ignore[call-arg]
+            LedgerEntryV1(EntryId=f"{journalId}:2", LedgerAccount=creditAccount, Direction=creditDirection, Unit=unit, Quantity=amount, BookCurrency=currency, BookAmount=amount, CostAmount=Decimal("0")),  # type: ignore[call-arg]
+        )
+        return JournalV1(  # type: ignore[call-arg]
+            JournalId=journalId, JournalType=journalType, AccountId=accountId, Ts=ts, CommitSequence=commitSequence,
+            SourceEventId=sourceEventId, InstrumentMetadataVersion=self._instrumentMetadataVersion,
+            FeeScheduleVersion=self._feeScheduleVersion, AccountingPolicyVersion=self._accountingPolicyVersion, Entries=entries,
+        )
 
 
 EnumType = TypeVar("EnumType", bound=StrEnum)

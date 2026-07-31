@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from veritasquant.accounts.Ledger import (
     AccountingPolicyV1,
     AssetUnitV1,
+    CashJournalFactoryV1,
     EntryDirection,
     JournalType,
     JournalV1,
@@ -255,3 +256,27 @@ def test_ledger_projection_includes_position_cost_and_profit_loss_accounts() -> 
     assert position.quantity == Decimal("10")
     assert position.bookAmount == Decimal("1000")
     assert profitLoss.bookAmount == Decimal("-12")
+
+
+def test_cash_journal_factory_creates_funding_fee_tax_and_reversal() -> None:
+    factory = CashJournalFactoryV1("instrument-v1", "fee-v1", "policy-v1")
+    ts = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    opening = factory.createOpeningBalance("opening-1", "account-1", ts, 1, "event-1", "CNY", Decimal("100"))
+    deposit = factory.createDeposit("deposit-1", "account-1", ts, 2, "event-2", "CNY", Decimal("5"))
+    fee = factory.createFee("fee-1", "account-1", ts, 2, "event-2", "CNY", Decimal("3"))
+    tax = factory.createTax("tax-1", "account-1", ts, 3, "event-3", "CNY", Decimal("2"))
+    reversal = factory.createReversal("reversal-1", "event-4", fee, 4)
+    assert opening.journalType is JournalType.OpeningBalance
+    assert deposit.journalType is JournalType.Deposit
+    assert fee.entries[0].ledgerAccount is LedgerAccount.FeeExpense
+    assert tax.entries[0].ledgerAccount is LedgerAccount.TaxExpense
+    assert reversal.reversalOfJournalId == fee.journalId
+    assert reversal.entries[0].direction is EntryDirection.Credit
+
+
+def test_cash_journal_factory_rejects_overdraft_withdrawal() -> None:
+    factory = CashJournalFactoryV1("instrument-v1", "fee-v1", "policy-v1")
+    with pytest.raises(LedgerContractError, match="不得超过"):
+        factory.createWithdrawal(
+            "withdrawal-1", "account-1", datetime(2026, 8, 1, tzinfo=timezone.utc), 1, "event-1", "CNY", Decimal("101"), Decimal("100")
+        )
