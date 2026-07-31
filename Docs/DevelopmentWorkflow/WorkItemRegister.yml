@@ -946,3 +946,31 @@ Records:
         Actor: Codex
         Action: 完成标的、日历、费率和能力清单实现及自动化复核
         Evidence: Docs/DevelopmentWorkflow/P1-014InstrumentRegistryEvidence.md
+  - WorkItemId: TSK-P1-015
+    PlanTaskId: P1-015
+    Title: 实现 MinuteBarSchemaV1 严格校验
+    Description: 已实现已完成分钟 Bar 的时间、OHLC、来源和标的元数据约束。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-003, P1-014]
+    AcceptanceCriteria: OHLC、Decimal、主键、会话、精度、复权和来源字段的正反例全通过
+    TestEvidence: [src/veritasquant/data/MinuteBar.py, tests/unit/data/test_minute_bar.py, Docs/DevelopmentWorkflow/P1-015MinuteBarEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:25:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 供 MVSV-1 解析、规范化写入和数据质量任务复用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:25:00Z"
+        Actor: Codex
+        Action: 完成严格分钟 Bar 契约及自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-015MinuteBarEvidence.md
