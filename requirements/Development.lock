@@ -1,0 +1,9 @@
+# 开发依赖在 Runtime.lock 基础上安装；精确版本由 RefreshDependencyLocks.py 生成并审阅。
+-r Runtime.lock
+build==1.3.0
+coverage==7.15.2
+mypy==1.20.2
+pip-audit==2.10.1
+pytest==9.0.3
+ruff==0.16.0
+types-PyYAML==6.0.12.20260724

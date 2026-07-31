@@ -1,0 +1,4 @@
+ConfigSchemaVersion: V1
+ExecutionMode: BACKTEST
+TsPrecision: Second
+RiskPolicyVersion: V1

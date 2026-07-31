@@ -1,0 +1,74 @@
+name: VeritasQuant CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install locked development dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+          python3 -m pip install -e .
+      - name: Validate dependency locks and repository conventions
+        run: |
+          python3 scripts/VerifyDependencyLocks.py
+          python3 scripts/Preflight.py
+      - name: Run static checks
+        run: |
+          python3 -m ruff check src tests scripts
+          python3 -m mypy src scripts
+      - name: Run unit and contract tests with reports
+        run: |
+          python3 -m coverage run -m pytest tests/unit tests/contract tests/packaging --junitxml artifacts/JUnit.xml
+          python3 -m coverage xml -o artifacts/Coverage.xml
+      - name: Build distribution packages
+        run: python3 -m build
+      - name: Verify repository-external wheel installation
+        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.0-py3-none-any.whl
+      - name: Collect test evidence
+        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-0.1.0-py3-none-any.whl --artifact dist/veritasquant-0.1.0.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
+      - name: Upload quality evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            artifacts/
+            dist/
+          retention-days: 90
+
+  security:
+    name: Security baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install locked audit dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+      - name: Scan repository for secrets
+        run: python3 scripts/ScanSecrets.py
+      - name: Audit runtime dependency vulnerabilities
+        run: python3 -m pip_audit -r requirements/Runtime.lock
+      - name: Verify approved license baseline
+        run: python3 scripts/VerifyLicenses.py --policy Configs/Security/LicensePolicy.yml

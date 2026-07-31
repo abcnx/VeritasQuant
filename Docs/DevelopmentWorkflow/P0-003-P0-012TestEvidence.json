@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "path": "dist\\veritasquant-0.1.0-py3-none-any.whl",
+      "sha256": "3c49c2360133806980b0f143522ed6e933c6ad051b9de76c25bf275fbf991310"
+    },
+    {
+      "path": "dist\\veritasquant-0.1.0.tar.gz",
+      "sha256": "247017c1ef2a41061d0983e7c555ceeb2d6aee6e24c8dc3e5123da19cd4bc7cc"
+    }
+  ],
+  "collected_at": "2026-07-30T19:23:41Z",
+  "coverage": {
+    "path": "artifacts\\P0.coverage.xml",
+    "sha256": "07b67c62bf6c607fa8a0769f9a90777f299b66d1077b73c0cc1bb41ceece9d7d"
+  },
+  "environment": {
+    "architecture": "AMD64",
+    "os": "Windows-11-10.0.26100-SP0",
+    "python": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]"
+  },
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "sha256": "1beaa11fe4042d9264e89e44de6d5e8297e06e7c7bd7b3a4a5c7fd31a694dab1",
+    "skipped": 0,
+    "tests": 58
+  },
+  "random_seed": "not_applicable",
+  "test_selection": "tests/unit tests/contract tests/packaging",
+  "work_item_ids": [
+    "P0-004",
+    "P0-005",
+    "P0-006",
+    "P0-007",
+    "P0-009",
+    "P0-010",
+    "P0-011",
+    "P0-012"
+  ]
+}

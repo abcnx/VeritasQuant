@@ -1,0 +1,26 @@
+RegistryVersion: "1.0"
+RecordType: Bug
+RequiredFields: [BugId, Title, SourcePlanTaskId, DetectedTs, Reporter, ExpectedBehavior, ActualBehavior, Severity, Owner, Status, NextAction, DueDate, EvidenceLinks, AuditHistory]
+Records:
+  - BugId: BUG-P0-001
+    Title: 秘密扫描器将日志上下文 token 局部变量误判为秘密
+    SourcePlanTaskId: P0-011
+    DetectedTs: "2026-07-31T03:35:00Z"
+    Reporter: Codex
+    ExpectedBehavior: 仅高置信度秘密载荷触发扫描，不阻断普通敏感字段名称或局部变量。
+    ActualBehavior: 未加引号的 token 变量赋值被 sensitive-assignment 规则命中。
+    Severity: S3
+    Owner: SRE
+    Status: VERIFYING
+    NextAction: 运行正反例、全仓秘密扫描和 CI 安全门禁验证修正规则。
+    DueDate: 当前 P0-011 验证周期
+    EvidenceLinks: [scripts/ScanSecrets.py, tests/unit/scripts/test_engineering_scripts.py]
+    AuditHistory:
+      - Ts: "2026-07-31T03:35:00Z"
+        Actor: Codex
+        Action: 发现误报并收紧为带引号的高置信度敏感赋值规则
+        Evidence: scripts/ScanSecrets.py
+      - Ts: "2026-07-31T03:45:00Z"
+        Actor: Codex
+        Action: 全仓扫描结果为零，正反例和完整本地测试均通过；等待独立验证
+        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json

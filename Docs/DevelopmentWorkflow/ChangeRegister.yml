@@ -1,0 +1,42 @@
+RegistryVersion: "1.0"
+RecordType: Change
+RequiredFields: [ChangeId, Title, Owner, Approver, ScopeImpact, TestPlan, RollbackPlan, Status, TargetDate, EvidenceLinks, AuditHistory]
+Records:
+  - ChangeId: CHG-P0-001
+    Title: 调整 P0-006 执行顺序，先完成 Windows 开发验证再实施 Linux CI
+    Owner: PO/TL
+    Approver: ProjectAuthor（当前会话确认，承担 PO/TL/QA/SRE）
+    ScopeImpact: 不改变技术方案、P0-006 验收标准或 M0 Gate；仅将 Linux CI 的实现和远程运行证据排入 ACT-P0-003。当前迭代优先使用已完成的 Windows 本地构建、测试和仓库外 wheel 验证。
+    TestPlan: Windows 保持执行 Preflight、锁定校验、Ruff、Mypy、pytest、build 和 VerifyPackage；Linux 在 M0 正式评审前按 ACT-P0-003 从空缓存完整执行同一闭环。
+    RollbackPlan: 恢复 P0-006 的双平台并行实施优先级，并立即在受保护 CI 上启用 Linux 必需检查；不删除任何 Windows 证据。
+    Status: APPROVED
+    TargetDate: M0 正式评审前
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T03:55:00Z"
+        Actor: Codex
+        Action: 根据用户指示登记执行优先级调整，等待正式审批
+        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 批准 Windows 优先、Linux CI 在 M0 前完成的执行顺序调整
+        Evidence: 当前任务会话确认
+  - ChangeId: CHG-P0-002
+    Title: 调整 P0-008 执行顺序，延后 Docker Compose 实启与清理演练
+    Owner: PO/TL
+    Approver: ProjectAuthor（当前会话确认，承担 PO/TL/SRE）
+    ScopeImpact: 不改变 Docker Compose 的无状态设计、P0-008 验收标准或 M0 Gate；仅将 Docker Desktop Engine 启动及实启演练排入 ACT-P0-005。
+    TestPlan: 当前保留 docker compose config 的静态验证；在 M0 正式评审前执行 ACT-P0-005 的 start、check、stop 闭环并保存健康与清理证据。
+    RollbackPlan: 恢复当前迭代内执行 Docker 演练的优先级；无须回滚代码或数据，因为尚未成功启动容器。
+    Status: APPROVED
+    TargetDate: M0 正式评审前
+    EvidenceLinks: [Docker/docker-compose.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md]
+    AuditHistory:
+      - Ts: "2026-07-31T04:00:00Z"
+        Actor: Codex
+        Action: 根据用户指示登记 Docker 演练优先级调整，等待正式审批
+        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 批准 Docker 实启演练后移但在 M0 前完成的执行顺序调整
+        Evidence: 当前任务会话确认

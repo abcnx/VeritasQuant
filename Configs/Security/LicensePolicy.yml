@@ -1,0 +1,15 @@
+PolicyVersion: V1
+ApprovalStatus: APPROVED
+ApprovedBy: ProjectAuthor（当前会话确认）
+ApprovedAt: "2026-07-31T04:15:00Z"
+AllowedLicenses:
+  - MIT
+  - Apache-2.0
+  - BSD-3-Clause
+  - PSF-2.0
+PackageExceptions: {}
+VulnerabilitySla:
+  CriticalHours: 24
+  HighHours: 72
+  MediumDays: 30
+  LowDays: 90

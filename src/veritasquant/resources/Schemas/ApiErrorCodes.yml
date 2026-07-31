@@ -1,0 +1,114 @@
+ErrorCatalogVersion: "1.0"
+SuccessCodes: [0, 1, 200, 202]
+BusinessStatuses: []
+Errors:
+  - Code: 1001
+    ErrorCode: VALIDATION_ERROR
+    Domain: Platform
+    HttpStatus: 400
+    Retryable: false
+    MessageKey: platform.validation_error
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 1002
+    ErrorCode: RESOURCE_NOT_FOUND
+    Domain: Platform
+    HttpStatus: 404
+    Retryable: false
+    MessageKey: platform.resource_not_found
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 1003
+    ErrorCode: IDEMPOTENCY_CONFLICT
+    Domain: Platform
+    HttpStatus: 409
+    Retryable: false
+    MessageKey: platform.idempotency_conflict
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 1004
+    ErrorCode: VERSION_CONFLICT
+    Domain: Platform
+    HttpStatus: 409
+    Retryable: false
+    MessageKey: platform.version_conflict
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2001
+    ErrorCode: UNAUTHENTICATED
+    Domain: Security
+    HttpStatus: 401
+    Retryable: false
+    MessageKey: security.unauthenticated
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2002
+    ErrorCode: FORBIDDEN
+    Domain: Security
+    HttpStatus: 403
+    Retryable: false
+    MessageKey: security.forbidden
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2003
+    ErrorCode: CONFIRMATION_EXPIRED
+    Domain: Security
+    HttpStatus: 410
+    Retryable: false
+    MessageKey: security.confirmation_expired
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2004
+    ErrorCode: RATE_LIMITED
+    Domain: Security
+    HttpStatus: 429
+    Retryable: true
+    MessageKey: security.rate_limited
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2005
+    ErrorCode: NOT_TRADING_READY
+    Domain: Dependency
+    HttpStatus: 503
+    Retryable: true
+    MessageKey: platform.not_trading_ready
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 2006
+    ErrorCode: INTERNAL_SERVER_ERROR
+    Domain: Platform
+    HttpStatus: 500
+    Retryable: false
+    MessageKey: platform.internal_server_error
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 3000
+    ErrorCode: COMMAND_REJECTED
+    Domain: General
+    HttpStatus: 422
+    Retryable: false
+    MessageKey: command.rejected
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
+  - Code: 6201
+    ErrorCode: INSUFFICIENT_AVAILABLE_CASH
+    Domain: Account
+    HttpStatus: 422
+    Retryable: false
+    MessageKey: account.insufficient_available_cash
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema:
+      RequiredAmount: DecimalString
+      AvailableCash: DecimalString

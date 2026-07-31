@@ -1,0 +1,7 @@
+# 由 P0-005 固定的运行依赖；变更必须通过依赖审阅并更新 P0 证据。
+annotated-types==0.7.0
+pydantic==2.12.5
+pydantic-core==2.41.5
+PyYAML==6.0.2
+typing-extensions==4.14.1
+typing-inspection==0.4.2

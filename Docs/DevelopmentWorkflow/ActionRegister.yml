@@ -1,0 +1,111 @@
+RegistryVersion: "1.0"
+RecordType: Action
+RequiredFields: [ActionId, Title, SourceId, Owner, DueDate, VerificationMethod, Status, EvidenceLinks, AuditHistory]
+Records:
+  - ActionId: ACT-P0-001
+    Title: 补充 P0-001 范围、阶段 Gate 与 M0-M5 签署记录
+    SourceId: P0-001
+    Owner: PO
+    DueDate: 待 PO 指定
+    VerificationMethod: 由指定 PO、TL、QA 和 SRE/安全签署人填写范围记录，并由 TL 核对其与技术方案第 13、14 章一致。
+    Status: COMPLETED
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T03:50:00Z"
+        Actor: Codex
+        Action: 按用户请求登记为后续补充；未执行签署或状态晋级
+        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 批准现有首期范围、非目标和 M0-M5 未来 Gate 签署名单
+        Evidence: 当前任务会话确认
+  - ActionId: ACT-P0-002
+    Title: 补充 P0-002 RACI 具体联系人和值班确认
+    SourceId: P0-002
+    Owner: PO
+    DueDate: 待 PO 指定
+    VerificationMethod: 每位 PO、TL、QA、SRE/安全和 Incident Commander 联系人填写姓名、联系方式、值班时段和本人确认时间；PO 验证每类交付只有一个 Accountable。
+    Status: COMPLETED
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T03:50:00Z"
+        Actor: Codex
+        Action: 按用户请求登记为后续补充；未执行联系人确认或状态晋级
+        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 批准单人作者临时 RACI、联系渠道和值班限制
+        Evidence: 当前任务会话确认
+  - ActionId: ACT-P0-003
+    Title: 在 M0 正式评审前启用并验证 Linux 大小写敏感 CI
+    SourceId: P0-006
+    Owner: QA/SRE
+    DueDate: M0 正式评审前
+    VerificationMethod: 在全新 Linux runner 从空缓存安装精确锁定依赖，执行 Preflight、静态检查、测试、wheel 构建和仓库外安装；归档 Build ID、JUnit、coverage、工件哈希和退出码。
+    Status: OPEN
+    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/VeritasQuantTechSpec.md]
+    AuditHistory:
+      - Ts: "2026-07-31T03:55:00Z"
+        Actor: Codex
+        Action: 按用户指示将 Linux 实施顺序后移；未改变 M0 的 Linux 验收要求
+        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+  - ActionId: ACT-P0-004
+    Title: 恢复有效 Git 仓库并启用受保护分支与必需 CI 检查
+    SourceId: P0-006
+    Owner: SRE
+    DueDate: M0 正式评审前
+    VerificationMethod: 验证 git status 可读取有效仓库与远程；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，禁止普通管理员绕过，并归档规则截图或平台审计链接。
+    Status: OPEN
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T03:57:00Z"
+        Actor: Codex
+        Action: 按用户指示登记 Git 元数据和分支保护后续实现
+        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+  - ActionId: ACT-P0-005
+    Title: 启动 Docker Desktop Engine 后完成 Compose 启停与清理演练
+    SourceId: P0-008
+    Owner: SRE
+    DueDate: M0 正式评审前
+    VerificationMethod: 启动 Docker Desktop Linux Engine 后，执行 scripts/VerifyDevelopmentEnvironment.py 的 start、check、stop；归档健康状态，并验证无运行容器、卷、业务数据或秘密遗留。
+    Status: OPEN
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/RiskRegister.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T04:00:00Z"
+        Actor: Codex
+        Action: 按用户指示将 Docker 演练延后；未改变 P0-008 或 M0 验收要求
+        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+  - ActionId: ACT-P0-006
+    Title: 指定单 Agent 开发模式下的人类治理责任人和审批边界
+    SourceId: P0-002
+    Owner: ProjectAuthor
+    DueDate: M0 正式评审前
+    VerificationMethod: 使用 SingleAgentGovernanceMaterial.md 的单人作者确认语句，确认 ProjectAuthor 的人类身份、企业目录引用、值班安排、角色冲突处理和确认 UTC 时间。
+    Status: COMPLETED
+    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md]
+    AuditHistory:
+      - Ts: "2026-07-31T04:05:00Z"
+        Actor: Codex
+        Action: 根据单一开发 Agent 的事实创建治理责任人补充行动
+        Evidence: Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md
+      - Ts: "2026-07-31T04:10:00Z"
+        Actor: Codex
+        Action: 补充 ProjectAuthor 承担多角色的临时模型与不可逾越限制，等待身份确认
+        Evidence: Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 确认承担 PO、TL、QA、SRE/安全和 Incident Commander 临时角色，并接受单人冲突限制
+        Evidence: 当前任务会话确认
+  - ActionId: ACT-P0-007
+    Title: 在 M0 前安排非作者人类评审与事故替补
+    SourceId: P0-013
+    Owner: ProjectAuthor
+    DueDate: M0 正式评审前
+    VerificationMethod: 指定至少一名未编写受审代码的人类评审者和一名 Incident Commander 替补，记录企业目录引用、审阅范围、确认 UTC 时间与 Gate 回避规则。
+    Status: OPEN
+    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md]
+    AuditHistory:
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: Codex
+        Action: 根据已确认的单人角色模型，将独立评审和替补值班单独登记为后续行动
+        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
