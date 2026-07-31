@@ -21,6 +21,18 @@
 匿名只读响应未返回 `bypass_actors` 的可审计详情。因此，管理员仍须按验收包归档绕过
 名单、管理员强制执行和审计日志；本记录不声称已验证该项。
 
+后续提供的截图
+`Archive/Asset/Image/BypassList_2026-07-31 193936.png` 的 SHA-256 为
+`FB4FC98ED6760536D8D0A2D6D571B356FFE958F49DE591B6ED154D2EE43808F0`。截图显示
+Ruleset `main` 为 Active、仅匹配 `main`，但 bypass list 包含 `Repository admin`，权限为
+`Always allow`。该截图仅保留为修正前的历史事实。
+
+管理员后续提供的截图 `Archive/Asset/Image/BypassList_2026-07-31 194302.png` 的 SHA-256
+为 `B8740D9C1D378F07BF6138A74225C69D1386F8369B9113F57E9A918600CCE629`。该截图显示同一
+Ruleset 为 Active、仅匹配 `main`，且明确显示 `Bypass list is empty`。以该当前快照为准，
+普通管理员的全量 bypass 已移除。两个截图的文件名本地时间均不能反向证明 PR #2 创建时的
+配置；管理员仍须归档规则变更审计记录和配置操作者引用。
+
 ## 演练范围和生命周期
 
 | 项目 | 事实 |
@@ -59,6 +71,5 @@ API，也未触发任何绕过操作。
 1. 非作者 QA 下载两个 Quality job 的原始日志，核验其中均含
    `Configs/P0NegativeGate.yml`、`Invalid_field: 项目 YAML 字段必须为 PascalCase` 和
    `preflight issues: 1`，并归档保留期。
-2. GitHub 管理员归档 Ruleset 页面或审计日志，覆盖绕过名单、管理员强制执行和配置操作者。
+2. GitHub 管理员归档 Ruleset 变更审计日志，覆盖旧 bypass 的移除操作、操作者和 UTC 时间。
 3. 独立 QA/SRE 在验收包中记录 PR 非 Draft 的处理结论、清理复核及签署决定。
-
