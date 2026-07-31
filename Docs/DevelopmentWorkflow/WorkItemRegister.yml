@@ -1030,3 +1030,31 @@ Records:
         Actor: Codex
         Action: 完成 MVSV 语义映射与自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-017MvsvNormalizationEvidence.md
+  - WorkItemId: TSK-P1-018
+    PlanTaskId: P1-018
+    Title: 实现原始对象内容寻址和只追加存储
+    Description: 已实现基于 SHA-256 的原始对象去重、篡改检测与来源追溯。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-016]
+    AcceptanceCriteria: 相同字节去重且不覆盖；对象哈希、来源路径和行号可追溯
+    TestEvidence: [src/veritasquant/data/RawObjectStore.py, tests/unit/data/test_raw_object_store.py, Docs/DevelopmentWorkflow/P1-018RawObjectStoreEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 供 P1-019 规范化 Parquet 与 P1-020 数据版本清单引用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:40:00Z"
+        Actor: Codex
+        Action: 完成原始对象内容寻址与自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-018RawObjectStoreEvidence.md
