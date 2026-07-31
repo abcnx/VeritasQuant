@@ -24,3 +24,25 @@ Records:
         Actor: Codex
         Action: 全仓扫描结果为零，正反例和完整本地测试均通过；等待独立验证
         Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+  - BugId: BUG-P0-002
+    Title: Windows CI 的 cp1252 输出编码导致 wheel 命令帮助验证失败
+    SourcePlanTaskId: P0-006
+    DetectedTs: "2026-07-31T09:08:11Z"
+    Reporter: Codex
+    ExpectedBehavior: 所有正式 console script 在 Windows 仓库外虚拟环境以 --help 运行时应返回退出码 0，并可输出中文帮助和诊断信息。
+    ActualBehavior: GitHub Windows runner 使用 cp1252，argparse 输出中文帮助及 VerifyPackage.py 输出中文异常时触发 UnicodeEncodeError，导致仓库外 wheel 验证失败。
+    Severity: S2
+    Owner: CE/QA
+    Status: VERIFYING
+    NextAction: 推送 UTF-8 标准流修复并验证 GitHub Windows/Linux Quality 与 Security baseline 均成功。
+    DueDate: 当前 P0-006 验证周期
+    EvidenceLinks: [src/veritasquant/application/Entrypoints.py, scripts/VerifyPackage.py, tests/packaging/test_entrypoints.py, tests/unit/scripts/test_engineering_scripts.py, "https://github.com/ACANX/VeritasQuant/actions/runs/30618727287/job/91117929801"]
+    AuditHistory:
+      - Ts: "2026-07-31T09:08:11Z"
+        Actor: Codex
+        Action: 根据 Windows Quality job 的 VerifyPackage.py 错误日志登记缺陷
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30618727287/job/91117929801"
+      - Ts: "2026-07-31T09:20:00Z"
+        Actor: Codex
+        Action: 正式入口和 VerifyPackage.py 在 main 执行阶段重配置 UTF-8 标准流，并增加 cp1252 子进程回归测试
+        Evidence: tests/packaging/test_entrypoints.py

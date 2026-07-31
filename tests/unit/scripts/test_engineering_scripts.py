@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -107,3 +108,18 @@ def test_license_policy_requires_approval_before_it_can_pass(tmp_path: Path) -> 
 
     assert result.returncode == 1
     assert "尚未获得批准" in result.stdout
+
+
+def test_verify_package_supports_cp1252_output_for_failures(tmp_path: Path) -> None:
+    environment = dict(os.environ)
+    environment["PYTHONIOENCODING"] = "cp1252"
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "VerifyPackage.py"), "--wheel", str(tmp_path / "missing.whl")],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert b"UnicodeEncodeError" not in result.stderr

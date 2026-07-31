@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import importlib
+import os
+import subprocess
+import sys
 import tomllib
 from importlib import resources
 from pathlib import Path
@@ -44,3 +47,21 @@ def test_formal_entrypoint_help_is_offline_and_has_explicit_exit_code(command: s
 def test_packaged_error_catalog_is_available_without_repo_relative_path() -> None:
     catalog = resources.files("veritasquant.resources").joinpath("Schemas", "ApiErrorCodes.yml")
     assert "ErrorCatalogVersion" in catalog.read_text(encoding="utf-8")
+
+
+def test_formal_entrypoint_help_supports_cp1252_output() -> None:
+    environment = dict(os.environ)
+    environment["PYTHONIOENCODING"] = "cp1252"
+    environment["PYTHONPATH"] = str(Path("src").resolve())
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from veritasquant.apps.server.ApiServer import main; raise SystemExit(main(['--help']))",
+        ],
+        env=environment,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0

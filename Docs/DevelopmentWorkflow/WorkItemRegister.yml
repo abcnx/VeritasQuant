@@ -162,8 +162,8 @@ Records:
     TestEvidence: [pyproject.toml, requirements/Runtime.lock, requirements/Development.lock, scripts/VerifyDependencyLocks.py, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T09:20:00Z"
     Blocked: true
     BlockedReason: P0-004 已有 Linux 3.12 作者验证但尚未正式验收；Python 3.10 和 3.11 兼容安装证据仍缺失
     BlockedBy: QA/CE
@@ -193,9 +193,9 @@ Records:
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: 远程 Git 仓库已可访问且本地 Linux 验证已通过，但仍缺受保护分支、必需检查和 GitHub Actions 的实际运行/工件留存证据
+    BlockedReason: GitHub Actions 已实际运行且 Ubuntu/Security 成功，但 Windows wheel 验证因 BUG-P0-002 失败；修复提交仍待双平台复跑，并缺受保护分支和必需检查证据
     BlockedBy: QA/SRE
-    NextAction: 使用 GitHub 管理员权限配置分支保护并运行 CI，归档 Run URL、JUnit、coverage 和 artifact 哈希
+    NextAction: 推送 BUG-P0-002 修复并验证双平台 CI；随后配置受保护分支、必需检查并归档 Run URL、JUnit、coverage 和 artifact 哈希
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -218,6 +218,10 @@ Records:
         Actor: Codex
         Action: 两次推送候选提交 bd62269 均因 github.com:443 网络拒绝失败，未能触发远程 CI
         Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+      - Ts: "2026-07-31T09:08:11Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30618727287 的 Ubuntu Quality 与 Security 成功，Windows Quality 因 BUG-P0-002 在 wheel 验证失败
+        Evidence: Docs/DevelopmentWorkflow/BugRegister.yml
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查

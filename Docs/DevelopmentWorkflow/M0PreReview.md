@@ -9,16 +9,16 @@
 
 - P0-003 至 P0-012 的实施工件、边界与未决项见 [P0-003-P0-012ImplementationEvidence.md](P0-003-P0-012ImplementationEvidence.md)。
 - 方案 A `src` 布局、根级目录、依赖分组和精确开发锁定项已存在；Preflight、锁定一致性、结构、秘密扫描、许可证策略和证据收集器均有正反例测试。
-- `.github/workflows/Ci.yml` 已定义 Windows/Linux Python 3.13 的质量、构建、wheel、秘密、漏洞和许可证门禁，工件留存设置为 90 天；[M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md) 已补充本地 Linux 大小写敏感文件系统的构建、测试和仓库外 wheel 验证。
+- `.github/workflows/Ci.yml` 已定义 Windows/Linux Python 3.13 的质量、构建、wheel、秘密、漏洞和许可证门禁，工件留存设置为 90 天；[M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md) 已补充本地 Linux 大小写敏感文件系统的构建、测试和仓库外 wheel 验证。GitHub Actions Run `30618727287` 的 Ubuntu Quality 和 Security baseline 已成功，Windows Quality 在仓库外 wheel 验证中发现 `BUG-P0-002`，修复待复跑。
 - 临时 Docker Compose 定义不挂载持久卷、不暴露端口，并通过 `tmpfs` 和显式 `down --volumes` 避免遗留数据。
 - P0-001 至 P0-013、风险、事故、变更和行动项的版本化登记文件及 R-001 至 R-017 追踪矩阵已建立。
 
 ## 阻断项
 
-1. P0-006 已有本地 Linux 验证且远程 Git 仓库可访问，但仍缺 GitHub Actions 的空缓存 Python 3.13 运行、分支保护和实际 artifact 保留运行证据。
+1. P0-006 已有 GitHub Actions 空缓存 Python 3.13 运行，但 BUG-P0-002 修复仍待 Windows/Linux 复跑；同时仍缺分支保护和必需检查证据。
 2. P0-008 Docker Engine 已恢复，但 Docker Hub 镜像下载被网络拒绝；Compose 的实启、健康检查与清理验证仍由 `ACT-P0-005` 和 `ACT-P0-008` 阻断，M0 前必须完成。
-3. P0-011 许可证策略已获 ProjectAuthor 批准，但仍缺受保护远程 CI 的安全运行证据。
-4. P0-012 只有计划映射，尚无后续任务的测试结果、种子和哈希。
+3. P0-011 的 Security baseline 已在 GitHub Actions 成功，但仍待 P0-006 成功复跑和独立验收。
+4. P0-012 已补充部分 P1 作者测试证据，但 R-001 至 R-017 仍未形成完整执行结果、种子和哈希。
 5. 单人多角色模型仍缺非作者人类评审和 Incident Commander 替补，已登记为 `ACT-P0-007`。
 
 上述任一项存在时，M0 不能被标记为通过、冻结首个迭代 Backlog 或进入环境晋级。

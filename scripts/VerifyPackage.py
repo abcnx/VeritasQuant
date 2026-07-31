@@ -11,6 +11,18 @@ import tomllib
 from pathlib import Path
 
 
+def configureStandardStreams() -> None:
+    """确保 Windows CI 使用非 UTF-8 代码页时仍可输出诊断信息。"""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="backslashreplace")
+        except (OSError, ValueError):
+            continue
+
+
 def venvPython(venvRoot: Path) -> Path:
     """按平台返回虚拟环境解释器路径。"""
     return venvRoot / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
@@ -52,6 +64,7 @@ def verify(wheel: Path, projectPath: Path) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     """验证失败返回非零；临时虚拟环境始终由系统清理。"""
+    configureStandardStreams()
     parser = argparse.ArgumentParser(description="在仓库外验证 VeritasQuant wheel 与 console script")
     parser.add_argument("--wheel", type=Path, required=True)
     parser.add_argument("--project", type=Path, default=Path("pyproject.toml"))
