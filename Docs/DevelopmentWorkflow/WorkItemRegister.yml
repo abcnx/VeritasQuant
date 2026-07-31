@@ -1366,3 +1366,31 @@ Records:
         Actor: Codex
         Action: 完成订单资源预占、部分成交幂等消耗和取消剩余释放自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-037ReservationEvidence.md
+  - WorkItemId: TSK-P1-040
+    PlanTaskId: P1-040
+    Title: 实现账户/分账户隔离和显式路由
+    Description: 已实现必须携带账户范围的状态路由与每账户独立资源桶。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["3.1", "7.1"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-035]
+    AcceptanceCriteria: 所有账户事件缺 account_id 即失败；随机跨账户探针不能改变其他账户
+    TestEvidence: [src/veritasquant/accounts/Routing.py, tests/unit/accounts/test_routing.py, Docs/DevelopmentWorkflow/P1-040AccountRoutingEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T01:45:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-043 订单、P1-052 风控事件和阶段 2 账户分区中复用账户范围契约
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T01:45:00Z"
+        Actor: Codex
+        Action: 完成缺失账户范围拒绝和跨账户状态隔离自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-040AccountRoutingEvidence.md
