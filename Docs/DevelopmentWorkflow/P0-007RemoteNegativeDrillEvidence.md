@@ -68,6 +68,9 @@ API，也未触发任何绕过操作。
 
 ## 独立验收待办
 
+ProjectAuthor 于本任务会话将以下事项延后至后续治理验收。它们不再阻断 P0 开发或收尾，
+但本记录不会把 P0-007 标记为独立验收通过。
+
 1. 非作者 QA 下载两个 Quality job 的原始日志，核验其中均含
    `Configs/P0NegativeGate.yml`、`Invalid_field: 项目 YAML 字段必须为 PascalCase` 和
    `preflight issues: 1`，并归档保留期。

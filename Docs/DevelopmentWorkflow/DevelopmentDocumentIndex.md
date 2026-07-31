@@ -19,6 +19,8 @@
 | 单 Agent 治理材料 | [SingleAgentGovernanceMaterial.md](SingleAgentGovernanceMaterial.md) | ClaudeCode 的执行边界、待确认人类角色与最小确认模板。 |
 | P0 测试证据 | [P0-003-P0-012TestEvidence.json](P0-003-P0-012TestEvidence.json) | 机器可读 JUnit、coverage、环境、种子和工件哈希。 |
 | P0 独立验收包 | [P0IndependentAcceptancePackage.md](P0IndependentAcceptancePackage.md) | 非作者 QA/SRE 的精确复核命令、远程负例最小证据和签署字段。 |
+| P0 验收启动记录 | [P0AcceptanceKickoff.md](P0AcceptanceKickoff.md) | 本轮验收候选、范围、延期治理事项与 Gate 边界。 |
+| P0 自动化验收证据 | [P0AcceptanceAutomationEvidence.md](P0AcceptanceAutomationEvidence.md) | P0 验收运行的检查、测试、构建、wheel 验证与工件哈希。 |
 | P0-007 远程负例证据 | [P0-007RemoteNegativeDrillEvidence.md](P0-007RemoteNegativeDrillEvidence.md) | PR #2 的远程 Quality 失败、`main` 未变和演练分支清理事实。 |
 | P0-003 定位演练 | [P0-003DocumentDiscoveryDrill.md](P0-003DocumentDiscoveryDrill.md) | 非作者新成员 15 分钟定位演练的可填写记录。 |
 | M0 Linux 验证证据 | [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md) | WSL Linux 大小写、构建、测试和仓库外 wheel 验证结果。 |
