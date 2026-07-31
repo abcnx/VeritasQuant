@@ -1170,3 +1170,31 @@ Records:
         Actor: Codex
         Action: 完成回测状态机自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-030BacktestRunEvidence.md
+  - WorkItemId: TSK-P1-031
+    PlanTaskId: P1-031
+    Title: 建立提交边界 crash-injection 工具
+    Description: 已实现可复现的提交边界崩溃注入器。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.2"]
+    Owner: QA/CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-027, P1-028, P1-029, P1-030]
+    AcceptanceCriteria: 可在 inbox、账本、订单、控制、checkpoint、outbox 前后确定性注入退出
+    TestEvidence: [src/veritasquant/core/CrashInjection.py, tests/unit/core/test_crash_injection.py, Docs/DevelopmentWorkflow/P1-031CrashInjectionEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T00:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 用于 P1-032 崩溃恢复不变量验证
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T00:10:00Z"
+        Actor: Codex
+        Action: 完成提交边界崩溃注入自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-031CrashInjectionEvidence.md
