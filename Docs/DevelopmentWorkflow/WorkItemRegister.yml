@@ -1282,3 +1282,31 @@ Records:
         Actor: Codex
         Action: 完成账本原子提交、逐单位重校验及历史不可变自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-034LedgerCommitEvidence.md
+  - WorkItemId: TSK-P1-035
+    PlanTaskId: P1-035
+    Title: 实现现金、冻结、持仓、成本和盈亏投影
+    Description: 已实现从不可变 journal 重建账户余额和账本上界哈希的投影。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-034]
+    AcceptanceCriteria: 每次提交后余额满足不变量；从空投影重建逐字段/哈希一致
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-035LedgerProjectionEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T01:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 供 P1-036 现金流与冲正 journal 及 P1-037 订单预占状态复用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T01:00:00Z"
+        Actor: Codex
+        Action: 完成账户账本投影、余额查询和空投影重建哈希自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-035LedgerProjectionEvidence.md

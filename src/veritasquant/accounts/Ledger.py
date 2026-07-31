@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import StrEnum
@@ -9,6 +10,7 @@ from typing import TypeVar
 
 from pydantic import field_validator, model_validator
 
+from veritasquant.core.CanonicalJson import canonicalHash
 from veritasquant.core.Models import PascalAlias, StrictModel
 
 
@@ -208,6 +210,87 @@ class LedgerStoreV1:
         self._journals.append(validatedJournal)
         self._journalIds.add(validatedJournal.journalId)
         return validatedJournal
+
+
+@dataclass(frozen=True, slots=True)
+class LedgerBalanceV1:
+    """某科目、资产单位和记账币种的可重放余额。"""
+
+    ledgerAccount: LedgerAccount
+    unitId: str
+    bookCurrency: str
+    quantity: Decimal
+    bookAmount: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class LedgerProjectionSnapshotV1:
+    """账户账本上界对应的只读投影快照。"""
+
+    accountId: str
+    lastLedgerSequence: int
+    balances: tuple[LedgerBalanceV1, ...]
+    projectionHash: str
+
+    def balanceFor(
+        self,
+        ledgerAccount: LedgerAccount,
+        unitId: str,
+        bookCurrency: str,
+    ) -> LedgerBalanceV1:
+        """返回精确维度余额；缺失维度按零余额返回。"""
+        return next(
+            (
+                item
+                for item in self.balances
+                if item.ledgerAccount is ledgerAccount
+                and item.unitId == unitId
+                and item.bookCurrency == bookCurrency
+            ),
+            LedgerBalanceV1(ledgerAccount, unitId, bookCurrency, Decimal("0"), Decimal("0")),
+        )
+
+
+class LedgerProjectionStoreV1:
+    """从只追加 journal 重建现金、冻结、持仓、成本和盈亏投影。"""
+
+    def __init__(self, ledgerStore: LedgerStoreV1) -> None:
+        self._ledgerStore = ledgerStore
+
+    def rebuild(self, accountId: str) -> LedgerProjectionSnapshotV1:
+        """从空投影顺序应用指定账户的所有已提交 journal。"""
+        if not accountId:
+            raise LedgerContractError("账户 ID 不能为空")
+        values: dict[tuple[LedgerAccount, str, str], tuple[Decimal, Decimal]] = {}
+        lastSequence = 0
+        for journal in self._ledgerStore.journals:
+            if journal.accountId != accountId:
+                continue
+            lastSequence = journal.commitSequence
+            for entry in journal.entries:
+                direction = Decimal("1") if entry.direction is EntryDirection.Debit else Decimal("-1")
+                key = (entry.ledgerAccount, entry.unit.unitId, entry.bookCurrency)
+                quantity, bookAmount = values.get(key, (Decimal("0"), Decimal("0")))
+                values[key] = (quantity + direction * entry.quantity, bookAmount + direction * entry.bookAmount)
+        balances = tuple(
+            LedgerBalanceV1(ledgerAccount, unitId, bookCurrency, quantity, bookAmount)
+            for (ledgerAccount, unitId, bookCurrency), (quantity, bookAmount) in sorted(
+                values.items(), key=lambda item: (item[0][0].value, item[0][1], item[0][2])
+            )
+        )
+        projectionHash = canonicalHash(
+            [
+                {
+                    "ledger_account": item.ledgerAccount.value,
+                    "unit_id": item.unitId,
+                    "book_currency": item.bookCurrency,
+                    "quantity": item.quantity,
+                    "book_amount": item.bookAmount,
+                }
+                for item in balances
+            ]
+        )
+        return LedgerProjectionSnapshotV1(accountId, lastSequence, balances, projectionHash)
 
 
 EnumType = TypeVar("EnumType", bound=StrEnum)

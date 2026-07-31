@@ -15,6 +15,7 @@ from veritasquant.accounts.Ledger import (
     LedgerAccount,
     LedgerContractError,
     LedgerEntryV1,
+    LedgerProjectionStoreV1,
     LedgerStoreV1,
 )
 
@@ -133,3 +134,124 @@ def test_ledger_store_rejects_invalid_or_duplicate_commit_without_mutation() -> 
     with pytest.raises(LedgerContractError, match="序号"):
         store.commitJournal(_journal(JournalId="journal-2", CommitSequence=3))
     assert tuple(item.journalId for item in store.journals) == ("journal-1",)
+
+
+def test_ledger_projection_rebuilds_cash_and_frozen_balances() -> None:
+    store = LedgerStoreV1()
+    store.commitJournal(
+        _journal(
+            Entries=(
+                _entry("entry-1", EntryDirection.Debit, Decimal("10000")),
+                LedgerEntryV1(
+                    EntryId="entry-2",
+                    LedgerAccount=LedgerAccount.ExternalCapital,
+                    Direction=EntryDirection.Credit,
+                    Unit=_cashUnit(),
+                    Quantity=Decimal("10000"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("10000"),
+                    CostAmount=Decimal("0"),
+                ),
+            )
+        )
+    )
+    store.commitJournal(
+        _journal(
+            JournalId="journal-2",
+            JournalType=JournalType.OrderReservation,
+            CommitSequence=2,
+            Entries=(
+                LedgerEntryV1(
+                    EntryId="entry-3",
+                    LedgerAccount=LedgerAccount.CashFrozen,
+                    Direction=EntryDirection.Debit,
+                    Unit=_cashUnit(),
+                    Quantity=Decimal("1000"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("1000"),
+                    CostAmount=Decimal("0"),
+                ),
+                _entry("entry-4", EntryDirection.Credit, Decimal("1000")),
+            ),
+        )
+    )
+    snapshot = LedgerProjectionStoreV1(store).rebuild("account-1")
+    assert snapshot.lastLedgerSequence == 2
+    assert snapshot.balanceFor(LedgerAccount.CashAvailable, "CNY", "CNY").quantity == Decimal("9000")
+    assert snapshot.balanceFor(LedgerAccount.CashFrozen, "CNY", "CNY").bookAmount == Decimal("1000")
+
+
+def test_ledger_projection_rebuild_hash_is_stable_after_projection_discard() -> None:
+    store = LedgerStoreV1()
+    store.commitJournal(_journal())
+    first = LedgerProjectionStoreV1(store).rebuild("account-1")
+    rebuilt = LedgerProjectionStoreV1(store).rebuild("account-1")
+    assert rebuilt.balances == first.balances
+    assert rebuilt.projectionHash == first.projectionHash
+
+
+def test_ledger_projection_includes_position_cost_and_profit_loss_accounts() -> None:
+    store = LedgerStoreV1()
+    stockUnit = AssetUnitV1(UnitId="INSTRUMENT:518880", AssetId="518880")
+    store.commitJournal(
+        _journal(
+            JournalType=JournalType.Trade,
+            Entries=(
+                LedgerEntryV1(
+                    EntryId="entry-1",
+                    LedgerAccount=LedgerAccount.SecuritiesAvailable,
+                    Direction=EntryDirection.Debit,
+                    Unit=stockUnit,
+                    Quantity=Decimal("10"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("1000"),
+                    CostAmount=Decimal("1000"),
+                ),
+                LedgerEntryV1(
+                    EntryId="entry-2",
+                    LedgerAccount=LedgerAccount.TradingClearing,
+                    Direction=EntryDirection.Credit,
+                    Unit=stockUnit,
+                    Quantity=Decimal("10"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("1000"),
+                    CostAmount=Decimal("1000"),
+                ),
+            ),
+        )
+    )
+    store.commitJournal(
+        _journal(
+            JournalId="journal-2",
+            JournalType=JournalType.Trade,
+            CommitSequence=2,
+            Entries=(
+                LedgerEntryV1(
+                    EntryId="entry-3",
+                    LedgerAccount=LedgerAccount.TradingClearing,
+                    Direction=EntryDirection.Debit,
+                    Unit=_cashUnit(),
+                    Quantity=Decimal("12"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("12"),
+                    CostAmount=Decimal("0"),
+                ),
+                LedgerEntryV1(
+                    EntryId="entry-4",
+                    LedgerAccount=LedgerAccount.RealizedProfitLoss,
+                    Direction=EntryDirection.Credit,
+                    Unit=_cashUnit(),
+                    Quantity=Decimal("12"),
+                    BookCurrency="CNY",
+                    BookAmount=Decimal("12"),
+                    CostAmount=Decimal("0"),
+                ),
+            ),
+        )
+    )
+    snapshot = LedgerProjectionStoreV1(store).rebuild("account-1")
+    position = snapshot.balanceFor(LedgerAccount.SecuritiesAvailable, "INSTRUMENT:518880", "CNY")
+    profitLoss = snapshot.balanceFor(LedgerAccount.RealizedProfitLoss, "CNY", "CNY")
+    assert position.quantity == Decimal("10")
+    assert position.bookAmount == Decimal("1000")
+    assert profitLoss.bookAmount == Decimal("-12")
