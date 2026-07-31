@@ -918,3 +918,31 @@ Records:
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
         Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+  - WorkItemId: TSK-P1-014
+    PlanTaskId: P1-014
+    Title: 定义标的、日历、费率和资产能力版本模型
+    Description: 已实现阶段 1 标的注册表、市场日历、费率表和按模式启用的能力清单。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1", "14.1", "14.2"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-001]
+    AcceptanceCriteria: 518880 与单一黄金期货合约元数据完整；缺 tick、手数或结算规则时运行失败
+    TestEvidence: [src/veritasquant/instruments/Registry.py, tests/unit/instruments/test_registry.py, Docs/DevelopmentWorkflow/P1-014InstrumentRegistryEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:19:45Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在后续数据导入、账本和订单任务中复用版本化标的注册表
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:19:45Z"
+        Actor: Codex
+        Action: 完成标的、日历、费率和能力清单实现及自动化复核
+        Evidence: Docs/DevelopmentWorkflow/P1-014InstrumentRegistryEvidence.md

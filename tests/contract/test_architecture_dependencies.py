@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 # 领域目录只能被 application 编排，不能反向依赖入口、Web UI 或具体基础设施客户端。
-DOMAIN_PACKAGES = ("core", "data", "accounts", "strategy", "execution", "risk", "monitoring")
+DOMAIN_PACKAGES = ("core", "data", "instruments", "accounts", "strategy", "execution", "risk", "monitoring")
 FORBIDDEN_IMPORT_PREFIXES = (
     "veritasquant.apps",
     "veritasquant.jobs",
