@@ -1002,3 +1002,31 @@ Records:
         Actor: Codex
         Action: 完成 MVSV-1 流式解析和自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-016MvsvReaderEvidence.md
+  - WorkItemId: TSK-P1-017
+    PlanTaskId: P1-017
+    Title: 实现 MVSV 字段语义、cp/cr/p 校验及来源追溯
+    Description: 已实现 MVSV 外部记录到标准化 MinuteBar 的受控映射。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.2"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-016]
+    AcceptanceCriteria: Decimal 重算容差测试通过；BarLabelMeaning 缺失拒绝；TurnoverScale 未知时 amount 为空并打标
+    TestEvidence: [src/veritasquant/data/MvsvNormalization.py, tests/unit/data/test_mvsv_normalization.py, Docs/DevelopmentWorkflow/P1-017MvsvNormalizationEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T13:35:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-018 原始对象层与 P1-021 数据质量流程中复用
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-07-31T13:35:00Z"
+        Actor: Codex
+        Action: 完成 MVSV 语义映射与自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-017MvsvNormalizationEvidence.md
