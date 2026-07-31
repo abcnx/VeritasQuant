@@ -265,11 +265,13 @@ def test_cash_journal_factory_creates_funding_fee_tax_and_reversal() -> None:
     deposit = factory.createDeposit("deposit-1", "account-1", ts, 2, "event-2", "CNY", Decimal("5"))
     fee = factory.createFee("fee-1", "account-1", ts, 2, "event-2", "CNY", Decimal("3"))
     tax = factory.createTax("tax-1", "account-1", ts, 3, "event-3", "CNY", Decimal("2"))
+    dividend = factory.createDividend("dividend-1", "account-1", ts, 4, "event-4", "CNY", Decimal("8"))
     reversal = factory.createReversal("reversal-1", "event-4", fee, 4)
     assert opening.journalType is JournalType.OpeningBalance
     assert deposit.journalType is JournalType.Deposit
     assert fee.entries[0].ledgerAccount is LedgerAccount.FeeExpense
     assert tax.entries[0].ledgerAccount is LedgerAccount.TaxExpense
+    assert dividend.journalType is JournalType.Dividend
     assert reversal.reversalOfJournalId == fee.journalId
     assert reversal.entries[0].direction is EntryDirection.Credit
 

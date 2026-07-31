@@ -65,6 +65,7 @@ class LedgerAccount(StrEnum):
     ExternalCapital = "EXTERNAL_CAPITAL"
     RealizedProfitLoss = "REALIZED_PROFIT_LOSS"
     UnrealizedProfitLoss = "UNREALIZED_PROFIT_LOSS"
+    DividendIncome = "DIVIDEND_INCOME"
 
 
 class EntryDirection(StrEnum):
@@ -357,6 +358,14 @@ class CashJournalFactoryV1:
         return self._createCashTransfer(
             journalId, JournalType.Tax, accountId, ts, commitSequence, sourceEventId, currency, amount,
             LedgerAccount.TaxExpense, EntryDirection.Debit, LedgerAccount.CashAvailable, EntryDirection.Credit,
+        )
+
+    def createDividend(
+        self, journalId: str, accountId: str, ts: datetime, commitSequence: int, sourceEventId: str, currency: str, amount: Decimal
+    ) -> JournalV1:
+        return self._createCashTransfer(
+            journalId, JournalType.Dividend, accountId, ts, commitSequence, sourceEventId, currency, amount,
+            LedgerAccount.CashAvailable, EntryDirection.Debit, LedgerAccount.DividendIncome, EntryDirection.Credit,
         )
 
     def createReversal(self, journalId: str, sourceEventId: str, original: JournalV1, commitSequence: int) -> JournalV1:

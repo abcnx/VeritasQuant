@@ -1394,3 +1394,31 @@ Records:
         Actor: Codex
         Action: 完成缺失账户范围拒绝和跨账户状态隔离自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-040AccountRoutingEvidence.md
+  - WorkItemId: TSK-P1-038
+    PlanTaskId: P1-038
+    Title: 实现证券 T+1、费用和公司行为账务
+    Description: 已实现证券 T+1 可卖状态、拆并股数量调整与费用税款 journal 复用。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1", "8.1", "14.1"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-014, P1-036]
+    AcceptanceCriteria: 518880 当日买入不可卖；结算/分红/拆分回放和余额测试通过
+    TestEvidence: [src/veritasquant/accounts/Securities.py, src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_securities.py, Docs/DevelopmentWorkflow/P1-038SecuritiesSettlementEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T02:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在 P1-050 执行回报原子账务中接入证券结算和公司行为 journal
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T02:00:00Z"
+        Actor: Codex
+        Action: 完成 518880 T+1 卖出限制和拆分数量重算自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-038SecuritiesSettlementEvidence.md
