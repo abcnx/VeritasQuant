@@ -1338,3 +1338,31 @@ Records:
         Actor: Codex
         Action: 完成现金流、费用税款、透支拒绝和全额冲正自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-036CashFlowEvidence.md
+  - WorkItemId: TSK-P1-037
+    PlanTaskId: P1-037
+    Title: 实现订单资金、证券、保证金预占与释放
+    Description: 已实现账户隔离的资源预占、部分成交幂等消耗和剩余释放状态机。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.6", "6.1", "7.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-035]
+    AcceptanceCriteria: 批准、拒单、撤单、部分成交只释放正确剩余量；重复回报不重复释放
+    TestEvidence: [src/veritasquant/accounts/Reservation.py, tests/unit/accounts/test_reservation.py, Docs/DevelopmentWorkflow/P1-037ReservationEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T01:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 与 P1-043 至 P1-050 的订单状态、账本和 outbox 原子边界集成
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T01:30:00Z"
+        Actor: Codex
+        Action: 完成订单资源预占、部分成交幂等消耗和取消剩余释放自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-037ReservationEvidence.md
