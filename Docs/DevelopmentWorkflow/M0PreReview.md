@@ -18,9 +18,9 @@
 
 ## 阻断项
 
-1. P0-006 已有 GitHub Actions 空缓存 Python 3.13 双平台成功运行和 artifact 留存证据，且 `main` 已配置三项必需检查；最新截图显示 Bypass list 为空，当前普通管理员绕过已移除，仍缺规则变更审计和独立验收证据。
+1. P0-006 已有 GitHub Actions 空缓存 Python 3.13 双平台成功运行和 artifact 留存证据，且 `main` 已配置三项必需检查；最新截图显示 Bypass list 为空。规则变更审计和独立验收已延后至后续治理验收，不阻断 P0 开发或收尾。
 2. P0-007、P0-009、P0-011 与 P0-012 的自动化技术证据已具备。P0-007 已在受保护 `main` 的 PR #2 中取得两项 Quality 失败和分支清理记录，见 [P0-007RemoteNegativeDrillEvidence.md](P0-007RemoteNegativeDrillEvidence.md)；原始失败日志、bypass 移除审计和 PR 非 Draft 差异的独立复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项。P0-008 的 Compose 演练仍待独立人类 SRE 复核。
 3. P0-012 在 M0 只要求计划追踪映射；R-001 至 R-017 的完整执行结果、种子和哈希按追踪矩阵分别属于 M1/M2 Gate，不构成当前 M0 的实现阻断。
-4. 单人多角色模型仍缺非作者人类评审和 Incident Commander 替补，已登记为 `ACT-P0-007`。
+4. 非作者人类评审和 Incident Commander 替补已登记为 `ACT-P0-007`，并延后至后续治理验收，不阻断 P0 开发或收尾。
 
 上述任一项存在时，M0 不能被标记为通过、冻结首个迭代 Backlog 或进入环境晋级。

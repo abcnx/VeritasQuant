@@ -82,6 +82,10 @@ Records:
         Actor: Codex
         Action: 截图确认 bypass list 已为空；行动保持 OPEN，等待管理员变更审计和独立验收
         Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
+      - Ts: "2026-07-31T12:35:00Z"
+        Actor: ProjectAuthor
+        Action: 延后 Ruleset 变更审计和独立验收；行动保持 OPEN，但不再阻断 P0 开发或收尾
+        Evidence: 当前任务会话的延后指示
   - ActionId: ACT-P0-005
     Title: 启动 Docker Desktop Engine 后完成 Compose 启停与清理演练
     SourceId: P0-008
@@ -141,6 +145,10 @@ Records:
         Actor: Codex
         Action: 补充非作者评审、Incident Commander 替补和 Gate 回避的可填写证据包；行动保持 OPEN，未作人类确认
         Evidence: Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md
+      - Ts: "2026-07-31T12:35:00Z"
+        Actor: ProjectAuthor
+        Action: 延后非作者人类评审和 Incident Commander 替补确认；行动保持 OPEN，但不再阻断 P0 开发或收尾
+        Evidence: 当前任务会话的延后指示
   - ActionId: ACT-P0-008
     Title: 为 Docker 开发验证提供可访问的镜像来源
     SourceId: P0-008

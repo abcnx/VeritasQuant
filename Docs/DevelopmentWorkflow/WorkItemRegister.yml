@@ -99,11 +99,11 @@ Records:
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T04:15:00Z"
-    Blocked: true
-    BlockedReason: 尚缺新成员独立定位演练，以及 ACT-P0-007 要求的非作者人类复核
-    BlockedBy: QA/TL
-    NextAction: 由非作者人类依据文档索引完成 15 分钟定位演练并记录结果
+    StatusChangedTs: "2026-07-31T12:35:00Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 新成员独立定位演练与非作者人类复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -118,6 +118,10 @@ Records:
         Actor: Codex
         Action: 补充独立定位演练的可填写记录；仍待非作者实际执行和复核
         Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
+      - Ts: "2026-07-31T12:35:00Z"
+        Actor: ProjectAuthor
+        Action: 延后独立定位演练和非作者复核；该事项不再阻断 P0 开发或收尾
+        Evidence: 当前任务会话的延后指示
   - WorkItemId: TSK-P0-004
     PlanTaskId: P0-004
     Title: 按方案 A 创建 src 布局、根级目录和占位包
@@ -198,12 +202,12 @@ Records:
     TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003, RSK-P0-005]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: GitHub Actions Run 30619335295 的 Windows/Linux Quality 与 Security 均成功且 artifact 已留存；仍缺受保护分支、必需检查和独立验收证据
-    BlockedBy: QA/SRE
-    NextAction: 使用 GitHub 管理员权限配置受保护分支和必需检查，并由独立评审审阅 CI 证据
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T12:35:00Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 独立复核、Ruleset 变更审计和验收签署已延后至后续治理验收；当前主分支保护配置不再阻断 P0 开发或收尾
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -234,6 +238,10 @@ Records:
         Actor: Codex
         Action: BUG-P0-002 修复后 GitHub Actions Run 30619335295 三个 job 均成功；quality artifact 已上传并保留 90 天
         Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
+      - Ts: "2026-07-31T12:35:00Z"
+        Actor: ProjectAuthor
+        Action: 确认 main Ruleset、必需检查、Code Owner 和空 bypass 已配置；延后独立复核和审计，不再阻断 P0 开发或收尾
+        Evidence: Docs/DevelopmentWorkflow/P0-006CiGovernance.md
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查
@@ -374,18 +382,22 @@ Records:
     TestEvidence: [Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/BugRegister.yml, Docs/DevelopmentWorkflow/RiskRegister.yml, Docs/DevelopmentWorkflow/IncidentRegister.yml, Docs/DevelopmentWorkflow/ChangeRegister.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0-010RegisterSchema.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: P0-003 尚未完成独立定位演练，且 ACT-P0-007 的非作者人类复核尚未完成
-    BlockedBy: QA/TL
-    NextAction: 由非作者人类复核登记表字段、责任人映射和迁移计划
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T12:35:00Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 登记表字段、责任人映射和迁移计划的独立复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 补齐 P0 工作项、字段清单与审计记录
         Evidence: Docs/DevelopmentWorkflow/WorkItemRegister.yml
+      - Ts: "2026-07-31T12:35:00Z"
+        Actor: ProjectAuthor
+        Action: 延后 P0-003 依赖的独立定位演练和 P0-010 独立复核；该事项不再阻断 P0 开发或收尾
+        Evidence: 当前任务会话的延后指示
   - WorkItemId: TSK-P0-011
     PlanTaskId: P0-011
     Title: 建立秘密扫描、依赖漏洞扫描和许可证基线
