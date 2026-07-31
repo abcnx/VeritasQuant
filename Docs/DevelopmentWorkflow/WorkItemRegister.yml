@@ -1198,3 +1198,31 @@ Records:
         Actor: Codex
         Action: 完成提交边界崩溃注入自动化验证
         Evidence: Docs/DevelopmentWorkflow/P1-031CrashInjectionEvidence.md
+  - WorkItemId: TSK-P1-032
+    PlanTaskId: P1-032
+    Title: 验证崩溃恢复与重复重放不变量
+    Description: 已逐一演练提交边界崩溃后的重启、重放和投影重建一致性。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6.2"]
+    Owner: QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-031]
+    AcceptanceCriteria: 每个注入点重启后事实无丢失/重复、投影一致、控制未放宽；报告含种子和哈希
+    TestEvidence: [src/veritasquant/core/Recovery.py, tests/unit/core/test_recovery.py, Docs/DevelopmentWorkflow/P1-032RecoveryEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-01T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 在账本、订单和风险控制原子边界中复用该恢复演练模式
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-01T00:20:00Z"
+        Actor: Codex
+        Action: 完成 12 个提交边界崩溃、重启重放及投影重建自动化验证
+        Evidence: Docs/DevelopmentWorkflow/P1-032RecoveryEvidence.md
