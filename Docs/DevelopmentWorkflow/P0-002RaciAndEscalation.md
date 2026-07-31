@@ -25,7 +25,7 @@
 
 | 开发执行代理 | 可负责事项 | 不可负责事项 | 当前确认来源 |
 | --- | --- | --- | --- |
-| ClaudeCode | P0 工程实现、作者测试、CI 配置、证据整理 | 范围批准、Gate 签署、独立 QA、安全批准、事故指挥和值班联系人 | ProjectAuthor 于当前任务会话确认；开发执行边界持续有效 |
+| Codex | 开发范围内的代码、测试、CI、仓库治理和证据维护 | Gate 签署、独立 QA 验收、实盘启用、风险例外、生产凭据和破坏性操作 | [ProjectAuthorizationRegister.yml](ProjectAuthorizationRegister.yml) `AUTH-DEV-001` |
 
 具体人类角色与确认材料使用 [SingleAgentGovernanceMaterial.md](SingleAgentGovernanceMaterial.md)。`ACT-P0-006` 已记录临时治理确认；M0 前仍须完成 `ACT-P0-007`。
 

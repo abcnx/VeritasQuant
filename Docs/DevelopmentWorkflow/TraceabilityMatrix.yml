@@ -6,6 +6,10 @@ Rows:
     TestIds: [UNIT-TIME-001, PROPERTY-EVENT-ORDERING-001, REGRESSION-CROSS-SOURCE-001]
     CiSuites: [UnitContract, PropertyModel, Regression]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/core/test_time.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+      Gaps: 缺正式 property 套件、跨来源回归 checksum、独立验收和 M1 Gate 证据
   - RequirementId: R-002
     TechSpecRef: "12.2"
     PlanTaskIds: [P1-027, P1-028, P1-029, P1-031, P1-032]
@@ -30,6 +34,10 @@ Rows:
     TestIds: [CONTRACT-EVENT-SCHEMA-001, CONTRACT-EVENT-UPGRADE-001]
     CiSuites: [UnitContract]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/core/test_events.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      Gaps: 缺完整兼容升级契约、独立验收和 M1 Gate 证据
   - RequirementId: R-006
     TechSpecRef: "4.6"
     PlanTaskIds: [P1-043, P1-044, P1-051]
@@ -66,18 +74,30 @@ Rows:
     TestIds: [CONTRACT-YAML-BOUNDARIES-001, PROPERTY-CONFIG-CANONICALIZATION-001]
     CiSuites: [UnitContract, PropertyModel]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/core/test_models.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      Gaps: 缺完整 YAML 分类契约、property 套件、独立验收和 M1 Gate 证据
   - RequirementId: R-012
     TechSpecRef: "11.2"
     PlanTaskIds: [P0-005, P0-006, P0-009, P1-012]
     TestIds: [PACKAGING-WHEEL-ENTRYPOINTS-001, PACKAGING-LINUX-CASE-001]
     CiSuites: [Packaging]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+      Gaps: 缺 GitHub Actions Linux Python 3.13 artifact、独立验收和 M1 Gate 证据
   - RequirementId: R-013
     TechSpecRef: "10"
     PlanTaskIds: [P1-008, P1-009, P2-024, P2-028, P2-029]
     TestIds: [CONTRACT-API-COMMANDS-001, CONTRACT-API-IDEMPOTENCY-001]
     CiSuites: [UnitContract, Integration]
     LatestGate: M2
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/application/test_api_errors.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      Gaps: 缺 API 命令和幂等集成契约、独立验收和 M2 Gate 证据
   - RequirementId: R-014
     TechSpecRef: "5"
     PlanTaskIds: [P1-015, P1-016, P1-017, P1-018, P1-019, P1-020, P1-021, P1-022, P1-023, P1-024]
@@ -90,6 +110,10 @@ Rows:
     TestIds: [PROPERTY-CONFIG-CANONICALIZATION-001, CONTRACT-CONFIG-SECRET-001]
     CiSuites: [UnitContract, PropertyModel]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      Gaps: 缺完整 property 配置规范化、独立验收和 M1 Gate 证据
   - RequirementId: R-016
     TechSpecRef: "12.3"
     PlanTaskIds: [P2-001, P2-002, P2-003, P2-036]

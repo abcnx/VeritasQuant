@@ -50,11 +50,11 @@ Records:
         Action: 按用户指示将 Linux 实施顺序后移；未改变 M0 的 Linux 验收要求
         Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
   - ActionId: ACT-P0-004
-    Title: 恢复有效 Git 仓库并启用受保护分支与必需 CI 检查
+    Title: 验证远程受保护分支并启用必需 CI 检查
     SourceId: P0-006
     Owner: SRE
     DueDate: M0 正式评审前
-    VerificationMethod: 验证 git status 可读取有效仓库与远程；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，禁止普通管理员绕过，并归档规则截图或平台审计链接。
+    VerificationMethod: 验证远程仓库和默认分支；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，禁止普通管理员绕过，并归档规则截图或平台审计链接。
     Status: OPEN
     EvidenceLinks: [Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml]
     AuditHistory:
@@ -62,6 +62,10 @@ Records:
         Actor: Codex
         Action: 按用户指示登记 Git 元数据和分支保护后续实现
         Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 已验证 git status、origin 及远程 main/dev 分支；未取得 GitHub 分支保护管理凭据
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - ActionId: ACT-P0-005
     Title: 启动 Docker Desktop Engine 后完成 Compose 启停与清理演练
     SourceId: P0-008
@@ -75,6 +79,10 @@ Records:
         Actor: Codex
         Action: 按用户指示将 Docker 演练延后；未改变 P0-008 或 M0 验收要求
         Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 已启动 Docker Engine；Docker Hub 网络拒绝镜像拉取，容器未创建
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - ActionId: ACT-P0-006
     Title: 指定单 Agent 开发模式下的人类治理责任人和审批边界
     SourceId: P0-002
@@ -109,3 +117,16 @@ Records:
         Actor: Codex
         Action: 根据已确认的单人角色模型，将独立评审和替补值班单独登记为后续行动
         Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+  - ActionId: ACT-P0-008
+    Title: 为 Docker 开发验证提供可访问的镜像来源
+    SourceId: P0-008
+    Owner: SRE
+    DueDate: M0 正式评审前
+    VerificationMethod: 配置经批准的 Docker Hub 网络、镜像代理或预加载 postgres 与 redis 镜像；随后执行 start、check、stop 并归档健康状态和清理结果。
+    Status: OPEN
+    EvidenceLinks: [Docker/docker-compose.yml, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 两次 Docker Hub 拉取均被网络拒绝后创建行动项
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md

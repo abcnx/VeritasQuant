@@ -127,21 +127,25 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-001]
     AcceptanceCriteria: 目录通过大小写与命名检查；不存在根级平行业务 Python 包
-    TestEvidence: [scripts/Preflight.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [scripts/Preflight.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
-    Status: ANALYZING
-    StatusChangedTs: "2026-07-31T03:30:00Z"
-    Blocked: true
-    BlockedReason: 需要 Linux 大小写敏感环境复验
-    BlockedBy: QA
-    NextAction: 在 Linux CI 执行 Preflight 与 wheel 验证
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: false
+    BlockedReason: null
+    BlockedBy: null
+    NextAction: 由非作者评审 Linux 本地证据和目录边界；正式 Accepted 仍依赖 M0 验收流程
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 建立方案 A 布局边界和回归测试
         Evidence: tests/contract/test_p0_engineering_baseline.py
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 在 Ubuntu WSL 完成大小写敏感 Preflight、测试、构建和仓库外 wheel 验证
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-005
     PlanTaskId: P0-005
     Title: 建立 pyproject.toml、Python 版本矩阵、依赖组和锁定策略
@@ -161,9 +165,9 @@ Records:
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: P0-004 未正式验收，且 Python 3.10 至 3.12 安装矩阵尚无运行证据
+    BlockedReason: P0-004 已有 Linux 3.12 作者验证但尚未正式验收；Python 3.10 和 3.11 兼容安装证据仍缺失
     BlockedBy: QA/CE
-    NextAction: 在 CI 增加并运行批准后的解释器矩阵
+    NextAction: 在 CI 增加并运行 Python 3.10、3.11、3.12 和 3.13 的批准解释器矩阵
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -183,15 +187,15 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P0-005]
     AcceptanceCriteria: 两平台流水线从空缓存通过；失败能阻止合并；产物保留期已配置
-    TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003, RSK-P0-005]
     TargetDate: 待基线批准
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: 缺少代码托管平台、分支保护权限与远程运行记录；CHG-P0-001 将 Linux 实施顺序后移至 ACT-P0-003，但不移除 M0 前的 Linux 验收要求
+    BlockedReason: 远程 Git 仓库已可访问且本地 Linux 验证已通过，但仍缺受保护分支、必需检查和 GitHub Actions 的实际运行/工件留存证据
     BlockedBy: QA/SRE
-    NextAction: 按已批准的 CHG-P0-001 执行 ACT-P0-003 和 ACT-P0-004，并归档远程运行与保护规则
+    NextAction: 使用 GitHub 管理员权限配置分支保护并运行 CI，归档 Run URL、JUnit、coverage 和 artifact 哈希
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -206,6 +210,10 @@ Records:
         Actor: Codex
         Action: 将有效 Git 元数据和分支保护实现登记为 ACT-P0-004
         Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 已验证本地 Git 仓库、origin 和 Ubuntu WSL 本地 Linux 验证；远程治理证据仍缺失
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查
@@ -253,9 +261,9 @@ Records:
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: CHG-P0-002 将 Docker Desktop Engine 启动及 Compose 实启演练后移至 ACT-P0-005；静态配置通过但 M0 前仍需运行证据
+    BlockedReason: Docker Desktop Linux Engine 已启动，但 Docker Hub 镜像下载被网络拒绝；尚无容器健康检查和清理证据
     BlockedBy: SRE
-    NextAction: 按已批准的 CHG-P0-002 执行 ACT-P0-005，并保存 start、check、stop 输出
+    NextAction: 配置可访问的 Docker Hub 网络、镜像代理或预加载镜像后执行 ACT-P0-005，并保存 start、check、stop 输出
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -270,6 +278,10 @@ Records:
         Actor: Codex
         Action: 关联 CHG-P0-002 和 ACT-P0-005；Docker 演练延后但仍为 M0 必需项
         Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: Docker Engine 已可访问；两次拉取 postgres/redis 镜像均被 registry-1.docker.io 网络拒绝，未创建容器
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-009
     PlanTaskId: P0-009
     Title: 建立测试目录、稳定测试 ID、报告和证据哈希规范
@@ -339,13 +351,13 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-006]
     AcceptanceCriteria: 测试秘密能被阻断；高危漏洞有处置 SLA；许可证白名单经批准
-    TestEvidence: [scripts/ScanSecrets.py, scripts/VerifyLicenses.py, Configs/Security/LicensePolicy.yml, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [scripts/ScanSecrets.py, scripts/VerifyLicenses.py, Configs/Security/LicensePolicy.yml, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-005]
     TargetDate: 待基线批准
     Status: ANALYZING
     StatusChangedTs: "2026-07-31T03:30:00Z"
     Blocked: true
-    BlockedReason: 许可证白名单已获批准，但尚无受保护远程 CI 漏洞扫描运行证据
+    BlockedReason: Linux 本地秘密与许可证检查均通过，但尚无受保护远程 CI 漏洞扫描运行证据
     BlockedBy: SRE
     NextAction: 在受保护远程 CI 运行 Security baseline，并审阅归档的首次 pip-audit 报告
     EscalateTs: 待 SRE 指定
@@ -354,6 +366,10 @@ Records:
         Actor: Codex
         Action: 创建秘密、漏洞和许可证门禁实现
         Evidence: scripts/ScanSecrets.py
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 在 Ubuntu WSL 复验秘密扫描和许可证策略，均通过；不替代远程 CI 证据
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-012
     PlanTaskId: P0-012
     Title: 建立本计划任务到技术章节、测试 ID 和 Gate 的追踪矩阵
@@ -410,3 +426,367 @@ Records:
         Actor: Codex
         Action: 更新 M0 预审检查表，保持证据不足结论
         Evidence: Docs/DevelopmentWorkflow/M0PreReview.md
+  - WorkItemId: TSK-P1-001
+    PlanTaskId: P1-001
+    Title: 实现严格 Pydantic 基类和唯一显式 alias 机制
+    Description: 已实现严格模型、唯一 alias 校验与双向映射。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.1", "11.4"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P0-005]
+    AcceptanceCriteria: 未知字段、隐式类型和多 alias 被拒绝；YAML PascalCase 与 Python lowerCamelCase 双向测试通过
+    TestEvidence: [src/veritasquant/core/Models.py, tests/unit/core/test_models.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-002
+    PlanTaskId: P1-002
+    Title: 实现配置分层合并、冻结和规范化 config_hash
+    Description: 已实现严格 YAML 读取、规范化与配置哈希。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["11.4"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-001]
+    AcceptanceCriteria: 等价 YAML 哈希相同、行为差异哈希不同；重复键、密钥值和机器绝对路径不进入快照
+    TestEvidence: [src/veritasquant/application/Config.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-003
+    PlanTaskId: P1-003
+    Title: 实现 TsPrecision 的 Second/Millisecond 校验与序列化
+    Description: 已实现 UTC 精度校验和禁止隐式降精度。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.1", "15"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-001]
+    AcceptanceCriteria: 秒/毫秒正例通过；毫秒输入进入秒运行被拒绝；全仓新 wire Schema 无 timestamp 字段
+    TestEvidence: [src/veritasquant/core/Time.py, tests/unit/core/test_time.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-004
+    PlanTaskId: P1-004
+    Title: 实现 Decimal、UTC、null 和字段排序的规范序列化
+    Description: 已实现内容哈希路径的规范 JSON 序列化。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-003]
+    AcceptanceCriteria: 固定向量在 Windows/Linux 字节一致；禁止 float 进入金额/价格哈希路径
+    TestEvidence: [src/veritasquant/core/CanonicalJson.py, tests/unit/core/test_canonical_json.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-005
+    PlanTaskId: P1-005
+    Title: 实现 EventEnvelopeV1、内容哈希和因果链校验
+    Description: 已实现版本化事件信封、内容哈希和因果校验。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-004]
+    AcceptanceCriteria: 必填字段、账户作用域、哈希篡改、重复 ID 和因果引用测试通过
+    TestEvidence: [src/veritasquant/core/Events.py, tests/unit/core/test_events.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-006
+    PlanTaskId: P1-006
+    Title: 实现事件 Schema 注册表、兼容范围和确定性升级器
+    Description: 已实现首批事件注册、隔离和确定性升级。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-005]
+    AcceptanceCriteria: 未知主版本进入隔离；相同输入升级结果哈希稳定；不支持自动降级
+    TestEvidence: [src/veritasquant/core/EventRegistry.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-007
+    PlanTaskId: P1-007
+    Title: 实现 EventOrderingVersion V1 和六阶段排序器
+    Description: 已实现固定 phase 和完整排序键。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["15"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-005]
+    AcceptanceCriteria: 属性测试覆盖同秒/同毫秒、跨源和 event_id 决胜；排序结果跨平台一致
+    TestEvidence: [src/veritasquant/core/EventOrdering.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-008
+    PlanTaskId: P1-008
+    Title: 实现 ApiErrorCodes.yml 加载、唯一性和号段校验
+    Description: 已实现错误目录校验和兼容性检查。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["10"]
+    Owner: BE/CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-001]
+    AcceptanceCriteria: 成功码集合固定；重复、越界、复用和未注册业务码使启动或测试失败
+    TestEvidence: [src/veritasquant/application/ApiErrors.py, tests/unit/application/test_api_errors.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-009
+    PlanTaskId: P1-009
+    Title: 实现 ResponseEnvelopeV1 与统一异常映射
+    Description: 已实现稳定响应信封和异常映射。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["10"]
+    Owner: BE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-008]
+    AcceptanceCriteria: 成功无 error；错误含嵌套 code/catalog_version/retryable；敏感详情被过滤；JSON 契约快照通过
+    TestEvidence: [src/veritasquant/application/ResponseEnvelope.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-010
+    PlanTaskId: P1-010
+    Title: 实现结构化 JSON 日志、上下文传播、脱敏和有界队列
+    Description: 已实现结构化日志和队列降级保护。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["12.1"]
+    Owner: CE/SRE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-003]
+    AcceptanceCriteria: 必填字段完整；关联 ID 可贯通；秘密/PII 探针不出现在日志；队列故障不阻断保护动作
+    TestEvidence: [src/veritasquant/monitoring/StructuredLogging.py, tests/unit/monitoring/test_structured_logging.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-011
+    PlanTaskId: P1-011
+    Title: 实现不可变运行清单及各版本/哈希收集
+    Description: 已实现强制身份字段和不可变运行清单。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["12.2"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-002, P1-005]
+    AcceptanceCriteria: 两次同输入运行清单身份字段一致；缺少强制版本时禁止启动回测
+    TestEvidence: [src/veritasquant/core/RunManifest.py, tests/unit/core/test_run_manifest.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-012
+    PlanTaskId: P1-012
+    Title: 完成 wheel 包数据、console script 和仓库外启动
+    Description: 已实现正式入口、包数据和离线帮助验证。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["11.2"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P0-005]
+    AcceptanceCriteria: Windows/Linux 构建后在仓库外、不设 PYTHONPATH 可运行全部 --help；导入无副作用
+    TestEvidence: [pyproject.toml, tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+  - WorkItemId: TSK-P1-013
+    PlanTaskId: P1-013
+    Title: 建立模块依赖架构测试
+    Description: 已实现领域模块依赖边界契约测试。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["11.1"]
+    Owner: TL/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 4
+    Dependencies: [P0-004]
+    AcceptanceCriteria: 领域模块导入 FastAPI、Streamlit、具体数据库或入口包时 CI 失败
+    TestEvidence: [tests/contract/test_architecture_dependencies.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 待 M0 基线批准
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Blocked: true
+    BlockedReason: P0/M0 尚未正式验收，且缺非作者评审和独立 QA 验收
+    BlockedBy: PO/TL/QA
+    NextAction: M0 通过后由非作者评审实现并安排独立验收
+    EscalateTs: 待 TL 指定
+    AuditHistory:
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 根据作者实现与测试证据补登 P1 工作项
+        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
