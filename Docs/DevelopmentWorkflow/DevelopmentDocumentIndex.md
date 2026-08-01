@@ -26,6 +26,7 @@
 | M0 Linux 验证证据 | [M0LinuxValidationEvidence.md](M0/M0LinuxValidationEvidence.md) | WSL Linux 大小写、构建、测试和仓库外 wheel 验证结果。 |
 | M0 独立角色与审阅 | [M0IndependentReviewEvidence.md](M0/M0IndependentReviewEvidence.md) | 非作者评审、独立 QA/SRE 与 Incident Commander 替补的确认和审阅记录。 |
 | M0 Gate 报告 | [M0StageGateReport.md](M0/M0StageGateReport.md) | P0-013 的强制证据检查表、指标、风险决议和人类签署位置。 |
+| M1 Gate 报告（待签署） | [M1StageGateReport.md](M1/M1StageGateReport.md)、[M1PreReview.md](M1/M1PreReview.md) | P1-076 的强制检查清单 7 项、指标样本、风险决议和人类签署位置；签署前状态为 DRAFT。 |
 | CI 治理记录 | [P0-006CiGovernance.md](P0/P0-006CiGovernance.md) | 必需检查、证据保留和待管理员配置。 |
 | 测试证据规范 | [TestEvidencePolicy.md](TestEvidencePolicy.md) | 稳定测试 ID、JUnit、覆盖率、种子和哈希规范。 |
 | 安全许可证策略 | [../../Configs/Security/LicensePolicy.yml](../../Configs/Security/LicensePolicy.yml) | 已批准的许可证白名单及漏洞处置 SLA。 |

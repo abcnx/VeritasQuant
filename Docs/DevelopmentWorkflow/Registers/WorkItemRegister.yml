@@ -1914,17 +1914,17 @@ Records:
     TestEvidence: [src/veritasquant/accounts/Snapshot.py, tests/unit/accounts/test_snapshot.py, Docs/DevelopmentWorkflow/P1/P1-041SnapshotEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/accounts/Snapshot.py
   - WorkItemId: TSK-P1-042
     PlanTaskId: P1-042
@@ -1942,17 +1942,17 @@ Records:
     TestEvidence: [src/veritasquant/accounts/PropertySequences.py, tests/unit/accounts/test_property_sequences.py, Docs/DevelopmentWorkflow/P1/P1-042LedgerPropertyEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/accounts/PropertySequences.py
   - WorkItemId: TSK-P1-043
     PlanTaskId: P1-043
@@ -1970,17 +1970,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/Orders.py, tests/unit/execution/test_orders.py, Docs/DevelopmentWorkflow/P1/P1-043OrdersEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/Orders.py
   - WorkItemId: TSK-P1-044
     PlanTaskId: P1-044
@@ -1998,17 +1998,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/OrderStateMachine.py, tests/unit/execution/test_order_state_machine.py, Docs/DevelopmentWorkflow/P1/P1-044OrderStateMachineEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/OrderStateMachine.py
   - WorkItemId: TSK-P1-045
     PlanTaskId: P1-045
@@ -2026,17 +2026,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/ReportProcessor.py, tests/unit/execution/test_report_processor.py, Docs/DevelopmentWorkflow/P1/P1-045ReportProcessorEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/ReportProcessor.py
   - WorkItemId: TSK-P1-046
     PlanTaskId: P1-046
@@ -2054,17 +2054,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/IdealExecution.py, tests/unit/execution/test_ideal_execution.py, Docs/DevelopmentWorkflow/P1/P1-046IdealExecutionEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/IdealExecution.py
   - WorkItemId: TSK-P1-047
     PlanTaskId: P1-047
@@ -2082,17 +2082,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/BarPath.py, tests/unit/execution/test_bar_path.py, Docs/DevelopmentWorkflow/P1/P1-047BarPathEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/BarPath.py
   - WorkItemId: TSK-P1-048
     PlanTaskId: P1-048
@@ -2110,17 +2110,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/ExecutionModel.py, tests/unit/execution/test_execution_model.py, Docs/DevelopmentWorkflow/P1/P1-048ExecutionModelEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/ExecutionModel.py
   - WorkItemId: TSK-P1-049
     PlanTaskId: P1-049
@@ -2138,17 +2138,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/Liquidity.py, tests/unit/execution/test_liquidity.py, Docs/DevelopmentWorkflow/P1/P1-049LiquidityEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/Liquidity.py
   - WorkItemId: TSK-P1-050
     PlanTaskId: P1-050
@@ -2166,17 +2166,17 @@ Records:
     TestEvidence: [src/veritasquant/execution/AtomicExecution.py, tests/unit/execution/test_atomic_execution.py, Docs/DevelopmentWorkflow/P1/P1-050AtomicExecutionEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/execution/AtomicExecution.py
   - WorkItemId: TSK-P1-051
     PlanTaskId: P1-051
@@ -2194,17 +2194,17 @@ Records:
     TestEvidence: [tests/unit/execution/OrderModelSuite.py, tests/unit/execution/test_order_model_suite.py, Docs/DevelopmentWorkflow/P1/P1-051OrderModelEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/unit/execution/OrderModelSuite.py
   - WorkItemId: TSK-P1-052
     PlanTaskId: P1-052
@@ -2222,17 +2222,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/AlertModels.py, tests/unit/risk/test_alert_models.py, Docs/DevelopmentWorkflow/P1/P1-052AlertModelsEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/AlertModels.py
   - WorkItemId: TSK-P1-053
     PlanTaskId: P1-053
@@ -2250,17 +2250,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/AlertNormalizer.py, tests/unit/risk/test_alert_normalizer.py, Docs/DevelopmentWorkflow/P1/P1-053AlertNormalizerEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/AlertNormalizer.py
   - WorkItemId: TSK-P1-054
     PlanTaskId: P1-054
@@ -2278,17 +2278,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/AlertCorrelator.py, tests/unit/risk/test_alert_correlator.py, Docs/DevelopmentWorkflow/P1/P1-054AlertCorrelatorEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/AlertCorrelator.py
   - WorkItemId: TSK-P1-055
     PlanTaskId: P1-055
@@ -2306,17 +2306,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/AlertPolicyEngine.py, tests/unit/risk/test_alert_policy_engine.py, Docs/DevelopmentWorkflow/P1/P1-055AlertPolicyEngineEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/AlertPolicyEngine.py
   - WorkItemId: TSK-P1-056
     PlanTaskId: P1-056
@@ -2334,17 +2334,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/RiskEngine.py, tests/unit/risk/test_risk_engine.py, Docs/DevelopmentWorkflow/P1/P1-056RiskEngineEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/RiskEngine.py
   - WorkItemId: TSK-P1-057
     PlanTaskId: P1-057
@@ -2362,17 +2362,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/ControlBook.py, tests/unit/risk/test_control_book.py, Docs/DevelopmentWorkflow/P1/P1-057ControlBookEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/ControlBook.py
   - WorkItemId: TSK-P1-058
     PlanTaskId: P1-058
@@ -2390,17 +2390,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/BasicRules.py, tests/unit/risk/test_basic_rules.py, Docs/DevelopmentWorkflow/P1/P1-058BasicRulesEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/BasicRules.py
   - WorkItemId: TSK-P1-059
     PlanTaskId: P1-059
@@ -2418,17 +2418,17 @@ Records:
     TestEvidence: [src/veritasquant/risk/AtomicRisk.py, tests/unit/risk/test_atomic_risk.py, Docs/DevelopmentWorkflow/P1/P1-059AtomicRiskEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/risk/AtomicRisk.py
   - WorkItemId: TSK-P1-060
     PlanTaskId: P1-060
@@ -2446,17 +2446,17 @@ Records:
     TestEvidence: [tests/contract/test_risk_contracts.py, Docs/DevelopmentWorkflow/P1/P1-060RiskContractsEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/contract/test_risk_contracts.py
   - WorkItemId: TSK-P1-061
     PlanTaskId: P1-061
@@ -2474,17 +2474,17 @@ Records:
     TestEvidence: [src/veritasquant/strategy/BaseStrategy.py, tests/unit/strategy/test_base_strategy.py, Docs/DevelopmentWorkflow/P1/P1-061BaseStrategyEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/strategy/BaseStrategy.py
   - WorkItemId: TSK-P1-062
     PlanTaskId: P1-062
@@ -2502,17 +2502,17 @@ Records:
     TestEvidence: [src/veritasquant/strategy/IndicatorWindow.py, tests/unit/strategy/test_indicator_window.py, Docs/DevelopmentWorkflow/P1/P1-062IndicatorWindowEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/strategy/IndicatorWindow.py
   - WorkItemId: TSK-P1-063
     PlanTaskId: P1-063
@@ -2530,17 +2530,17 @@ Records:
     TestEvidence: [src/veritasquant/strategy/Sandbox.py, tests/unit/strategy/test_sandbox.py, Docs/DevelopmentWorkflow/P1/P1-063SandboxEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/strategy/Sandbox.py
   - WorkItemId: TSK-P1-064
     PlanTaskId: P1-064
@@ -2558,17 +2558,17 @@ Records:
     TestEvidence: [src/veritasquant/strategy/ExampleStrategies.py, tests/unit/strategy/test_example_strategies.py, Docs/DevelopmentWorkflow/P1/P1-064ExampleStrategiesEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/strategy/ExampleStrategies.py
   - WorkItemId: TSK-P1-065
     PlanTaskId: P1-065
@@ -2586,17 +2586,17 @@ Records:
     TestEvidence: [src/veritasquant/application/BacktestService.py, tests/unit/application/test_backtest_service.py, Docs/DevelopmentWorkflow/P1/P1-065BacktestServiceEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/application/BacktestService.py
   - WorkItemId: TSK-P1-066
     PlanTaskId: P1-066
@@ -2614,17 +2614,17 @@ Records:
     TestEvidence: [src/veritasquant/reporting/Performance.py, tests/unit/reporting/test_performance.py, Docs/DevelopmentWorkflow/P1/P1-066PerformanceEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/reporting/Performance.py
   - WorkItemId: TSK-P1-067
     PlanTaskId: P1-067
@@ -2642,17 +2642,17 @@ Records:
     TestEvidence: [src/veritasquant/reporting/DualTrackReport.py, tests/unit/reporting/test_dual_track_report.py, Docs/DevelopmentWorkflow/P1/P1-067DualTrackEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/reporting/DualTrackReport.py
   - WorkItemId: TSK-P1-068
     PlanTaskId: P1-068
@@ -2670,17 +2670,17 @@ Records:
     TestEvidence: [src/veritasquant/reporting/Artifacts.py, tests/unit/reporting/test_artifacts.py, Docs/DevelopmentWorkflow/P1/P1-068ArtifactsEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/reporting/Artifacts.py
   - WorkItemId: TSK-P1-069
     PlanTaskId: P1-069
@@ -2698,17 +2698,17 @@ Records:
     TestEvidence: [src/veritasquant/reporting/LookaheadProbe.py, tests/unit/reporting/test_lookahead_probe.py, Docs/DevelopmentWorkflow/P1/P1-069LookaheadEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/reporting/LookaheadProbe.py
   - WorkItemId: TSK-P1-070
     PlanTaskId: P1-070
@@ -2726,17 +2726,17 @@ Records:
     TestEvidence: [src/veritasquant/strategy/SandboxSecurity.py, tests/unit/strategy/test_sandbox_security.py, Docs/DevelopmentWorkflow/P1/P1-070SandboxSecurityEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/strategy/SandboxSecurity.py
   - WorkItemId: TSK-P1-071
     PlanTaskId: P1-071
@@ -2754,17 +2754,17 @@ Records:
     TestEvidence: [tests/integration/test_end_to_end_pipeline.py, Docs/DevelopmentWorkflow/P1/P1-071EndToEndEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/integration/test_end_to_end_pipeline.py
   - WorkItemId: TSK-P1-072
     PlanTaskId: P1-072
@@ -2782,17 +2782,17 @@ Records:
     TestEvidence: [tests/integration/test_cross_platform_regression.py, Docs/DevelopmentWorkflow/P1/P1-072CrossPlatformEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/integration/test_cross_platform_regression.py
   - WorkItemId: TSK-P1-073
     PlanTaskId: P1-073
@@ -2810,17 +2810,17 @@ Records:
     TestEvidence: [tests/integration/test_performance_baseline.py, Docs/DevelopmentWorkflow/P1/P1-073PerformanceBaselineEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/integration/test_performance_baseline.py
   - WorkItemId: TSK-P1-074
     PlanTaskId: P1-074
@@ -2838,17 +2838,17 @@ Records:
     TestEvidence: [tests/contract/test_traceability_audit.py, Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml, Docs/DevelopmentWorkflow/P1/P1-074TraceabilityAuditEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: tests/contract/test_traceability_audit.py
   - WorkItemId: TSK-P1-075
     PlanTaskId: P1-075
@@ -2866,17 +2866,17 @@ Records:
     TestEvidence: [src/veritasquant/application/StageGatePolicy.py, tests/unit/application/test_stage_gate_policy.py, Docs/DevelopmentWorkflow/P1/P1-075StageGatePolicyEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/application/StageGatePolicy.py
   - WorkItemId: TSK-P1-076
     PlanTaskId: P1-076
@@ -2894,15 +2894,15 @@ Records:
     TestEvidence: [src/veritasquant/application/StageGateReport.py, tests/unit/application/test_stage_gate_report.py, Docs/DevelopmentWorkflow/P1/P1-076StageGateReportEvidence.md]
     RiskLinks: [RSK-P1-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T23:38:20Z"
     Blocked: false
     BlockedReason: ""
     BlockedBy: ""
-    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    NextAction: 已合并至上游 dev（PR #121, bf60bb5）；验收通过，状态流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
-      - Ts: "2026-08-02T07:30:00Z"
+      - Ts: "2026-08-01T23:38:20Z"
         Actor: BeeAgent
-        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/application/StageGateReport.py
