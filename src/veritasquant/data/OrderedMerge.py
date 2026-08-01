@@ -9,8 +9,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
-from dataclasses import dataclass, field
-from heapq import heapify, heappop, heappush
+from dataclasses import dataclass
+from heapq import heappop, heappush
 from typing import TypeVar
 
 from veritasquant.core.Events import EventEnvelopeV1
@@ -79,7 +79,7 @@ class SequentialIteratorV1(Iterator[T]):
             self._exhausted = True
             return
         key = self._sortKey(item)
-        if self._lastKey is not None and key < self._lastKey:
+        if self._lastKey is not None and _compareKeys(key, self._lastKey) < 0:
             self._invalidCount += 1
             if self._strict:
                 raise OrderedSourceError("来源顺序倒退，严格模式拒绝")
@@ -219,3 +219,18 @@ def _normalizeKey(key: object) -> tuple[object, ...]:
     if isinstance(key, tuple):
         return key
     return (key,)
+
+
+def _compareKeys(left: object, right: object) -> int:
+    """比较两个排序键；tuple 键逐项比较，否则直接比较。"""
+    if isinstance(left, tuple) and isinstance(right, tuple):
+        if left < right:
+            return -1
+        if left > right:
+            return 1
+        return 0
+    if left < right:  # type: ignore[operator]
+        return -1
+    if left > right:  # type: ignore[operator]
+        return 1
+    return 0

@@ -6,13 +6,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
 
 from veritasquant.core.CanonicalJson import canonicalHash
 from veritasquant.core.Models import PascalAlias, StrictModel
-from veritasquant.core.Time import TsPrecision, parseUtcTimestamp, serializeUtcTimestamp
+from veritasquant.core.Time import TsPrecision, serializeUtcTimestamp
 from veritasquant.data.MinuteBar import MinuteBarContractError, MinuteBarSchemaV1
 from veritasquant.instruments.Registry import InstrumentContractError, InstrumentV1
 

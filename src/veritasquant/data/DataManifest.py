@@ -180,8 +180,7 @@ def signManifest(
         "LocalAbsolutePath": localAbsolutePath,
         "Note": note,
     })
-    # 显式触发身份校验，防止直接构造绕过
-    signed.verifyIdentity()
+    # 身份校验由模型校验器在构造时强制执行，篡改无法绕过
     return signed
 
 

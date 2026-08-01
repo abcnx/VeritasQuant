@@ -8,7 +8,6 @@ import pytest
 from pydantic import ValidationError
 
 from veritasquant.data.DataManifest import (
-    DataManifestError,
     DataManifestFileV1,
     DataManifestV1,
     SignedDataManifestV1,
@@ -90,7 +89,7 @@ def test_schema_and_calendar_change_must_change_id() -> None:
 
 def test_tampered_manifest_is_rejected_on_validation() -> None:
     manifest = _manifest()
-    signed = signManifest(manifest, "sig-1")
+    signManifest(manifest, "sig-1")
     # 直接改 dataVersionId 应被拒绝（模型校验器包装为 ValidationError）
     with pytest.raises(ValidationError, match="篡改"):
         SignedDataManifestV1.model_validate({

@@ -9,8 +9,8 @@ from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum
 
-from veritasquant.core.Events import EventContractError, EventEnvelopeV1
-from veritasquant.core.Time import TsPrecision, parseUtcTimestamp, validateUtcTimestamp
+from veritasquant.core.Events import EventEnvelopeV1
+from veritasquant.core.Time import TsPrecision, parseUtcTimestamp
 
 
 class LogicalClockError(ValueError):

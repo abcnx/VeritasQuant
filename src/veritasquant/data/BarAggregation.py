@@ -105,7 +105,6 @@ def _nextValidOpen(periodStart: datetime, calendar: TradingCalendarV1 | None) ->
     """日线可查询的下一有效时点 = 次一交易日首会话开盘（UTC）。"""
     if calendar is None:
         return _periodEndOf(periodStart, BarPeriod.Day)
-    zone = ZoneInfo(calendar.timeZone)
     nextDay = periodStart + timedelta(days=1)
     opens = [
         _sessionTimesUtc(nextDay, session, calendar)[0] for session in calendar.sessions

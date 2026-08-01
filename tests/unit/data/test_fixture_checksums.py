@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from veritasquant.data.FixtureChecksums import (
     FIXTURE_FILES,
+    FIXTURES_DIR,
     FixtureError,
-    computeFixtureChecksums,
     fixtureDataSequenceHash,
     loadExpectedChecksums,
     normalizedFixtureLines,
@@ -38,13 +40,9 @@ def test_checksum_is_platform_independent() -> None:
 
 
 def test_missing_fixture_raises() -> None:
-    from pathlib import Path
-
-    from veritasquant.data.FixtureChecksums import FIXTURES_DIR
-
     missing = FIXTURES_DIR / "BatchA_DoesNotExist.mvsv"
     with pytest.raises(FixtureError, match="夹具缺失"):
-        computeFixtureChecksums() if False else _requireFile(missing)
+        _requireFile(missing)
 
 
 def _requireFile(path: Path) -> None:
