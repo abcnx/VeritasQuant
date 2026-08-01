@@ -1194,6 +1194,230 @@ Records:
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
         Evidence: https://github.com/ACANX/VeritasQuant/pull/95
+  - WorkItemId: TSK-P1-019
+    PlanTaskId: P1-019
+    Title: 实现规范化 Parquet 写入及固定物理参数
+    Description: 已实现 MinuteBarSchemaV1 到不可变规范化 Parquet 的确定性写入：固定 Arrow 类型、Decimal 精度、稳定主键排序、固定行组大小、PLAIN 编码与写入器版本 vq-parquet-v1；逻辑路径按数据集/市场/标的/年月/内容哈希，旧版本不覆盖。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-015, P1-018]
+    AcceptanceCriteria: 固定输入在两平台生成逻辑等价内容、稳定行序和预期 Schema；旧版本不覆盖
+    TestEvidence: [src/veritasquant/data/ParquetFile.py, tests/unit/data/test_parquet_file.py, Docs/DevelopmentWorkflow/P1/P1-019ParquetWriteEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 9/9、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-019 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-019ParquetWriteEvidence.md
+  - WorkItemId: TSK-P1-020
+    PlanTaskId: P1-020
+    Title: 实现 DataManifestV1、数据版本哈希和修订链
+    Description: 已实现 DataManifestV1 与 SignedDataManifestV1：data_version_id 只由规范化身份字段 SHA-256 计算；存储 URI/下载时间/本机路径/签名/备注不参与身份；修订链强制结构化修订原因；篡改被拒绝。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1"]
+    Owner: DE/CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-019, P1-004]
+    AcceptanceCriteria: 路径变化不改身份；内容/Schema/日历变化必改 ID；manifest 篡改被拒绝
+    TestEvidence: [src/veritasquant/data/DataManifest.py, tests/unit/data/test_data_manifest.py, Docs/DevelopmentWorkflow/P1/P1-020DataManifestEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 9/9、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-020 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-020DataManifestEvidence.md
+  - WorkItemId: TSK-P1-021
+    PlanTaskId: P1-021
+    Title: 实现质量规则、隔离记录和 dry-run 摘要
+    Description: 已实现 7 类固定质量规则（时间/重复/缺口/OHLC/会话/标的映射/来源质量）；失败记录进入隔离集合；dry-run 摘要含文件/配置/契约哈希，严禁静默跳过或修正。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.4"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-017, P1-020]
+    AcceptanceCriteria: 时间、重复、缺口、会话、映射等失败不静默跳过；提交前可审阅文件/配置/契约哈希
+    TestEvidence: [src/veritasquant/data/QualityRules.py, tests/unit/data/test_quality_rules.py, Docs/DevelopmentWorkflow/P1/P1-021QualityRulesEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 9/9、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-021 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-021QualityRulesEvidence.md
+  - WorkItemId: TSK-P1-022
+    PlanTaskId: P1-022
+    Title: 实现顺序迭代器和多源最小堆归并
+    Description: 已实现 SequentialIteratorV1 有界内存顺序迭代器与 MinHeapMergerV1 最小堆归并；按 EventOrderingVersion V1 完整排序键；乱序来源严格拒绝或宽容隔离。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.3", "15"]
+    Owner: DE/CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-020, P1-007]
+    AcceptanceCriteria: 大文件内存有界；跨文件结果符合完整排序键；乱序来源被拒绝或隔离
+    TestEvidence: [src/veritasquant/data/OrderedMerge.py, tests/unit/data/test_ordered_merge.py, Docs/DevelopmentWorkflow/P1/P1-022OrderedMergeEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 8/8、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-022 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-022OrderedMergeEvidence.md
+  - WorkItemId: TSK-P1-023
+    PlanTaskId: P1-023
+    Title: 实现小时/日 Bar 完成后聚合和受限窗口
+    Description: 已实现基于已完成分钟 Bar 的小时/日线增量聚合；未完成周期查询失败；日线仅在会话收盘后的下一有效时点可用；覆盖跨午夜与半日市边界；OHLCV 全程 Decimal。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.3"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-022]
+    AcceptanceCriteria: 未完成 Bar 查询失败；日线只在收盘后可用；边界/半日市测试通过
+    TestEvidence: [src/veritasquant/data/BarAggregation.py, tests/unit/data/test_bar_aggregation.py, Docs/DevelopmentWorkflow/P1/P1-023BarAggregationEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 8/8、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-023 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-023BarAggregationEvidence.md
+  - WorkItemId: TSK-P1-024
+    PlanTaskId: P1-024
+    Title: 建立批次 A 固定数据夹具与跨平台 checksum
+    Description: 已建立批次 A 固定夹具覆盖证券 518880、黄金期货、缺口与错误样本；字节 SHA-256 与规范化数据序列哈希固化在 BatchAChecksums.yml 并纳入测试回归。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["5.1", "5.4"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-014, P1-015, P1-016, P1-017, P1-018, P1-019, P1-020, P1-021, P1-022, P1-023]
+    AcceptanceCriteria: 夹具含证券、期货、缺口和错误样本；数据与事件 checksum 在 CI 固定
+    TestEvidence: [Data/Fixtures/BatchA, src/veritasquant/data/FixtureChecksums.py, tests/unit/data/test_fixture_checksums.py, Docs/DevelopmentWorkflow/P1/P1-024FixtureChecksumsEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 6/6、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 建立批次 A 夹具与 checksum 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-024FixtureChecksumsEvidence.md
+  - WorkItemId: TSK-P1-025
+    PlanTaskId: P1-025
+    Title: 实现 UTC 逻辑时钟和阶段推进器
+    Description: 已实现 UtcLogicalClockV1 仅前进逻辑时钟与 PhaseAdvancerV1 阶段推进器；时钟只前进、派生事件不得回到更早/相同 phase、非法跨阶段拒绝、禁止系统时间替代。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["3", "15"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-007, P1-022]
+    AcceptanceCriteria: 时钟只前进；派生事件不能回到更早 phase；非法跨阶段被拒绝
+    TestEvidence: [src/veritasquant/core/LogicalClock.py, tests/unit/core/test_logical_clock.py, Docs/DevelopmentWorkflow/P1/P1-025LogicalClockEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 10/10、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-025 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-025LogicalClockEvidence.md
+  - WorkItemId: TSK-P1-026
+    PlanTaskId: P1-026
+    Title: 实现确定性事件总线和订阅路由
+    Description: 已实现 DeterministicEventBusV1：订阅顺序冻结（注册序/来源排名序）、同输入投递顺序固定、消费者失败策略显式（StopRun/Isolate/RetryFixed）；投递推进逻辑时钟。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6", "15"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-025, P1-006]
+    AcceptanceCriteria: 订阅顺序冻结；同输入投递顺序固定；消费者异常有明确失败策略
+    TestEvidence: [src/veritasquant/core/EventBus.py, tests/unit/core/test_event_bus.py, Docs/DevelopmentWorkflow/P1/P1-026EventBusEvidence.md]
+    RiskLinks: [RSK-P0-006]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T06:00:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并通过本地验证（pytest 10/10、ruff、mypy、Preflight 0）；待验收 PR 审批合并后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T06:00:00Z"
+        Actor: BeeAgent
+        Action: 实现 P1-026 并提交单独 commit；本地验证全绿
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-026EventBusEvidence.md
   - WorkItemId: TSK-P1-027
     PlanTaskId: P1-027
     Title: 实现 inbox 幂等与内容冲突检测
