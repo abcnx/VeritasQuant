@@ -111,7 +111,7 @@ Records:
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 由合格非作者人类实际执行定位演练并确认；abcnx 已审查 PR #99 并请求变更，人类验收证据补齐后由非作者 PO/TL 审批
+    NextAction: 人类执行证据已归档，等待非作者 PO/TL 审批验收 PR；abcnx 已审查 PR #99 并请求变更，审批后由非作者 PO/TL 决定状态流转
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"

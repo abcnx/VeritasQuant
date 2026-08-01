@@ -29,7 +29,7 @@
 - 父提交（评审基线）：`6f4c2a122fe491a7295771bd788530546d457554`（origin/dev）
 - 复核方法：本记录所有定位目标均已于 `2026-08-01T16:05:00Z` 在提交 `e4c67e1` 上复读核验（见下方「定位目标复核」）；下方复核时间晚于首次定位时间，用于证明目标在记录定稿时仍存在且可达。
 - 原始会话日志：本文件对应的完整定位/读取操作日志由 OpenClawAssistant 会话保留，未归档为不可变工件。abcnx 审查要求归档原始日志或不可变工件链接；在归档前，本文件与下方复核表为当前可访问证据。
-- 人类独立验收状态：`待填写`。本记录不声称已满足「合格非作者人类执行演练并确认」；该事项登记于 `ACT-P0-007`（`Docs/DevelopmentWorkflow/ActionRegister.yml`）与 `M0IndependentReviewEvidence.md`，未关闭。
+- 人类执行证据：已归档。ACANX 于 `2026-08-01T16:41:00Z` 独立执行定位演练并签署（见 [P0-003HumanDrillWorksheet.md](P0-003HumanDrillWorksheet.md) 与本文件「人类执行记录」）；状态保持 `IN_REVIEW`，等待非作者 PO/TL 审批验收 PR。
 
 ## 必达定位项
 
