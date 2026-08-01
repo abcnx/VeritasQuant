@@ -31,5 +31,6 @@
 | 安全许可证策略 | [../../Configs/Security/LicensePolicy.yml](../../Configs/Security/LicensePolicy.yml) | 已批准的许可证白名单及漏洞处置 SLA。 |
 | Docker 开发依赖 | [../../Docker/DevelopmentEnvironment.md](../../Docker/DevelopmentEnvironment.md) | 临时 PostgreSQL/Redis 的启动和清理说明。 |
 | P1 实现证据 | [P1-001-P1-013Evidence.md](P1/P1-001-P1-013Evidence.md) | P1 作者测试、工件和残余风险。 |
+| P1-019~026 实现证据 | [P1-019ParquetWriteEvidence.md](P1/P1-019ParquetWriteEvidence.md)、[P1-020DataManifestEvidence.md](P1/P1-020DataManifestEvidence.md)、[P1-021QualityRulesEvidence.md](P1/P1-021QualityRulesEvidence.md)、[P1-022OrderedMergeEvidence.md](P1/P1-022OrderedMergeEvidence.md)、[P1-023BarAggregationEvidence.md](P1/P1-023BarAggregationEvidence.md)、[P1-024FixtureChecksumsEvidence.md](P1/P1-024FixtureChecksumsEvidence.md)、[P1-025LogicalClockEvidence.md](P1/P1-025LogicalClockEvidence.md)、[P1-026EventBusEvidence.md](P1/P1-026EventBusEvidence.md) | Parquet 写入、DataManifest、质量规则、归并、聚合、夹具、逻辑时钟与事件总线证据。 |
 
 所有新增开发过程文档应保存于 `Docs/DevelopmentWorkflow/`；设计决策变更仍必须同步修改技术方案。

@@ -76,7 +76,7 @@ def test_traceability_matrix_covers_all_mandatory_review_contracts() -> None:
     rows = matrix["Rows"]
     assert isinstance(rows, list)
     requirementIds = {row["RequirementId"] for row in rows if isinstance(row, dict)}
-    assert requirementIds == {f"R-{number:03d}" for number in range(1, 18)}
+    assert requirementIds == {f"R-{number:03d}" for number in range(1, 19)}
     for row in rows:
         assert row["PlanTaskIds"]
         assert row["TestIds"]

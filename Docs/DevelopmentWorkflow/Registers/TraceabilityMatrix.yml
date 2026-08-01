@@ -126,6 +126,16 @@ Rows:
     TestIds: [MODEL-JOB-STATE-MACHINE-001, MODEL-JOB-MISFIRE-001]
     CiSuites: [PropertyModel, Integration]
     LatestGate: M2
+  - RequirementId: R-018
+    TechSpecRef: "6, 15"
+    PlanTaskIds: [P1-025, P1-026]
+    TestIds: [UNIT-LOGICAL-CLOCK-001, UNIT-EVENT-BUS-DETERMINISM-001]
+    CiSuites: [UnitContract]
+    LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/core/test_logical_clock.py, tests/unit/core/test_event_bus.py, Docs/DevelopmentWorkflow/P1/P1-025LogicalClockEvidence.md, Docs/DevelopmentWorkflow/P1/P1-026EventBusEvidence.md]
+      Gaps: 缺完整事件循环集成、跨进程总线契约和 M1 Gate 证据
 
 # 2026-08-01 P0-012 独立复核快照
 #
