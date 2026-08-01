@@ -50,7 +50,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/execution/test_order_state_machine.py, tests/unit/execution/OrderModelSuite.py, tests/unit/execution/test_report_processor.py]
+      EvidenceLinks: [tests/unit/execution/test_order_state_machine.py, src/veritasquant/execution/OrderModelSuite.py, tests/unit/execution/test_report_processor.py]
       Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-007
     TechSpecRef: "4.3"
