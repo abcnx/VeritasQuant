@@ -135,7 +135,7 @@ Records:
     DueDate: M0 正式评审前
     VerificationMethod: 指定至少一名未编写受审代码的人类评审者和一名 Incident Commander 替补，记录企业目录引用、审阅范围、确认 UTC 时间与 Gate 回避规则。
     Status: OPEN
-    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md, Docs/DevelopmentWorkflow/M0StageGateReport.md]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/P0-003HumanDrillWorksheet.md]
     AuditHistory:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: Codex
@@ -149,6 +149,10 @@ Records:
         Actor: ProjectAuthor
         Action: 延后非作者人类评审和 Incident Commander 替补确认；行动保持 OPEN，但不再阻断 P0 开发或收尾
         Evidence: 当前任务会话的延后指示
+      - Ts: "2026-08-01T16:41:00Z"
+        Actor: ACANX
+        Action: 作为非作者人类独立执行 P0-003 定位演练并签署执行表；P0-003 人类评审部分完成；Incident Commander 替补仍未指定，行动保持 OPEN
+        Evidence: Docs/DevelopmentWorkflow/P0-003HumanDrillWorksheet.md
   - ActionId: ACT-P0-008
     Title: 为 Docker 开发验证提供可访问的镜像来源
     SourceId: P0-008
