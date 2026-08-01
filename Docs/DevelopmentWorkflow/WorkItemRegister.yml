@@ -134,6 +134,10 @@ Records:
         Actor: OpenClawAssistant
         Action: 处理 abcnx 对 PR #99 的审查请求；补充提交 SHA、执行环境与定位目标复核表，如实降级代理结论并登记人类验收待办；状态保持 IN_REVIEW，未伪造 ACCEPTED
         Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
+      - Ts: "2026-08-01T16:26:59Z"
+        Actor: OpenClawAssistant
+        Action: 处理 abcnx 第二轮意见；将 PR 关联方式由 Closes #52 改为 Refs #52，避免在 P0-003 未完成人类验收前提前关闭 issue；本 PR 定位为文档归档变更，不视为验收 PR
+        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
   - WorkItemId: TSK-P0-004
     PlanTaskId: P0-004
     Title: 按方案 A 创建 src 布局、根级目录和占位包
