@@ -62,12 +62,12 @@ Records:
     TestEvidence: [Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T04:15:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T14:41:20Z"
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 由非作者人类复核单人 RACI、联系渠道和事故替补限制
+    NextAction: 由非作者 PO 审批 P0-002 验收 PR；合并后归档为 ACCEPTED，ACT-P0-007 与 M0 Gate 仍需独立结论
     EscalateTs: null
     AuditHistory:
       - Ts: "2026-07-30T18:47:58Z"
@@ -85,6 +85,10 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准临时 RACI、联系渠道和值班限制；任务进入 IN_REVIEW，不标记 ACCEPTED
+        Evidence: Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md
+      - Ts: "2026-08-01T14:41:20Z"
+        Actor: BeeAgent
+        Action: 提交 P0-002 独立验收 PR；由非作者 PO 审批并合并后归档为 ACCEPTED，ACT-P0-007 保持 M0 Gate 未决
         Evidence: Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md
   - WorkItemId: TSK-P0-003
     PlanTaskId: P0-003
