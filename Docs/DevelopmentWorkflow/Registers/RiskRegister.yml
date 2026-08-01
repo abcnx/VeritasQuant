@@ -30,11 +30,11 @@ Records:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 关联后续行动项；风险未被接受、降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T04:05:00Z"
         Actor: Codex
         Action: 更新单 Agent 开发模式事实并关联治理责任人补充行动
@@ -42,7 +42,7 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 确认临时治理模型；风险转入监控，独立评审和替补仍未完成
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
   - RiskId: RSK-P0-002
     Title: 尚无 Linux/Windows CI 实际运行证据
     SourcePlanTaskId: P0-006
@@ -71,7 +71,7 @@ Records:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T08:12:00Z"
         Actor: Codex
         Action: 两次推送 bd62269 均因 github.com:443 网络连接拒绝失败；Linux 本地验证不受影响
@@ -108,11 +108,11 @@ Records:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 根据 Git 元数据检查结果登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:57:00Z"
         Actor: Codex
         Action: 关联 ACT-P0-004；风险未降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 复核后确认本地 Git 与远程可用；风险范围收敛为远程保护规则和合并阻断证据
@@ -153,7 +153,7 @@ Records:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记 Docker 实施验证缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:40:00Z"
         Actor: Codex
         Action: 静态 Compose 配置通过；实际启动因 Docker Engine 未运行失败，未创建容器
@@ -161,7 +161,7 @@ Records:
       - Ts: "2026-07-31T04:00:00Z"
         Actor: Codex
         Action: 关联 ACT-P0-005；风险未降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: Docker Engine 已恢复，但 Docker Hub 网络拒绝拉取；新增 ACT-P0-008 处理镜像来源
@@ -198,7 +198,7 @@ Records:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记安全基线外部批准缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:45:00Z"
         Actor: Codex
         Action: 秘密扫描为零，运行依赖 pip-audit 无已知漏洞，许可证内容审查通过但待签署门禁仍失败
@@ -237,10 +237,10 @@ Records:
     Contingency: 对应 Gate 结论为 INSUFFICIENT_EVIDENCE
     ResidualRisk: 计划覆盖不代表实现或验证覆盖
     Approval: 不适用
-    EvidenceLinks: [Docs/DevelopmentWorkflow/TraceabilityMatrix.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml]
     Status: IDENTIFIED
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记追踪矩阵执行证据缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml

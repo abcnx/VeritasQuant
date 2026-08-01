@@ -30,7 +30,7 @@
 | P0-001 范围、非目标与未来 Gate 签署名单 | [P0-001 范围记录](../P0/P0-001ScopeAndGateRecord.md)；非作者 PO/TL 审阅记录 | 通过 | ProjectAuthor 于 2026-07-31T04:15:00Z 确认范围与 Gate 签署名单；PR #97 归档 |
 | P0-002 RACI、升级和值班替补 | [P0-002 RACI](../P0/P0-002RaciAndEscalation.md)；[独立角色证据包](M0IndependentReviewEvidence.md) 中的评审者与 IC 替补确认 | 通过 | ProjectAuthor 确认临时多角色模型与 5/15 分钟升级路径；PR #98 归档；IC 替补确认见独立角色证据包 |
 | P0-003 文档可定位性 | [文档索引](../DevelopmentDocumentIndex.md)；已完成的 [定位演练记录](../P0/P0-003DocumentDiscoveryDrill.md) | 通过 | ACANX 独立执行定位演练 10/10 正确，签署 [P0-003HumanDrillWorksheet.md](../P0/P0-003HumanDrillWorksheet.md)（2026-08-01T16:41:00Z） |
-| P0-004 方案 A 目录边界 | [工作项证据](../WorkItemRegister.yml) 中 P0-004 的脚本、契约测试和 Linux 验证；非作者 TL 审阅 | 通过 | 契约测试 P0-004-001 通过；M0 Linux 验证 `58 passed`；PR #101 归档 |
+| P0-004 方案 A 目录边界 | [工作项证据](../Registers/WorkItemRegister.yml) 中 P0-004 的脚本、契约测试和 Linux 验证；非作者 TL 审阅 | 通过 | 契约测试 P0-004-001 通过；M0 Linux 验证 `58 passed`；PR #101 归档 |
 | P0-005 Python 3.13+ 与锁定策略 | [依赖策略](../P0/P0-005DependencyPolicy.md)；双平台 CI 工件和独立 QA 记录 | 通过 | 精确锁文件、`VerifyDependencyLocks.py` 0 issues；PR #102 归档 |
 | P0-006 CI 合并治理 | [CI 治理记录](../P0/P0-006CiGovernance.md)；管理员分支保护审计链接；三项必需检查配置证据 | 通过 | Ruleset `20114806`（dev）与 `20108335`（main）三项必需检查、空 bypass；截图 `BypassList_2026-07-31 194302.png`；PR #103 归档 |
 | P0-007 违规阻断与定位 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的受保护远程 CI 负例证据 | 通过 | 负例 Run [`30626945620`](https://github.com/ACANX/VeritasQuant/actions/runs/30626945620) 明确失败并定位；修复后 Run `30716079258` 全绿；PR #108 归档 |
@@ -39,7 +39,7 @@
 | P0-010 登记表 | [登记表规范](../P0/P0-010RegisterSchema.md)；六类登记表；非作者 TL/QA 复核 | 通过 | 六类登记表唯一 ID、审计历史齐全；契约测试 P0-010-001/002；PR #111 归档 |
 | P0-011 安全与许可证 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的 Security baseline、负例和许可证复核 | 通过 | 秘密扫描负例阻断（退出码 1）；许可证 APPROVED 且 0 issues；pip_audit 持续 SUCCESS；PR #112 归档 |
 | P0-012 追踪矩阵 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的映射复核 | 通过 | R-001 至 R-017 全量映射、无孤立需求；契约测试 P0-012-001；PR #113 归档 |
-| 开放风险、事故、变更和行动项 | [风险](../RiskRegister.yml)、[事故](../IncidentRegister.yml)、[变更](../ChangeRegister.yml)、[行动项](../ActionRegister.yml)；阻断项为零或有已批准且未过期的例外 | 通过 | 阻断行动项 ACT-P0-004/005/007 已关闭（见 ActionRegister.yml 与风险决议表）；无未批准开放阻断 |
+| 开放风险、事故、变更和行动项 | [风险](../Registers/RiskRegister.yml)、[事故](../Registers/IncidentRegister.yml)、[变更](../Registers/ChangeRegister.yml)、[行动项](../Registers/ActionRegister.yml)；阻断项为零或有已批准且未过期的例外 | 通过 | 阻断行动项 ACT-P0-004/005/007 已关闭（见 ActionRegister.yml 与风险决议表）；无未批准开放阻断 |
 
 ## 必须附加的治理证据
 

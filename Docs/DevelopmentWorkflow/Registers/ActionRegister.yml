@@ -9,12 +9,12 @@ Records:
     DueDate: 待 PO 指定
     VerificationMethod: 由指定 PO、TL、QA 和 SRE/安全签署人填写范围记录，并由 TL 核对其与技术方案第 13、14 章一致。
     Status: COMPLETED
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml]
     AuditHistory:
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 按用户请求登记为后续补充；未执行签署或状态晋级
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准现有首期范围、非目标和 M0-M5 未来 Gate 签署名单
@@ -26,12 +26,12 @@ Records:
     DueDate: 待 PO 指定
     VerificationMethod: 每位 PO、TL、QA、SRE/安全和 Incident Commander 联系人填写姓名、联系方式、值班时段和本人确认时间；PO 验证每类交付只有一个 Accountable。
     Status: COMPLETED
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md, Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml]
     AuditHistory:
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 按用户请求登记为后续补充；未执行联系人确认或状态晋级
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准单人作者临时 RACI、联系渠道和值班限制
@@ -48,7 +48,7 @@ Records:
       - Ts: "2026-07-31T03:55:00Z"
         Actor: Codex
         Action: 按用户指示将 Linux 实施顺序后移；未改变 M0 的 Linux 验收要求
-        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ChangeRegister.yml
       - Ts: "2026-07-31T08:12:00Z"
         Actor: Codex
         Action: 本地 Ubuntu WSL 验证通过；两次推送 bd62269 触发 GitHub Actions 均被 github.com:443 网络拒绝
@@ -64,12 +64,12 @@ Records:
     DueDate: M0 正式评审前
     VerificationMethod: 验证远程仓库和默认分支；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，移除普通管理员绕过，或归档仅限已命名紧急角色的批准例外和审计链接。
     Status: CLOSED
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/M0/M0StageGateReport.md]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/Registers/RiskRegister.yml, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/M0/M0StageGateReport.md]
     AuditHistory:
       - Ts: "2026-07-31T03:57:00Z"
         Actor: Codex
         Action: 按用户指示登记 Git 元数据和分支保护后续实现
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 已验证 git status、origin 及远程 main/dev 分支；未取得 GitHub 分支保护管理凭据
@@ -97,12 +97,12 @@ Records:
     DueDate: M0 正式评审前
     VerificationMethod: 启动 Docker Desktop Linux Engine 后，执行 scripts/VerifyDevelopmentEnvironment.py 的 start、check、stop；归档健康状态，并验证无运行容器、卷、业务数据或秘密遗留。
     Status: CLOSED
-    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/RiskRegister.yml, Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md, Docs/DevelopmentWorkflow/M0/M0StageGateReport.md]
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/Registers/RiskRegister.yml, Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md, Docs/DevelopmentWorkflow/M0/M0StageGateReport.md]
     AuditHistory:
       - Ts: "2026-07-31T04:00:00Z"
         Actor: Codex
         Action: 按用户指示将 Docker 演练延后；未改变 P0-008 或 M0 验收要求
-        Evidence: Docs/DevelopmentWorkflow/ChangeRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ChangeRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 已启动 Docker Engine；Docker Hub 网络拒绝镜像拉取，容器未创建
@@ -148,7 +148,7 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: Codex
         Action: 根据已确认的单人角色模型，将独立评审和替补值班单独登记为后续行动
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T09:51:38Z"
         Actor: Codex
         Action: 补充非作者评审、Incident Commander 替补和 Gate 回避的可填写证据包；行动保持 OPEN，未作人类确认
