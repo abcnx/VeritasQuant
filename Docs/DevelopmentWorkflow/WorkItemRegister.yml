@@ -18,12 +18,12 @@ Records:
     TestEvidence: [Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T04:15:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T13:20:48Z"
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 由非作者人类复核范围记录和单人角色冲突限制
+    NextAction: 由非作者 PO/TL 审批 P0-001 验收 PR；合并后归档为 ACCEPTED，M0 Gate 仍需独立结论
     EscalateTs: null
     AuditHistory:
       - Ts: "2026-07-30T18:47:58Z"
@@ -41,6 +41,10 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准范围、非目标和未来 Gate 签署名单；任务进入 IN_REVIEW，不标记 ACCEPTED
+        Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+      - Ts: "2026-08-01T13:20:48Z"
+        Actor: BeeAgent
+        Action: 提交 P0-001 独立验收 PR；由非作者 PO/TL 审批并合并后归档为 ACCEPTED
         Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
   - WorkItemId: TSK-P0-002
     PlanTaskId: P0-002
