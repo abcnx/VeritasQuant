@@ -28,6 +28,10 @@ Rows:
     TestIds: [CONTRACT-RISK-PUBLISHER-001, MODEL-ALERT-CONTROL-001]
     CiSuites: [UnitContract, PropertyModel]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/contract/test_risk_contracts.py, tests/unit/risk/test_alert_policy_engine.py, tests/unit/risk/test_risk_engine.py, tests/unit/risk/test_control_book.py]
+      Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-005
     TechSpecRef: "4.1"
     PlanTaskIds: [P1-005, P1-006]
@@ -44,18 +48,30 @@ Rows:
     TestIds: [MODEL-ORDER-STATE-001, MODEL-ORDER-CONTROL-001]
     CiSuites: [PropertyModel]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/execution/test_order_state_machine.py, tests/unit/execution/OrderModelSuite.py, tests/unit/execution/test_report_processor.py]
+      Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-007
     TechSpecRef: "4.3"
     PlanTaskIds: [P1-052, P1-053, P1-054, P1-060]
     TestIds: [MODEL-ALERT-LIFECYCLE-001, CONTRACT-ALERT-NORMALIZATION-001]
     CiSuites: [UnitContract, PropertyModel]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/risk/test_alert_models.py, tests/unit/risk/test_alert_normalizer.py, tests/unit/risk/test_alert_correlator.py, tests/contract/test_risk_contracts.py]
+      Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-008
     TechSpecRef: "7.2"
-    PlanTaskIds: [P1-033, P1-034, P1-035, P1-036]
+    PlanTaskIds: [P1-033, P1-034, P1-035, P1-036, P1-042]
     TestIds: [PROPERTY-DOUBLE-ENTRY-LEDGER-001, INTEGRATION-EMPTY-ACCOUNT-REPLAY-001]
     CiSuites: [PropertyModel, Integration]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/accounts/test_property_sequences.py, tests/unit/accounts/test_ledger.py, tests/unit/accounts/test_snapshot.py]
+      Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-009
     TechSpecRef: "3.2"
     PlanTaskIds: [P2-001, P2-002, P2-003, P2-038]
@@ -68,6 +84,10 @@ Rows:
     TestIds: [MODEL-BAR-PATH-001, REGRESSION-LIQUIDITY-POOL-001]
     CiSuites: [PropertyModel, Regression]
     LatestGate: M1
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [tests/unit/execution/test_bar_path.py, tests/unit/execution/test_liquidity.py, tests/unit/execution/test_ideal_execution.py, tests/unit/execution/test_execution_model.py, tests/unit/execution/test_atomic_execution.py]
+      Gaps: 缺 M1 Gate 独立验收证据
   - RequirementId: R-011
     TechSpecRef: "11.4"
     PlanTaskIds: [P1-001, P1-002]
