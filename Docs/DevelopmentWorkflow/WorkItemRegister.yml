@@ -162,12 +162,12 @@ Records:
     TestEvidence: [scripts/Preflight.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T08:02:15Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T17:44:52Z"
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 由非作者评审 Linux 本地证据和目录边界；正式 Accepted 仍依赖 M0 验收流程
+    NextAction: P0-004 已完成独立复核；继续按编号推进 P0-005，M0 Gate 与 ACT-P0-007 仍需独立结论
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -177,6 +177,10 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 在 Ubuntu WSL 完成大小写敏感 Preflight、测试、构建和仓库外 wheel 验证
+        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+      - Ts: "2026-08-01T17:44:52Z"
+        Actor: BeeAgent
+        Action: 复核方案 A 目录边界、大小写敏感 Linux 证据、Preflight 与目录回归测试；提交 P0-004 验收状态流转 PR，合并后归档为 ACCEPTED
         Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-005
     PlanTaskId: P0-005
