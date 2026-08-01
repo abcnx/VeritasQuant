@@ -63,8 +63,8 @@ Records:
     Owner: SRE
     DueDate: M0 正式评审前
     VerificationMethod: 验证远程仓库和默认分支；将 Quality Windows、Quality Linux 和 Security baseline 设为必需检查，移除普通管理员绕过，或归档仅限已命名紧急角色的批准例外和审计链接。
-    Status: OPEN
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml]
+    Status: CLOSED
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/RiskRegister.yml, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/M0StageGateReport.md]
     AuditHistory:
       - Ts: "2026-07-31T03:57:00Z"
         Actor: Codex
@@ -86,14 +86,18 @@ Records:
         Actor: ProjectAuthor
         Action: 延后 Ruleset 变更审计和独立验收；行动保持 OPEN，但不再阻断 P0 开发或收尾
         Evidence: 当前任务会话的延后指示
+      - Ts: "2026-08-01T20:45:00Z"
+        Actor: ProjectAuthor
+        Action: M0 Gate 签署确认：main/dev Ruleset 三项必需检查启用且 bypass_actors 为空；行动关闭
+        Evidence: Docs/DevelopmentWorkflow/M0StageGateReport.md
   - ActionId: ACT-P0-005
     Title: 启动 Docker Desktop Engine 后完成 Compose 启停与清理演练
     SourceId: P0-008
     Owner: SRE
     DueDate: M0 正式评审前
     VerificationMethod: 启动 Docker Desktop Linux Engine 后，执行 scripts/VerifyDevelopmentEnvironment.py 的 start、check、stop；归档健康状态，并验证无运行容器、卷、业务数据或秘密遗留。
-    Status: OPEN
-    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/RiskRegister.yml]
+    Status: CLOSED
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/RiskRegister.yml, Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md, Docs/DevelopmentWorkflow/M0StageGateReport.md]
     AuditHistory:
       - Ts: "2026-07-31T04:00:00Z"
         Actor: Codex
@@ -106,6 +110,10 @@ Records:
       - Ts: "2026-07-31T09:33:58Z"
         Actor: Codex
         Action: 自动化技术演练已通过，行动保持 OPEN 以等待独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
+      - Ts: "2026-08-01T20:45:00Z"
+        Actor: ProjectAuthor
+        Action: M0 Gate 签署确认：P0-008 独立复核通过（PR #109，启动/健康/清理演练退出码 0，无遗留）；行动关闭
         Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
   - ActionId: ACT-P0-006
     Title: 指定单 Agent 开发模式下的人类治理责任人和审批边界
@@ -134,7 +142,7 @@ Records:
     Owner: ProjectAuthor
     DueDate: M0 正式评审前
     VerificationMethod: 指定至少一名未编写受审代码的人类评审者和一名 Incident Commander 替补，记录企业目录引用、审阅范围、确认 UTC 时间与 Gate 回避规则。
-    Status: OPEN
+    Status: CLOSED
     EvidenceLinks: [Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/P0-003HumanDrillWorksheet.md]
     AuditHistory:
       - Ts: "2026-07-31T04:15:00Z"
@@ -153,6 +161,10 @@ Records:
         Actor: ACANX
         Action: 作为非作者人类独立执行 P0-003 定位演练并签署执行表；P0-003 人类评审部分完成；Incident Commander 替补仍未指定，行动保持 OPEN
         Evidence: Docs/DevelopmentWorkflow/P0-003HumanDrillWorksheet.md
+      - Ts: "2026-08-01T20:45:00Z"
+        Actor: ProjectAuthor
+        Action: M0 Gate 签署确认：非作者评审（P0-003 演练 10/10）与 IC 替补确认（P0-002 5/15 分钟升级路径）已归档；行动关闭
+        Evidence: Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md
   - ActionId: ACT-P0-008
     Title: 为 Docker 开发验证提供可访问的镜像来源
     SourceId: P0-008
