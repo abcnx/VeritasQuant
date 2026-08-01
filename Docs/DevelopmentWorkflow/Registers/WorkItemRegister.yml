@@ -1898,3 +1898,1011 @@ Records:
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
         Evidence: https://github.com/ACANX/VeritasQuant/pull/95
+  - WorkItemId: TSK-P1-041
+    PlanTaskId: P1-041
+    Title: 实现账户快照、版本和只读组合汇总
+    Description: 已实现 AccountSnapshotV1 携带账本上界/账户版本/内容哈希；AccountSnapshotStoreV1 拒绝旧版本写入；PortfolioSummaryServiceV1 纯只读组合汇总不调拨资金。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1", "8.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-035, P1-040]
+    AcceptanceCriteria: 快照含账本上界；汇总不调拨资金；旧版本写入被拒绝
+    TestEvidence: [src/veritasquant/accounts/Snapshot.py, tests/unit/accounts/test_snapshot.py, Docs/DevelopmentWorkflow/P1/P1-041SnapshotEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/accounts/Snapshot.py
+  - WorkItemId: TSK-P1-042
+    PlanTaskId: P1-042
+    Title: 建立 ledger property-based 随机序列
+    Description: 已实现 LedgerSequenceGeneratorV1 固定种子生成开户/入出金/费用/税/股息序列；LedgerPropertyCheckerV1 验证平衡/守恒/幂等/重放/投影隔离；10,000 组无失败。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.1"]
+    Owner: QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-034, P1-035, P1-036, P1-037, P1-038, P1-039, P1-040, P1-041]
+    AcceptanceCriteria: 至少 10,000 组合法序列无平衡、守恒或重放失败
+    TestEvidence: [src/veritasquant/accounts/PropertySequences.py, tests/unit/accounts/test_property_sequences.py, Docs/DevelopmentWorkflow/P1/P1-042LedgerPropertyEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/accounts/PropertySequences.py
+  - WorkItemId: TSK-P1-043
+    PlanTaskId: P1-043
+    Title: 实现 OrderIntent、订单、撤单、改单和执行回报强类型模型
+    Description: 已实现 OrderIntentV1/OrderEventV1/CancelOrderEventV1/ReplaceOrderEventV1/ExecutionReportEventV1 强类型模型：Decimal、受控枚举、版本和必填字段校验，拒绝无约束载荷。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.6"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-005, P1-014]
+    AcceptanceCriteria: Decimal、枚举、版本和必填字段测试通过；无约束载荷被拒绝
+    TestEvidence: [src/veritasquant/execution/Orders.py, tests/unit/execution/test_orders.py, Docs/DevelopmentWorkflow/P1/P1-043OrdersEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/Orders.py
+  - WorkItemId: TSK-P1-044
+    PlanTaskId: P1-044
+    Title: 实现订单状态机和乐观版本控制
+    Description: 已实现 OrderStateMachineV1 完整 13 状态迁移表与 expected_version 乐观并发控制；累计量不下降、剩余量不变量；撤单与成交竞态成交优先。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.6"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-043]
+    AcceptanceCriteria: 所有合法边、非法边、终态、到期和竞态由 model-based 测试覆盖
+    TestEvidence: [src/veritasquant/execution/OrderStateMachine.py, tests/unit/execution/test_order_state_machine.py, Docs/DevelopmentWorkflow/P1/P1-044OrderStateMachineEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/OrderStateMachine.py
+  - WorkItemId: TSK-P1-045
+    PlanTaskId: P1-045
+    Title: 实现重复、乱序、序列缺口和更正回报处理
+    Description: 已实现 ReportProcessorV1 按账户处理回报：去重/冲突/缺口缓冲暂停/未知订单隔离；累计量不下降；权威快照核验后恢复。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.6"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-044]
+    AcceptanceCriteria: 累计量不下降；缺口暂停推进；未知订单隔离；迟到成交仍正确记账
+    TestEvidence: [src/veritasquant/execution/ReportProcessor.py, tests/unit/execution/test_report_processor.py, Docs/DevelopmentWorkflow/P1/P1-045ReportProcessorEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/ReportProcessor.py
+  - WorkItemId: TSK-P1-046
+    PlanTaskId: P1-046
+    Title: 实现理想执行适配器
+    Description: 已实现 IdealExecutionAdapterV1 只撮合已生效订单：市价按下一 Bar 开盘价、限价按路径触发完全成交；结果显式标记 IDEAL 模式走标准回报契约。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.2"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-044, P1-025]
+    AcceptanceCriteria: 仅撮合此前有效订单；结果标明理想模式且走相同订单/账本契约
+    TestEvidence: [src/veritasquant/execution/IdealExecution.py, tests/unit/execution/test_ideal_execution.py, Docs/DevelopmentWorkflow/P1/P1-046IdealExecutionEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/IdealExecution.py
+  - WorkItemId: TSK-P1-047
+    PlanTaskId: P1-047
+    Title: 实现版本化 Bar 内路径和触价/跳空矩阵
+    Description: 已实现 DIRECTIONAL_OHLC_V1 路径与市价/限价/止损/止损限价触价矩阵、OCO 竞态与 AMBIGUOUS_TRIGGER；价格/数量按 tick/手数量化。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.3.1"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-044, P1-024]
+    AcceptanceCriteria: 市价、限价、止损、OCO、跳空及价格保护固定基准通过
+    TestEvidence: [src/veritasquant/execution/BarPath.py, tests/unit/execution/test_bar_path.py, Docs/DevelopmentWorkflow/P1/P1-047BarPathEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/BarPath.py
+  - WorkItemId: TSK-P1-048
+    PlanTaskId: P1-048
+    Title: 实现延迟、部分成交、滑点和过期模型
+    Description: 已实现 ExecutionModelV1 提交延迟、全局/单订单参与率双重上限、固定种子确定性滑点噪声与超时过期；参数版本进入运行清单。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.3"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-047]
+    AcceptanceCriteria: 固定种子结果可复现；参数版本进入运行清单；边界不超订单量
+    TestEvidence: [src/veritasquant/execution/ExecutionModel.py, tests/unit/execution/test_execution_model.py, Docs/DevelopmentWorkflow/P1/P1-048ExecutionModelEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/ExecutionModel.py
+  - WorkItemId: TSK-P1-049
+    PlanTaskId: P1-049
+    Title: 实现共享流动性池与确定性多账户分配
+    Description: 已实现 SharedLiquidityPoolV1 共享成交量池与 LiquidityAllocatorV1 纯函数确定性分配：市价优先、限价价格优先、全局键排序；总分配不超池。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.3.2"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-040, P1-048]
+    AcceptanceCriteria: 所有账户总成交不超参与率；分配不受进程/输入容器顺序影响
+    TestEvidence: [src/veritasquant/execution/Liquidity.py, tests/unit/execution/test_liquidity.py, Docs/DevelopmentWorkflow/P1/P1-049LiquidityEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/Liquidity.py
+  - WorkItemId: TSK-P1-050
+    PlanTaskId: P1-050
+    Title: 将执行回报、订单迁移、预占和账本置于原子边界
+    Description: 已实现 AtomicExecutionBoundaryV1 将状态迁移、预占消耗/释放、账本分录、领域事实和 outbox 装入同一原子事务；journal 预检前置保证整笔回滚无部分副作用。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-028, P1-037, P1-045]
+    AcceptanceCriteria: 任一写入失败整笔回滚；部分成交后下一策略回调读到新余额/持仓
+    TestEvidence: [src/veritasquant/execution/AtomicExecution.py, tests/unit/execution/test_atomic_execution.py, Docs/DevelopmentWorkflow/P1/P1-050AtomicExecutionEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/execution/AtomicExecution.py
+  - WorkItemId: TSK-P1-051
+    PlanTaskId: P1-051
+    Title: 建立订单与 Bar 路径 model-based 测试
+    Description: 已建立 OrderModelSuite 四类随机模型（订单状态机/Bar 路径/流动性竞争/执行模型）；10,000 组状态序列 + 10,000 组路径序列无不变量失败，归档种子可复现。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.6", "7.3"]
+    Owner: QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-044, P1-045, P1-046, P1-047, P1-048, P1-049, P1-050]
+    AcceptanceCriteria: 随机重复/乱序/撤单竞态不少于 10,000 组，无状态或累计量不变量失败
+    TestEvidence: [tests/unit/execution/OrderModelSuite.py, tests/unit/execution/test_order_model_suite.py, Docs/DevelopmentWorkflow/P1/P1-051OrderModelEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/unit/execution/OrderModelSuite.py
+  - WorkItemId: TSK-P1-052
+    PlanTaskId: P1-052
+    Title: 实现 RiskSignal、标准化失败和 AlertEvent 模型
+    Description: 已实现 RiskSignalV1 不可变原始风险事实、AlertEventV1 生命周期版本严格递增、AlertNormalizationFailureEventV1 独立审计事件；失败不静默丢弃。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["9"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-005, P1-006]
+    AcceptanceCriteria: 原始载荷、证据、来源、规则版本和可用时间可追溯；失败不静默丢弃
+    TestEvidence: [src/veritasquant/risk/AlertModels.py, tests/unit/risk/test_alert_models.py, Docs/DevelopmentWorkflow/P1/P1-052AlertModelsEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/AlertModels.py
+  - WorkItemId: TSK-P1-053
+    PlanTaskId: P1-053
+    Title: 实现 AlertNormalizer 与严格 Schema/枚举校验
+    Description: 已实现 AlertNormalizerV1 将 RiskSignal 映射为 AlertEvent；未知类型/缺账户/校验失败进入隔离区并生成审计事件；原始载荷仅存哈希。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["9"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-052]
+    AcceptanceCriteria: 正常转换、缺字段、未知严重度、敏感载荷等测试通过
+    TestEvidence: [src/veritasquant/risk/AlertNormalizer.py, tests/unit/risk/test_alert_normalizer.py, Docs/DevelopmentWorkflow/P1/P1-053AlertNormalizerEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/AlertNormalizer.py
+  - WorkItemId: TSK-P1-054
+    PlanTaskId: P1-054
+    Title: 实现 AlertCorrelator 去重、抑制、升级和生命周期
+    Description: 已实现 AlertCorrelatorV1 去重/冲突/版本缺口暂停/权威快照恢复/终态拒绝复活/抑制记录；低版本不回退投影。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["9"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-053]
+    AcceptanceCriteria: 重复/乱序/版本缺口/终态恢复的 model-based 测试通过
+    TestEvidence: [src/veritasquant/risk/AlertCorrelator.py, tests/unit/risk/test_alert_correlator.py, Docs/DevelopmentWorkflow/P1/P1-054AlertCorrelatorEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/AlertCorrelator.py
+  - WorkItemId: TSK-P1-055
+    PlanTaskId: P1-055
+    Title: 实现纯函数 AlertPolicyEngine
+    Description: 已实现 AlertPolicyEngineV1 无副作用规则求值：P0 暂停、现金不足拒单、敞口超限只减仓；相同输入相同 outputHash；仅产出候选动作无发布权。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.3"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-054]
+    AcceptanceCriteria: 无总线、数据库、OMS、网络副作用；相同输入输出哈希相同
+    TestEvidence: [src/veritasquant/risk/AlertPolicyEngine.py, tests/unit/risk/test_alert_policy_engine.py, Docs/DevelopmentWorkflow/P1/P1-055AlertPolicyEngineEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/AlertPolicyEngine.py
+  - WorkItemId: TSK-P1-056
+    PlanTaskId: P1-056
+    Title: 实现 RiskEngine 分层审批与唯一发布权
+    Description: 已实现 RiskEngineV1 全局/组合/策略三层审批最严格控制优先；只有 RiskEngine 分配决定/控制 ID 并持久化；控制版本单调递增禁止原地放宽。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.2"]
+    Owner: CE/TL
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 9
+    Dependencies: [P1-055, P1-041, P1-043]
+    AcceptanceCriteria: 非 RiskEngine 生产者发布决定/控制被持久层拒绝并告警
+    TestEvidence: [src/veritasquant/risk/RiskEngine.py, tests/unit/risk/test_risk_engine.py, Docs/DevelopmentWorkflow/P1/P1-056RiskEngineEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/RiskEngine.py
+  - WorkItemId: TSK-P1-057
+    PlanTaskId: P1-057
+    Title: 实现控制强度偏序、作用域展开和版本合并
+    Description: 已实现 ControlBookV1 强度偏序（REJECT<REDUCE<PAUSE<STOP）、作用域确定性展开、正交参数合并（布尔取或/集合取交/数值取最小）；解除只移除本来源贡献。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.2"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-056]
+    AcceptanceCriteria: 最严格控制优先；确认/到期不解除其他控制；乱序旧版本不覆盖新控制
+    TestEvidence: [src/veritasquant/risk/ControlBook.py, tests/unit/risk/test_control_book.py, Docs/DevelopmentWorkflow/P1/P1-057ControlBookEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/ControlBook.py
+  - WorkItemId: TSK-P1-058
+    PlanTaskId: P1-058
+    Title: 实现资金、数量、集中度、保证金和陈旧数据基础规则
+    Description: 已实现 RiskRuleEngineV1 五类规则：现金充足、数量上限/手数、集中度、保证金、陈旧数据；每条规则带版本/原因码/快照引用；硬限制不能配置放宽。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.2"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-056]
+    AcceptanceCriteria: 每条规则有版本、原因码、快照引用和边界测试；硬限制不能配置放宽
+    TestEvidence: [src/veritasquant/risk/BasicRules.py, tests/unit/risk/test_basic_rules.py, Docs/DevelopmentWorkflow/P1/P1-058BasicRulesEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/BasicRules.py
+  - WorkItemId: TSK-P1-059
+    PlanTaskId: P1-059
+    Title: 将风险决定、预占、订单迁移和 outbox 原子提交
+    Description: 已实现 AtomicRiskBoundaryV1 批准=决定+预占+APPROVED 迁移+outbox 同事务；拒绝路径无预占；任一失败整笔回滚，不出现已批准未预占状态。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-028, P1-037, P1-056]
+    AcceptanceCriteria: 崩溃注入后不出现已发单无决定或已批准未预占的状态
+    TestEvidence: [src/veritasquant/risk/AtomicRisk.py, tests/unit/risk/test_atomic_risk.py, Docs/DevelopmentWorkflow/P1/P1-059AtomicRiskEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/risk/AtomicRisk.py
+  - WorkItemId: TSK-P1-060
+    PlanTaskId: P1-060
+    Title: 完成风控发布权限和预警生命周期契约测试
+    Description: 已建立 contract/risk_publisher 与 model/alert_lifecycle 契约测试：只有 RiskEngine 发布决定、纯求值器无副作用、通知/确认不解除控制、预警版本重复/缺口/乱序/终态。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.3", "9"]
+    Owner: QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-052, P1-053, P1-054, P1-055, P1-056, P1-057, P1-058, P1-059]
+    AcceptanceCriteria: R-004/R-007 测试全通过；通知确认无法解除 P0/P1 控制
+    TestEvidence: [tests/contract/test_risk_contracts.py, Docs/DevelopmentWorkflow/P1/P1-060RiskContractsEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/contract/test_risk_contracts.py
+  - WorkItemId: TSK-P1-061
+    PlanTaskId: P1-061
+    Title: 实现 BaseStrategy、只读 StrategyContext 和回调协议
+    Description: 已实现 StrategyContextV1 只读上下文（深拷贝快照/时钟仅随已消费事件前进/不暴露券商与数据库）、BaseStrategy 回调协议与 createOrder 只返回 OrderIntent；附 MovingAverageCrossStrategy。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.4"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-026, P1-041]
+    AcceptanceCriteria: 策略只能返回意图；上下文不暴露未来索引、可写账户或券商接口
+    TestEvidence: [src/veritasquant/strategy/BaseStrategy.py, tests/unit/strategy/test_base_strategy.py, Docs/DevelopmentWorkflow/P1/P1-061BaseStrategyEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/strategy/BaseStrategy.py
+  - WorkItemId: TSK-P1-062
+    PlanTaskId: P1-062
+    Title: 实现增量指标窗口和完成 Bar 查询 API
+    Description: 已实现 IncrementalWindowV1 有界滑动窗口（指标只用已消费数据、时间严格递增）与 BarQueryWindowV1 完成 Bar 查询（queryAsOf 按 barEnd 过滤）。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.2", "7.2"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-023, P1-061]
+    AcceptanceCriteria: 指标只使用已消费数据；未来数据修改不影响当前输出
+    TestEvidence: [src/veritasquant/strategy/IndicatorWindow.py, tests/unit/strategy/test_indicator_window.py, Docs/DevelopmentWorkflow/P1/P1-062IndicatorWindowEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/strategy/IndicatorWindow.py
+  - WorkItemId: TSK-P1-063
+    PlanTaskId: P1-063
+    Title: 实现进程隔离、序列化 IPC、超时和资源配额
+    Description: 已实现 StrategySourceScannerV1 AST 扫描阻止文件/网络/环境/系统时间/熵/子进程/危险导入；SandboxQuotaV1 版本化配额；SandboxedStrategyRunnerV1 超时与输出超限丢弃全部输出；IpcEnvelopeV1 版本化哈希校验。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.5"]
+    Owner: CE/SRE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-061]
+    AcceptanceCriteria: 文件/网络/环境/系统时间/熵访问探针被阻止；超限不产生有效订单
+    TestEvidence: [src/veritasquant/strategy/Sandbox.py, tests/unit/strategy/test_sandbox.py, Docs/DevelopmentWorkflow/P1/P1-063SandboxEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/strategy/Sandbox.py
+  - WorkItemId: TSK-P1-064
+    PlanTaskId: P1-064
+    Title: 实现均线交叉与日频动量示例策略
+    Description: 已实现 DailyMomentumStrategy 与 MovingAverageCrossStrategy 示例策略：固定版本/参数/预期订单清单，只返回意图不绕过风控。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.4", "8.1"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-062]
+    AcceptanceCriteria: 固定版本、参数和预期订单清单；示例不绕过风控
+    TestEvidence: [src/veritasquant/strategy/ExampleStrategies.py, tests/unit/strategy/test_example_strategies.py, Docs/DevelopmentWorkflow/P1/P1-064ExampleStrategiesEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/strategy/ExampleStrategies.py
+  - WorkItemId: TSK-P1-065
+    PlanTaskId: P1-065
+    Title: 实现回测应用服务和 CLI
+    Description: 已实现 BacktestConfigV1 配置哈希与 BacktestApplicationServiceV1 创建/运行/继续/暂停/成功/失败/取消/查询；状态机不可非法回退。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.1"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-030, P1-050, P1-060, P1-063]
+    AcceptanceCriteria: 可从配置创建、运行、继续、取消并查询；退出码和错误信封符合契约
+    TestEvidence: [src/veritasquant/application/BacktestService.py, tests/unit/application/test_backtest_service.py, Docs/DevelopmentWorkflow/P1/P1-065BacktestServiceEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/application/BacktestService.py
+  - WorkItemId: TSK-P1-066
+    PlanTaskId: P1-066
+    Title: 实现现金流、收益、回撤、成交和摩擦指标
+    Description: 已实现 PerformanceCalculatorV1 纯函数绩效计算：总收益/年化/最大回撤/夏普/胜率/换手/费用/成交率/平均滑点；外部现金流不计为策略收益；固定手算样本逐项核对。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.1"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-035, P1-050]
+    AcceptanceCriteria: 指标使用 Decimal/明确公式；固定手算样本逐项一致
+    TestEvidence: [src/veritasquant/reporting/Performance.py, tests/unit/reporting/test_performance.py, Docs/DevelopmentWorkflow/P1/P1-066PerformanceEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/reporting/Performance.py
+  - WorkItemId: TSK-P1-067
+    PlanTaskId: P1-067
+    Title: 实现理想/真实双轨对比与完整报告
+    Description: 已实现 DualTrackReportBuilderV1 同时产出理想/真实模式的收益、回撤、夏普；摩擦损耗=真实-理想；记录执行/路径/流动性分配版本；理想结果禁止标为实盘预期。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["7.3"]
+    Owner: DE/BE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-046, P1-048, P1-066]
+    AcceptanceCriteria: 报告明确模式、版本、数据缺口和摩擦；不能把理想结果标为实盘预期
+    TestEvidence: [src/veritasquant/reporting/DualTrackReport.py, tests/unit/reporting/test_dual_track_report.py, Docs/DevelopmentWorkflow/P1/P1-067DualTrackEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/reporting/DualTrackReport.py
+  - WorkItemId: TSK-P1-068
+    PlanTaskId: P1-068
+    Title: 实现运行工件索引、checksum 和可重复导出
+    Description: 已实现 RunArtifactIndexerV1 工件索引（类型/路径/字节SHA-256/内容哈希）与 RepeatableExporterV1 同输入固定 checksum；verify 检测篡改。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["8.1"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-011, P1-067]
+    AcceptanceCriteria: 同运行输入生成事件、订单、账本、指标和报告固定 checksum
+    TestEvidence: [src/veritasquant/reporting/Artifacts.py, tests/unit/reporting/test_artifacts.py, Docs/DevelopmentWorkflow/P1/P1-068ArtifactsEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/reporting/Artifacts.py
+  - WorkItemId: TSK-P1-069
+    PlanTaskId: P1-069
+    Title: 建立防前视探针和变形测试
+    Description: 已实现 LookaheadProbeV1 注入未来事件/重排无关事件统计决策变化命中数；基线 vs 变异哈希；固定种子可复现。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["13"]
+    Owner: QA/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-061, P1-062, P1-063, P1-064, P1-065]
+    AcceptanceCriteria: 注入/修改未来数据或重排无关未来事件时当前决策不变，命中数为 0
+    TestEvidence: [src/veritasquant/reporting/LookaheadProbe.py, tests/unit/reporting/test_lookahead_probe.py, Docs/DevelopmentWorkflow/P1/P1-069LookaheadEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/reporting/LookaheadProbe.py
+  - WorkItemId: TSK-P1-070
+    PlanTaskId: P1-070
+    Title: 完成策略沙箱安全套件
+    Description: 已实现 StrategySandboxSecuritySuiteV1 八大探针：危险导入/子进程/网络/文件/环境/非确定性/资源耗尽/跨账户全被隔离。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["4.5"]
+    Owner: QA/SRE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 8
+    Dependencies: [P1-063]
+    AcceptanceCriteria: 危险导入、子进程、资源耗尽、跨账户和非确定性探针全被隔离
+    TestEvidence: [src/veritasquant/strategy/SandboxSecurity.py, tests/unit/strategy/test_sandbox_security.py, Docs/DevelopmentWorkflow/P1/P1-070SandboxSecurityEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/strategy/SandboxSecurity.py
+  - WorkItemId: TSK-P1-071
+    PlanTaskId: P1-071
+    Title: 建立行情到成交、账本、策略回调、风控和报告端到端测试
+    Description: 已建立端到端测试：固定行情→策略意图→RiskEngine 审批→理想成交→原子账本→状态固化；关联 ID 链 intent→decision→execution→journal 连通。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["6", "8.1"]
+    Owner: QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 10
+    Dependencies: [P1-014, P1-015, P1-016, P1-017, P1-018, P1-019, P1-020, P1-021, P1-022, P1-023, P1-024, P1-025, P1-026, P1-027, P1-028, P1-029, P1-030, P1-031, P1-032, P1-033, P1-034, P1-035, P1-036, P1-037, P1-038, P1-039, P1-040, P1-041, P1-042, P1-043, P1-044, P1-045, P1-046, P1-047, P1-048, P1-049, P1-050, P1-051, P1-052, P1-053, P1-054, P1-055, P1-056, P1-057, P1-058, P1-059, P1-060, P1-061, P1-062, P1-063, P1-064, P1-065, P1-066, P1-067, P1-068, P1-069, P1-070]
+    AcceptanceCriteria: 固定证券/期货场景全链路通过，关联 ID 和审计完整
+    TestEvidence: [tests/integration/test_end_to_end_pipeline.py, Docs/DevelopmentWorkflow/P1/P1-071EndToEndEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/integration/test_end_to_end_pipeline.py
+  - WorkItemId: TSK-P1-072
+    PlanTaskId: P1-072
+    Title: 完成跨平台确定性回归
+    Description: 已建立跨平台回归：绩效/工件索引/导出/canonicalHash checksum 平台无关固化；相同输入逐字节一致。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["13"]
+    Owner: QA/SRE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 7
+    Dependencies: [P1-071]
+    AcceptanceCriteria: Windows/Linux 的事件、订单、journal、快照和报告 checksum 完全一致
+    TestEvidence: [tests/integration/test_cross_platform_regression.py, Docs/DevelopmentWorkflow/P1/P1-072CrossPlatformEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/integration/test_cross_platform_regression.py
+  - WorkItemId: TSK-P1-073
+    PlanTaskId: P1-073
+    Title: 完成性能基线与内存有界验证
+    Description: 已建立性能基线：15,000 行摄入吞吐、流式窗口内存有界不随输入量线性增长、环境与工具版本归档。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["13"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-071]
+    AcceptanceCriteria: 记录 15,000 行样本吞吐、峰值内存、热点；无随数据量线性泄漏
+    TestEvidence: [tests/integration/test_performance_baseline.py, Docs/DevelopmentWorkflow/P1/P1-073PerformanceBaselineEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/integration/test_performance_baseline.py
+  - WorkItemId: TSK-P1-074
+    PlanTaskId: P1-074
+    Title: 完成 R-001 至 R-008、R-010 至 R-012、R-014、R-015 追踪审计
+    Description: 已更新 TraceabilityMatrix 补 ExecutionEvidence；审计测试验证 M1 需求全部登记、33 个证据文件可下钻、无跳过标记。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["12.2"]
+    Owner: QA/TL
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 6
+    Dependencies: [P1-072]
+    AcceptanceCriteria: 每项均有测试结果、日志、种子、产物哈希；跳过数为 0
+    TestEvidence: [tests/contract/test_traceability_audit.py, Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml, Docs/DevelopmentWorkflow/P1/P1-074TraceabilityAuditEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: tests/contract/test_traceability_audit.py
+  - WorkItemId: TSK-P1-075
+    PlanTaskId: P1-075
+    Title: 冻结 StageGatePolicyVersion 和策略验收政策
+    Description: 已实现 StageGatePolicyStoreV1 冻结政策版本/哈希/签署人；冻结后禁止修改参数；PASS/FAIL/INSUFFICIENT_EVIDENCE 判定含样本/阈值/统计方法/种子/窗口中断规则。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["13"]
+    Owner: PO/TL
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 3
+    Dependencies: [P1-074]
+    AcceptanceCriteria: 查看晋级窗口前完成签署；阈值、样本、种子和统计方法固定
+    TestEvidence: [src/veritasquant/application/StageGatePolicy.py, tests/unit/application/test_stage_gate_policy.py, Docs/DevelopmentWorkflow/P1/P1-075StageGatePolicyEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/application/StageGatePolicy.py
+  - WorkItemId: TSK-P1-076
+    PlanTaskId: P1-076
+    Title: 执行 M1 Gate 并发布 StageGateReport
+    Description: 已实现 StageGateReportBuilderV1 唯一结论：强制项全过+开放 S0/S1=0+探针命中 0+≥10,000 属性序列才 PASS；M1 强制检查清单 7 项；非 PASS 不得进入阶段 2。
+    Stage: M1
+    Milestone: M1
+    TechSpecRefs: ["13"]
+    Owner: PO/QA
+    Approver: TL/QA
+    Priority: P1
+    EstimatePersonDays: 5
+    Dependencies: [P1-071, P1-072, P1-073, P1-074, P1-075]
+    AcceptanceCriteria: 强制项全通过且开放 S0/S1 为 0；报告唯一结论为 PASS 后才进入阶段 2
+    TestEvidence: [src/veritasquant/application/StageGateReport.py, tests/unit/application/test_stage_gate_report.py, Docs/DevelopmentWorkflow/P1/P1-076StageGateReportEvidence.md]
+    RiskLinks: [RSK-P1-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T07:30:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 已实现并提交至特性分支 feat/p1-041-076；等待 PR 合并验收后流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T07:30:00Z"
+        Actor: BeeAgent
+        Action: 完成实现与自动化验证；工作项登记为 IN_REVIEW
+        Evidence: src/veritasquant/application/StageGateReport.py

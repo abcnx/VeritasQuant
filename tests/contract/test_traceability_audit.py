@@ -28,7 +28,7 @@ NEW_EVIDENCE_FILES = (
     "tests/unit/execution/test_execution_model.py",
     "tests/unit/execution/test_liquidity.py",
     "tests/unit/execution/test_atomic_execution.py",
-    "tests/unit/execution/OrderModelSuite.py",
+    "src/veritasquant/execution/OrderModelSuite.py",
     "tests/unit/risk/test_alert_models.py",
     "tests/unit/risk/test_alert_normalizer.py",
     "tests/unit/risk/test_alert_correlator.py",

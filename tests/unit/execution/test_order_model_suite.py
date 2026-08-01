@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from tests.unit.execution.OrderModelSuite import (
+from veritasquant.execution.OrderModelSuite import (
     ARCHIVE_SEEDS,
     OrderModelSampleV1,
     runBarPathModel,
