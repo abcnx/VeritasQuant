@@ -5,7 +5,7 @@
 - 工作项：`P0-001`
 - 状态：`IN_REVIEW`
 - 结论：ProjectAuthor 已确认现有范围和未来 Gate 签署名单；本文件不是任何 M0-M5 Gate 通过记录，仍待独立评审。
-- 技术依据：[VeritasQuantTechSpec.md](../VeritasQuantTechSpec.md) 第 13、14 章。
+- 技术依据：[VeritasQuantTechSpec.md](../../VeritasQuantTechSpec.md) 第 13、14 章。
 
 ## 待批准范围
 
@@ -25,7 +25,7 @@
 
 ## 待签署人
 
-当前开发执行代理为 `ClaudeCode`，其只能提供实现与作者验证材料，不是下列任一 Gate 的签署人。ProjectAuthor 于 2026-07-31T04:15:00Z 在当前任务会话确认临时多角色模型和未来 Gate 签署权；人类治理角色的限制见 [SingleAgentGovernanceMaterial.md](SingleAgentGovernanceMaterial.md)。
+当前开发执行代理为 `ClaudeCode`，其只能提供实现与作者验证材料，不是下列任一 Gate 的签署人。ProjectAuthor 于 2026-07-31T04:15:00Z 在当前任务会话确认临时多角色模型和未来 Gate 签署权；人类治理角色的限制见 [SingleAgentGovernanceMaterial.md](../SingleAgentGovernanceMaterial.md)。
 
 | Gate | PO 签署人 | TL 签署人 | QA 签署人 | SRE/安全签署人 | 状态 |
 | --- | --- | --- | --- | --- | --- |

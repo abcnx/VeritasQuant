@@ -12,7 +12,7 @@
 - 总耗时：约 `10 分 58 秒`
 - 结论：`PASSED`（仅指代理执行定位演练的技术结果：10/10 定位成功、耗时合格；不构成独立人类验收结论）
 
-本记录验证 [文档索引](DevelopmentDocumentIndex.md) 满足 P0-003 的验收条件。它不检查交易行为、不会改变技术方案，也不代替 P0-013 的 M0 Gate 签署；它只确认新成员可依据当前文档结构在 15 分钟内定位 M0 所需权威资料。
+本记录验证 [文档索引](../DevelopmentDocumentIndex.md) 满足 P0-003 的验收条件。它不检查交易行为、不会改变技术方案，也不代替 P0-013 的 M0 Gate 签署；它只确认新成员可依据当前文档结构在 15 分钟内定位 M0 所需权威资料。
 
 ## 演练规则
 
@@ -38,12 +38,12 @@
 | 1 | 唯一权威技术设计及其阶段 Gate 契约 | `Docs/VeritasQuantTechSpec.md` 第 13 章 | `Docs/VeritasQuantTechSpec.md` 第 13 章「分阶段实施路线与验收结果」，第 1376 行起；包含平台正确性 gate、策略晋级 gate、M0/M1/M2 Gate 和样本/CI 要求 | `2026-08-01T15:04:55Z` | `PASS` |
 | 2 | 当前 P0-P6 开发计划 | `Docs/VeritasQuantDevelopmentPlan.md` | `Docs/VeritasQuantDevelopmentPlan.md`，根标题为「VeritasQuant 项目开发计划」，包含 P0-P6 阶段、任务、Gate 与里程碑计划 | `2026-08-01T15:05:20Z` | `PASS` |
 | 3 | 工作项状态机与独立验收规则 | `Docs/VeritasQuantDevelopmentWorkflow.md` 第 4、7、11 节 | `Docs/VeritasQuantDevelopmentWorkflow.md` 第 4 节「状态机」（第 94 行起）、第 7 节「代码评审与合并工作流」（第 233 行起）、第 11 节「自动化管理规则」（第 347 行起） | `2026-08-01T15:05:48Z` | `PASS` |
-| 4 | P0 工作项、依赖和当前阻断项 | `Docs/DevelopmentWorkflow/WorkItemRegister.yml` | `Docs/DevelopmentWorkflow/WorkItemRegister.yml` 中 `TSK-P0-001` 至 `TSK-P0-013` 记录；P0-003 记录含 `Dependencies: [P0-001]`、`Status: IN_REVIEW`、`TestEvidence` 和 `RiskLinks: [RSK-P0-001]` | `2026-08-01T15:06:25Z` | `PASS` |
-| 5 | 当前风险、行动项和事故登记 | `RiskRegister.yml`、`ActionRegister.yml`、`IncidentRegister.yml` | `Docs/DevelopmentWorkflow/RiskRegister.yml`、`Docs/DevelopmentWorkflow/ActionRegister.yml`、`Docs/DevelopmentWorkflow/IncidentRegister.yml`；其中 `RiskRegister.yml` 登记 `RSK-P0-001` 单人治理角色集中风险，`IncidentRegister.yml` 当前无事故记录 | `2026-08-01T15:06:58Z` | `PASS` |
-| 6 | P0-006 的 CI/分支保护待办 | `P0-006CiGovernance.md`、`ACT-P0-004` | `Docs/DevelopmentWorkflow/P0-006CiGovernance.md`；`Docs/DevelopmentWorkflow/ActionRegister.yml` 中 `ACT-P0-004` 定义为「验证远程受保护分支并启用必需 CI 检查」，SourceId 为 `P0-006` | `2026-08-01T15:07:36Z` | `PASS` |
-| 7 | P0-008 的 Compose 技术证据与独立 SRE 缺口 | `P0-008ComposeDrillEvidence.md`、`ACT-P0-005` | `Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md`；`Docs/DevelopmentWorkflow/ActionRegister.yml` 中 `ACT-P0-005` 定义为「启动 Docker Desktop Engine 后完成 Compose 启停与清理演练」，SourceId 为 `P0-008` | `2026-08-01T15:08:12Z` | `PASS` |
+| 4 | P0 工作项、依赖和当前阻断项 | `Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml` | `Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml` 中 `TSK-P0-001` 至 `TSK-P0-013` 记录；P0-003 记录含 `Dependencies: [P0-001]`、`Status: IN_REVIEW`、`TestEvidence` 和 `RiskLinks: [RSK-P0-001]` | `2026-08-01T15:06:25Z` | `PASS` |
+| 5 | 当前风险、行动项和事故登记 | `RiskRegister.yml`、`ActionRegister.yml`、`IncidentRegister.yml` | `Docs/DevelopmentWorkflow/Registers/RiskRegister.yml`、`Docs/DevelopmentWorkflow/Registers/ActionRegister.yml`、`Docs/DevelopmentWorkflow/Registers/IncidentRegister.yml`；其中 `RiskRegister.yml` 登记 `RSK-P0-001` 单人治理角色集中风险，`IncidentRegister.yml` 当前无事故记录 | `2026-08-01T15:06:58Z` | `PASS` |
+| 6 | P0-006 的 CI/分支保护待办 | `P0-006CiGovernance.md`、`ACT-P0-004` | `Docs/DevelopmentWorkflow/P0-006CiGovernance.md`；`Docs/DevelopmentWorkflow/Registers/ActionRegister.yml` 中 `ACT-P0-004` 定义为「验证远程受保护分支并启用必需 CI 检查」，SourceId 为 `P0-006` | `2026-08-01T15:07:36Z` | `PASS` |
+| 7 | P0-008 的 Compose 技术证据与独立 SRE 缺口 | `P0-008ComposeDrillEvidence.md`、`ACT-P0-005` | `Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md`；`Docs/DevelopmentWorkflow/Registers/ActionRegister.yml` 中 `ACT-P0-005` 定义为「启动 Docker Desktop Engine 后完成 Compose 启停与清理演练」，SourceId 为 `P0-008` | `2026-08-01T15:08:12Z` | `PASS` |
 | 8 | M0 当前预审结论和必须关闭的阻断 | `M0PreReview.md`、`M0StageGateReport.md` | `Docs/DevelopmentWorkflow/M0PreReview.md` 记录预审结论为 `INSUFFICIENT_EVIDENCE` 并列出阻断项；`Docs/DevelopmentWorkflow/M0StageGateReport.md` 记录 P0-003 定位演练、CI、开放阻断等 Gate 输入仍待填写 | `2026-08-01T15:08:44Z` | `PASS` |
-| 9 | 非作者评审与 IC 替补的填写位置 | `M0IndependentReviewEvidence.md`、`ACT-P0-007` | `Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md` 第 17 行记录 Incident Commander 替补待填写，第 20-25 行为替补确认模板，第 53 行记录 `ACT-P0-007` 状态为 `OPEN`；`Docs/DevelopmentWorkflow/ActionRegister.yml` 中 `ACT-P0-007` 要求指定非作者人类评审者与 Incident Commander 替补 | `2026-08-01T15:09:25Z` | `PASS` |
+| 9 | 非作者评审与 IC 替补的填写位置 | `M0IndependentReviewEvidence.md`、`ACT-P0-007` | `Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md` 第 17 行记录 Incident Commander 替补待填写，第 20-25 行为替补确认模板，第 53 行记录 `ACT-P0-007` 状态为 `OPEN`；`Docs/DevelopmentWorkflow/Registers/ActionRegister.yml` 中 `ACT-P0-007` 要求指定非作者人类评审者与 Incident Commander 替补 | `2026-08-01T15:09:25Z` | `PASS` |
 | 10 | ADR 是否存在及其权威索引 | `Docs/Adr/AdrIndex.md` | `Docs/Adr/AdrIndex.md`；当前内容说明「当前没有已批准 ADR」，并规定新 ADR 至少包含问题背景、候选方案、决策、技术影响、迁移、测试、回滚、批准人和 UTC 签署时间 | `2026-08-01T15:14:58Z` | `PASS` |
 
 ## 定位目标复核（证据链补强）

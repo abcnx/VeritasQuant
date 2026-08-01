@@ -11,6 +11,28 @@
 3. 风险、突发问题和事故在发现时立即登记，完整保存时间线和证据，为复盘提供数据。
 4. 自动化系统可以依据明确状态、字段和规则推进工作，不依赖口头判断完成度。
 
+## 1.1 开发过程文档存放规则
+
+`Docs/DevelopmentWorkflow/` 目录下的开发过程文档按阶段与里程碑划分子目录存放，规则如下：
+
+| 文档前缀 | 存放位置 | 示例 |
+| --- | --- | --- |
+| `P0`、`P1`、`Pn`（阶段/计划任务） | `Docs/DevelopmentWorkflow/P0/`、`P1/`、`Pn/` | `P0-006CiGovernance.md` → `Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md`；`P1-001-P1-013Evidence.md` → `Docs/DevelopmentWorkflow/P1/` |
+| `M0`、`M1`、`Mn`（里程碑/Gate） | `Docs/DevelopmentWorkflow/M0/`、`M1/`、`Mn/` | `M0StageGateReport.md` → `Docs/DevelopmentWorkflow/M0/M0StageGateReport.md`；`M0-Linux.junit.xml` → `Docs/DevelopmentWorkflow/M0/` |
+| 登记表（`*Register.yml`、`TraceabilityMatrix.yml`） | `Docs/DevelopmentWorkflow/Registers/` | `WorkItemRegister.yml`、`RiskRegister.yml`、`ActionRegister.yml`、`TraceabilityMatrix.yml` 等全部登记表 |
+| 其他（索引、政策、跨阶段规范） | `Docs/DevelopmentWorkflow/` 根目录 | `TestEvidencePolicy.md`、`DevelopmentDocumentIndex.md`、`SingleAgentGovernanceMaterial.md` |
+
+规则约束：
+
+1. **阶段前缀（`P`）与里程碑前缀（`M`）不区分大小写**，`p0-` 与 `P0-` 均按阶段归类；但新文档统一使用大写前缀命名。
+2. **复合前缀文档**（如 `P0-006P0-007GitHubGovernanceRunbook.md`）按首个前缀（`P0`）归入对应阶段子目录。
+3. **跨阶段证据文件**（如 `P0-003-P0-012TestEvidence.json`）按首个前缀归入该阶段子目录，并在正文或索引中注明覆盖范围。
+4. **登记表**（以 `Register.yml` 结尾或 `TraceabilityMatrix.yml`）统一存放于 `Registers/`，无论文件名是否带阶段前缀；登记表之间及被文档/测试引用时使用 `Docs/DevelopmentWorkflow/Registers/<file>` 路径。
+5. **子目录内文档引用上级目录文件**时使用 `../`；引用其他子目录文件时使用 `../<子目录>/`；根目录文件引用子目录文件时直接使用 `<子目录>/` 前缀。
+6. **新增文档**必须先按上述规则确定存放位置，再在 `DevelopmentDocumentIndex.md` 中登记；索引中的链接必须指向实际存放路径。
+7. **移动既有文档**必须同步更新所有引用该文档的 md/yml/json 路径与链接，并通过 `git mv` 保留历史。
+8. 设计决策变更仍必须同步修改技术方案，不因文档归类而改变事实来源。
+
 ## 2. 工作项模型
 
 ### 2.1 类型与层级
@@ -389,14 +411,18 @@ Local -> CI -> Development -> Integration -> HistoricalBacktest
 
 Gate 报告必须包含 `StageGatePolicyVersion`、候选 Release、代码/配置/数据/策略/模型/风险版本、证据窗口、样本数、每项指标的阈值和实测值、所有强制测试哈希、开放风险/事故、审批签名及唯一结论。`PASS`、`FAIL`、`INSUFFICIENT_EVIDENCE` 之外不允许使用“有条件通过”等模糊状态。
 
-## 13. 工作流启用清单
+## 13. 工作流启用检查清单
 
-- [ ] 工作项系统已创建所有类型、状态和必填字段。
-- [ ] 开发计划 ID 已批量导入且与技术方案/测试/Gate 建立关系。
-- [ ] 分支保护、CodeOwner、必需 CI 和禁止管理员普通绕过已启用。
-- [ ] 风险、事故、变更、复盘和行动项模板已启用。
-- [ ] 自动看板可追溯到原始证据，指标口径与计划一致。
-- [ ] Release 可记录并校验同一 artifact digest 的逐环境晋级。
-- [ ] 告警可自动关联 run/account/request/trace 和工作项。
-- [ ] 团队已演练一次普通 Feature、一次紧急 Bug 和一次 S1 Incident 全流程。
-- [ ] 每季度复核工作流有效性，并通过版本化 Change 改进。
+本清单是**启用状态检查**，不是待办任务清单；每项在对应阶段 Gate 确认，确认时须附客观证据与确认记录（确认人、UTC 时间、证据位置）。仅当该项要求的阶段到达且证据齐全时勾选。
+
+| 启用项 | 确认阶段 | 客观证据要求 | 状态 | 确认记录 |
+| --- | --- | --- | --- | --- |
+| 工作项系统已创建所有类型、状态和必填字段 | M0 | `WorkItemRegister.yml` 含全部类型/状态/必填字段；契约测试 P0-010-001/002 通过 | ☑ | 已确认：M0 Gate 检查表 P0-010 行（PR #111） |
+| 开发计划 ID 已批量导入且与技术方案/测试/Gate 建立关系 | M0 | `TraceabilityMatrix.yml` 覆盖 R-001 至 R-017，无孤立需求；契约测试 P0-012-001 通过 | ☑ | 已确认：M0 Gate 检查表 P0-012 行（PR #113） |
+| 分支保护、CodeOwner、必需 CI 和禁止管理员普通绕过已启用 | M0 | Ruleset 三项必需检查（Quality ubuntu/windows、Security baseline）、Code Owner 审阅、空 bypass；截图归档 | ☑ | 已确认：M0 Gate 检查表 P0-006 行（PR #103） |
+| 风险、事故、变更、复盘和行动项模板已启用 | M0 | `RiskRegister.yml`/`IncidentRegister.yml`/`ChangeRegister.yml`/`ActionRegister.yml` 含必填字段与审计历史；契约测试 P0-010-002 通过 | ☑ | 已确认：M0 Gate 检查表 P0-010 行（PR #111） |
+| 自动看板可追溯到原始证据，指标口径与计划一致 | M0 起持续 | 看板数据可下钻到工作项与不可变证据（见第 11.2 节）；指标口径与计划一致 | 部分 | 基础已建（追踪矩阵 + 登记表）；随阶段持续校验 |
+| Release 可记录并校验同一 artifact digest 的逐环境晋级 | M1 起（首个 Release） | 阶段 0 无环境晋级；M1 首个交付物起逐环境校验 artifact digest | ☐ | 待 M1 Gate |
+| 告警可自动关联 run/account/request/trace 和工作项 | M2 起（运行监控） | 模拟盘/运行期告警与运行上下文、工作项关联；SLO 与对账指标接入 | ☐ | 待 M2 Gate |
+| 团队已演练一次普通 Feature、紧急 Bug 和 S1 Incident 全流程 | M1 前（团队到位后） | 演练记录（Feature/Bug/Incident 各一次）；单人开发阶段由治理例外跟踪（ACT-P0-007） | ☐ | 待团队组建后确认 |
+| 每季度复核工作流有效性，并通过版本化 Change 改进 | 持续（每季度） | 季度复核记录 + 版本化 Change 审计 | ☐ | 季度例行，不绑定 Gate |

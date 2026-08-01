@@ -4,7 +4,7 @@
 
 本证据包用于关闭 `ACT-P0-007`，并支持 P0-001、P0-002、P0-004、P0-008、P0-010 和 P0-013 的独立审阅。填写者必须是人类；开发执行代理、作者测试执行者及受审代码作者不得将本文件作为独立验收或 Gate 签署证据。
 
-填写时不得记录个人电话、令牌、凭据或敏感身份信息。目录引用应使用企业目录、值班组别或工单链接。角色冲突规则以 [SingleAgentGovernanceMaterial.md](SingleAgentGovernanceMaterial.md) 和 [开发工作流第 7、11 步](../VeritasQuantDevelopmentWorkflow.md) 为准。
+填写时不得记录个人电话、令牌、凭据或敏感身份信息。目录引用应使用企业目录、值班组别或工单链接。角色冲突规则以 [SingleAgentGovernanceMaterial.md](../SingleAgentGovernanceMaterial.md) 和 [开发工作流第 7、11 步](../../VeritasQuantDevelopmentWorkflow.md) 为准。
 
 ## 人员与独立性确认
 
@@ -21,25 +21,25 @@
 
 | 字段 | 填写内容 |
 | --- | --- |
-| 主 Incident Commander | ProjectAuthor（ACANX）；与 [P0-002 RACI](P0-002RaciAndEscalation.md) 一致 |
+| 主 Incident Commander | ProjectAuthor（ACANX）；与 [P0-002 RACI](../P0/P0-002RaciAndEscalation.md) 一致 |
 | 替补 Incident Commander | 开发阶段由 ClaudeCode 作为执行代理按 RACI 升级路径执行；生产值班不适用（M0 未授权环境晋级） |
 | 值班窗口与时区 | 开发阶段按需响应（Asia/Shanghai）；无生产值班 |
 | S0/S1 触发后的首个动作 | 停止相关新风险工作、保全证据、创建或更新 `IncidentRegister.yml` 记录 |
 | 升级路径确认 | 已确认；S0 5 分钟、S1 15 分钟，与 P0-002 一致 |
 | 替补确认 UTC 时间 | 2026-08-01T20:45:00Z |
-| 确认记录链接 | [P0-002RaciAndEscalation.md](P0-002RaciAndEscalation.md) |
+| 确认记录链接 | [P0-002RaciAndEscalation.md](../P0/P0-002RaciAndEscalation.md) |
 
 ## 独立审阅清单
 
 | 审阅项 | 审阅角色 | 需检查的来源 | 结论：通过/需修改/证据不足 | 证据链接或哈希 | 审阅 UTC 时间 |
 | --- | --- | --- | --- | --- | --- |
-| P0-001 范围、非目标与 Gate 名单 | 非作者 PO/TL | [P0-001 范围记录](P0-001ScopeAndGateRecord.md)、技术方案第 13/14 章 | 通过 | [P0-001ScopeAndGateRecord.md](P0-001ScopeAndGateRecord.md)；PR #97 | 2026-08-01T20:45:00Z |
-| P0-002 RACI、唯一 Accountable 与升级路径 | 非作者 PO/TL | [P0-002 RACI](P0-002RaciAndEscalation.md)、本文件的替补确认 | 通过 | [P0-002RaciAndEscalation.md](P0-002RaciAndEscalation.md)；PR #98 | 2026-08-01T20:45:00Z |
-| P0-003 文档索引与定位演练 | 非作者 QA/TL | [文档索引](DevelopmentDocumentIndex.md)、[定位演练](P0-003DocumentDiscoveryDrill.md) | 通过（ACANX 独立执行定位演练，10/10 正确，见 `P0-003HumanDrillWorksheet.md`） | [P0-003HumanDrillWorksheet.md](P0-003HumanDrillWorksheet.md) | 2026-08-01T16:41:00Z |
+| P0-001 范围、非目标与 Gate 名单 | 非作者 PO/TL | [P0-001 范围记录](../P0/P0-001ScopeAndGateRecord.md)、技术方案第 13/14 章 | 通过 | [P0-001ScopeAndGateRecord.md](../P0/P0-001ScopeAndGateRecord.md)；PR #97 | 2026-08-01T20:45:00Z |
+| P0-002 RACI、唯一 Accountable 与升级路径 | 非作者 PO/TL | [P0-002 RACI](../P0/P0-002RaciAndEscalation.md)、本文件的替补确认 | 通过 | [P0-002RaciAndEscalation.md](../P0/P0-002RaciAndEscalation.md)；PR #98 | 2026-08-01T20:45:00Z |
+| P0-003 文档索引与定位演练 | 非作者 QA/TL | [文档索引](../DevelopmentDocumentIndex.md)、[定位演练](../P0/P0-003DocumentDiscoveryDrill.md) | 通过（ACANX 独立执行定位演练，10/10 正确，见 `P0-003HumanDrillWorksheet.md`） | [P0-003HumanDrillWorksheet.md](../P0/P0-003HumanDrillWorksheet.md) | 2026-08-01T16:41:00Z |
 | P0-004 目录边界与 Linux 证据 | 非作者 TL | `WorkItemRegister.yml` 的 P0-004、[Linux 证据](M0LinuxValidationEvidence.md) | 通过 | [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md)；PR #101 | 2026-08-01T20:45:00Z |
-| P0-008 Compose 启停、健康与清理 | 独立 SRE | [Compose 演练](P0-008ComposeDrillEvidence.md)、`Docker/docker-compose.yml`、`Docker/DevelopmentEnvironment.md` | 通过 | [P0-008ComposeDrillEvidence.md](P0-008ComposeDrillEvidence.md)；PR #109 | 2026-08-01T20:45:00Z |
-| P0-010 登记表字段与审计关系 | 非作者 QA/TL | 六类登记表、[登记表规范](P0-010RegisterSchema.md) | 通过 | [P0-010RegisterSchema.md](P0-010RegisterSchema.md)；PR #111 | 2026-08-01T20:45:00Z |
-| P0-006/007/009/011/012 支撑证据 | 独立 QA/SRE | [P0 独立验收包](P0IndependentAcceptancePackage.md) | 通过 | [P0IndependentAcceptancePackage.md](P0IndependentAcceptancePackage.md)；PR #103/#108/#110/#112/#113 | 2026-08-01T20:45:00Z |
+| P0-008 Compose 启停、健康与清理 | 独立 SRE | [Compose 演练](../P0/P0-008ComposeDrillEvidence.md)、`Docker/docker-compose.yml`、`Docker/DevelopmentEnvironment.md` | 通过 | [P0-008ComposeDrillEvidence.md](../P0/P0-008ComposeDrillEvidence.md)；PR #109 | 2026-08-01T20:45:00Z |
+| P0-010 登记表字段与审计关系 | 非作者 QA/TL | 六类登记表、[登记表规范](../P0/P0-010RegisterSchema.md) | 通过 | [P0-010RegisterSchema.md](../P0/P0-010RegisterSchema.md)；PR #111 | 2026-08-01T20:45:00Z |
+| P0-006/007/009/011/012 支撑证据 | 独立 QA/SRE | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) | 通过 | [P0IndependentAcceptancePackage.md](../P0/P0IndependentAcceptancePackage.md)；PR #103/#108/#110/#112/#113 | 2026-08-01T20:45:00Z |
 
 ## Gate 回避与签署限制
 

@@ -23,7 +23,7 @@ Records:
       - Ts: "2026-07-31T03:45:00Z"
         Actor: Codex
         Action: 全仓扫描结果为零，正反例和完整本地测试均通过；等待独立验证
-        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
   - BugId: BUG-P0-002
     Title: Windows CI 的 cp1252 输出编码导致 wheel 命令帮助验证失败
     SourcePlanTaskId: P0-006

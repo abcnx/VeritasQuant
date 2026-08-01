@@ -24,17 +24,17 @@ Records:
     Contingency: M0 预审结论保持 INSUFFICIENT_EVIDENCE
     ResidualRisk: 单人角色集中不能满足独立验收或生产值班要求
     Approval: ProjectAuthor 于 2026-07-31T04:15:00Z 确认临时治理模型
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md]
     Status: MONITORING
     AuditHistory:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 关联后续行动项；风险未被接受、降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T04:05:00Z"
         Actor: Codex
         Action: 更新单 Agent 开发模式事实并关联治理责任人补充行动
@@ -42,7 +42,7 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 确认临时治理模型；风险转入监控，独立评审和替补仍未完成
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
   - RiskId: RSK-P0-002
     Title: 尚无 Linux/Windows CI 实际运行证据
     SourcePlanTaskId: P0-006
@@ -71,11 +71,11 @@ Records:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T08:12:00Z"
         Actor: Codex
         Action: 两次推送 bd62269 均因 github.com:443 网络连接拒绝失败；Linux 本地验证不受影响
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T09:17:55Z"
         Actor: Codex
         Action: 仓库公开后远程 CI 复验成功，风险收敛为分支保护和必需检查的治理证据
@@ -102,21 +102,21 @@ Records:
     Contingency: 不允许将 dev 提交合并到 main 或执行环境晋级
     ResidualRisk: 截图只能证明当前 UI 快照，不能替代平台审计记录和独立人类验收
     Approval: 不适用
-    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md, Archive/Asset/Image/BypassList_2026-07-31 193936.png, Archive/Asset/Image/BypassList_2026-07-31 194302.png]
+    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0/P0-007RemoteNegativeDrillEvidence.md, Archive/Asset/Image/BypassList_2026-07-31 193936.png, Archive/Asset/Image/BypassList_2026-07-31 194302.png]
     Status: IDENTIFIED
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 根据 Git 元数据检查结果登记风险
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:57:00Z"
         Actor: Codex
         Action: 关联 ACT-P0-004；风险未降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 复核后确认本地 Git 与远程可用；风险范围收敛为远程保护规则和合并阻断证据
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T11:39:36Z"
         Actor: Codex
         Action: 技术复核截图确认 main Ruleset 的 Repository admin 为 Always allow；风险维持开放并明确普通管理员绕过不合规
@@ -147,13 +147,13 @@ Records:
     Contingency: 在独立验收前不将该演练作为环境晋级依据
     ResidualRisk: 自动化作者证据不能替代独立验收
     Approval: 不适用
-    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md]
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md]
     Status: MONITORING
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记 Docker 实施验证缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:40:00Z"
         Actor: Codex
         Action: 静态 Compose 配置通过；实际启动因 Docker Engine 未运行失败，未创建容器
@@ -161,15 +161,15 @@ Records:
       - Ts: "2026-07-31T04:00:00Z"
         Actor: Codex
         Action: 关联 ACT-P0-005；风险未降低或关闭
-        Evidence: Docs/DevelopmentWorkflow/ActionRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: Docker Engine 已恢复，但 Docker Hub 网络拒绝拉取；新增 ACT-P0-008 处理镜像来源
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T09:33:58Z"
         Actor: Codex
         Action: 自动化 Compose 演练通过，风险收敛为独立人类 SRE 复核
-        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md
   - RiskId: RSK-P0-005
     Title: 受保护远程 CI 的首次安全运行证据缺失
     SourcePlanTaskId: P0-011
@@ -198,11 +198,11 @@ Records:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记安全基线外部批准缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
       - Ts: "2026-07-31T03:45:00Z"
         Actor: Codex
         Action: 秘密扫描为零，运行依赖 pip-audit 无已知漏洞，许可证内容审查通过但待签署门禁仍失败
-        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准许可证策略；风险转入监控，等待远程 CI 安全证据
@@ -210,7 +210,7 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: Linux 本地秘密和许可证扫描通过；远程 CI 持续门禁证据仍缺失
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T09:17:05Z"
         Actor: Codex
         Action: GitHub Actions Run 30619335295 的 Security baseline 成功，首次远程安全运行证据已归档
@@ -237,10 +237,10 @@ Records:
     Contingency: 对应 Gate 结论为 INSUFFICIENT_EVIDENCE
     ResidualRisk: 计划覆盖不代表实现或验证覆盖
     Approval: 不适用
-    EvidenceLinks: [Docs/DevelopmentWorkflow/TraceabilityMatrix.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml]
     Status: IDENTIFIED
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 登记追踪矩阵执行证据缺口
-        Evidence: Docs/DevelopmentWorkflow/RiskRegister.yml
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml

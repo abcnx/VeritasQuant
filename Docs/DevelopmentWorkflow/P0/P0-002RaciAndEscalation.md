@@ -25,9 +25,9 @@
 
 | 开发执行代理 | 可负责事项 | 不可负责事项 | 当前确认来源 |
 | --- | --- | --- | --- |
-| Codex | 开发范围内的代码、测试、CI、仓库治理和证据维护 | Gate 签署、独立 QA 验收、实盘启用、风险例外、生产凭据和破坏性操作 | [ProjectAuthorizationRegister.yml](ProjectAuthorizationRegister.yml) `AUTH-DEV-001` |
+| Codex | 开发范围内的代码、测试、CI、仓库治理和证据维护 | Gate 签署、独立 QA 验收、实盘启用、风险例外、生产凭据和破坏性操作 | [ProjectAuthorizationRegister.yml](../Registers/ProjectAuthorizationRegister.yml) `AUTH-DEV-001` |
 
-具体人类角色与确认材料使用 [SingleAgentGovernanceMaterial.md](SingleAgentGovernanceMaterial.md)。`ACT-P0-006` 已记录临时治理确认；M0 前仍须完成 `ACT-P0-007`。
+具体人类角色与确认材料使用 [SingleAgentGovernanceMaterial.md](../SingleAgentGovernanceMaterial.md)。`ACT-P0-006` 已记录临时治理确认；M0 前仍须完成 `ACT-P0-007`。
 
 在仅有一位人类项目作者时，ProjectAuthor 暂时承担 PO、TL、QA、SRE/安全和 Incident Commander 角色，ClaudeCode 只作开发执行代理。该分配已由 ProjectAuthor 明确确认，仍受材料中的角色冲突、独立验收和实盘禁止限制约束。
 

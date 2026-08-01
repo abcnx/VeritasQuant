@@ -6,20 +6,20 @@
 - 本记录不是 M0 Gate 签署，不冻结迭代 Backlog，不产生 Release 或环境晋级。
 - P0 验收已于 2026-07-31T12:31:58Z 启动，候选提交为 `main` 的
   `1e24643794b1ac8befb7bd1e901e3f8a7098516c`；启动记录见
-  [P0AcceptanceKickoff.md](P0AcceptanceKickoff.md)。
+  [P0AcceptanceKickoff.md](../P0/P0AcceptanceKickoff.md)。
 
 ## 已具备的作者证据
 
-- P0-003 至 P0-012 的实施工件、边界与未决项见 [P0-003-P0-012ImplementationEvidence.md](P0-003-P0-012ImplementationEvidence.md)。
+- P0-003 至 P0-012 的实施工件、边界与未决项见 [P0-003-P0-012ImplementationEvidence.md](../P0/P0-003-P0-012ImplementationEvidence.md)。
 - 方案 A `src` 布局、根级目录、依赖分组和精确开发锁定项已存在；Preflight、锁定一致性、结构、秘密扫描、许可证策略和证据收集器均有正反例测试。
 - `.github/workflows/Ci.yml` 已定义 Windows/Linux Python 3.13 的质量、构建、wheel、秘密、漏洞和许可证门禁，工件留存设置为 90 天；[M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md) 已补充本地 Linux 大小写敏感文件系统的构建、测试和仓库外 wheel 验证。GitHub Actions Run [`30619335295`](https://github.com/ACANX/VeritasQuant/actions/runs/30619335295) 的 Windows Quality、Ubuntu Quality 和 Security baseline 均成功；两个质量 artifact 保留至 2026-10-29。
-- 临时 Docker Compose 定义不挂载持久卷、不暴露端口，并通过 `tmpfs` 和显式 `down --volumes` 避免遗留数据；启动、健康检查和清理的自动化技术演练已通过，见 [P0-008ComposeDrillEvidence.md](P0-008ComposeDrillEvidence.md)。
+- 临时 Docker Compose 定义不挂载持久卷、不暴露端口，并通过 `tmpfs` 和显式 `down --volumes` 避免遗留数据；启动、健康检查和清理的自动化技术演练已通过，见 [P0-008ComposeDrillEvidence.md](../P0/P0-008ComposeDrillEvidence.md)。
 - P0-001 至 P0-013、风险、事故、变更和行动项的版本化登记文件及 R-001 至 R-017 追踪矩阵已建立。
 
 ## 阻断项
 
 1. P0-006 已有 GitHub Actions 空缓存 Python 3.13 双平台成功运行和 artifact 留存证据，且 `main` 已配置三项必需检查；最新截图显示 Bypass list 为空。规则变更审计和独立验收已延后至后续治理验收，不阻断 P0 开发或收尾。
-2. P0-007、P0-009、P0-011 与 P0-012 的自动化技术证据已具备。P0-007 已在受保护 `main` 的 PR #2 中取得两项 Quality 失败和分支清理记录，见 [P0-007RemoteNegativeDrillEvidence.md](P0-007RemoteNegativeDrillEvidence.md)；原始失败日志、bypass 移除审计和 PR 非 Draft 差异的独立复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项。P0-008 的 Compose 演练仍待独立人类 SRE 复核。
+2. P0-007、P0-009、P0-011 与 P0-012 的自动化技术证据已具备。P0-007 已在受保护 `main` 的 PR #2 中取得两项 Quality 失败和分支清理记录，见 [P0-007RemoteNegativeDrillEvidence.md](../P0/P0-007RemoteNegativeDrillEvidence.md)；原始失败日志、bypass 移除审计和 PR 非 Draft 差异的独立复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项。P0-008 的 Compose 演练仍待独立人类 SRE 复核。
 3. P0-012 在 M0 只要求计划追踪映射；R-001 至 R-017 的完整执行结果、种子和哈希按追踪矩阵分别属于 M1/M2 Gate，不构成当前 M0 的实现阻断。
 4. 非作者人类评审和 Incident Commander 替补已登记为 `ACT-P0-007`，并延后至后续治理验收，不阻断 P0 开发或收尾。
 
