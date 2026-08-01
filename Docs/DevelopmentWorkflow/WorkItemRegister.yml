@@ -111,7 +111,7 @@ Records:
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 新成员独立定位演练与非作者人类复核已延后至后续治理验收，不作为 P0 开发或收尾阻断项
+    NextAction: 由合格非作者人类实际执行定位演练并确认；abcnx 已审查 PR #99 并请求变更，人类验收证据补齐后由非作者 PO/TL 审批
     EscalateTs: 待 PO 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -130,6 +130,10 @@ Records:
         Actor: ProjectAuthor
         Action: 延后独立定位演练和非作者复核；该事项不再阻断 P0 开发或收尾
         Evidence: 当前任务会话的延后指示
+      - Ts: "2026-08-01T16:06:09Z"
+        Actor: OpenClawAssistant
+        Action: 处理 abcnx 对 PR #99 的审查请求；补充提交 SHA、执行环境与定位目标复核表，如实降级代理结论并登记人类验收待办；状态保持 IN_REVIEW，未伪造 ACCEPTED
+        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
   - WorkItemId: TSK-P0-004
     PlanTaskId: P0-004
     Title: 按方案 A 创建 src 布局、根级目录和占位包
