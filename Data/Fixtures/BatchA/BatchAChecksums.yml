@@ -1,0 +1,14 @@
+# P1-024 批次 A 固定数据夹具 checksum（跨平台 CI 回归基准）
+# 任何夹具变更必须更新本文件并记录原因与批准（Change 记录）
+ChecksumSchemaVersion: "1.0"
+DataSequenceHashSchema: canonicalHash(lines, TsPrecision.Millisecond)
+Files:
+  BatchA_Securities_518880.mvsv: d1abfb715688502eaff5a97f3f90eac094efec18d17dfba8088d1d06c4e1ea45
+  BatchA_Futures_Gold.mvsv: 803295573e6136380b61576e46cbed378cd2ce815699136f38d232588a8a0eb7
+  BatchA_Gap.mvsv: e414d3b965fcd59d849cc0aed096949d7a53b116254d3efe5a765c0debd1201d
+  BatchA_Errors.mvsv: b51210a3b6839e613a1330dba5d210c0f02892334694083ee3f2c569e7db88a3
+DataSequenceHashes:
+  BatchA_Securities_518880.mvsv: 77531954386a71539550ac50f79788fe3e8d10fcd0a4dd62b00e9063f4a9470a
+  BatchA_Futures_Gold.mvsv: 2c1eefd68c0901b1c73abaea04e43b0acbd5216be550d10ec0fa4294ede2c4f5
+  BatchA_Gap.mvsv: 06a9c87c581fea0e486b5b4050cfc53eb919dac3bb85d4738050b4f154a4c103
+  BatchA_Errors.mvsv: 28cabec116630b4007145f61a92a1c85e44ebc855756380ae99fccd6f7c8e744
