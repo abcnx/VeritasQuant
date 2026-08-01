@@ -1,17 +1,18 @@
 # M1 阶段 Gate 报告
 
-> **状态：DRAFT — 待签署（PENDING SIGNATURE）**
-> 本文件由开发执行代理（BeeAgent）准备，**签署结论必须由 ACANX 亲自完成**，
-> 代理不代签。签署完成后本报告状态流转 `FINAL` 并随 PR 合并归档。
+> **状态：FINAL — 已签署（SIGNED BY ACANX）**
+> 签署时间：2026-08-01T23:44:48Z（PO/TL/QA/SRE 四角色全部 PASS）。
+> 本报告由开发执行代理（BeeAgent）准备材料，签署结论由 ACANX 亲自完成；
+> 签署已由 ACANX 在 PR #122 分支提交 `8ea4705` 固化，并随本 PR 合并归档。
 
 ## 报告控制
 
 - 报告 ID：`M1-STAGE-GATE-001`
-- 报告版本：`1.0-DRAFT`
+- 报告版本：`1.0-FINAL`
 - `StageGatePolicyVersion`：`StageGatePolicyVersion-1`（P1-075 冻结，`StageGatePolicyStoreV1` 冻结后禁止修改参数）
 - 证据窗口：`2026-08-01T22:32:15Z`（P1-041 首个 commit）至 `2026-08-01T23:33:48Z`（PR #121 合并，上游 dev `bf60bb5`）
 - 候选提交：`bf60bb51f357b03a2878aaa083ada2ca87e982db`（上游 `dev` HEAD，PR #121 合并结果）
-- 报告状态：`DRAFT（待签署）`
+- 报告状态：`FINAL（ACANX 已签署 2026-08-01T23:44:48Z）`
 - Gate 结论：**PASS（待 ACANX 签署确认）**
 
 本文件是 P1-076 的可填写 Gate 工件。依据
@@ -77,7 +78,7 @@ Incident 全流程”）在单人开发阶段由治理例外跟踪，M1 不因�
 | QA | **ACANX** | 505 passed、属性/模型序列、探针、端到端、跨平台、性能 | **2026-08-01T23:44:48Z** | PASS |
 | SRE/安全 | **ACANX** | 沙箱安全套件、CI 双平台、Security baseline、StageGate 冻结 | **2026-08-01T23:44:48Z** | PASS |
 
-- 建议 Gate 结论：`PASS`（强制项 7/7 通过，开放 S0/S1 = 0，探针命中 0，属性/模型序列 30,000 ≥ 10,000）
-- **本结论须由 ACANX 在 PR 审批中确认并填写签署时间后生效**；代理不代签。
-- 签署后后续动作：报告状态流转 `FINAL` 并随 PR 合并归档；P2 阶段 Backlog 解冻；WorkItemRegister
+- **Gate 结论：`PASS`**（强制项 7/7 通过，开放 S0/S1 = 0，探针命中 0，属性/模型序列 30,000 ≥ 10,000）
+- **签署状态：已签署** —— ACANX 于 2026-08-01T23:44:48Z 完成 PO/TL/QA/SRE 四角色签署（全部 PASS），并在 PR #122 审批中确认（2026-08-01T23:49:22Z APPROVED）；签署 commit `8ea4705`。
+- 后续动作：本报告随 PR #122 合并归档（FINAL）；P2 阶段 Backlog 解冻；WorkItemRegister
   TSK-P1-041~076 保持 `ACCEPTED`，新增工作项须走计划变更流程。
