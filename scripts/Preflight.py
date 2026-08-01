@@ -13,7 +13,7 @@ import yaml
 
 
 _UTF8_SUFFIXES = {".py", ".md", ".yml", ".yaml", ".json", ".toml"}
-_IGNORED_PARTS = {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", "Archive", "build", "dist", "var", "__pycache__"}
+_IGNORED_PARTS = {".git", ".venv", ".mypy_cache", ".pytest_cache", ".ruff_cache", "Archive", "build", "dist", "var", "__pycache__"}
 _PASCAL_CASE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
 _SNAKE_CASE = re.compile(r"^[a-z][a-z0-9_]*$")
 _ROOT_PYTHON_EXCEPTIONS = {"src", "tests", "scripts"}
