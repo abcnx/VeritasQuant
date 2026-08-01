@@ -59,3 +59,22 @@ Records:
         Actor: Codex
         Action: 同步权威技术方案、包元数据、CI 契约、依赖政策、计划与工作项，并完成自动化复验
         Evidence: Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md
+  - ChangeId: CHG-P0-004
+    Title: 延后 M0 独立治理验收，解除 P1 开发阻断
+    Owner: PO/TL
+    Approver: ProjectAuthor（当前会话确认）
+    ScopeImpact: P0-003、P0-006、P0-007、P0-008 及非作者人类评审的独立治理验收继续保留为后续行动；其未完成不再阻断 P1 开发、测试和代码审阅。该调整不改变 M0 Gate 强制证据、技术方案、分支保护、安全要求或任何工作项的 ACCEPTED 状态。
+    TestPlan: 对 P1-001 至 P1-013 重新执行 unit、contract 与 packaging 自动化测试；后续 P1 变更继续受现有 CI、静态检查、测试和 PR 规则约束。
+    RollbackPlan: 在准备 M0 正式 Gate、环境晋级、Release 或任何 P1 工作项 ACCEPTED 前恢复独立治理验收为阻断条件；不删除既有证据、风险或行动项。
+    Status: APPROVED
+    TargetDate: P1 开发立即生效；M0 正式 Gate 前复核
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
+    AuditHistory:
+      - Ts: "2026-07-31T13:06:51Z"
+        Actor: ProjectAuthor
+        Action: 指示完成自动化 QA 复核，并将独立治理验收延后，不得造成 P1 开发卡点
+        Evidence: 当前任务会话确认
+      - Ts: "2026-07-31T13:06:51Z"
+        Actor: Codex
+        Action: 登记开发准入调整；不代替人类独立验收或 M0 Gate 签署
+        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
