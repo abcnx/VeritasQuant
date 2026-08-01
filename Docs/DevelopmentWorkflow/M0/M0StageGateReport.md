@@ -11,7 +11,7 @@
 - Gate 结论：`PASS`
 
 本文件是 P0-013 的可填写 Gate 工件，签署后冻结首个迭代 Backlog。根据
-[技术方案第 13 章](../VeritasQuantTechSpec.md#13-分阶段实施路线与验收结果)，最终报告必须记录
+[技术方案第 13 章](../../VeritasQuantTechSpec.md#13-分阶段实施路线与验收结果)，最终报告必须记录
 政策版本、证据窗口、样本量、指标与阈值、测试报告哈希、审批签名以及唯一的 `PASS`、`FAIL`
 或 `INSUFFICIENT_EVIDENCE` 结论。
 
@@ -19,7 +19,7 @@
 
 - 范围：M0/P0 工程基线、治理记录和首个迭代 Backlog 冻结条件。
 - 不在范围：环境晋级、Release 创建、模拟盘、券商连接、实盘授权或凭据。
-- 代表资产和阶段边界：见 [P0-001 范围记录](P0-001ScopeAndGateRecord.md)。
+- 代表资产和阶段边界：见 [P0-001 范围记录](../P0/P0-001ScopeAndGateRecord.md)。
 - 预审更新：见 [M0PreReview.md](M0PreReview.md) 的 2026-08-01 独立复核快照；P0-001 至 P0-013
   已全部 `ACCEPTED`，阻断项均已处理或由 ProjectAuthor 批准例外。
 
@@ -27,19 +27,19 @@
 
 | 检查 | 所需客观证据 | 当前状态 | 独立审阅结论与引用 |
 | --- | --- | --- | --- |
-| P0-001 范围、非目标与未来 Gate 签署名单 | [P0-001 范围记录](P0-001ScopeAndGateRecord.md)；非作者 PO/TL 审阅记录 | 通过 | ProjectAuthor 于 2026-07-31T04:15:00Z 确认范围与 Gate 签署名单；PR #97 归档 |
-| P0-002 RACI、升级和值班替补 | [P0-002 RACI](P0-002RaciAndEscalation.md)；[独立角色证据包](M0IndependentReviewEvidence.md) 中的评审者与 IC 替补确认 | 通过 | ProjectAuthor 确认临时多角色模型与 5/15 分钟升级路径；PR #98 归档；IC 替补确认见独立角色证据包 |
-| P0-003 文档可定位性 | [文档索引](DevelopmentDocumentIndex.md)；已完成的 [定位演练记录](P0-003DocumentDiscoveryDrill.md) | 通过 | ACANX 独立执行定位演练 10/10 正确，签署 [P0-003HumanDrillWorksheet.md](P0-003HumanDrillWorksheet.md)（2026-08-01T16:41:00Z） |
-| P0-004 方案 A 目录边界 | [工作项证据](WorkItemRegister.yml) 中 P0-004 的脚本、契约测试和 Linux 验证；非作者 TL 审阅 | 通过 | 契约测试 P0-004-001 通过；M0 Linux 验证 `58 passed`；PR #101 归档 |
-| P0-005 Python 3.13+ 与锁定策略 | [依赖策略](P0-005DependencyPolicy.md)；双平台 CI 工件和独立 QA 记录 | 通过 | 精确锁文件、`VerifyDependencyLocks.py` 0 issues；PR #102 归档 |
-| P0-006 CI 合并治理 | [CI 治理记录](P0-006CiGovernance.md)；管理员分支保护审计链接；三项必需检查配置证据 | 通过 | Ruleset `20114806`（dev）与 `20108335`（main）三项必需检查、空 bypass；截图 `BypassList_2026-07-31 194302.png`；PR #103 归档 |
-| P0-007 违规阻断与定位 | [P0 独立验收包](P0IndependentAcceptancePackage.md) 中的受保护远程 CI 负例证据 | 通过 | 负例 Run [`30626945620`](https://github.com/ACANX/VeritasQuant/actions/runs/30626945620) 明确失败并定位；修复后 Run `30716079258` 全绿；PR #108 归档 |
-| P0-008 Compose 演练 | [Compose 技术演练](P0-008ComposeDrillEvidence.md)；独立 SRE 复核 | 通过 | 启动/健康/清理演练退出码 0；镜像隔离与无遗留复查通过；PR #109 归档 |
-| P0-009 测试证据格式 | [P0 独立验收包](P0IndependentAcceptancePackage.md) 中的 JUnit、coverage、环境和哈希复核 | 通过 | `CollectTestEvidence.py` 端到端验证（JUnit/coverage/环境/种子/工件 SHA-256）；PR #110 归档 |
-| P0-010 登记表 | [登记表规范](P0-010RegisterSchema.md)；六类登记表；非作者 TL/QA 复核 | 通过 | 六类登记表唯一 ID、审计历史齐全；契约测试 P0-010-001/002；PR #111 归档 |
-| P0-011 安全与许可证 | [P0 独立验收包](P0IndependentAcceptancePackage.md) 中的 Security baseline、负例和许可证复核 | 通过 | 秘密扫描负例阻断（退出码 1）；许可证 APPROVED 且 0 issues；pip_audit 持续 SUCCESS；PR #112 归档 |
-| P0-012 追踪矩阵 | [P0 独立验收包](P0IndependentAcceptancePackage.md) 中的映射复核 | 通过 | R-001 至 R-017 全量映射、无孤立需求；契约测试 P0-012-001；PR #113 归档 |
-| 开放风险、事故、变更和行动项 | [风险](RiskRegister.yml)、[事故](IncidentRegister.yml)、[变更](ChangeRegister.yml)、[行动项](ActionRegister.yml)；阻断项为零或有已批准且未过期的例外 | 通过 | 阻断行动项 ACT-P0-004/005/007 已关闭（见 ActionRegister.yml 与风险决议表）；无未批准开放阻断 |
+| P0-001 范围、非目标与未来 Gate 签署名单 | [P0-001 范围记录](../P0/P0-001ScopeAndGateRecord.md)；非作者 PO/TL 审阅记录 | 通过 | ProjectAuthor 于 2026-07-31T04:15:00Z 确认范围与 Gate 签署名单；PR #97 归档 |
+| P0-002 RACI、升级和值班替补 | [P0-002 RACI](../P0/P0-002RaciAndEscalation.md)；[独立角色证据包](M0IndependentReviewEvidence.md) 中的评审者与 IC 替补确认 | 通过 | ProjectAuthor 确认临时多角色模型与 5/15 分钟升级路径；PR #98 归档；IC 替补确认见独立角色证据包 |
+| P0-003 文档可定位性 | [文档索引](../DevelopmentDocumentIndex.md)；已完成的 [定位演练记录](../P0/P0-003DocumentDiscoveryDrill.md) | 通过 | ACANX 独立执行定位演练 10/10 正确，签署 [P0-003HumanDrillWorksheet.md](../P0/P0-003HumanDrillWorksheet.md)（2026-08-01T16:41:00Z） |
+| P0-004 方案 A 目录边界 | [工作项证据](../WorkItemRegister.yml) 中 P0-004 的脚本、契约测试和 Linux 验证；非作者 TL 审阅 | 通过 | 契约测试 P0-004-001 通过；M0 Linux 验证 `58 passed`；PR #101 归档 |
+| P0-005 Python 3.13+ 与锁定策略 | [依赖策略](../P0/P0-005DependencyPolicy.md)；双平台 CI 工件和独立 QA 记录 | 通过 | 精确锁文件、`VerifyDependencyLocks.py` 0 issues；PR #102 归档 |
+| P0-006 CI 合并治理 | [CI 治理记录](../P0/P0-006CiGovernance.md)；管理员分支保护审计链接；三项必需检查配置证据 | 通过 | Ruleset `20114806`（dev）与 `20108335`（main）三项必需检查、空 bypass；截图 `BypassList_2026-07-31 194302.png`；PR #103 归档 |
+| P0-007 违规阻断与定位 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的受保护远程 CI 负例证据 | 通过 | 负例 Run [`30626945620`](https://github.com/ACANX/VeritasQuant/actions/runs/30626945620) 明确失败并定位；修复后 Run `30716079258` 全绿；PR #108 归档 |
+| P0-008 Compose 演练 | [Compose 技术演练](../P0/P0-008ComposeDrillEvidence.md)；独立 SRE 复核 | 通过 | 启动/健康/清理演练退出码 0；镜像隔离与无遗留复查通过；PR #109 归档 |
+| P0-009 测试证据格式 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的 JUnit、coverage、环境和哈希复核 | 通过 | `CollectTestEvidence.py` 端到端验证（JUnit/coverage/环境/种子/工件 SHA-256）；PR #110 归档 |
+| P0-010 登记表 | [登记表规范](../P0/P0-010RegisterSchema.md)；六类登记表；非作者 TL/QA 复核 | 通过 | 六类登记表唯一 ID、审计历史齐全；契约测试 P0-010-001/002；PR #111 归档 |
+| P0-011 安全与许可证 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的 Security baseline、负例和许可证复核 | 通过 | 秘密扫描负例阻断（退出码 1）；许可证 APPROVED 且 0 issues；pip_audit 持续 SUCCESS；PR #112 归档 |
+| P0-012 追踪矩阵 | [P0 独立验收包](../P0/P0IndependentAcceptancePackage.md) 中的映射复核 | 通过 | R-001 至 R-017 全量映射、无孤立需求；契约测试 P0-012-001；PR #113 归档 |
+| 开放风险、事故、变更和行动项 | [风险](../RiskRegister.yml)、[事故](../IncidentRegister.yml)、[变更](../ChangeRegister.yml)、[行动项](../ActionRegister.yml)；阻断项为零或有已批准且未过期的例外 | 通过 | 阻断行动项 ACT-P0-004/005/007 已关闭（见 ActionRegister.yml 与风险决议表）；无未批准开放阻断 |
 
 ## 必须附加的治理证据
 
@@ -57,7 +57,7 @@
    定位演练并签署（`P0-003HumanDrillWorksheet.md`，10/10）；IC 替补确认见
    [M0IndependentReviewEvidence.md](M0IndependentReviewEvidence.md)。
 4. **独立 QA/SRE 复核**：P0-003~P0-013 的独立复核快照分别归档于各 P0 证据文档
-   （PR #97~#114）；本地复核命令与预期哈希见 [P0IndependentAcceptancePackage.md](P0IndependentAcceptancePackage.md)。
+   （PR #97~#114）；本地复核命令与预期哈希见 [P0IndependentAcceptancePackage.md](../P0/P0IndependentAcceptancePackage.md)。
 
 ## 指标、样本和工件哈希
 

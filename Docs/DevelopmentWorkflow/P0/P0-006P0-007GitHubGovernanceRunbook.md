@@ -14,7 +14,7 @@
 ## 控制目标
 
 以 [P0-006CiGovernance.md](P0-006CiGovernance.md)、
-[WorkItemRegister.yml](WorkItemRegister.yml) 和技术方案第 11.2、12.2 节为准，在
+[WorkItemRegister.yml](../WorkItemRegister.yml) 和技术方案第 11.2、12.2 节为准，在
 `main` 上建立以下不可缺少的控制：
 
 1. 必需检查精确为 `Quality (ubuntu-latest)`、`Quality (windows-latest)` 和

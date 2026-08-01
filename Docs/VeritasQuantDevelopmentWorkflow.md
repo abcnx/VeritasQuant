@@ -11,6 +11,26 @@
 3. 风险、突发问题和事故在发现时立即登记，完整保存时间线和证据，为复盘提供数据。
 4. 自动化系统可以依据明确状态、字段和规则推进工作，不依赖口头判断完成度。
 
+## 1.1 开发过程文档存放规则
+
+`Docs/DevelopmentWorkflow/` 目录下的开发过程文档按阶段与里程碑划分子目录存放，规则如下：
+
+| 文档前缀 | 存放位置 | 示例 |
+| --- | --- | --- |
+| `P0`、`P1`、`Pn`（阶段/计划任务） | `Docs/DevelopmentWorkflow/P0/`、`P1/`、`Pn/` | `P0-006CiGovernance.md` → `Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md`；`P1-001-P1-013Evidence.md` → `Docs/DevelopmentWorkflow/P1/` |
+| `M0`、`M1`、`Mn`（里程碑/Gate） | `Docs/DevelopmentWorkflow/M0/`、`M1/`、`Mn/` | `M0StageGateReport.md` → `Docs/DevelopmentWorkflow/M0/M0StageGateReport.md`；`M0-Linux.junit.xml` → `Docs/DevelopmentWorkflow/M0/` |
+| 其他（登记表、索引、政策、跨阶段规范） | `Docs/DevelopmentWorkflow/` 根目录 | `WorkItemRegister.yml`、`RiskRegister.yml`、`TraceabilityMatrix.yml`、`TestEvidencePolicy.md`、`DevelopmentDocumentIndex.md` |
+
+规则约束：
+
+1. **阶段前缀（`P`）与里程碑前缀（`M`）不区分大小写**，`p0-` 与 `P0-` 均按阶段归类；但新文档统一使用大写前缀命名。
+2. **复合前缀文档**（如 `P0-006P0-007GitHubGovernanceRunbook.md`）按首个前缀（`P0`）归入对应阶段子目录。
+3. **跨阶段证据文件**（如 `P0-003-P0-012TestEvidence.json`）按首个前缀归入该阶段子目录，并在正文或索引中注明覆盖范围。
+4. **子目录内文档引用上级目录文件**时使用 `../`；引用其他子目录文件时使用 `../<子目录>/`；根目录文件引用子目录文件时直接使用 `<子目录>/` 前缀。
+5. **新增文档**必须先按上述规则确定存放位置，再在 `DevelopmentDocumentIndex.md` 中登记；索引中的链接必须指向实际存放路径。
+6. **移动既有文档**必须同步更新所有引用该文档的 md/yml/json 路径与链接，并通过 `git mv` 保留历史。
+7. 设计决策变更仍必须同步修改技术方案，不因文档归类而改变事实来源。
+
 ## 2. 工作项模型
 
 ### 2.1 类型与层级

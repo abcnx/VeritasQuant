@@ -8,7 +8,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/core/test_time.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+      EvidenceLinks: [tests/unit/core/test_time.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
       Gaps: 缺正式 property 套件、跨来源回归 checksum、独立验收和 M1 Gate 证据
   - RequirementId: R-002
     TechSpecRef: "12.2"
@@ -36,7 +36,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/core/test_events.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      EvidenceLinks: [tests/unit/core/test_events.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
       Gaps: 缺完整兼容升级契约、独立验收和 M1 Gate 证据
   - RequirementId: R-006
     TechSpecRef: "4.6"
@@ -76,7 +76,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/core/test_models.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      EvidenceLinks: [tests/unit/core/test_models.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
       Gaps: 缺完整 YAML 分类契约、property 套件、独立验收和 M1 Gate 证据
   - RequirementId: R-012
     TechSpecRef: "11.2"
@@ -86,7 +86,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+      EvidenceLinks: [tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
       Gaps: 缺 GitHub Actions Linux Python 3.13 artifact、独立验收和 M1 Gate 证据
   - RequirementId: R-013
     TechSpecRef: "10"
@@ -96,7 +96,7 @@ Rows:
     LatestGate: M2
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/application/test_api_errors.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      EvidenceLinks: [tests/unit/application/test_api_errors.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
       Gaps: 缺 API 命令和幂等集成契约、独立验收和 M2 Gate 证据
   - RequirementId: R-014
     TechSpecRef: "5"
@@ -112,7 +112,7 @@ Rows:
     LatestGate: M1
     ExecutionEvidence:
       Status: PARTIAL_AUTHOR_EVIDENCE
-      EvidenceLinks: [tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+      EvidenceLinks: [tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
       Gaps: 缺完整 property 配置规范化、独立验收和 M1 Gate 证据
   - RequirementId: R-016
     TechSpecRef: "12.3"
@@ -131,7 +131,7 @@ Rows:
 #
 # - 复核时间：2026-08-01T20:33:00Z。
 # - 复核对象：本矩阵（MatrixVersion 1.0）、tests/contract/test_p0_engineering_baseline.py 与
-#   Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json。
+#   Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json。
 # - R-001 至 R-017 共 17 行全部映射 TechSpecRef、PlanTaskIds、TestIds、CiSuites 与 LatestGate；
 #   无孤立强制需求（无缺 PlanTaskIds 或 TestIds 的行）。
 # - 已实施部分记录 ExecutionEvidence（Status: PARTIAL_AUTHOR_EVIDENCE，含 EvidenceLinks 与 Gaps）；

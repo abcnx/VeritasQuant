@@ -18,7 +18,7 @@
 | 安全和失败模式分析 | 通过 | 配置拒绝密钥/绝对路径；API 过滤公开详情；日志脱敏且队列故障不阻断调用方。 |
 | 估算不超过 10 人日 | 通过 | 计划中 P1-001 至 P1-013 的单项估算均不超过 10 人日。 |
 | 前置工程基线 P0-004/P0-005 | 未满足 | 仓库开始时没有 `src` 布局、`pyproject.toml`、包、测试或 CI；本次仅建立 P1 所需最小骨架，不能替代 P0/M0 的正式验收。 |
-| Linux 大小写敏感本地验证 | 通过 | [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md) 记录 Ubuntu WSL 的构建、测试和仓库外 wheel 验证；远程 CI、Python 3.13 和独立审批仍未满足。 |
+| Linux 大小写敏感本地验证 | 通过 | [M0LinuxValidationEvidence.md](../M0/M0LinuxValidationEvidence.md) 记录 Ubuntu WSL 的构建、测试和仓库外 wheel 验证；远程 CI、Python 3.13 和独立审批仍未满足。 |
 
 DoR 结论：计划元数据与技术分析充分，但 P0 基线前置没有正式验收，因此不能宣称任务已正式进入 `READY`。本次按请求完成最小实现和作者验证，残余项登记于第 5 节。
 

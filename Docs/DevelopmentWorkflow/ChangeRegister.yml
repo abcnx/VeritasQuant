@@ -11,7 +11,7 @@ Records:
     RollbackPlan: 恢复 P0-006 的双平台并行实施优先级，并立即在受保护 CI 上启用 Linux 必需检查；不删除任何 Windows 证据。
     Status: APPROVED
     TargetDate: M0 正式评审前
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
     AuditHistory:
       - Ts: "2026-07-31T03:55:00Z"
         Actor: Codex
@@ -30,7 +30,7 @@ Records:
     RollbackPlan: 恢复当前迭代内执行 Docker 演练的优先级；无须回滚代码或数据，因为尚未成功启动容器。
     Status: APPROVED
     TargetDate: M0 正式评审前
-    EvidenceLinks: [Docker/docker-compose.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md]
+    EvidenceLinks: [Docker/docker-compose.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0/P0-003-P0-012ImplementationEvidence.md]
     AuditHistory:
       - Ts: "2026-07-31T04:00:00Z"
         Actor: Codex
@@ -49,7 +49,7 @@ Records:
     RollbackPlan: 若需重新支持较低版本，先更新权威技术方案，恢复对应版本的锁定/兼容代码和双平台 CI 矩阵，并重新执行完整证据闭环。
     Status: APPROVED
     TargetDate: 已完成
-    EvidenceLinks: [Docs/VeritasQuantTechSpec.md, pyproject.toml, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, tests/contract/test_p0_engineering_baseline.py]
+    EvidenceLinks: [Docs/VeritasQuantTechSpec.md, pyproject.toml, Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md, tests/contract/test_p0_engineering_baseline.py]
     AuditHistory:
       - Ts: "2026-07-31T09:34:03Z"
         Actor: ProjectAuthor
@@ -58,7 +58,7 @@ Records:
       - Ts: "2026-07-31T09:34:03Z"
         Actor: Codex
         Action: 同步权威技术方案、包元数据、CI 契约、依赖政策、计划与工作项，并完成自动化复验
-        Evidence: Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md
   - ChangeId: CHG-P0-004
     Title: 延后 M0 独立治理验收，解除 P1 开发阻断
     Owner: PO/TL
@@ -68,7 +68,7 @@ Records:
     RollbackPlan: 在准备 M0 正式 Gate、环境晋级、Release 或任何 P1 工作项 ACCEPTED 前恢复独立治理验收为阻断条件；不删除既有证据、风险或行动项。
     Status: APPROVED
     TargetDate: P1 开发立即生效；M0 正式 Gate 前复核
-    EvidenceLinks: [Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md, Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/M0/M0PreReview.md, Docs/DevelopmentWorkflow/ActionRegister.yml]
     AuditHistory:
       - Ts: "2026-07-31T13:06:51Z"
         Actor: ProjectAuthor
@@ -77,4 +77,4 @@ Records:
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 登记开发准入调整；不代替人类独立验收或 M0 Gate 签署
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md

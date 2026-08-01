@@ -13,7 +13,7 @@
 3. 要求至少一名非作者评审；事件、排序、账本、订单、风控、配置、API 和安全改动另加对应 CodeOwner。
 4. 在两个平台从空缓存运行一次，归档 Build ID、commit、解释器版本、JUnit、coverage、哈希和产物保留链接。
 
-当前目录已可被 Git 识别为仓库，且 `origin` 可访问 `main` 与 `dev` 分支；本地 Ubuntu WSL 的 Linux 构建、测试和仓库外 wheel 验证见 [M0LinuxValidationEvidence.md](M0LinuxValidationEvidence.md)。GitHub Actions Run `30619335295` 已完成 Windows/Linux Python 3.13 Quality 与 Security baseline，并保留质量工件 90 天。只读规则查询已确认 `main` 使用三项必需检查、非作者批准、Code Owner 审阅和最近推送者审批限制。修正前截图 `BypassList_2026-07-31 193936.png` 曾显示 `Repository admin = Always allow`；最新截图 `BypassList_2026-07-31 194302.png` 显示 Bypass list 为空。当前普通管理员绕过已移除，仍待管理员变更审计和独立验收，详见 `RSK-P0-003`。
+当前目录已可被 Git 识别为仓库，且 `origin` 可访问 `main` 与 `dev` 分支；本地 Ubuntu WSL 的 Linux 构建、测试和仓库外 wheel 验证见 [M0LinuxValidationEvidence.md](../M0/M0LinuxValidationEvidence.md)。GitHub Actions Run `30619335295` 已完成 Windows/Linux Python 3.13 Quality 与 Security baseline，并保留质量工件 90 天。只读规则查询已确认 `main` 使用三项必需检查、非作者批准、Code Owner 审阅和最近推送者审批限制。修正前截图 `BypassList_2026-07-31 193936.png` 曾显示 `Repository admin = Always allow`；最新截图 `BypassList_2026-07-31 194302.png` 显示 Bypass list 为空。当前普通管理员绕过已移除，仍待管理员变更审计和独立验收，详见 `RSK-P0-003`。
 
 ## 当前执行顺序
 

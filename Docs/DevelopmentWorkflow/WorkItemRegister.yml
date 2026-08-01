@@ -15,7 +15,7 @@ Records:
     EstimatePersonDays: 2
     Dependencies: []
     AcceptanceCriteria: 会议记录含范围、排除项、M0-M5 签署人
-    TestEvidence: [Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -29,7 +29,7 @@ Records:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 创建待签范围记录
-        Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 将外部签署登记为 ACT-P0-001；任务仍未满足 Ready 或验收条件
@@ -41,11 +41,11 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准范围、非目标和未来 Gate 签署名单；任务进入 IN_REVIEW，不标记 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md
       - Ts: "2026-08-01T13:20:48Z"
         Actor: BeeAgent
         Action: 提交 P0-001 独立验收 PR；由非作者 PO/TL 审批并合并后归档为 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md
   - WorkItemId: TSK-P0-002
     PlanTaskId: P0-002
     Title: 建立 RACI、值班联系人和升级路径
@@ -59,7 +59,7 @@ Records:
     EstimatePersonDays: 2
     Dependencies: [P0-001]
     AcceptanceCriteria: 每类交付、风险、事故和 Gate 均有唯一 Accountable 且联系人经确认
-    TestEvidence: [Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -73,7 +73,7 @@ Records:
       - Ts: "2026-07-30T18:47:58Z"
         Actor: Codex
         Action: 创建 RACI 与升级模板
-        Evidence: Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md
       - Ts: "2026-07-31T03:50:00Z"
         Actor: Codex
         Action: 将联系人确认登记为 ACT-P0-002；任务仍未满足 Ready 或验收条件
@@ -85,11 +85,11 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准临时 RACI、联系渠道和值班限制；任务进入 IN_REVIEW，不标记 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md
       - Ts: "2026-08-01T14:41:20Z"
         Actor: BeeAgent
         Action: 提交 P0-002 独立验收 PR；由非作者 PO 审批并合并后归档为 ACCEPTED，ACT-P0-007 保持 M0 Gate 未决
-        Evidence: Docs/DevelopmentWorkflow/P0-002RaciAndEscalation.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md
   - WorkItemId: TSK-P0-003
     PlanTaskId: P0-003
     Title: 创建技术方案、计划、工作流与 ADR 的文档索引
@@ -103,7 +103,7 @@ Records:
     EstimatePersonDays: 2
     Dependencies: [P0-001]
     AcceptanceCriteria: 新成员在 15 分钟内能定位权威设计、当前计划、决策和风险记录
-    TestEvidence: [Docs/DevelopmentWorkflow/DevelopmentDocumentIndex.md, Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/DevelopmentDocumentIndex.md, Docs/DevelopmentWorkflow/P0/P0-003DocumentDiscoveryDrill.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012ImplementationEvidence.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -121,11 +121,11 @@ Records:
       - Ts: "2026-07-31T04:15:00Z"
         Actor: ProjectAuthor
         Action: 批准 P0-001 范围后，将依赖解除情况更新为 IN_REVIEW；未执行独立定位演练
-        Evidence: Docs/DevelopmentWorkflow/P0-001ScopeAndGateRecord.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md
       - Ts: "2026-07-31T09:51:38Z"
         Actor: Codex
         Action: 补充独立定位演练的可填写记录；仍待非作者实际执行和复核
-        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003DocumentDiscoveryDrill.md
       - Ts: "2026-07-31T12:35:00Z"
         Actor: ProjectAuthor
         Action: 延后独立定位演练和非作者复核；该事项不再阻断 P0 开发或收尾
@@ -133,15 +133,15 @@ Records:
       - Ts: "2026-08-01T16:06:09Z"
         Actor: OpenClawAssistant
         Action: 处理 abcnx 对 PR #99 的审查请求；补充提交 SHA、执行环境与定位目标复核表，如实降级代理结论并登记人类验收待办；状态保持 IN_REVIEW，未伪造 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003DocumentDiscoveryDrill.md
       - Ts: "2026-08-01T16:26:59Z"
         Actor: OpenClawAssistant
         Action: 处理 abcnx 第二轮意见；将 PR 关联方式由 Closes #52 改为 Refs #52，避免在 P0-003 未完成人类验收前提前关闭 issue；本 PR 定位为文档归档变更，不视为验收 PR
-        Evidence: Docs/DevelopmentWorkflow/P0-003DocumentDiscoveryDrill.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003DocumentDiscoveryDrill.md
       - Ts: "2026-08-01T16:41:00Z"
         Actor: ACANX
         Action: 作为非作者人类独立执行 P0-003 定位演练并签署执行表；10/10 定位正确、耗时约 9 分钟；登记人类执行记录，状态保持 IN_REVIEW，待独立验收/评审确认
-        Evidence: Docs/DevelopmentWorkflow/P0-003HumanDrillWorksheet.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003HumanDrillWorksheet.md
       - Ts: "2026-08-01T17:24:33Z"
         Actor: BeeAgent
         Action: 基于 PR #99 已合并的人类执行证据与 abcnx 非作者审批，提交 P0-003 验收状态流转 PR；合并后归档为 ACCEPTED
@@ -159,7 +159,7 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-001]
     AcceptanceCriteria: 目录通过大小写与命名检查；不存在根级平行业务 Python 包
-    TestEvidence: [scripts/Preflight.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012ImplementationEvidence.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    TestEvidence: [scripts/Preflight.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0/P0-003-P0-012ImplementationEvidence.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -177,11 +177,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 在 Ubuntu WSL 完成大小写敏感 Preflight、测试、构建和仓库外 wheel 验证
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-08-01T17:44:52Z"
         Actor: BeeAgent
         Action: 复核方案 A 目录边界、大小写敏感 Linux 证据、Preflight 与目录回归测试；提交 P0-004 验收状态流转 PR，合并后归档为 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-005
     PlanTaskId: P0-005
     Title: 建立 pyproject.toml、Python 版本矩阵、依赖组和锁定策略
@@ -195,7 +195,7 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-004]
     AcceptanceCriteria: Python 3.13+ 环境可重复安装；运行/开发依赖分组；锁文件差异可审阅
-    TestEvidence: [pyproject.toml, requirements/Runtime.lock, requirements/Development.lock, scripts/VerifyDependencyLocks.py, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [pyproject.toml, requirements/Runtime.lock, requirements/Development.lock, scripts/VerifyDependencyLocks.py, Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -213,11 +213,11 @@ Records:
       - Ts: "2026-07-31T09:34:03Z"
         Actor: Codex
         Action: 按 ProjectAuthor 当前会话决定将支持基线收窄为 Python 3.13+，并完成自动化复验
-        Evidence: [pyproject.toml, Docs/VeritasQuantTechSpec.md, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md]
+        Evidence: [pyproject.toml, Docs/VeritasQuantTechSpec.md, Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md]
       - Ts: "2026-08-01T17:55:11Z"
         Actor: BeeAgent
         Action: 复核 Python 3.13+ 基线、运行/开发依赖分组、精确锁文件及 Windows/Linux CI 的锁定安装；提交 P0-005 验收状态流转 PR，合并后归档为 ACCEPTED
-        Evidence: [.github/workflows/Ci.yml, requirements/Runtime.lock, requirements/Development.lock, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md]
+        Evidence: [.github/workflows/Ci.yml, requirements/Runtime.lock, requirements/Development.lock, Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md]
   - WorkItemId: TSK-P0-006
     PlanTaskId: P0-006
     Title: 建立 Windows/Linux CI，包含格式、静态类型、单测和 wheel 构建
@@ -231,7 +231,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P0-005]
     AcceptanceCriteria: 两平台流水线从空缓存通过；失败能阻止合并；产物保留期已配置
-    TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003, RSK-P0-005]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -257,7 +257,7 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 已验证本地 Git 仓库、origin 和 Ubuntu WSL 本地 Linux 验证；远程治理证据仍缺失
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T08:12:00Z"
         Actor: Codex
         Action: 两次推送候选提交 bd62269 均因 github.com:443 网络拒绝失败，未能触发远程 CI
@@ -273,11 +273,11 @@ Records:
       - Ts: "2026-07-31T12:35:00Z"
         Actor: ProjectAuthor
         Action: 确认 main Ruleset、必需检查、Code Owner 和空 bypass 已配置；延后独立复核和审计，不再阻断 P0 开发或收尾
-        Evidence: Docs/DevelopmentWorkflow/P0-006CiGovernance.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md
       - Ts: "2026-08-01T18:08:00Z"
         Actor: BeeAgent
         Action: 独立复核 dev Ruleset、无 bypass、必需检查、审批限制及最新 Windows/Linux Python 3.13 CI 运行；提交 P0-006 验收状态流转 PR，合并后归档为 ACCEPTED
-        Evidence: Docs/DevelopmentWorkflow/P0-006CiGovernance.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
     Title: 建立命名、UTF-8、YAML PascalCase、JSON snake_case 和禁止 timestamp 检查
@@ -291,7 +291,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-006]
     AcceptanceCriteria: 正反例测试均通过；故意引入违规文件时 CI 明确失败并定位文件或字段
-    TestEvidence: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md]
+    TestEvidence: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/P0/P0-007RemoteNegativeDrillEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -309,11 +309,11 @@ Records:
       - Ts: "2026-07-31T09:34:03Z"
         Actor: Codex
         Action: Python 3.13 基线下完成自动化复验；等待独立人类 QA 审阅
-        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
       - Ts: "2026-07-31T11:27:21Z"
         Actor: Codex
         Action: PR #2 的受保护 main 远程负例检查失败后已关闭并清理演练分支；状态转为 IN_REVIEW，未签署验收
-        Evidence: Docs/DevelopmentWorkflow/P0-007RemoteNegativeDrillEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-007RemoteNegativeDrillEvidence.md
       - Ts: "2026-07-31T11:39:36Z"
         Actor: Codex
         Action: 截图确认 P0-006 存在 Repository admin = Always allow；P0-007 因依赖未满足恢复为阻断状态
@@ -343,7 +343,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-005]
     AcceptanceCriteria: 一条命令启动所需依赖并通过健康检查；停止后无遗留秘密或业务数据
-    TestEvidence: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, scripts/VerifyDevelopmentEnvironment.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md]
+    TestEvidence: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, scripts/VerifyDevelopmentEnvironment.py, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md]
     RiskLinks: [RSK-P0-004]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -369,15 +369,15 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: Docker Engine 已可访问；两次拉取 postgres/redis 镜像均被 registry-1.docker.io 网络拒绝，未创建容器
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T09:33:58Z"
         Actor: Codex
         Action: 自动化 Compose 启动、健康检查和清理演练通过；转为等待独立人类 SRE 复核
-        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md
       - Ts: "2026-08-01T20:18:00Z"
         Actor: BeeAgent
         Action: 独立复核 compose 静态配置（无 volumes、无端口暴露、tmpfs、healthcheck）、契约测试 P0-008-001、脚本退出码与清理语义；Compose 演练证据与 CI 配置一致；归档为 ACCEPTED，关闭 #57
-        Evidence: Docs/DevelopmentWorkflow/P0-008ComposeDrillEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md
   - WorkItemId: TSK-P0-009
     PlanTaskId: P0-009
     Title: 建立测试目录、稳定测试 ID、报告和证据哈希规范
@@ -391,7 +391,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-006]
     AcceptanceCriteria: 示例测试可生成 JUnit、覆盖率、种子、环境和产物 SHA-256
-    TestEvidence: [scripts/CollectTestEvidence.py, tests/unit/scripts/test_engineering_scripts.py, Docs/DevelopmentWorkflow/TestEvidencePolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [scripts/CollectTestEvidence.py, tests/unit/scripts/test_engineering_scripts.py, Docs/DevelopmentWorkflow/TestEvidencePolicy.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002, RSK-P0-003]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -409,7 +409,7 @@ Records:
       - Ts: "2026-07-31T09:34:03Z"
         Actor: Codex
         Action: Python 3.13 基线下完成自动化证据收集和完整测试；等待独立人类 QA 审阅
-        Evidence: Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
       - Ts: "2026-08-01T20:22:00Z"
         Actor: BeeAgent
         Action: 独立复核稳定 ID 规范、CollectTestEvidence 端到端运行（JUnit/coverage/环境/种子/产物 SHA-256 均生成）与 CI 证据收集步骤；归档为 ACCEPTED，关闭 #58
@@ -427,7 +427,7 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-003]
     AcceptanceCriteria: 每类记录有唯一 ID、状态机、责任人、时限、证据链接和审计历史
-    TestEvidence: [Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/BugRegister.yml, Docs/DevelopmentWorkflow/RiskRegister.yml, Docs/DevelopmentWorkflow/IncidentRegister.yml, Docs/DevelopmentWorkflow/ChangeRegister.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0-010RegisterSchema.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [Docs/DevelopmentWorkflow/WorkItemRegister.yml, Docs/DevelopmentWorkflow/BugRegister.yml, Docs/DevelopmentWorkflow/RiskRegister.yml, Docs/DevelopmentWorkflow/IncidentRegister.yml, Docs/DevelopmentWorkflow/ChangeRegister.yml, Docs/DevelopmentWorkflow/ActionRegister.yml, Docs/DevelopmentWorkflow/P0/P0-010RegisterSchema.md, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-001]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -449,7 +449,7 @@ Records:
       - Ts: "2026-08-01T20:25:00Z"
         Actor: BeeAgent
         Action: 独立复核六类登记表（WorkItem/Bug/Risk/Incident/Change/Action）的 RegistryVersion、RequiredFields、唯一记录 ID 与审计历史；契约测试 P0-010-001/002 通过；归档为 ACCEPTED，关闭 #59
-        Evidence: Docs/DevelopmentWorkflow/P0-010RegisterSchema.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-010RegisterSchema.md
   - WorkItemId: TSK-P0-011
     PlanTaskId: P0-011
     Title: 建立秘密扫描、依赖漏洞扫描和许可证基线
@@ -463,7 +463,7 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-006]
     AcceptanceCriteria: 测试秘密能被阻断；高危漏洞有处置 SLA；许可证白名单经批准
-    TestEvidence: [scripts/ScanSecrets.py, scripts/VerifyLicenses.py, Configs/Security/LicensePolicy.yml, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    TestEvidence: [scripts/ScanSecrets.py, scripts/VerifyLicenses.py, Configs/Security/LicensePolicy.yml, tests/unit/scripts/test_engineering_scripts.py, .github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-005]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -481,7 +481,7 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 在 Ubuntu WSL 复验秘密扫描和许可证策略，均通过；不替代远程 CI 证据
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
       - Ts: "2026-07-31T09:17:05Z"
         Actor: Codex
         Action: GitHub Actions Security baseline 已成功；转为等待独立人类 SRE 审阅
@@ -489,7 +489,7 @@ Records:
       - Ts: "2026-08-01T20:28:00Z"
         Actor: BeeAgent
         Action: 独立复核秘密扫描（负例演练阻断，退出码 1）、许可证策略（ApprovalStatus=APPROVED，issue 0）、漏洞 SLA（Critical 24h/High 72h）与 CI Security baseline 步骤；归档为 ACCEPTED，关闭 #60
-        Evidence: Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
   - WorkItemId: TSK-P0-012
     PlanTaskId: P0-012
     Title: 建立本计划任务到技术章节、测试 ID 和 Gate 的追踪矩阵
@@ -503,7 +503,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P0-009]
     AcceptanceCriteria: 所有阶段 1 强制契约至少映射一个待办和一个计划测试；无孤立强制需求
-    TestEvidence: [Docs/DevelopmentWorkflow/TraceabilityMatrix.yml, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
+    TestEvidence: [Docs/DevelopmentWorkflow/TraceabilityMatrix.yml, tests/contract/test_p0_engineering_baseline.py, Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -539,7 +539,7 @@ Records:
     EstimatePersonDays: 3
     Dependencies: [P0-001, P0-002, P0-003, P0-004, P0-005, P0-006, P0-007, P0-008, P0-009, P0-010, P0-011, P0-012]
     AcceptanceCriteria: M0 检查表全通过；开放阻断项为 0；基线报告和审批记录已归档
-    TestEvidence: [Docs/DevelopmentWorkflow/P0AcceptanceKickoff.md, Docs/DevelopmentWorkflow/M0PreReview.md, Docs/DevelopmentWorkflow/M0StageGateReport.md, Docs/DevelopmentWorkflow/M0IndependentReviewEvidence.md]
+    TestEvidence: [Docs/DevelopmentWorkflow/P0/P0AcceptanceKickoff.md, Docs/DevelopmentWorkflow/M0/M0PreReview.md, Docs/DevelopmentWorkflow/M0/M0StageGateReport.md, Docs/DevelopmentWorkflow/M0/M0IndependentReviewEvidence.md]
     RiskLinks: [RSK-P0-001, RSK-P0-002, RSK-P0-003, RSK-P0-004, RSK-P0-005, RSK-P0-006]
     TargetDate: 待基线批准
     Status: ACCEPTED
@@ -553,19 +553,19 @@ Records:
       - Ts: "2026-07-31T03:30:00Z"
         Actor: Codex
         Action: 更新 M0 预审检查表，保持证据不足结论
-        Evidence: Docs/DevelopmentWorkflow/M0PreReview.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0PreReview.md
       - Ts: "2026-07-31T09:51:38Z"
         Actor: Codex
         Action: 补充可填写 M0 Gate 报告和独立角色审阅证据包；任务保持 ANALYZING 且 Gate 结论仍为证据不足
-        Evidence: Docs/DevelopmentWorkflow/M0StageGateReport.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0StageGateReport.md
       - Ts: "2026-07-31T12:31:58Z"
         Actor: ProjectAuthor
         Action: 正式开启 P0 验收，冻结 main 候选提交并将任务转为 IN_REVIEW；未宣告 M0 Gate 通过
-        Evidence: Docs/DevelopmentWorkflow/P0AcceptanceKickoff.md
+        Evidence: Docs/DevelopmentWorkflow/P0/P0AcceptanceKickoff.md
       - Ts: "2026-08-01T20:36:00Z"
         Actor: BeeAgent
         Action: P0-001 至 P0-012 已全部 ACCEPTED（PR #97-#113）；独立复核 P0 验收证据与 M0 预审状态，归档 P0-013 为 ACCEPTED；M0 Gate 最终 PASS 保留由人类 Gate 签署人发布，关闭 #62
-        Evidence: Docs/DevelopmentWorkflow/M0PreReview.md
+        Evidence: Docs/DevelopmentWorkflow/M0/M0PreReview.md
   - WorkItemId: TSK-P1-001
     PlanTaskId: P1-001
     Title: 实现严格 Pydantic 基类和唯一显式 alias 机制
@@ -579,7 +579,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P0-005]
     AcceptanceCriteria: 未知字段、隐式类型和多 alias 被拒绝；YAML PascalCase 与 Python lowerCamelCase 双向测试通过
-    TestEvidence: [src/veritasquant/core/Models.py, tests/unit/core/test_models.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/Models.py, tests/unit/core/test_models.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -593,11 +593,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-002
     PlanTaskId: P1-002
     Title: 实现配置分层合并、冻结和规范化 config_hash
@@ -611,7 +611,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-001]
     AcceptanceCriteria: 等价 YAML 哈希相同、行为差异哈希不同；重复键、密钥值和机器绝对路径不进入快照
-    TestEvidence: [src/veritasquant/application/Config.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/application/Config.py, tests/unit/application/test_config.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -625,11 +625,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-003
     PlanTaskId: P1-003
     Title: 实现 TsPrecision 的 Second/Millisecond 校验与序列化
@@ -643,7 +643,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P1-001]
     AcceptanceCriteria: 秒/毫秒正例通过；毫秒输入进入秒运行被拒绝；全仓新 wire Schema 无 timestamp 字段
-    TestEvidence: [src/veritasquant/core/Time.py, tests/unit/core/test_time.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/Time.py, tests/unit/core/test_time.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -657,11 +657,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-004
     PlanTaskId: P1-004
     Title: 实现 Decimal、UTC、null 和字段排序的规范序列化
@@ -675,7 +675,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P1-003]
     AcceptanceCriteria: 固定向量在 Windows/Linux 字节一致；禁止 float 进入金额/价格哈希路径
-    TestEvidence: [src/veritasquant/core/CanonicalJson.py, tests/unit/core/test_canonical_json.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/CanonicalJson.py, tests/unit/core/test_canonical_json.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -689,11 +689,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-005
     PlanTaskId: P1-005
     Title: 实现 EventEnvelopeV1、内容哈希和因果链校验
@@ -707,7 +707,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-004]
     AcceptanceCriteria: 必填字段、账户作用域、哈希篡改、重复 ID 和因果引用测试通过
-    TestEvidence: [src/veritasquant/core/Events.py, tests/unit/core/test_events.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/Events.py, tests/unit/core/test_events.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -721,11 +721,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-006
     PlanTaskId: P1-006
     Title: 实现事件 Schema 注册表、兼容范围和确定性升级器
@@ -739,7 +739,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-005]
     AcceptanceCriteria: 未知主版本进入隔离；相同输入升级结果哈希稳定；不支持自动降级
-    TestEvidence: [src/veritasquant/core/EventRegistry.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/EventRegistry.py, tests/unit/core/test_event_registry.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -753,11 +753,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-007
     PlanTaskId: P1-007
     Title: 实现 EventOrderingVersion V1 和六阶段排序器
@@ -771,7 +771,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-005]
     AcceptanceCriteria: 属性测试覆盖同秒/同毫秒、跨源和 event_id 决胜；排序结果跨平台一致
-    TestEvidence: [src/veritasquant/core/EventOrdering.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/EventOrdering.py, tests/unit/core/test_event_ordering.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -785,11 +785,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-008
     PlanTaskId: P1-008
     Title: 实现 ApiErrorCodes.yml 加载、唯一性和号段校验
@@ -803,7 +803,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P1-001]
     AcceptanceCriteria: 成功码集合固定；重复、越界、复用和未注册业务码使启动或测试失败
-    TestEvidence: [src/veritasquant/application/ApiErrors.py, tests/unit/application/test_api_errors.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/application/ApiErrors.py, tests/unit/application/test_api_errors.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -817,11 +817,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-009
     PlanTaskId: P1-009
     Title: 实现 ResponseEnvelopeV1 与统一异常映射
@@ -835,7 +835,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-008]
     AcceptanceCriteria: 成功无 error；错误含嵌套 code/catalog_version/retryable；敏感详情被过滤；JSON 契约快照通过
-    TestEvidence: [src/veritasquant/application/ResponseEnvelope.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/application/ResponseEnvelope.py, tests/unit/application/test_response_envelope.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -849,11 +849,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-010
     PlanTaskId: P1-010
     Title: 实现结构化 JSON 日志、上下文传播、脱敏和有界队列
@@ -867,7 +867,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-003]
     AcceptanceCriteria: 必填字段完整；关联 ID 可贯通；秘密/PII 探针不出现在日志；队列故障不阻断保护动作
-    TestEvidence: [src/veritasquant/monitoring/StructuredLogging.py, tests/unit/monitoring/test_structured_logging.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/monitoring/StructuredLogging.py, tests/unit/monitoring/test_structured_logging.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -881,11 +881,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-011
     PlanTaskId: P1-011
     Title: 实现不可变运行清单及各版本/哈希收集
@@ -899,7 +899,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P1-002, P1-005]
     AcceptanceCriteria: 两次同输入运行清单身份字段一致；缺少强制版本时禁止启动回测
-    TestEvidence: [src/veritasquant/core/RunManifest.py, tests/unit/core/test_run_manifest.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [src/veritasquant/core/RunManifest.py, tests/unit/core/test_run_manifest.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -913,11 +913,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-012
     PlanTaskId: P1-012
     Title: 完成 wheel 包数据、console script 和仓库外启动
@@ -931,7 +931,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P0-005]
     AcceptanceCriteria: Windows/Linux 构建后在仓库外、不设 PYTHONPATH 可运行全部 --help；导入无副作用
-    TestEvidence: [pyproject.toml, tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
+    TestEvidence: [pyproject.toml, tests/packaging/test_entrypoints.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md, Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -945,11 +945,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-013
     PlanTaskId: P1-013
     Title: 建立模块依赖架构测试
@@ -963,7 +963,7 @@ Records:
     EstimatePersonDays: 4
     Dependencies: [P0-004]
     AcceptanceCriteria: 领域模块导入 FastAPI、Streamlit、具体数据库或入口包时 CI 失败
-    TestEvidence: [tests/contract/test_architecture_dependencies.py, Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md]
+    TestEvidence: [tests/contract/test_architecture_dependencies.py, Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 待 M0 基线批准
     Status: IN_REVIEW
@@ -977,11 +977,11 @@ Records:
       - Ts: "2026-07-31T08:02:15Z"
         Actor: Codex
         Action: 根据作者实现与测试证据补登 P1 工作项
-        Evidence: Docs/DevelopmentWorkflow/P1-001-P1-013Evidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-001-P1-013Evidence.md
       - Ts: "2026-07-31T13:06:51Z"
         Actor: Codex
         Action: 自动化 QA 复核通过；根据项目授权解除开发阻断，任务仍为 IN_REVIEW
-        Evidence: Docs/DevelopmentWorkflow/P1DevelopmentAuthorization.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1DevelopmentAuthorization.md
   - WorkItemId: TSK-P1-014
     PlanTaskId: P1-014
     Title: 定义标的、日历、费率和资产能力版本模型
@@ -995,7 +995,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-001]
     AcceptanceCriteria: 518880 与单一黄金期货合约元数据完整；缺 tick、手数或结算规则时运行失败
-    TestEvidence: [src/veritasquant/instruments/Registry.py, tests/unit/instruments/test_registry.py, Docs/DevelopmentWorkflow/P1-014InstrumentRegistryEvidence.md]
+    TestEvidence: [src/veritasquant/instruments/Registry.py, tests/unit/instruments/test_registry.py, Docs/DevelopmentWorkflow/P1/P1-014InstrumentRegistryEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1009,7 +1009,7 @@ Records:
       - Ts: "2026-07-31T13:19:45Z"
         Actor: Codex
         Action: 完成标的、日历、费率和能力清单实现及自动化复核
-        Evidence: Docs/DevelopmentWorkflow/P1-014InstrumentRegistryEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-014InstrumentRegistryEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1027,7 +1027,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-003, P1-014]
     AcceptanceCriteria: OHLC、Decimal、主键、会话、精度、复权和来源字段的正反例全通过
-    TestEvidence: [src/veritasquant/data/MinuteBar.py, tests/unit/data/test_minute_bar.py, Docs/DevelopmentWorkflow/P1-015MinuteBarEvidence.md]
+    TestEvidence: [src/veritasquant/data/MinuteBar.py, tests/unit/data/test_minute_bar.py, Docs/DevelopmentWorkflow/P1/P1-015MinuteBarEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1041,7 +1041,7 @@ Records:
       - Ts: "2026-07-31T13:25:00Z"
         Actor: Codex
         Action: 完成严格分钟 Bar 契约及自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-015MinuteBarEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-015MinuteBarEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1059,7 +1059,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-015]
     AcceptanceCriteria: 样本 15,000 行解析；Count/11列/编码/时区/字段错误能精确定位；不经 float
-    TestEvidence: [src/veritasquant/data/Mvsv.py, tests/unit/data/test_mvsv.py, Docs/DevelopmentWorkflow/P1-016MvsvReaderEvidence.md]
+    TestEvidence: [src/veritasquant/data/Mvsv.py, tests/unit/data/test_mvsv.py, Docs/DevelopmentWorkflow/P1/P1-016MvsvReaderEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1073,7 +1073,7 @@ Records:
       - Ts: "2026-07-31T13:30:00Z"
         Actor: Codex
         Action: 完成 MVSV-1 流式解析和自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-016MvsvReaderEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-016MvsvReaderEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1091,7 +1091,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-016]
     AcceptanceCriteria: Decimal 重算容差测试通过；BarLabelMeaning 缺失拒绝；TurnoverScale 未知时 amount 为空并打标
-    TestEvidence: [src/veritasquant/data/MvsvNormalization.py, tests/unit/data/test_mvsv_normalization.py, Docs/DevelopmentWorkflow/P1-017MvsvNormalizationEvidence.md]
+    TestEvidence: [src/veritasquant/data/MvsvNormalization.py, tests/unit/data/test_mvsv_normalization.py, Docs/DevelopmentWorkflow/P1/P1-017MvsvNormalizationEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1105,7 +1105,7 @@ Records:
       - Ts: "2026-07-31T13:35:00Z"
         Actor: Codex
         Action: 完成 MVSV 语义映射与自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-017MvsvNormalizationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-017MvsvNormalizationEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1123,7 +1123,7 @@ Records:
     EstimatePersonDays: 5
     Dependencies: [P1-016]
     AcceptanceCriteria: 相同字节去重且不覆盖；对象哈希、来源路径和行号可追溯
-    TestEvidence: [src/veritasquant/data/RawObjectStore.py, tests/unit/data/test_raw_object_store.py, Docs/DevelopmentWorkflow/P1-018RawObjectStoreEvidence.md]
+    TestEvidence: [src/veritasquant/data/RawObjectStore.py, tests/unit/data/test_raw_object_store.py, Docs/DevelopmentWorkflow/P1/P1-018RawObjectStoreEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1137,7 +1137,7 @@ Records:
       - Ts: "2026-07-31T13:40:00Z"
         Actor: Codex
         Action: 完成原始对象内容寻址与自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-018RawObjectStoreEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-018RawObjectStoreEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1155,7 +1155,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P1-005]
     AcceptanceCriteria: 同键同哈希只处理一次；同键不同哈希隔离并产生审计
-    TestEvidence: [src/veritasquant/core/Inbox.py, tests/unit/core/test_inbox.py, Docs/DevelopmentWorkflow/P1-027InboxEvidence.md]
+    TestEvidence: [src/veritasquant/core/Inbox.py, tests/unit/core/test_inbox.py, Docs/DevelopmentWorkflow/P1/P1-027InboxEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1169,7 +1169,7 @@ Records:
       - Ts: "2026-07-31T13:45:00Z"
         Actor: Codex
         Action: 完成 inbox 幂等和冲突隔离自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-027InboxEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-027InboxEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1187,7 +1187,7 @@ Records:
     EstimatePersonDays: 9
     Dependencies: [P1-027]
     AcceptanceCriteria: 事实与 outbox 同提交；发布失败可重试且无重复领域副作用
-    TestEvidence: [src/veritasquant/core/Transaction.py, tests/unit/core/test_transaction.py, Docs/DevelopmentWorkflow/P1-028TransactionEvidence.md]
+    TestEvidence: [src/veritasquant/core/Transaction.py, tests/unit/core/test_transaction.py, Docs/DevelopmentWorkflow/P1/P1-028TransactionEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1201,7 +1201,7 @@ Records:
       - Ts: "2026-07-31T13:50:00Z"
         Actor: Codex
         Action: 完成事务与 outbox 原子提交自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-028TransactionEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-028TransactionEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1219,7 +1219,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-028]
     AcceptanceCriteria: 删除投影后从事实重建哈希一致；checkpoint 不越过未提交 outbox
-    TestEvidence: [src/veritasquant/core/Checkpoint.py, tests/unit/core/test_checkpoint.py, Docs/DevelopmentWorkflow/P1-029CheckpointEvidence.md]
+    TestEvidence: [src/veritasquant/core/Checkpoint.py, tests/unit/core/test_checkpoint.py, Docs/DevelopmentWorkflow/P1/P1-029CheckpointEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1233,7 +1233,7 @@ Records:
       - Ts: "2026-07-31T14:00:00Z"
         Actor: Codex
         Action: 完成 checkpoint、快照和投影重建自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-029CheckpointEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-029CheckpointEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1251,7 +1251,7 @@ Records:
     EstimatePersonDays: 6
     Dependencies: [P1-029]
     AcceptanceCriteria: 状态不可非法回退；取消不伪装未回滚副作用；结果可查询
-    TestEvidence: [src/veritasquant/core/BacktestRun.py, tests/unit/core/test_backtest_run.py, Docs/DevelopmentWorkflow/P1-030BacktestRunEvidence.md]
+    TestEvidence: [src/veritasquant/core/BacktestRun.py, tests/unit/core/test_backtest_run.py, Docs/DevelopmentWorkflow/P1/P1-030BacktestRunEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1265,7 +1265,7 @@ Records:
       - Ts: "2026-07-31T14:05:00Z"
         Actor: Codex
         Action: 完成回测状态机自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-030BacktestRunEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-030BacktestRunEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1283,7 +1283,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-027, P1-028, P1-029, P1-030]
     AcceptanceCriteria: 可在 inbox、账本、订单、控制、checkpoint、outbox 前后确定性注入退出
-    TestEvidence: [src/veritasquant/core/CrashInjection.py, tests/unit/core/test_crash_injection.py, Docs/DevelopmentWorkflow/P1-031CrashInjectionEvidence.md]
+    TestEvidence: [src/veritasquant/core/CrashInjection.py, tests/unit/core/test_crash_injection.py, Docs/DevelopmentWorkflow/P1/P1-031CrashInjectionEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1297,7 +1297,7 @@ Records:
       - Ts: "2026-08-01T00:10:00Z"
         Actor: Codex
         Action: 完成提交边界崩溃注入自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-031CrashInjectionEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-031CrashInjectionEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1315,7 +1315,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-031]
     AcceptanceCriteria: 每个注入点重启后事实无丢失/重复、投影一致、控制未放宽；报告含种子和哈希
-    TestEvidence: [src/veritasquant/core/Recovery.py, tests/unit/core/test_recovery.py, Docs/DevelopmentWorkflow/P1-032RecoveryEvidence.md]
+    TestEvidence: [src/veritasquant/core/Recovery.py, tests/unit/core/test_recovery.py, Docs/DevelopmentWorkflow/P1/P1-032RecoveryEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1329,7 +1329,7 @@ Records:
       - Ts: "2026-08-01T00:20:00Z"
         Actor: Codex
         Action: 完成 12 个提交边界崩溃、重启重放及投影重建自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-032RecoveryEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-032RecoveryEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1347,7 +1347,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-001, P1-014]
     AcceptanceCriteria: 每种计量单位可独立平衡；金额使用 Decimal；模型含来源与冲正引用
-    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-033LedgerModelEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1/P1-033LedgerModelEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1361,7 +1361,7 @@ Records:
       - Ts: "2026-08-01T00:35:00Z"
         Actor: Codex
         Action: 完成 journal、分录、科目、计量单位和会计策略契约自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-033LedgerModelEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-033LedgerModelEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1379,7 +1379,7 @@ Records:
     EstimatePersonDays: 10
     Dependencies: [P1-033, P1-028]
     AcceptanceCriteria: 不平 journal 原子失败；提交序号单调；历史分录不可更新删除
-    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-034LedgerCommitEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1/P1-034LedgerCommitEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1393,7 +1393,7 @@ Records:
       - Ts: "2026-08-01T00:45:00Z"
         Actor: Codex
         Action: 完成账本原子提交、逐单位重校验及历史不可变自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-034LedgerCommitEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-034LedgerCommitEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1411,7 +1411,7 @@ Records:
     EstimatePersonDays: 9
     Dependencies: [P1-034]
     AcceptanceCriteria: 每次提交后余额满足不变量；从空投影重建逐字段/哈希一致
-    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-035LedgerProjectionEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1/P1-035LedgerProjectionEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1425,7 +1425,7 @@ Records:
       - Ts: "2026-08-01T01:00:00Z"
         Actor: Codex
         Action: 完成账户账本投影、余额查询和空投影重建哈希自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-035LedgerProjectionEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-035LedgerProjectionEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1443,7 +1443,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-034]
     AcceptanceCriteria: 各场景借贷平衡；出金不透支；冲正链可遍历且不改原 journal
-    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1-036CashFlowEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_ledger.py, Docs/DevelopmentWorkflow/P1/P1-036CashFlowEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1457,7 +1457,7 @@ Records:
       - Ts: "2026-08-01T01:15:00Z"
         Actor: Codex
         Action: 完成现金流、费用税款、透支拒绝和全额冲正自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-036CashFlowEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-036CashFlowEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1475,7 +1475,7 @@ Records:
     EstimatePersonDays: 8
     Dependencies: [P1-035]
     AcceptanceCriteria: 批准、拒单、撤单、部分成交只释放正确剩余量；重复回报不重复释放
-    TestEvidence: [src/veritasquant/accounts/Reservation.py, tests/unit/accounts/test_reservation.py, Docs/DevelopmentWorkflow/P1-037ReservationEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Reservation.py, tests/unit/accounts/test_reservation.py, Docs/DevelopmentWorkflow/P1/P1-037ReservationEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1489,7 +1489,7 @@ Records:
       - Ts: "2026-08-01T01:30:00Z"
         Actor: Codex
         Action: 完成订单资源预占、部分成交幂等消耗和取消剩余释放自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-037ReservationEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-037ReservationEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1507,7 +1507,7 @@ Records:
     EstimatePersonDays: 7
     Dependencies: [P1-035]
     AcceptanceCriteria: 所有账户事件缺 account_id 即失败；随机跨账户探针不能改变其他账户
-    TestEvidence: [src/veritasquant/accounts/Routing.py, tests/unit/accounts/test_routing.py, Docs/DevelopmentWorkflow/P1-040AccountRoutingEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Routing.py, tests/unit/accounts/test_routing.py, Docs/DevelopmentWorkflow/P1/P1-040AccountRoutingEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1521,7 +1521,7 @@ Records:
       - Ts: "2026-08-01T01:45:00Z"
         Actor: Codex
         Action: 完成缺失账户范围拒绝和跨账户状态隔离自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-040AccountRoutingEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-040AccountRoutingEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1539,7 +1539,7 @@ Records:
     EstimatePersonDays: 9
     Dependencies: [P1-014, P1-036]
     AcceptanceCriteria: 518880 当日买入不可卖；结算/分红/拆分回放和余额测试通过
-    TestEvidence: [src/veritasquant/accounts/Securities.py, src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_securities.py, Docs/DevelopmentWorkflow/P1-038SecuritiesSettlementEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Securities.py, src/veritasquant/accounts/Ledger.py, tests/unit/accounts/test_securities.py, Docs/DevelopmentWorkflow/P1/P1-038SecuritiesSettlementEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1553,7 +1553,7 @@ Records:
       - Ts: "2026-08-01T02:00:00Z"
         Actor: Codex
         Action: 完成 518880 T+1 卖出限制和拆分数量重算自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-038SecuritiesSettlementEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-038SecuritiesSettlementEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED
@@ -1571,7 +1571,7 @@ Records:
     EstimatePersonDays: 10
     Dependencies: [P1-014, P1-036]
     AcceptanceCriteria: 夜盘交易日、保证金压力、盯市、强平候选和到期边界测试通过
-    TestEvidence: [src/veritasquant/accounts/Futures.py, tests/unit/accounts/test_futures.py, Docs/DevelopmentWorkflow/P1-039FuturesEvidence.md]
+    TestEvidence: [src/veritasquant/accounts/Futures.py, tests/unit/accounts/test_futures.py, Docs/DevelopmentWorkflow/P1/P1-039FuturesEvidence.md]
     RiskLinks: [RSK-P0-006]
     TargetDate: 当前迭代
     Status: ACCEPTED
@@ -1585,7 +1585,7 @@ Records:
       - Ts: "2026-08-01T02:15:00Z"
         Actor: Codex
         Action: 完成保证金压力、合约乘数盯市和到期边界自动化验证
-        Evidence: Docs/DevelopmentWorkflow/P1-039FuturesEvidence.md
+        Evidence: Docs/DevelopmentWorkflow/P1/P1-039FuturesEvidence.md
       - Ts: "2026-08-01T12:02:34Z"
         Actor: BeeAgent
         Action: 提交 PR #95 至 dev 分支并合并；关联 issue 已复核关闭；工作项流转至 ACCEPTED

@@ -29,5 +29,5 @@ ProjectAuthor 于 2026-07-31T12:31:58Z 正式启动 P0 验收。本记录启动�
 ## 验收边界
 
 P0-013 已进入 `IN_REVIEW`。正式 M0 Gate 仍须满足《VeritasQuantTechSpec》第 13 章的
-证据和签署要求；在此之前，[M0PreReview.md](M0PreReview.md) 的结论继续为
+证据和签署要求；在此之前，[M0PreReview.md](../M0/M0PreReview.md) 的结论继续为
 `INSUFFICIENT_EVIDENCE`。
