@@ -151,19 +151,19 @@ class ControlBookV1:
         targets: list[str] = []
         if scope == "account":
             accounts = control.parameters.get("account_ids")
-            if accounts:
+            if isinstance(accounts, (list, tuple)):
                 targets.extend(f"account:{item}" for item in accounts)
             else:
                 targets.append("account:*")
         elif scope == "strategy":
             strategies = control.parameters.get("strategy_ids")
-            if strategies:
+            if isinstance(strategies, (list, tuple)):
                 targets.extend(f"strategy:{item}" for item in strategies)
             else:
                 targets.append("strategy:*")
         elif scope == "symbol":
             symbols = control.parameters.get("symbols")
-            if symbols:
+            if isinstance(symbols, (list, tuple)):
                 targets.extend(f"symbol:{item}" for item in symbols)
             else:
                 targets.append("symbol:*")
