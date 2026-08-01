@@ -234,12 +234,12 @@ Records:
     TestEvidence: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json, Docs/DevelopmentWorkflow/M0LinuxValidationEvidence.md]
     RiskLinks: [RSK-P0-002, RSK-P0-003, RSK-P0-005]
     TargetDate: 待基线批准
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T12:35:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T18:08:00Z"
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 独立复核、Ruleset 变更审计和验收签署已延后至后续治理验收；当前主分支保护配置不再阻断 P0 开发或收尾
+    NextAction: P0-006 已完成独立复核；继续按编号推进 P0-007，ACT-P0-004 与 M0 Gate 仍需独立结论
     EscalateTs: 待 SRE 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -273,6 +273,10 @@ Records:
       - Ts: "2026-07-31T12:35:00Z"
         Actor: ProjectAuthor
         Action: 确认 main Ruleset、必需检查、Code Owner 和空 bypass 已配置；延后独立复核和审计，不再阻断 P0 开发或收尾
+        Evidence: Docs/DevelopmentWorkflow/P0-006CiGovernance.md
+      - Ts: "2026-08-01T18:08:00Z"
+        Actor: BeeAgent
+        Action: 独立复核 dev Ruleset、无 bypass、必需检查、审批限制及最新 Windows/Linux Python 3.13 CI 运行；提交 P0-006 验收状态流转 PR，合并后归档为 ACCEPTED
         Evidence: Docs/DevelopmentWorkflow/P0-006CiGovernance.md
   - WorkItemId: TSK-P0-007
     PlanTaskId: P0-007
