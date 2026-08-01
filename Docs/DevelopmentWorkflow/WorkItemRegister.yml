@@ -198,12 +198,12 @@ Records:
     TestEvidence: [pyproject.toml, requirements/Runtime.lock, requirements/Development.lock, scripts/VerifyDependencyLocks.py, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md, Docs/DevelopmentWorkflow/P0-003-P0-012TestEvidence.json]
     RiskLinks: [RSK-P0-002]
     TargetDate: 待基线批准
-    Status: IN_REVIEW
-    StatusChangedTs: "2026-07-31T09:20:00Z"
+    Status: ACCEPTED
+    StatusChangedTs: "2026-08-01T17:55:11Z"
     Blocked: false
     BlockedReason: null
     BlockedBy: null
-    NextAction: 由独立评审核验 Windows/Linux Python 3.13 空缓存安装、锁定一致性与证据归档
+    NextAction: P0-005 已完成独立复核；继续按编号推进 P0-006，M0 Gate 与 ACT-P0-007 仍需独立结论
     EscalateTs: 待 QA 指定
     AuditHistory:
       - Ts: "2026-07-31T03:30:00Z"
@@ -214,6 +214,10 @@ Records:
         Actor: Codex
         Action: 按 ProjectAuthor 当前会话决定将支持基线收窄为 Python 3.13+，并完成自动化复验
         Evidence: [pyproject.toml, Docs/VeritasQuantTechSpec.md, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md]
+      - Ts: "2026-08-01T17:55:11Z"
+        Actor: BeeAgent
+        Action: 复核 Python 3.13+ 基线、运行/开发依赖分组、精确锁文件及 Windows/Linux CI 的锁定安装；提交 P0-005 验收状态流转 PR，合并后归档为 ACCEPTED
+        Evidence: [.github/workflows/Ci.yml, requirements/Runtime.lock, requirements/Development.lock, Docs/DevelopmentWorkflow/P0-005DependencyPolicy.md]
   - WorkItemId: TSK-P0-006
     PlanTaskId: P0-006
     Title: 建立 Windows/Linux CI，包含格式、静态类型、单测和 wheel 构建
