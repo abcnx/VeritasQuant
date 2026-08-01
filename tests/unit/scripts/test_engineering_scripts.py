@@ -48,6 +48,28 @@ def test_preflight_rejects_root_level_python_business_package(tmp_path: Path) ->
     assert "平行业务 Python 包" in result.stdout
 
 
+@pytest.mark.stable_id("P0-007-003")
+def test_preflight_supports_cp1252_output_for_violations(tmp_path: Path) -> None:
+    configs = tmp_path / "Configs"
+    configs.mkdir()
+    (configs / "Invalid.yml").write_text("invalid_field: value\n", encoding="utf-8")
+    environment = dict(os.environ)
+    environment["PYTHONIOENCODING"] = "cp1252"
+
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "Preflight.py"), "--root", str(tmp_path)],
+        cwd=ROOT,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "invalid_field" in result.stdout
+    assert "UnicodeEncodeError" not in result.stderr
+
+
 @pytest.mark.stable_id("P0-011-001")
 def test_secret_scanner_blocks_high_confidence_assignment_without_echoing_value(tmp_path: Path) -> None:
     (tmp_path / "Source.py").write_text('api_key = "vq_test_credential_123456"\n', encoding="utf-8")
