@@ -32,5 +32,7 @@
 | Docker 开发依赖 | [../../Docker/DevelopmentEnvironment.md](../../Docker/DevelopmentEnvironment.md) | 临时 PostgreSQL/Redis 的启动和清理说明。 |
 | P1 实现证据 | [P1-001-P1-013Evidence.md](P1/P1-001-P1-013Evidence.md) | P1 作者测试、工件和残余风险。 |
 | P1-019~026 实现证据 | [P1-019ParquetWriteEvidence.md](P1/P1-019ParquetWriteEvidence.md)、[P1-020DataManifestEvidence.md](P1/P1-020DataManifestEvidence.md)、[P1-021QualityRulesEvidence.md](P1/P1-021QualityRulesEvidence.md)、[P1-022OrderedMergeEvidence.md](P1/P1-022OrderedMergeEvidence.md)、[P1-023BarAggregationEvidence.md](P1/P1-023BarAggregationEvidence.md)、[P1-024FixtureChecksumsEvidence.md](P1/P1-024FixtureChecksumsEvidence.md)、[P1-025LogicalClockEvidence.md](P1/P1-025LogicalClockEvidence.md)、[P1-026EventBusEvidence.md](P1/P1-026EventBusEvidence.md) | Parquet 写入、DataManifest、质量规则、归并、聚合、夹具、逻辑时钟与事件总线证据。 |
+| P1-027~040 实现证据 | [P1-027InboxEvidence.md](P1/P1-027InboxEvidence.md) 至 [P1-040AccountRoutingEvidence.md](P1/P1-040AccountRoutingEvidence.md) | inbox/事务/checkpoint/回测状态机/崩溃注入/恢复/账本模型与结算/预占/证券/期货/路由证据。 |
+| P1-041~076 实现证据 | [P1-041SnapshotEvidence.md](P1/P1-041SnapshotEvidence.md) 至 [P1-076StageGateReportEvidence.md](P1/P1-076StageGateReportEvidence.md)（36 份） | 账户快照、ledger 随机序列、订单/状态机/回报、执行适配器、Bar 路径、执行模型、流动性、原子边界、model-based 测试、风控模型/规范化/关联/策略引擎/审批/控制/规则/原子风险/契约、策略基类/指标窗口/沙箱/示例策略/回测服务、绩效/双轨报告/工件索引/防前视/安全套件、端到端/跨平台/性能/审计/Gate 证据。 |
 
 所有新增开发过程文档应保存于 `Docs/DevelopmentWorkflow/`；设计决策变更仍必须同步修改技术方案。
