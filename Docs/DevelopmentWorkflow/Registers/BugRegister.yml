@@ -1,0 +1,70 @@
+RegistryVersion: "1.0"
+RecordType: Bug
+RequiredFields: [BugId, Title, SourcePlanTaskId, DetectedTs, Reporter, ExpectedBehavior, ActualBehavior, Severity, Owner, Status, NextAction, DueDate, EvidenceLinks, AuditHistory]
+Records:
+  - BugId: BUG-P0-001
+    Title: 秘密扫描器将日志上下文 token 局部变量误判为秘密
+    SourcePlanTaskId: P0-011
+    DetectedTs: "2026-07-31T03:35:00Z"
+    Reporter: Codex
+    ExpectedBehavior: 仅高置信度秘密载荷触发扫描，不阻断普通敏感字段名称或局部变量。
+    ActualBehavior: 未加引号的 token 变量赋值被 sensitive-assignment 规则命中。
+    Severity: S3
+    Owner: SRE
+    Status: VERIFYING
+    NextAction: 运行正反例、全仓秘密扫描和 CI 安全门禁验证修正规则。
+    DueDate: 当前 P0-011 验证周期
+    EvidenceLinks: [scripts/ScanSecrets.py, tests/unit/scripts/test_engineering_scripts.py]
+    AuditHistory:
+      - Ts: "2026-07-31T03:35:00Z"
+        Actor: Codex
+        Action: 发现误报并收紧为带引号的高置信度敏感赋值规则
+        Evidence: scripts/ScanSecrets.py
+      - Ts: "2026-07-31T03:45:00Z"
+        Actor: Codex
+        Action: 全仓扫描结果为零，正反例和完整本地测试均通过；等待独立验证
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
+  - BugId: BUG-P0-002
+    Title: Windows CI 的 cp1252 输出编码导致 wheel 命令帮助验证失败
+    SourcePlanTaskId: P0-006
+    DetectedTs: "2026-07-31T09:08:11Z"
+    Reporter: Codex
+    ExpectedBehavior: 所有正式 console script 在 Windows 仓库外虚拟环境以 --help 运行时应返回退出码 0，并可输出中文帮助和诊断信息。
+    ActualBehavior: GitHub Windows runner 使用 cp1252，argparse 输出中文帮助及 VerifyPackage.py 输出中文异常时触发 UnicodeEncodeError，导致仓库外 wheel 验证失败。
+    Severity: S2
+    Owner: CE/QA
+    Status: FIXED
+    NextAction: 在独立评审中确认 UTF-8 输出策略与 Windows CI 证据；不得仅凭作者验证标记 Released。
+    DueDate: 当前 P0-006 验证周期
+    EvidenceLinks: [src/veritasquant/application/Entrypoints.py, scripts/VerifyPackage.py, tests/packaging/test_entrypoints.py, tests/unit/scripts/test_engineering_scripts.py, "https://github.com/ACANX/VeritasQuant/actions/runs/30618727287/job/91117929801"]
+    AuditHistory:
+      - Ts: "2026-07-31T09:08:11Z"
+        Actor: Codex
+        Action: 根据 Windows Quality job 的 VerifyPackage.py 错误日志登记缺陷
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30618727287/job/91117929801"
+      - Ts: "2026-07-31T09:20:00Z"
+        Actor: Codex
+        Action: 正式入口和 VerifyPackage.py 在 main 执行阶段重配置 UTF-8 标准流，并增加 cp1252 子进程回归测试
+        Evidence: tests/packaging/test_entrypoints.py
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30619335295 的 Windows Quality、Ubuntu Quality 和 Security baseline 均成功，BUG 修复验证通过
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
+  - BugId: BUG-P0-003
+    Title: Windows CI 的 CP1252 输出编码掩盖 Preflight 违规定位信息
+    SourcePlanTaskId: P0-007
+    DetectedTs: "2026-08-01T18:37:28Z"
+    Reporter: BeeAgent
+    ExpectedBehavior: Windows 与 Linux CI 在发现 YAML 命名违规时均以非零退出码输出违规文件、字段及可读诊断。
+    ActualBehavior: Windows runner 在输出中文 Preflight 诊断时触发 UnicodeEncodeError，导致任务失败但未输出违规字段定位。
+    Severity: S2
+    Owner: QA/CE
+    Status: VERIFYING
+    NextAction: 验证 UTF-8 标准流修复在 Windows/Linux CI 均保留违规定位信息，并重新执行 P0-007 远程负例演练。
+    DueDate: 当前 P0-007 验证周期
+    EvidenceLinks: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, "https://github.com/ACANX/VeritasQuant/actions/runs/30712923345/job/91403529971"]
+    AuditHistory:
+      - Ts: "2026-08-01T18:37:28Z"
+        Actor: BeeAgent
+        Action: 远程负例演练 PR #104 的 Windows Quality job 发现 CP1252 输出编码异常；PR 已关闭且未合并。
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30712923345/job/91403529971"

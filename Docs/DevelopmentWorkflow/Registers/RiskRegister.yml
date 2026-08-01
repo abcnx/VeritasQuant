@@ -1,0 +1,246 @@
+RegistryVersion: "1.0"
+RecordType: Risk
+RequiredFields: [RiskId, Title, SourcePlanTaskId, DiscoveredTs, Reporter, Facts, KnownImpact, Unknowns, Probability, Impact, Severity, Trigger, AffectedMilestone, Owner, NextAction, DueDate, EscalateTs, Mitigation, Contingency, ResidualRisk, Approval, EvidenceLinks, Status, AuditHistory]
+Records:
+  - RiskId: RSK-P0-001
+    Title: 单人治理角色集中，尚缺独立复核与事故替补
+    SourcePlanTaskId: P0-001
+    DiscoveredTs: "2026-07-30T18:47:58Z"
+    Reporter: Codex
+    Facts: ProjectAuthor 已确认临时多角色、ClaudeCode 负责开发执行的模型；当前仅记录开发阶段会话联系渠道，尚无第二位人类评审者或 Incident Commander 替补
+    KnownImpact: P0-001/P0-002 已解除治理信息阻断，但单人多角色集中与独立验收缺口仍阻止 P0-013 正式完成
+    Unknowns: 非作者人类评审者、Incident Commander 替补、企业目录引用和生产值班安排
+    Probability: High
+    Impact: High
+    Severity: S2
+    Trigger: M0 评审前仍无非作者人类复核或 Incident Commander 替补
+    AffectedMilestone: M0
+    Owner: PO
+    Collaborators: [TL, QA, SRE]
+    NextAction: 执行 ACT-P0-007，指定非作者人类评审与 Incident Commander 替补
+    DueDate: 待 PO 指定
+    EscalateTs: 待 PO 指定
+    Mitigation: ProjectAuthor 已确认临时角色、范围和联系渠道；M0 前要求独立评审与事故替补
+    Contingency: M0 预审结论保持 INSUFFICIENT_EVIDENCE
+    ResidualRisk: 单人角色集中不能满足独立验收或生产值班要求
+    Approval: ProjectAuthor 于 2026-07-31T04:15:00Z 确认临时治理模型
+    EvidenceLinks: [Docs/DevelopmentWorkflow/P0/P0-001ScopeAndGateRecord.md, Docs/DevelopmentWorkflow/P0/P0-002RaciAndEscalation.md]
+    Status: MONITORING
+    AuditHistory:
+      - Ts: "2026-07-30T18:47:58Z"
+        Actor: Codex
+        Action: 登记风险
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
+      - Ts: "2026-07-31T03:50:00Z"
+        Actor: Codex
+        Action: 关联后续行动项；风险未被接受、降低或关闭
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
+      - Ts: "2026-07-31T04:05:00Z"
+        Actor: Codex
+        Action: 更新单 Agent 开发模式事实并关联治理责任人补充行动
+        Evidence: Docs/DevelopmentWorkflow/SingleAgentGovernanceMaterial.md
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 确认临时治理模型；风险转入监控，独立评审和替补仍未完成
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
+  - RiskId: RSK-P0-002
+    Title: 尚无 Linux/Windows CI 实际运行证据
+    SourcePlanTaskId: P0-006
+    DiscoveredTs: "2026-07-30T18:47:58Z"
+    Reporter: Codex
+    Facts: Windows 本地与 Ubuntu WSL Linux 验证均已完成；GitHub Actions Run 30619335295 的 Windows/Linux Quality 和 Security baseline 均成功，两个质量 artifact 已上传并保留至 2026-10-29
+    KnownImpact: GitHub Actions 双平台构建和 artifact 留存证据已具备；仍无法证明分支保护会阻断未通过的合并
+    Unknowns: 默认分支保护、CodeOwner 和必需检查的实际配置
+    Probability: High
+    Impact: High
+    Severity: S2
+    Trigger: CI workflow 未在 Linux 和 Windows 从空缓存成功
+    AffectedMilestone: M0
+    Owner: QA
+    Collaborators: [SRE, CE]
+    NextAction: 使用 GitHub 管理员权限核验并配置受保护分支、必需检查和禁止管理员普通绕过
+    DueDate: 待 QA 指定
+    EscalateTs: 待 QA 指定
+    Mitigation: 维护双平台 CI 配置和本地预检
+    Contingency: M0 预审结论保持 INSUFFICIENT_EVIDENCE
+    ResidualRisk: Linux 验收不能由 Windows 结果替代
+    Approval: 不适用
+    EvidenceLinks: [.github/workflows/Ci.yml]
+    Status: MONITORING
+    AuditHistory:
+      - Ts: "2026-07-30T18:47:58Z"
+        Actor: Codex
+        Action: 登记风险
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
+      - Ts: "2026-07-31T08:12:00Z"
+        Actor: Codex
+        Action: 两次推送 bd62269 均因 github.com:443 网络连接拒绝失败；Linux 本地验证不受影响
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:55Z"
+        Actor: Codex
+        Action: 仓库公开后远程 CI 复验成功，风险收敛为分支保护和必需检查的治理证据
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
+  - RiskId: RSK-P0-003
+    Title: 远程分支保护和合并阻断尚无可验证证据
+    SourcePlanTaskId: P0-006
+    DiscoveredTs: "2026-07-31T03:30:00Z"
+    Reporter: Codex
+    Facts: 已验证 main Ruleset 为 Active，包含三项必需检查、非作者审批、Code Owner 审阅和最近推送者审批限制；修正前截图显示 Repository admin 为 Always allow，最新截图 Archive/Asset/Image/BypassList_2026-07-31 194302.png 显示 bypass list 为空
+    KnownImpact: 当前全量管理员绕过已移除；在规则变更审计、失败作业原始日志和独立人类验收缺失前，P0-006/P0-007 仍不能正式关闭
+    Unknowns: bypass 移除的审计记录、两个失败 Quality 原始日志的独立复核及人类验收结论
+    Probability: High
+    Impact: High
+    Severity: S2
+    Trigger: M0 评审前出现新的普通管理员绕过，或未完成独立复核
+    AffectedMilestone: M0
+    Owner: SRE
+    Collaborators: [QA, TL]
+    NextAction: 归档 bypass 移除的审计记录，并完成两个失败作业原始日志和独立复核
+    DueDate: 待 SRE 指定
+    EscalateTs: 待 PO 指定
+    Mitigation: CI 文件和远程失败演练已存在，最新截图显示 bypass 为空；M0 预审保持证据不足直至审计和独立验收
+    Contingency: 不允许将 dev 提交合并到 main 或执行环境晋级
+    ResidualRisk: 截图只能证明当前 UI 快照，不能替代平台审计记录和独立人类验收
+    Approval: 不适用
+    EvidenceLinks: [.github/workflows/Ci.yml, Docs/DevelopmentWorkflow/P0/P0-006CiGovernance.md, Docs/DevelopmentWorkflow/P0/P0-007RemoteNegativeDrillEvidence.md, Archive/Asset/Image/BypassList_2026-07-31 193936.png, Archive/Asset/Image/BypassList_2026-07-31 194302.png]
+    Status: IDENTIFIED
+    AuditHistory:
+      - Ts: "2026-07-31T03:30:00Z"
+        Actor: Codex
+        Action: 根据 Git 元数据检查结果登记风险
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
+      - Ts: "2026-07-31T03:57:00Z"
+        Actor: Codex
+        Action: 关联 ACT-P0-004；风险未降低或关闭
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: 复核后确认本地 Git 与远程可用；风险范围收敛为远程保护规则和合并阻断证据
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T11:39:36Z"
+        Actor: Codex
+        Action: 技术复核截图确认 main Ruleset 的 Repository admin 为 Always allow；风险维持开放并明确普通管理员绕过不合规
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 193936.png
+      - Ts: "2026-07-31T11:43:02Z"
+        Actor: Codex
+        Action: 技术复核更新后截图确认 bypass list 为空；风险保留以等待审计记录和独立验收
+        Evidence: Archive/Asset/Image/BypassList_2026-07-31 194302.png
+  - RiskId: RSK-P0-004
+    Title: Docker Compose 开发依赖待独立人类复核
+    SourcePlanTaskId: P0-008
+    DiscoveredTs: "2026-07-31T03:30:00Z"
+    Reporter: Codex
+    Facts: 自动化技术演练已完成配置、启动、健康检查和清理；两个服务健康、无宿主端口和持久挂载，停止后项目容器、网络和卷均为零
+    KnownImpact: 技术阻断已解除；M0 仍需独立人类 SRE 复核该演练证据
+    Unknowns: 独立人类 SRE 审阅结论
+    Probability: Medium
+    Impact: Medium
+    Severity: S3
+    Trigger: M0 评审前仍无独立人类 SRE 对演练证据的复核
+    AffectedMilestone: M0
+    Owner: SRE
+    Collaborators: [QA]
+    NextAction: 执行 ACT-P0-005 的独立人类 SRE 复核并记录结论
+    DueDate: 待 SRE 指定
+    EscalateTs: 待 SRE 指定
+    Mitigation: Compose 使用 tmpfs、无端口和显式 down --volumes
+    Contingency: 在独立验收前不将该演练作为环境晋级依据
+    ResidualRisk: 自动化作者证据不能替代独立验收
+    Approval: 不适用
+    EvidenceLinks: [Docker/docker-compose.yml, Docker/DevelopmentEnvironment.md, Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md]
+    Status: MONITORING
+    AuditHistory:
+      - Ts: "2026-07-31T03:30:00Z"
+        Actor: Codex
+        Action: 登记 Docker 实施验证缺口
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
+      - Ts: "2026-07-31T03:40:00Z"
+        Actor: Codex
+        Action: 静态 Compose 配置通过；实际启动因 Docker Engine 未运行失败，未创建容器
+        Evidence: Docker/docker-compose.yml
+      - Ts: "2026-07-31T04:00:00Z"
+        Actor: Codex
+        Action: 关联 ACT-P0-005；风险未降低或关闭
+        Evidence: Docs/DevelopmentWorkflow/Registers/ActionRegister.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: Docker Engine 已恢复，但 Docker Hub 网络拒绝拉取；新增 ACT-P0-008 处理镜像来源
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:33:58Z"
+        Actor: Codex
+        Action: 自动化 Compose 演练通过，风险收敛为独立人类 SRE 复核
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-008ComposeDrillEvidence.md
+  - RiskId: RSK-P0-005
+    Title: 受保护远程 CI 的首次安全运行证据缺失
+    SourcePlanTaskId: P0-011
+    DiscoveredTs: "2026-07-31T03:30:00Z"
+    Reporter: Codex
+    Facts: ProjectAuthor 已批准许可证策略；本地秘密扫描为零且运行依赖 pip-audit 未发现已知漏洞，当前没有远程 CI 安全运行报告
+    KnownImpact: 许可证批准不再阻断，但远程 CI 安全证据仍不足
+    Unknowns: 远程 CI 漏洞结果和持续处置计划
+    Probability: High
+    Impact: High
+    Severity: S2
+    Trigger: CI 安全 job 执行或首次依赖升级
+    AffectedMilestone: M0
+    Owner: SRE
+    Collaborators: [TL, QA]
+    NextAction: 通过 ACT-P0-004 启用受保护 CI，并归档首次 Security baseline 运行
+    DueDate: 待 SRE 指定
+    EscalateTs: 待 PO 指定
+    Mitigation: CI 强制调用秘密、漏洞和许可证检查，待批准策略显式失败
+    Contingency: 禁止环境晋级，直到远程 CI 安全证据齐全
+    ResidualRisk: 本地安全结果不能替代受保护 CI 的持续门禁
+    Approval: ProjectAuthor 于 2026-07-31T04:15:00Z 批准许可证策略
+    EvidenceLinks: [Configs/Security/LicensePolicy.yml, .github/workflows/Ci.yml]
+    Status: CLOSED
+    AuditHistory:
+      - Ts: "2026-07-31T03:30:00Z"
+        Actor: Codex
+        Action: 登记安全基线外部批准缺口
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml
+      - Ts: "2026-07-31T03:45:00Z"
+        Actor: Codex
+        Action: 秘密扫描为零，运行依赖 pip-audit 无已知漏洞，许可证内容审查通过但待签署门禁仍失败
+        Evidence: Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
+      - Ts: "2026-07-31T04:15:00Z"
+        Actor: ProjectAuthor
+        Action: 批准许可证策略；风险转入监控，等待远程 CI 安全证据
+        Evidence: Configs/Security/LicensePolicy.yml
+      - Ts: "2026-07-31T08:02:15Z"
+        Actor: Codex
+        Action: Linux 本地秘密和许可证扫描通过；远程 CI 持续门禁证据仍缺失
+        Evidence: Docs/DevelopmentWorkflow/M0/M0LinuxValidationEvidence.md
+      - Ts: "2026-07-31T09:17:05Z"
+        Actor: Codex
+        Action: GitHub Actions Run 30619335295 的 Security baseline 成功，首次远程安全运行证据已归档
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295/job/91119868193"
+  - RiskId: RSK-P0-006
+    Title: 追踪矩阵仅有计划映射，后续测试尚未产生执行证据
+    SourcePlanTaskId: P0-012
+    DiscoveredTs: "2026-07-31T03:30:00Z"
+    Reporter: Codex
+    Facts: R-001 至 R-017 已映射到计划任务和测试 ID，但多数后续测试仍未实施或运行
+    KnownImpact: 任何阶段 Gate 仍需逐项回写 JUnit、种子和工件哈希
+    Unknowns: 后续实现日期、测试运行器与完整覆盖率
+    Probability: High
+    Impact: Medium
+    Severity: S2
+    Trigger: M1 评审前存在无执行结果、跳过或无哈希的矩阵行
+    AffectedMilestone: M1
+    Owner: QA
+    Collaborators: [TL, CE, DE]
+    NextAction: 每个 P1 工作项完成时更新矩阵执行证据字段
+    DueDate: M1 评审前
+    EscalateTs: 待 QA 指定
+    Mitigation: CI 将保留 JUnit、覆盖率和工件哈希；矩阵测试强制非空
+    Contingency: 对应 Gate 结论为 INSUFFICIENT_EVIDENCE
+    ResidualRisk: 计划覆盖不代表实现或验证覆盖
+    Approval: 不适用
+    EvidenceLinks: [Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml]
+    Status: IDENTIFIED
+    AuditHistory:
+      - Ts: "2026-07-31T03:30:00Z"
+        Actor: Codex
+        Action: 登记追踪矩阵执行证据缺口
+        Evidence: Docs/DevelopmentWorkflow/Registers/RiskRegister.yml

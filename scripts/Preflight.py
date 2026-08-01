@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -13,10 +14,22 @@ import yaml
 
 
 _UTF8_SUFFIXES = {".py", ".md", ".yml", ".yaml", ".json", ".toml"}
-_IGNORED_PARTS = {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", "Archive", "build", "dist", "var", "__pycache__"}
+_IGNORED_PARTS = {".git", ".venv", ".mypy_cache", ".pytest_cache", ".ruff_cache", "Archive", "build", "dist", "var", "__pycache__"}
 _PASCAL_CASE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
 _SNAKE_CASE = re.compile(r"^[a-z][a-z0-9_]*$")
 _ROOT_PYTHON_EXCEPTIONS = {"src", "tests", "scripts"}
+
+
+def configureStandardStreams() -> None:
+    """确保 Windows 非 UTF-8 控制台也能输出可定位的中文诊断。"""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="backslashreplace")
+        except (OSError, ValueError):
+            continue
 
 
 @dataclass(frozen=True)
@@ -144,6 +157,7 @@ def _checkRootPythonPackages(root: Path) -> list[Issue]:
 
 def main(argv: list[str] | None = None) -> int:
     """输出全部前置检查失败，返回非零以阻断后续 CI 阶段。"""
+    configureStandardStreams()
     parser = argparse.ArgumentParser(description="验证 VeritasQuant 工程前置规则")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="仓库根目录")
     arguments = parser.parse_args(argv)

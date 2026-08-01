@@ -38,7 +38,7 @@ def test_development_compose_is_ephemeral_and_has_health_checks() -> None:
 
 @pytest.mark.stable_id("P0-010-001")
 def test_all_p0_work_items_have_governance_fields_and_audit_history() -> None:
-    register = loadYaml("Docs/DevelopmentWorkflow/WorkItemRegister.yml")
+    register = loadYaml("Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml")
     records = register["Records"]
     assert isinstance(records, list)
     p0Records = {record["PlanTaskId"]: record for record in records if isinstance(record, dict) and str(record.get("PlanTaskId", "")).startswith("P0-")}
@@ -52,12 +52,12 @@ def test_all_p0_work_items_have_governance_fields_and_audit_history() -> None:
 @pytest.mark.stable_id("P0-010-002")
 def test_all_governance_registers_declare_required_fields_and_unique_record_ids() -> None:
     registers = (
-        "Docs/DevelopmentWorkflow/WorkItemRegister.yml",
-        "Docs/DevelopmentWorkflow/BugRegister.yml",
-        "Docs/DevelopmentWorkflow/RiskRegister.yml",
-        "Docs/DevelopmentWorkflow/IncidentRegister.yml",
-        "Docs/DevelopmentWorkflow/ChangeRegister.yml",
-        "Docs/DevelopmentWorkflow/ActionRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/WorkItemRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/BugRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/RiskRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/IncidentRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/ChangeRegister.yml",
+        "Docs/DevelopmentWorkflow/Registers/ActionRegister.yml",
     )
     for path in registers:
         register = loadYaml(path)
@@ -72,7 +72,7 @@ def test_all_governance_registers_declare_required_fields_and_unique_record_ids(
 
 @pytest.mark.stable_id("P0-012-001")
 def test_traceability_matrix_covers_all_mandatory_review_contracts() -> None:
-    matrix = loadYaml("Docs/DevelopmentWorkflow/TraceabilityMatrix.yml")
+    matrix = loadYaml("Docs/DevelopmentWorkflow/Registers/TraceabilityMatrix.yml")
     rows = matrix["Rows"]
     assert isinstance(rows, list)
     requirementIds = {row["RequirementId"] for row in rows if isinstance(row, dict)}
