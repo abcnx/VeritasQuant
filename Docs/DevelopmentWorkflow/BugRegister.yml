@@ -50,3 +50,21 @@ Records:
         Actor: Codex
         Action: GitHub Actions Run 30619335295 的 Windows Quality、Ubuntu Quality 和 Security baseline 均成功，BUG 修复验证通过
         Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30619335295"
+  - BugId: BUG-P0-003
+    Title: Windows CI 的 CP1252 输出编码掩盖 Preflight 违规定位信息
+    SourcePlanTaskId: P0-007
+    DetectedTs: "2026-08-01T18:37:28Z"
+    Reporter: BeeAgent
+    ExpectedBehavior: Windows 与 Linux CI 在发现 YAML 命名违规时均以非零退出码输出违规文件、字段及可读诊断。
+    ActualBehavior: Windows runner 在输出中文 Preflight 诊断时触发 UnicodeEncodeError，导致任务失败但未输出违规字段定位。
+    Severity: S2
+    Owner: QA/CE
+    Status: VERIFYING
+    NextAction: 验证 UTF-8 标准流修复在 Windows/Linux CI 均保留违规定位信息，并重新执行 P0-007 远程负例演练。
+    DueDate: 当前 P0-007 验证周期
+    EvidenceLinks: [scripts/Preflight.py, tests/unit/scripts/test_engineering_scripts.py, "https://github.com/ACANX/VeritasQuant/actions/runs/30712923345/job/91403529971"]
+    AuditHistory:
+      - Ts: "2026-08-01T18:37:28Z"
+        Actor: BeeAgent
+        Action: 远程负例演练 PR #104 的 Windows Quality job 发现 CP1252 输出编码异常；PR 已关闭且未合并。
+        Evidence: "https://github.com/ACANX/VeritasQuant/actions/runs/30712923345/job/91403529971"
