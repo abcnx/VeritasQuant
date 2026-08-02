@@ -3,7 +3,7 @@
 - **任务：** P2-040（ISSUE #169）
 - **日期：** 2026-08-03
 - **实现：** BeeAgent
-- **PR：** 待第八批 PR 合并后回填
+- **PR：** ACANX/VeritasQuant#233（已合并 2026-08-02T21:46:08Z）
 
 ## 验收标准对照
 
@@ -38,7 +38,14 @@
 ## 验证结果
 
 - ruff / mypy / Preflight：通过
-- 全量 pytest：待第八批 PR 后确认
+- 全量 pytest：981 passed（含本任务新增 6 用例，CI Quality-ubuntu/windows 通过）
+- CI 4/4：Quality-ubuntu ✅ / Quality-windows ✅ / Security-baseline ✅ / Database-migrations ✅（PR #233 run 30768368029）
+
+## 验收结论
+
+- **状态：** ACCEPTED（2026-08-03，流转 PR 本 PR）
+- **依据：** 观测接线能力（ObservabilityWiringV1 + InstrumentedLedgerStore + InstrumentedGroupWorker + SloObservationRecorderV1 + RuntimeSnapshotV1）已交付并通过 CI；与 P2-041~043 一致的"能力就绪"验收口径
+- **遗留：** 实际 60 个有效交易日运行证据依赖模拟盘环境持续运行，M2 Gate 前补充
 
 ## 风险与开放项
 

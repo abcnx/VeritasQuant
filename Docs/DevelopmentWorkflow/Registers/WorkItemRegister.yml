@@ -5399,15 +5399,28 @@ Records:
   TestEvidence: tests/unit/reliability/test_observability_wiring.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:00:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T05:50:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第八批 PR 合并后验收（实际 60 日运行需模拟盘环境持续运行）
+  NextAction: 实际 60 日运行证据依赖模拟盘环境，M2 Gate 前补充；本任务观测接线能力已验收
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#233
+    MergedAt: '2026-08-02T21:46:08Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'PR #233 合并；观测接线能力就绪，实际 60 日运行依赖模拟盘环境'
   AuditHistory:
   - Ts: '2026-08-02T22:00:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第八批开发完成（观测接线能力，实际运行证据需模拟盘环境）
+  - Ts: '2026-08-03T05:50:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #233 已合并，观测接线能力验收通过；60 日运行证据待模拟盘环境补充
