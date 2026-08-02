@@ -254,6 +254,10 @@ Rows:
   - P2-025
   - P2-026
   - P2-027
+  - P2-030
+  - P2-031
+  - P2-032
+  - P2-033
   TestIds:
   - CONTRACT-API-COMMANDS-001
   - CONTRACT-API-IDEMPOTENCY-001
@@ -333,6 +337,8 @@ Rows:
   - P2-030
   - P2-031
   - P2-032
+  - P2-034
+  - P2-035
   TestIds:
   - MODEL-JOB-STATE-MACHINE-001
   - MODEL-JOB-MISFIRE-001

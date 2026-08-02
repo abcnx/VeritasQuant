@@ -4810,3 +4810,227 @@ Records:
     - Security-baseline
     - Database-migrations
     Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
+- WorkItemId: TSK-P2-029
+  PlanTaskId: P2-029
+  Title: 实现基础 RBAC、请求/追踪 ID、审计和限频
+  Description: 角色权限矩阵（默认拒绝）、Principal 账户范围、RequestContext、TokenBucket 限频、审计记录、SecurityService 授权用例；Bearer 凭据解析、request/trace
+    ID 提取回填、2001/2002/2004 信封响应
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '10.2'
+  - 10.2.3
+  - '11.5'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 9
+  Dependencies:
+  - P2-024
+  - P2-028
+  AcceptanceCriteria: 越权账户返回统一错误；request/trace 可关联日志审计；限频不可绕过
+  TestEvidence: tests/unit/application/test_security.py; tests/unit/apps/test_security_middleware.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-030
+  PlanTaskId: P2-030
+  Title: 实现鉴权 SSE 状态流和有界 replay cursor
+  Description: StreamEventV1、ReplayCursor、订阅状态机、InMemoryStreamEventSource（有界保留）、StreamService（replay/投递/积压超限关闭/权限撤销立即断开）；GET
+    /api/v1/stream/events 握手鉴权、账户过滤、协议头
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - 10.2.3
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P2-027
+  - P2-029
+  AcceptanceCriteria: 重连不丢已保留事件；权限撤销立即断开；积压超限明确关闭
+  TestEvidence: tests/unit/application/test_state_stream.py; tests/unit/apps/test_state_stream_routes.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-031
+  PlanTaskId: P2-031
+  Title: 实现 Streamlit 框架、导航和 API Client
+  Description: ApiClient（httpx 信封解包/错误映射/凭据传播）、GuiApp 页面注册表/侧边栏导航/账户上下文、GuiServer vq-gui 入口（离线校验+--serve）；streamlit 1.60.0
+    依赖引入
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '10.1'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 7
+  Dependencies:
+  - P2-028
+  AcceptanceCriteria: GUI 所有数据只经 API；错误信封可统一展示；账户上下文始终可见
+  TestEvidence: tests/unit/apps/gui_client/test_api_client.py; test_gui_framework.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-032
+  PlanTaskId: P2-032
+  Title: 实现数据导入、策略、定投计划和回测操作页
+  Description: Pages.py 四个操作页（数据导入/策略/定投/回测）+ 表单校验与主流程逻辑；危险操作明确确认；DSL 校验子集；回测 IDEAL/REALISTIC 模式标识
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '10.1'
+  - '12.2'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 12
+  Dependencies:
+  - P2-031
+  AcceptanceCriteria: 创建/校验/运行/暂停/查询主流程可用；危险操作有明确确认和状态反馈
+  TestEvidence: tests/unit/apps/gui_client/test_pages.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-033
+  PlanTaskId: P2-033
+  Title: 实现账户、结果分析、逐笔账本和监控页
+  Description: DomainRoutes 账户 ledger/cashflows/shares/analysis 四端点（显式 account_id+run_id）；ApiClient 对应方法；账户管理/结果分析/实时监控页；session_state
+    账户上下文隔离
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '10.1'
+  - '8.1'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P2-031
+  - P2-022
+  AcceptanceCriteria: 多账户切换不串数据；逐笔分录、现金流、份额和双轨结果可核对
+  TestEvidence: tests/unit/apps/gui_client/test_account_pages.py; tests/unit/apps/test_domain_routes.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-034
+  PlanTaskId: P2-034
+  Title: 实现调度计划、JobRun 状态机和 console job 入口
+  Description: JobRunStateMachineV1 固定状态机、ScheduleDefinition、InMemoryJobStore（fencing token）、ScheduleService（执行键幂等/重试/补跑/取消）；JobEntrypoint
+    幂等契约；SchedulerService 清单解析/cron 匹配/到期派发
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '11.5'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 9
+  Dependencies:
+  - P2-028
+  AcceptanceCriteria: 重复触发、misfire、租约丢失、重试和补跑不重复业务副作用
+  TestEvidence: tests/unit/application/test_scheduling.py; tests/unit/jobs/test_job_entrypoints.py; tests/unit/apps/test_scheduler_service.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
+- WorkItemId: TSK-P2-035
+  PlanTaskId: P2-035
+  Title: 实现数据导入、对账、校准和报告任务清单
+  Description: JobTasks 四类任务统一用例 + 执行键哈希幂等 + 退出码语义 + 结构化日志；4 个 vq-job-* 入口接入 JobEntrypoint；Jobs/JobManifests.yml PascalCase
+    完整清单
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '11.5'
+  - '10.1'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P2-034
+  AcceptanceCriteria: 根级 Jobs 仅含 PascalCase Yml 清单；每个命令幂等、有日志和退出码
+  TestEvidence: tests/unit/jobs/test_job_tasks.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第五批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T20:10:53Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第五批开发完成
