@@ -5804,19 +5804,31 @@ Records:
   TestEvidence: tests/unit/broker/test_broker_port.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:22:31Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第一批 PR 合并后验收
+  NextAction: P4-002~006 已验收归档；继续 P4-007~010 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#239
+    MergedAt: '2026-08-02T23:21:40Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第一批 PR #239 合并；券商仿真适配层能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:08:02Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第一批开发完成（定义统一 BrokerPort 和能力协商），本地验证全绿
-
+  - Ts: '2026-08-02T23:22:31Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #239 已合并，P4-002 验收通过归档
 - WorkItemId: TSK-P4-003
   PlanTaskId: P4-003
   Title: 实现仿真券商认证、会话和最小权限凭据接入
@@ -5836,19 +5848,31 @@ Records:
   TestEvidence: tests/unit/broker/test_broker_session.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:22:31Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第一批 PR 合并后验收
+  NextAction: P4-002~006 已验收归档；继续 P4-007~010 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#239
+    MergedAt: '2026-08-02T23:21:40Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第一批 PR #239 合并；券商仿真适配层能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:08:02Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第一批开发完成（实现仿真券商认证、会话和最小权限凭据接入），本地验证全绿
-
+  - Ts: '2026-08-02T23:22:31Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #239 已合并，P4-003 验收通过归档
 - WorkItemId: TSK-P4-004
   PlanTaskId: P4-004
   Title: 实现订单发送、受理、拒绝、撤单和查询映射
@@ -5870,19 +5894,31 @@ Records:
   TestEvidence: tests/unit/broker/test_broker_order_gateway.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:22:31Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第一批 PR 合并后验收
+  NextAction: P4-002~006 已验收归档；继续 P4-007~010 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#239
+    MergedAt: '2026-08-02T23:21:40Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第一批 PR #239 合并；券商仿真适配层能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:08:02Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第一批开发完成（实现订单发送、受理、拒绝、撤单和查询映射），本地验证全绿
-
+  - Ts: '2026-08-02T23:22:31Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #239 已合并，P4-004 验收通过归档
 - WorkItemId: TSK-P4-005
   PlanTaskId: P4-005
   Title: 实现异步回报、序列缺口、迟到成交和更正映射
@@ -5903,19 +5939,31 @@ Records:
   TestEvidence: tests/unit/broker/test_report_handling.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:22:31Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第一批 PR 合并后验收
+  NextAction: P4-002~006 已验收归档；继续 P4-007~010 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#239
+    MergedAt: '2026-08-02T23:21:40Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第一批 PR #239 合并；券商仿真适配层能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:08:02Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第一批开发完成（实现异步回报、序列缺口、迟到成交和更正映射），本地验证全绿
-
+  - Ts: '2026-08-02T23:22:31Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #239 已合并，P4-005 验收通过归档
 - WorkItemId: TSK-P4-006
   PlanTaskId: P4-006
   Title: 实现开盘/盘中/收盘及重连对账
@@ -5936,15 +5984,28 @@ Records:
   TestEvidence: tests/unit/broker/test_reconciliation.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:22:31Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第一批 PR 合并后验收
+  NextAction: P4-002~006 已验收归档；继续 P4-007~010 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#239
+    MergedAt: '2026-08-02T23:21:40Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第一批 PR #239 合并；券商仿真适配层能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:08:02Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第一批开发完成（实现开盘/盘中/收盘及重连对账），本地验证全绿
+  - Ts: '2026-08-02T23:22:31Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #239 已合并，P4-006 验收通过归档
