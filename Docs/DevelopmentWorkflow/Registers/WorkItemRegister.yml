@@ -5379,3 +5379,35 @@ Records:
     - Security-baseline
     - Database-migrations
     Notes: '第八批 PR #231 合并；能力就绪，实际执行依赖 P2-040 模拟盘运行'
+- WorkItemId: TSK-P2-040
+  PlanTaskId: P2-040
+  Title: 连续运行模拟盘至少 60 个有效交易日
+  Description: ObservabilityWiringV1 运行期观测接线（指标采集/SLO 记录/探针装配）；InstrumentedLedgerStore 账本延迟埋点；InstrumentedGroupWorker 事件延迟埋点；SloObservationRecorderV1 按日记录 SLI 观测；RuntimeSnapshotV1 运行快照供每日运行清单
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '12.2'
+  - '12.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P2-039
+  AcceptanceCriteria: 每日运行清单、对账、SLO、风险/事故记录齐全；中断按政策重置或延长窗口
+  TestEvidence: tests/unit/reliability/test_observability_wiring.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:00:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第八批 PR 合并后验收（实际 60 日运行需模拟盘环境持续运行）
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:00:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第八批开发完成（观测接线能力，实际运行证据需模拟盘环境）
