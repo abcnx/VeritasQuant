@@ -19,6 +19,10 @@ from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
 from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
 from veritasquant.apps.server.DomainRoutes import DomainApis, buildDomainRouter
 from veritasquant.apps.server.SecurityMiddleware import SecurityMiddleware
+from veritasquant.apps.server.StateStreamRoutes import (
+    StreamDependencies,
+    buildStreamRouter,
+)
 from veritasquant.application.ApiApp import (
     ApiVersionInfoV1,
     ApiVersionProvider,
@@ -50,6 +54,7 @@ class ApiDependencies:
     readinessProbes: tuple[ReadinessProbe, ...] = ()
     commandApi: CommandApi | None = None
     domainApis: DomainApis | None = None
+    streamDeps: StreamDependencies | None = None
     securityService: SecurityService | None = None
     requestIdExtractor: Callable[[Request], str | None] | None = None
     traceIdExtractor: Callable[[Request], str | None] | None = None
@@ -212,6 +217,9 @@ def createApp(deps: ApiDependencies) -> FastAPI:
     if deps.domainApis is not None:
         app.include_router(buildDomainRouter(deps.domainApis))
 
+    if deps.streamDeps is not None:
+        app.include_router(buildStreamRouter(deps.streamDeps))
+
     return app
 
 
@@ -221,6 +229,7 @@ def buildApiDependencies(
     readinessProbes: tuple[ReadinessProbe, ...] = (),
     commandApi: CommandApi | None = None,
     domainApis: DomainApis | None = None,
+    streamDeps: StreamDependencies | None = None,
     securityService: SecurityService | None = None,
     requestIdExtractor: Callable[[Request], str | None] | None = None,
     traceIdExtractor: Callable[[Request], str | None] | None = None,
@@ -232,6 +241,7 @@ def buildApiDependencies(
         readinessProbes=readinessProbes,
         commandApi=commandApi,
         domainApis=domainApis,
+        streamDeps=streamDeps,
         securityService=securityService,
         requestIdExtractor=requestIdExtractor,
         traceIdExtractor=traceIdExtractor,

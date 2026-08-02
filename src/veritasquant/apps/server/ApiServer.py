@@ -83,11 +83,25 @@ def _serve(arguments: argparse.Namespace) -> int:
         requestIdGenerator=SimpleRequestIdGenerator(),
         rateLimiter=TokenBucketRateLimiter(capacity=120, refillPerSecond=10.0),
     )
+
+    # P2-030 SSE 状态流：进程内事件源（模拟盘默认）
+    from veritasquant.application.StateStream import (
+        InMemoryStreamEventSource,
+        StreamService,
+    )
+    from veritasquant.apps.server.StateStreamRoutes import StreamDependencies
+
+    streamService = StreamService(InMemoryStreamEventSource())
+    streamDeps = StreamDependencies(
+        principalProvider=_DefaultPrincipalProvider(),
+        streamService=streamService,
+    )
     deps = buildApiDependencies(
         errorCatalog=catalog,
         versionProvider=provider,
         readinessProbes=(ErrorCatalogProbe(catalog),),
         securityService=securityService,
+        streamDeps=streamDeps,
         requestIdExtractor=requestIdFromState,
         traceIdExtractor=traceIdFromState,
     )
