@@ -97,9 +97,9 @@ class InboxStoreV1:
                 return InboxReceiptV1(idempotencyKey, contentHash, sequence, InboxDisposition.Applied)
             existingHash, sequence, disposition = row
             if existingHash == contentHash:
-                # 同键同哈希：返回原提交结果，不重复副作用
+                # 同键同哈希：重投返回原结果（DUPLICATE），不重复副作用
                 return InboxReceiptV1(
-                    idempotencyKey, contentHash, sequence, InboxDisposition(disposition)
+                    idempotencyKey, contentHash, sequence, InboxDisposition.Duplicate
                 )
         # 同键异哈希：在独立事务中写入隔离审计后抛出（TechSpec 6.1）
         with self._connection.transaction():
