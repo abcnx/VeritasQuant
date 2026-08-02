@@ -6009,3 +6009,138 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #239 已合并，P4-006 验收通过归档
+
+- WorkItemId: TSK-P4-007
+  PlanTaskId: P4-007
+  Title: 实现高精度诊断时间和执行原因采集
+  Description: DiagnosticCollectorV1 按 clientOrderId 采集执行阶段时间（SUBMITTED/ACCEPTED/FILLED 等保留来源精度不参与 ts 因果排序）；ExecutionReasonV1 受控执行原因；DiagnosticReportV1 时间线+阶段延迟
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.4'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 6
+  Dependencies:
+  - P4-004
+  - P4-005
+  AcceptanceCriteria: submitted/accepted/filled 等保留来源精度且不参与 ts 因果排序
+  TestEvidence: tests/unit/broker/test_diagnostics.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:37:50Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第二批开发完成（实现高精度诊断时间和执行原因采集），本地验证全绿
+
+- WorkItemId: TSK-P4-008
+  PlanTaskId: P4-008
+  Title: 实现执行校准数据集和候选参数生成 Job
+  Description: CalibrationDatasetBuilderV1 从诊断报告构建校准数据集（延迟/滑点/成交率/部分成交按标的+时段聚合，样本充足门禁）；CandidateParameterGeneratorV1 确定性生成候选参数（版本化）
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.4'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 9
+  Dependencies:
+  - P4-007
+  - P2-035
+  AcceptanceCriteria: 延迟、滑点、成交率、部分成交按标的/时段可重算；数据和代码版本齐全
+  TestEvidence: tests/unit/broker/test_calibration.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:37:50Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第二批开发完成（实现执行校准数据集和候选参数生成 Job），本地验证全绿
+
+- WorkItemId: TSK-P4-009
+  PlanTaskId: P4-009
+  Title: 实现候选模型 A/B 回测与批准流程
+  Description: AbTestEvaluatorV1 固定历史样本三段划分（训练/验证/留出，避免同样本训练验收）；ModelApprovalWorkflowV1 批准流程（未审批不成为默认；批准必须有评估证据且留出集跑赢基准）
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.4'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P4-008
+  - P1-068
+  AcceptanceCriteria: 候选先跑固定历史样本；未审批不成为默认；避免同样本训练验收
+  TestEvidence: tests/unit/broker/test_model_approval.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:37:50Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第二批开发完成（实现候选模型 A/B 回测与批准流程），本地验证全绿
+
+- WorkItemId: TSK-P4-010
+  PlanTaskId: P4-010
+  Title: 完成券商契约、限频、断连和结果未知测试
+  Description: 集成测试 test_p4_broker_contract_safety.py：两次断连重放不重复记账；超时 TIMEOUT_UNKNOWN 不盲目重发；限频拒绝超额发单；未知结果隔离并查询；重复提交幂等映射
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.1'
+  - '7.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P4-003
+  - P4-004
+  - P4-005
+  - P4-006
+  AcceptanceCriteria: 两次断连、重放、超时、限频和未知结果均无重复订单/账本
+  TestEvidence: tests/integration/test_p4_broker_contract_safety.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:37:50Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第二批开发完成（完成券商契约、限频、断连和结果未知测试），本地验证全绿
