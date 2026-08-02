@@ -2,6 +2,7 @@
 annotated-types==0.7.0
 psycopg==3.3.4
 psycopg-binary==3.3.4
+redis==8.1.0
 pydantic==2.12.5
 pydantic-core==2.41.5
 PyYAML==6.0.2
