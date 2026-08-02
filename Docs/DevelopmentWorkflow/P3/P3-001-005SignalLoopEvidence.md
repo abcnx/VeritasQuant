@@ -3,7 +3,7 @@
 - **任务：** P3-001（ISSUE #173）、P3-002（#174）、P3-003（#175）、P3-004（#176）、P3-005（#177）
 - **日期：** 2026-08-03
 - **实现：** BeeAgent
-- **PR：** 本 PR（P3 第一批）
+- **PR：** ACANX/VeritasQuant#235（已合并 2026-08-02T22:23:48Z）
 
 ## 范围
 
@@ -37,6 +37,13 @@
 - Preflight：0 issues
 - 全量 pytest：1069 passed / 36 skipped（skipped 为 PG/Redis 集成，CI database job 覆盖）
 - 新增测试：59 用例（P3-001~005）
+- CI 4/4：Quality-ubuntu ✅ / Quality-windows ✅ / Security-baseline ✅ / Database-migrations ✅（PR #235 run 30769549258）
+
+## 验收结论
+
+- **状态：** P3-001~005 全部 ACCEPTED（2026-08-03，流转 PR 本 PR）
+- **依据：** 信号参考闭环能力（契约/生成幂等/通知路由/人工动作登记/授权命令写入）已交付并通过 CI；验收标准逐项对照见上表
+- **遗留：** 实际 20 交易日运行与 50 条信号证据依赖模拟盘环境，M3 Gate 前补充
 
 ## 风险与开放项
 

@@ -5444,19 +5444,31 @@ Records:
   TestEvidence: tests/unit/signals/test_signal_reference.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:25:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第一批 PR 合并后验收
+  NextAction: P3-001~005 已验收归档；继续 P3-006~008 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#235
+    MergedAt: '2026-08-02T22:23:48Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第一批 PR #235 合并；信号参考闭环能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:10:26Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第一批开发完成（定义 SignalReference、人工审核、人工成交和忽略原因契约），本地验证全绿
-
+  - Ts: '2026-08-02T22:25:11Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #235 已合并，P3-001 验收通过归档
 - WorkItemId: TSK-P3-002
   PlanTaskId: P3-002
   Title: 实现近实时信号生成与幂等发布
@@ -5476,19 +5488,31 @@ Records:
   TestEvidence: tests/unit/signals/test_signal_generator.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:25:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第一批 PR 合并后验收
+  NextAction: P3-001~005 已验收归档；继续 P3-006~008 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#235
+    MergedAt: '2026-08-02T22:23:48Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第一批 PR #235 合并；信号参考闭环能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:10:26Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第一批开发完成（实现近实时信号生成与幂等发布），本地验证全绿
-
+  - Ts: '2026-08-02T22:25:11Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #235 已合并，P3-002 验收通过归档
 - WorkItemId: TSK-P3-003
   PlanTaskId: P3-003
   Title: 实现通知路由、模板、重试和失败隔离
@@ -5508,19 +5532,31 @@ Records:
   TestEvidence: tests/unit/signals/test_notification_router.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:25:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第一批 PR 合并后验收
+  NextAction: P3-001~005 已验收归档；继续 P3-006~008 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#235
+    MergedAt: '2026-08-02T22:23:48Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第一批 PR #235 合并；信号参考闭环能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:10:26Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第一批开发完成（实现通知路由、模板、重试和失败隔离），本地验证全绿
-
+  - Ts: '2026-08-02T22:25:11Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #235 已合并，P3-003 验收通过归档
 - WorkItemId: TSK-P3-004
   PlanTaskId: P3-004
   Title: 实现人工确认、忽略和成交登记 API/GUI
@@ -5541,19 +5577,31 @@ Records:
   TestEvidence: tests/unit/signals/test_manual_action_service.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:25:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第一批 PR 合并后验收
+  NextAction: P3-001~005 已验收归档；继续 P3-006~008 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#235
+    MergedAt: '2026-08-02T22:23:48Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第一批 PR #235 合并；信号参考闭环能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:10:26Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第一批开发完成（实现人工确认、忽略和成交登记 API/GUI），本地验证全绿
-
+  - Ts: '2026-08-02T22:25:11Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #235 已合并，P3-004 验收通过归档
 - WorkItemId: TSK-P3-005
   PlanTaskId: P3-005
   Title: 将人工成交通过授权命令写入订单/账本
@@ -5573,15 +5621,28 @@ Records:
   TestEvidence: tests/unit/signals/test_manual_execution.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:25:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第一批 PR 合并后验收
+  NextAction: P3-001~005 已验收归档；继续 P3-006~008 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#235
+    MergedAt: '2026-08-02T22:23:48Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第一批 PR #235 合并；信号参考闭环能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:10:26Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第一批开发完成（将人工成交通过授权命令写入订单/账本），本地验证全绿
+  - Ts: '2026-08-02T22:25:11Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #235 已合并，P3-005 验收通过归档
