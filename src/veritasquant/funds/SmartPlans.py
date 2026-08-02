@@ -51,6 +51,28 @@ class SmartPlanV1(Protocol):
     def decisionFor(self, context: SmartPlanContextV1) -> SmartPlanDecisionV1: ...
 
 
+def _usableHistory(context: SmartPlanContextV1) -> tuple[Decimal, ...]:
+    """防前视：只用不晚于当前时点的净值。
+
+    navHistory 为截止当前日已发布净值（升序）；若调用方误将未来
+    净值混入序列尾部，以 availableNav（当前时点净值）最后一次
+    出现位置为界截断，未来数据不得参与均线计算。
+    """
+    history = context.navHistory
+    if not history:
+        return history
+    # 找到 availableNav 在历史中的最后一次出现位置（含当前净值本身）
+    anchor = -1
+    for index in range(len(history) - 1, -1, -1):
+        if history[index] == context.availableNav:
+            anchor = index
+            break
+    if anchor < 0:
+        # 当前净值不在历史中：历史全部视为可用（已发布数据）
+        return history
+    return history[: anchor + 1]
+
+
 @dataclass(frozen=True, slots=True)
 class FixedAmountPlanV1:
     """方案 1：固定金额定投。"""
@@ -96,7 +118,7 @@ class MaDeviationPlanV1:
         )
 
     def decisionFor(self, context: SmartPlanContextV1) -> SmartPlanDecisionV1:
-        history = context.navHistory
+        history = _usableHistory(context)
         if len(history) < self.maWindow:
             return SmartPlanDecisionV1(Decimal("0"), "均线窗口数据不足，跳过")
         window = history[-self.maWindow :]
