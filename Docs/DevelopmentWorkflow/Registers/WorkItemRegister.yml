@@ -5279,18 +5279,27 @@ Records:
   TestEvidence: tests/unit/reliability/test_crash_drill.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T21:26:39Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第八批 PR 合并后验收
+  NextAction: M2 Gate 另行推进（实际演练/复核/执行需模拟盘运行数据）
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:50:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第八批开发完成（演练报告能力，实际演练需运行环境）
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#231
+    MergedAt: '2026-08-02T21:26:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第八批 PR #231 合并；能力就绪，实际执行依赖 P2-040 模拟盘运行'
 - WorkItemId: TSK-P2-042
   PlanTaskId: P2-042
   Title: 每周复核数据缺口、账本/订单/持仓对账和重复副作用
@@ -5310,18 +5319,27 @@ Records:
   TestEvidence: tests/unit/reliability/test_weekly_review.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T21:26:39Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第八批 PR 合并后验收
+  NextAction: M2 Gate 另行推进（实际演练/复核/执行需模拟盘运行数据）
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:50:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第八批开发完成（复核工具能力，实际周复核需运行数据）
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#231
+    MergedAt: '2026-08-02T21:26:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第八批 PR #231 合并；能力就绪，实际执行依赖 P2-040 模拟盘运行'
 - WorkItemId: TSK-P2-043
   PlanTaskId: P2-043
   Title: 执行 M2 Gate 并发布 StageGateReport
@@ -5340,15 +5358,24 @@ Records:
   TestEvidence: tests/unit/application/test_m2_gate_checks.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T21:26:39Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第八批 PR 合并后验收
+  NextAction: M2 Gate 另行推进（实际演练/复核/执行需模拟盘运行数据）
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:50:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第八批开发完成（Gate 检查能力，实际执行需模拟盘数据）
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#231
+    MergedAt: '2026-08-02T21:26:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第八批 PR #231 合并；能力就绪，实际执行依赖 P2-040 模拟盘运行'
