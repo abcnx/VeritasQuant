@@ -141,13 +141,15 @@ class TestEventStoreAndFanout:
             )
         )
         tokens = {_GROUP_A: leaseA.fencingToken, _GROUP_B: leaseB.fencingToken}
+        sequences: dict[str, int] = {}
         for index in range(1, 4):
             event = _makeEvent(f"evt-seq-{index}")
-            for delivery in fanout.plan(event, {}):
+            for delivery in fanout.plan(event, sequences):
                 eventStore.append(
                     delivery.event, delivery.accountGroupId, delivery.partitionRank,
                     delivery.deliverySequence, _HOLDER, tokens[delivery.accountGroupId],
                 )
+                sequences[delivery.accountGroupId] = delivery.deliverySequence
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_A) == 3
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_B) == 3
         assert eventStore.countByPartition(_RUN, _GROUP_A) == 3
