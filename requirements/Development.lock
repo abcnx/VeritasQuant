@@ -1,7 +1,10 @@
 # 开发依赖在 Runtime.lock 基础上安装；精确版本由 RefreshDependencyLocks.py 生成并审阅。
 -r Runtime.lock
 build==1.3.0
+certifi==2026.7.22
 coverage==7.15.2
+httpcore==1.0.9
+httpx==0.28.1
 mypy==1.20.2
 pip-audit==2.10.1
 pytest==9.0.3
