@@ -14,6 +14,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHttpException
 
+from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
+from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
 from veritasquant.application.ApiApp import (
     ApiVersionInfoV1,
     ApiVersionProvider,
@@ -37,6 +39,7 @@ class ApiDependencies:
     errorCatalog: ApiErrorCatalog
     versionProvider: ApiVersionProvider
     readinessProbes: tuple[ReadinessProbe, ...] = ()
+    commandApi: CommandApi | None = None
     requestIdExtractor: Callable[[Request], str | None] | None = None
     traceIdExtractor: Callable[[Request], str | None] | None = None
     _health: HealthService = field(init=False, repr=False)
@@ -64,6 +67,7 @@ def createApp(deps: ApiDependencies) -> FastAPI:
         docs_url=f"{API_V1_PREFIX}/docs",
         openapi_url=f"{API_V1_PREFIX}/openapi.json",
     )
+    app.add_middleware(ResponseEnvelopeMiddleware, catalog=deps.errorCatalog)  # type: ignore[arg-type]
 
     @app.exception_handler(StarletteHttpException)
     async def httpExceptionHandler(request: Request, exception: StarletteHttpException) -> JSONResponse:
@@ -136,6 +140,9 @@ def createApp(deps: ApiDependencies) -> FastAPI:
         envelope = ResponseEnvelopeV1.success(0, "版本信息", data={"api_version": info.apiVersion, "catalog_version": info.catalogVersion, "service": info.service})
         return JSONResponse(status_code=200, content=envelope.toWire())
 
+    if deps.commandApi is not None:
+        app.include_router(buildCommandRouter(deps.commandApi))
+
     return app
 
 
@@ -143,6 +150,7 @@ def buildApiDependencies(
     errorCatalog: ApiErrorCatalog,
     versionProvider: ApiVersionProvider,
     readinessProbes: tuple[ReadinessProbe, ...] = (),
+    commandApi: CommandApi | None = None,
     requestIdExtractor: Callable[[Request], str | None] | None = None,
     traceIdExtractor: Callable[[Request], str | None] | None = None,
 ) -> ApiDependencies:
@@ -151,6 +159,7 @@ def buildApiDependencies(
         errorCatalog=errorCatalog,
         versionProvider=versionProvider,
         readinessProbes=readinessProbes,
+        commandApi=commandApi,
         requestIdExtractor=requestIdExtractor,
         traceIdExtractor=traceIdExtractor,
     )
