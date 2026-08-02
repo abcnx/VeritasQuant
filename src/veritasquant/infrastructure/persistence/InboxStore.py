@@ -87,36 +87,22 @@ class InboxStoreV1:
         _validateInput(idempotencyKey, contentHash)
         with self._connection.transaction():
             self._leaseStore.guard(accountGroupId, holder, fencingToken)
+            self._connection.execute(
+                _ACCEPT_SQL, (idempotencyKey, contentHash, runId, partitionId)
+            )
             row = self._connection.execute(_FETCH_SQL, (idempotencyKey,)).fetchone()
-            if row is None:
-                # 首次投递：写入 APPLIED 并返回原结果
-                self._connection.execute(
-                    _ACCEPT_SQL, (idempotencyKey, contentHash, runId, partitionId)
-                )
-                sequence = self._receiptSequence(idempotencyKey)
-                return InboxReceiptV1(idempotencyKey, contentHash, sequence, InboxDisposition.Applied)
+            assert row is not None, "inbox 幂等写入后记录必须存在"
             existingHash, sequence, disposition = row
             if existingHash == contentHash:
-                # 同键同哈希：返回原提交结果，不重复副作用
                 return InboxReceiptV1(
                     idempotencyKey, contentHash, sequence, InboxDisposition(disposition)
                 )
-        # 同键异哈希：在独立事务中写入隔离审计后抛出（TechSpec 6.1）
-        with self._connection.transaction():
             conflictId = _conflictId(idempotencyKey)
             self._connection.execute(
                 _RECORD_CONFLICT_SQL,
                 (conflictId, idempotencyKey, existingHash, contentHash, runId, partitionId),
             )
-        raise InboxError("同一幂等键对应不同内容哈希，已隔离协议冲突")
-
-    def _receiptSequence(self, idempotencyKey: str) -> int:
-        row = self._connection.execute(
-            "SELECT receipt_sequence FROM inbox_records WHERE idempotency_key = %s",
-            (idempotencyKey,),
-        ).fetchone()
-        assert row is not None
-        return int(row[0])
+            raise InboxError("同一幂等键对应不同内容哈希，已隔离协议冲突")
 
 
 def _validateInput(idempotencyKey: str, contentHash: str) -> None:

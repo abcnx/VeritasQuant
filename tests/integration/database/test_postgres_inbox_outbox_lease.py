@@ -60,11 +60,6 @@ def seededRun(database) -> str:  # noqa: ANN001
         )
     yield runId
     with openConnection() as connection:
-        # 先清引用表（不可变事实表禁止 DELETE）再删 run_manifests，避免外键残留
-        connection.execute(
-            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, "
-            "partition_leases, fact_events CASCADE"
-        )
         connection.execute("DELETE FROM run_manifests WHERE run_id = %s", (runId,))
 
 
