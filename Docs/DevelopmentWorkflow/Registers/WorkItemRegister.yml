@@ -5116,18 +5116,27 @@ Records:
   TestEvidence: tests/unit/monitoring/test_prometheus_metrics.py; tests/unit/apps/test_metrics_routes.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:47:23Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第六批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:10:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第六批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#227
+    MergedAt: '2026-08-02T20:47:23Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第六批 PR #227 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-037
   PlanTaskId: P2-037
   Title: 建立 SLO 计算、错误预算和告警路由
@@ -5146,18 +5155,27 @@ Records:
   TestEvidence: tests/unit/monitoring/test_slo_calculator.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:47:23Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第六批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:10:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第六批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#227
+    MergedAt: '2026-08-02T20:47:23Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第六批 PR #227 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-038
   PlanTaskId: P2-038
   Title: 完成多账户、API、调度、基金端到端集成测试
@@ -5180,18 +5198,27 @@ Records:
   TestEvidence: tests/integration/test_e2e_multi_account_schedule_funds.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:47:23Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第六批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:10:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第六批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#227
+    MergedAt: '2026-08-02T20:47:23Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第六批 PR #227 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-039
   PlanTaskId: P2-039
   Title: 冻结 M2A 候选版本并完成容量/故障预演
