@@ -46,13 +46,64 @@ def _serve(arguments: argparse.Namespace) -> int:
         PackagedApiVersionProvider,
     )
     from veritasquant.application.ApiErrors import ApiErrorCatalog
+    from veritasquant.application.Security import (
+        InMemoryAuditSink,
+        SecurityService,
+        SimpleRequestIdGenerator,
+        TokenBucketRateLimiter,
+    )
 
     catalog = ApiErrorCatalog.loadPackaged()
     provider = PackagedApiVersionProvider()
+
+    def requestIdFromState(request) -> str | None:  # noqa: ANN001
+        return getattr(request.state, "request_id", None)
+
+    def traceIdFromState(request) -> str | None:  # noqa: ANN001
+        return getattr(request.state, "trace_id", None)
+
+    # 模拟盘默认安全装配：进程内主体提供者需由部署侧注入真实凭据源；
+    # 此处为可运行的默认（未配置时拒绝一切业务调用，保证默认拒绝）。
+    from veritasquant.application.Security import Principal, Role, UnauthenticatedError
+
+    class _DefaultPrincipalProvider:
+        def __init__(self) -> None:
+            self._admin = Principal(
+                principalId="deploy-admin", roles=(Role.Administrator,), environment="PAPER"
+            )
+
+        def resolve(self, credential: str | None) -> Principal:
+            if credential == "dev-admin-token":
+                return self._admin
+            raise UnauthenticatedError("凭据无效或未配置")
+
+    securityService = SecurityService(
+        principalProvider=_DefaultPrincipalProvider(),
+        auditSink=InMemoryAuditSink(),
+        requestIdGenerator=SimpleRequestIdGenerator(),
+        rateLimiter=TokenBucketRateLimiter(capacity=120, refillPerSecond=10.0),
+    )
+
+    # P2-030 SSE 状态流：进程内事件源（模拟盘默认）
+    from veritasquant.application.StateStream import (
+        InMemoryStreamEventSource,
+        StreamService,
+    )
+    from veritasquant.apps.server.StateStreamRoutes import StreamDependencies
+
+    streamService = StreamService(InMemoryStreamEventSource())
+    streamDeps = StreamDependencies(
+        principalProvider=_DefaultPrincipalProvider(),
+        streamService=streamService,
+    )
     deps = buildApiDependencies(
         errorCatalog=catalog,
         versionProvider=provider,
         readinessProbes=(ErrorCatalogProbe(catalog),),
+        securityService=securityService,
+        streamDeps=streamDeps,
+        requestIdExtractor=requestIdFromState,
+        traceIdExtractor=traceIdFromState,
     )
     app = createApp(deps)
     try:

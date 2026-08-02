@@ -18,6 +18,11 @@ from starlette.exceptions import HTTPException as StarletteHttpException
 from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
 from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
 from veritasquant.apps.server.DomainRoutes import DomainApis, buildDomainRouter
+from veritasquant.apps.server.SecurityMiddleware import SecurityMiddleware
+from veritasquant.apps.server.StateStreamRoutes import (
+    StreamDependencies,
+    buildStreamRouter,
+)
 from veritasquant.application.ApiApp import (
     ApiVersionInfoV1,
     ApiVersionProvider,
@@ -28,6 +33,12 @@ from veritasquant.application.ApiErrors import ApiErrorCatalog, BusinessExceptio
 from veritasquant.application.ResponseEnvelope import (
     ResponseEnvelopeV1,
     mapException,
+)
+from veritasquant.application.Security import (
+    AccessDeniedError,
+    RateLimitExceededError,
+    SecurityService,
+    UnauthenticatedError,
 )
 
 SERVICE_NAME = "veritasquant-api"
@@ -43,6 +54,8 @@ class ApiDependencies:
     readinessProbes: tuple[ReadinessProbe, ...] = ()
     commandApi: CommandApi | None = None
     domainApis: DomainApis | None = None
+    streamDeps: StreamDependencies | None = None
+    securityService: SecurityService | None = None
     requestIdExtractor: Callable[[Request], str | None] | None = None
     traceIdExtractor: Callable[[Request], str | None] | None = None
     _health: HealthService = field(init=False, repr=False)
@@ -71,6 +84,12 @@ def createApp(deps: ApiDependencies) -> FastAPI:
         openapi_url=f"{API_V1_PREFIX}/openapi.json",
     )
     app.add_middleware(ResponseEnvelopeMiddleware, catalog=deps.errorCatalog)  # type: ignore[arg-type]
+    if deps.securityService is not None:
+        app.add_middleware(
+            SecurityMiddleware,
+            securityService=deps.securityService,
+            errorCatalog=deps.errorCatalog,
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validationExceptionHandler(
@@ -81,6 +100,45 @@ def createApp(deps: ApiDependencies) -> FastAPI:
         traceId = deps.traceIdExtractor(request) if deps.traceIdExtractor else None
         mapped = mapException(BusinessException(1001, {}), deps.errorCatalog, requestId, traceId)
         return JSONResponse(status_code=mapped.httpStatus, content=mapped.envelope.toWire())
+
+    if deps.securityService is not None:
+        @app.exception_handler(UnauthenticatedError)
+        async def unauthenticatedHandler(request: Request, exception: UnauthenticatedError) -> JSONResponse:
+            # 2001 UNAUTHENTICATED：身份凭据缺失或无效
+            requestId = getattr(request.state, "request_id", None) or (
+                deps.requestIdExtractor(request) if deps.requestIdExtractor else None
+            )
+            traceId = getattr(request.state, "trace_id", None)
+            mapped = mapException(
+                BusinessException(2001, {}), deps.errorCatalog, requestId, traceId
+            )
+            return JSONResponse(status_code=mapped.httpStatus, content=mapped.envelope.toWire())
+
+        @app.exception_handler(AccessDeniedError)
+        async def accessDeniedHandler(request: Request, exception: AccessDeniedError) -> JSONResponse:
+            # 2002 FORBIDDEN：越权账户或动作无权限（隐藏资源存在性）
+            requestId = getattr(request.state, "request_id", None) or (
+                deps.requestIdExtractor(request) if deps.requestIdExtractor else None
+            )
+            traceId = getattr(request.state, "trace_id", None)
+            mapped = mapException(
+                BusinessException(2002, {}), deps.errorCatalog, requestId, traceId
+            )
+            return JSONResponse(status_code=mapped.httpStatus, content=mapped.envelope.toWire())
+
+        @app.exception_handler(RateLimitExceededError)
+        async def rateLimitHandler(request: Request, exception: RateLimitExceededError) -> JSONResponse:
+            # 2004 RATE_LIMITED：限频，响应携带 Retry-After
+            requestId = getattr(request.state, "request_id", None) or (
+                deps.requestIdExtractor(request) if deps.requestIdExtractor else None
+            )
+            traceId = getattr(request.state, "trace_id", None)
+            mapped = mapException(
+                BusinessException(2004, {}), deps.errorCatalog, requestId, traceId
+            )
+            response = JSONResponse(status_code=mapped.httpStatus, content=mapped.envelope.toWire())
+            response.headers["Retry-After"] = str(exception.retryAfterSeconds)
+            return response
 
     @app.exception_handler(StarletteHttpException)
     async def httpExceptionHandler(request: Request, exception: StarletteHttpException) -> JSONResponse:
@@ -159,6 +217,9 @@ def createApp(deps: ApiDependencies) -> FastAPI:
     if deps.domainApis is not None:
         app.include_router(buildDomainRouter(deps.domainApis))
 
+    if deps.streamDeps is not None:
+        app.include_router(buildStreamRouter(deps.streamDeps))
+
     return app
 
 
@@ -168,6 +229,8 @@ def buildApiDependencies(
     readinessProbes: tuple[ReadinessProbe, ...] = (),
     commandApi: CommandApi | None = None,
     domainApis: DomainApis | None = None,
+    streamDeps: StreamDependencies | None = None,
+    securityService: SecurityService | None = None,
     requestIdExtractor: Callable[[Request], str | None] | None = None,
     traceIdExtractor: Callable[[Request], str | None] | None = None,
 ) -> ApiDependencies:
@@ -178,6 +241,8 @@ def buildApiDependencies(
         readinessProbes=readinessProbes,
         commandApi=commandApi,
         domainApis=domainApis,
+        streamDeps=streamDeps,
+        securityService=securityService,
         requestIdExtractor=requestIdExtractor,
         traceIdExtractor=traceIdExtractor,
     )

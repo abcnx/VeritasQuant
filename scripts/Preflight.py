@@ -94,7 +94,44 @@ def _checkYaml(path: Path) -> list[Issue]:
         value = yaml.safe_load(path.read_text(encoding="utf-8"))
     except yaml.YAMLError as error:
         return [Issue(path, f"YAML 解析失败: {error}")]
-    return _checkKeys(path, value, "", _PASCAL_CASE, "项目 YAML 字段必须为 PascalCase", {"Timestamp", "timestamp"})
+    issues = _checkKeys(path, value, "", _PASCAL_CASE, "项目 YAML 字段必须为 PascalCase", {"Timestamp", "timestamp"})
+    # 数据子树豁免：任务参数（Jobs/*.yml Parameters）与包名例外
+    # （Configs/Security/LicensePolicy.yml PackageExceptions）是数据键
+    # 而非项目字段，允许 snake_case。
+    issues.extend(_checkDataSubtrees(path, value))
+    return issues
+
+
+_DATA_SUBTREE_KEYS = {"Parameters", "PackageExceptions"}
+
+
+def _checkDataSubtrees(path: Path, value: Any) -> list[Issue]:
+    """检查数据子树内部键使用宽松规则（snake_case 或包名）。"""
+    issues: list[Issue] = []
+    if not isinstance(value, dict):
+        return issues
+    for key, nested in value.items():
+        if key in _DATA_SUBTREE_KEYS and isinstance(nested, dict):
+            for dataKey, dataValue in nested.items():
+                if not isinstance(dataKey, str):
+                    continue
+                # 数据键只要求非空且不含空白；允许 snake_case 与包名
+                if not dataKey.strip() or any(ch.isspace() for ch in dataKey):
+                    issues.append(Issue(path, f"{key}.{dataKey}: 数据键无效"))
+                if isinstance(dataValue, dict):
+                    issues.extend(
+                        _checkKeys(
+                            path,
+                            dataValue,
+                            f"{key}.{dataKey}",
+                            _SNAKE_CASE,
+                            "任务参数内部字段必须为 snake_case",
+                            {"Ts", "ts"},
+                        )
+                    )
+        elif isinstance(nested, (dict, list)):
+            issues.extend(_checkDataSubtrees(path, nested))
+    return issues
 
 
 def _checkJson(path: Path) -> list[Issue]:
@@ -121,9 +158,13 @@ def _checkKeys(
                 issues.append(Issue(path, f"{location}: 字段名必须为字符串"))
             elif key in forbidden:
                 issues.append(Issue(path, f"{location}: 禁止使用 timestamp 同义 wire 字段；应使用 Ts/ts"))
+            elif key in _DATA_SUBTREE_KEYS:
+                # 数据子树由 _checkDataSubtrees 单独检查（宽松规则）
+                continue
             elif not expected.fullmatch(key):
                 issues.append(Issue(path, f"{location}: {styleMessage}"))
-            issues.extend(_checkKeys(path, nested, location, expected, styleMessage, forbidden))
+            if key not in _DATA_SUBTREE_KEYS:
+                issues.extend(_checkKeys(path, nested, location, expected, styleMessage, forbidden))
     elif isinstance(value, list):
         for index, nested in enumerate(value):
             issues.extend(_checkKeys(path, nested, f"{prefix}[{index}]", expected, styleMessage, forbidden))

@@ -43,6 +43,14 @@ class AccountViewProvider(Protocol):
 
     def account(self, accountId: str, runId: str) -> dict[str, Any]: ...
 
+    def ledgerEntries(self, accountId: str, runId: str) -> tuple[dict[str, Any], ...]: ...
+
+    def cashFlows(self, accountId: str, runId: str) -> tuple[dict[str, Any], ...]: ...
+
+    def sharePositions(self, accountId: str, runId: str) -> tuple[dict[str, Any], ...]: ...
+
+    def analysis(self, accountId: str, runId: str) -> dict[str, Any]: ...
+
 
 class StrategyViewProvider(Protocol):
     """策略视图端口。"""
@@ -105,6 +113,46 @@ def buildDomainRouter(apis: DomainApis) -> APIRouter:
         except ResourceNotFound as error:
             return _reject(apis.catalog, 1002, str(error))
         return _ok(0, "账户视图", data)
+
+    @router.get("/accounts/{account_id}/ledger")
+    async def accountLedger(account_id: str, run_id: str) -> JSONResponse:
+        _require(apis.accounts, "accounts")
+        assert apis.accounts is not None
+        try:
+            entries = apis.accounts.ledgerEntries(account_id, run_id)
+        except ResourceNotFound as error:
+            return _reject(apis.catalog, 1002, str(error))
+        return _ok(0, "逐笔分录", {"account_id": account_id, "run_id": run_id, "entries": list(entries)})
+
+    @router.get("/accounts/{account_id}/cashflows")
+    async def accountCashFlows(account_id: str, run_id: str) -> JSONResponse:
+        _require(apis.accounts, "accounts")
+        assert apis.accounts is not None
+        try:
+            flows = apis.accounts.cashFlows(account_id, run_id)
+        except ResourceNotFound as error:
+            return _reject(apis.catalog, 1002, str(error))
+        return _ok(0, "现金流", {"account_id": account_id, "run_id": run_id, "cashflows": list(flows)})
+
+    @router.get("/accounts/{account_id}/shares")
+    async def accountShares(account_id: str, run_id: str) -> JSONResponse:
+        _require(apis.accounts, "accounts")
+        assert apis.accounts is not None
+        try:
+            shares = apis.accounts.sharePositions(account_id, run_id)
+        except ResourceNotFound as error:
+            return _reject(apis.catalog, 1002, str(error))
+        return _ok(0, "基金份额", {"account_id": account_id, "run_id": run_id, "shares": list(shares)})
+
+    @router.get("/accounts/{account_id}/analysis")
+    async def accountAnalysis(account_id: str, run_id: str) -> JSONResponse:
+        _require(apis.accounts, "accounts")
+        assert apis.accounts is not None
+        try:
+            data = apis.accounts.analysis(account_id, run_id)
+        except ResourceNotFound as error:
+            return _reject(apis.catalog, 1002, str(error))
+        return _ok(0, "结果分析", data)
 
     @router.get("/strategies")
     async def strategies() -> JSONResponse:

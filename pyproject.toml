@@ -14,6 +14,7 @@ dependencies = [
   "pydantic>=2.7,<3",
   "PyYAML>=6,<7",
   "redis>=6,<9",
+  "streamlit>=1.36,<2",
   "uvicorn>=0.30,<1",
 ]
 
@@ -34,6 +35,7 @@ vq-api-server = "veritasquant.apps.server.ApiServer:main"
 vq-trading-worker = "veritasquant.apps.server.TradingWorker:main"
 vq-scheduler-service = "veritasquant.apps.server.SchedulerService:main"
 vq-gui-client = "veritasquant.apps.gui_client.GuiClient:main"
+vq-gui = "veritasquant.apps.gui_client.GuiServer:main"
 vq-job-data-ingestion = "veritasquant.jobs.DataIngestionJob:main"
 vq-job-account-reconciliation = "veritasquant.jobs.AccountReconciliationJob:main"
 vq-job-execution-calibration = "veritasquant.jobs.ExecutionCalibrationJob:main"
