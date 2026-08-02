@@ -364,3 +364,130 @@ def _showError(error: ApiClientError) -> None:
     st = _st()
     retryable = "（可重试）" if error.retryable else ""
     st.error(f"错误 [{error.code}] HTTP {error.httpStatus}{retryable}: {error.message}")
+
+
+# ---------------------------------------------------------------- 账户管理页
+
+@dataclass(frozen=True, slots=True)
+class AccountScope:
+    """账户上下文隔离：页面必须携带 account_id + run_id 查询。"""
+
+    accountId: str
+    runId: str | None = None
+
+    def requireAccount(self) -> str:
+        if not self.accountId:
+            raise ValueError("未选择账户：多账户操作必须显式指定账户")
+        return self.accountId
+
+
+def renderAccountsPage(client: ApiClient) -> None:  # noqa: ANN001
+    """账户管理页：账户列表 + 账户详情（快照/模式/适配器）。"""
+    st = _st()
+    st.markdown("#### 账户管理")
+    try:
+        accounts = client.accounts()
+        if not accounts:
+            st.info("无可用账户")
+            return
+        st.dataframe(
+            [
+                {
+                    "account_id": a.get("account_id"),
+                    "execution_mode": a.get("execution_mode"),
+                    "run_id": a.get("run_id"),
+                }
+                for a in accounts
+            ]
+        )
+        selected = st.selectbox("账户详情", [a.get("account_id", "?") for a in accounts])
+        runId = st.text_input("run_id（可选）", key="acc_run_id")
+        if st.button("加载账户详情"):
+            try:
+                detail = client.account(selected, runId or None)
+                st.json(detail)
+            except ApiClientError as error:
+                _showError(error)
+    except ApiClientError as error:
+        _showError(error)
+
+
+# ---------------------------------------------------------------- 结果分析页
+
+def renderAnalysisPage(client: ApiClient) -> None:  # noqa: ANN001
+    """结果分析页：现金流调整权益、TWR/XIRR、本金、份额、逐笔分录。"""
+    st = _st()
+    st.markdown("#### 结果分析")
+    accountId = _currentAccountId()
+    if not accountId:
+        st.warning("请先在侧边栏选择账户")
+        return
+    runId = st.text_input("run_id", key="analysis_run_id")
+    st.caption(f"当前账户: {accountId}（结果严格按账户隔离）")
+    try:
+        analysis = client.accountAnalysis(accountId, runId or "")
+        st.json(analysis)
+    except ApiClientError as error:
+        _showError(error)
+
+    st.markdown("---")
+    tabs = st.tabs(["逐笔分录", "现金流", "基金份额"])
+    try:
+        with tabs[0]:
+            entries = client.accountLedger(accountId, runId or "")
+            if entries:
+                st.dataframe(entries)
+            else:
+                st.info("无分录")
+        with tabs[1]:
+            flows = client.accountCashFlows(accountId, runId or "")
+            if flows:
+                st.dataframe(flows)
+            else:
+                st.info("无现金流")
+        with tabs[2]:
+            shares = client.accountShares(accountId, runId or "")
+            if shares:
+                st.dataframe(shares)
+            else:
+                st.info("无份额")
+    except ApiClientError as error:
+        _showError(error)
+
+
+# ---------------------------------------------------------------- 实时监控页
+
+def renderMonitoringPage(client: ApiClient) -> None:  # noqa: ANN001
+    """实时监控页：账户快照 + 状态（订单/风险/告警摘要）。"""
+    st = _st()
+    st.markdown("#### 实时监控")
+    accountId = _currentAccountId()
+    if not accountId:
+        st.warning("请先在侧边栏选择账户")
+        return
+    runId = st.text_input("run_id", key="mon_run_id")
+    st.caption(f"监控账户: {accountId} · 模式 {_accountModeLabel()}")
+    try:
+        snapshot = client.account(accountId, runId or None)
+        if snapshot:
+            st.metric("账户", snapshot.get("account_id", "?"))
+            st.metric("模式", snapshot.get("execution_mode", "?"))
+            st.json(snapshot.get("snapshot", snapshot))
+    except ApiClientError as error:
+        _showError(error)
+    st.info("订单/风险/告警实时状态由 SSE 状态流推送（P2-030 已建通道）")
+
+
+# ---------------------------------------------------------------- 账户上下文工具
+
+def _currentAccountId() -> str | None:
+    """从 session_state 读取侧边栏账户上下文（保证多账户不串数据）。"""
+    st = _st()
+    return st.session_state.get("account_context") if hasattr(st, "session_state") else None
+
+
+def _accountModeLabel() -> str:
+    accountId = _currentAccountId()
+    if not accountId:
+        return "?"
+    return "PAPER（模拟盘）"

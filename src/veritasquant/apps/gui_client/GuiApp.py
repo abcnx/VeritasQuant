@@ -49,10 +49,10 @@ _DEFAULT_PAGES: tuple[Page, ...] = (
     Page("data_import", "数据导入", Pages.renderImportPage),
     Page("strategies", "策略管理", Pages.renderStrategiesPage),
     Page("plans", "定投计划", Pages.renderPlansPage),
-    Page("accounts", "账户管理", _page_not_implemented),
+    Page("accounts", "账户管理", Pages.renderAccountsPage),
     Page("backtests", "回测中心", Pages.renderBacktestsPage),
-    Page("analysis", "结果分析", _page_not_implemented),
-    Page("monitoring", "实时监控", _page_not_implemented),
+    Page("analysis", "结果分析", Pages.renderAnalysisPage),
+    Page("monitoring", "实时监控", Pages.renderMonitoringPage),
     Page("settings", "系统设置", _page_not_implemented),
 )
 

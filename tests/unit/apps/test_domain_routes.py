@@ -40,6 +40,29 @@ class _StubAccounts(AccountViewProvider):
             "cash": "10000.00",
         }
 
+    def ledgerEntries(self, accountId: str, runId: str) -> tuple[dict, ...]:
+        if accountId != "acc-1":
+            raise ResourceNotFound(f"账户不存在: {accountId}")
+        return (
+            {"journal_id": "j-1", "account_id": accountId, "amount": "100.00"},
+            {"journal_id": "j-2", "account_id": accountId, "amount": "-50.00"},
+        )
+
+    def cashFlows(self, accountId: str, runId: str) -> tuple[dict, ...]:
+        if accountId != "acc-1":
+            raise ResourceNotFound(f"账户不存在: {accountId}")
+        return ({"date": "2026-01-01", "amount": "-1000.00"},)
+
+    def sharePositions(self, accountId: str, runId: str) -> tuple[dict, ...]:
+        if accountId != "acc-1":
+            raise ResourceNotFound(f"账户不存在: {accountId}")
+        return ({"fund_symbol": "FUND-A", "quantity": "100.5"},)
+
+    def analysis(self, accountId: str, runId: str) -> dict:
+        if accountId != "acc-1":
+            raise ResourceNotFound(f"账户不存在: {accountId}")
+        return {"twr": "0.0123", "xirr": "0.0456", "principal": "10000.00"}
+
 
 class _StubStrategies(StrategyViewProvider):
     def strategies(self) -> tuple[dict, ...]:
@@ -213,3 +236,48 @@ class TestEnvelopeContract:
         assert "/api/v1/accounts/{account_id}" in schema["paths"]
         assert "/api/v1/backtests" in schema["paths"]
         assert "/api/v1/funds" in schema["paths"]
+
+
+class TestAccountDetailEndpoints:
+    """P2-033 账户账本/现金流/份额/分析端点。"""
+
+    def test_ledger_entries(self) -> None:
+        client = _client()
+        response = client.get("/api/v1/accounts/acc-1/ledger?run_id=run-9")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["code"] == 0
+        assert len(body["data"]["entries"]) == 2
+        assert body["data"]["account_id"] == "acc-1"
+
+    def test_cashflows(self) -> None:
+        client = _client()
+        response = client.get("/api/v1/accounts/acc-1/cashflows?run_id=run-9")
+        assert response.status_code == 200
+        assert response.json()["data"]["cashflows"][0]["amount"] == "-1000.00"
+
+    def test_shares(self) -> None:
+        client = _client()
+        response = client.get("/api/v1/accounts/acc-1/shares?run_id=run-9")
+        assert response.status_code == 200
+        assert response.json()["data"]["shares"][0]["quantity"] == "100.5"
+
+    def test_analysis(self) -> None:
+        client = _client()
+        response = client.get("/api/v1/accounts/acc-1/analysis?run_id=run-9")
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["twr"] == "0.0123"
+        assert data["xirr"] == "0.0456"
+
+    def test_unknown_account_returns_404(self) -> None:
+        client = _client()
+        for path in (
+            "/api/v1/accounts/acc-9/ledger?run_id=run-9",
+            "/api/v1/accounts/acc-9/cashflows?run_id=run-9",
+            "/api/v1/accounts/acc-9/shares?run_id=run-9",
+            "/api/v1/accounts/acc-9/analysis?run_id=run-9",
+        ):
+            response = client.get(path)
+            assert response.status_code == 404, path
+            assert response.json()["code"] == 1002, path

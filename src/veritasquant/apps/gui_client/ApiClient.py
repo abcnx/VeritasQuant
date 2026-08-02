@@ -147,6 +147,22 @@ class ApiClient:
         envelope = self._request("GET", f"/api/v1/accounts/{accountId}", params=params)
         return dict(envelope.data or {})
 
+    def accountLedger(self, accountId: str, runId: str) -> list[Mapping[str, Any]]:
+        envelope = self._request("GET", f"/api/v1/accounts/{accountId}/ledger", params={"run_id": runId})
+        return list((envelope.data or {}).get("entries", []))
+
+    def accountCashFlows(self, accountId: str, runId: str) -> list[Mapping[str, Any]]:
+        envelope = self._request("GET", f"/api/v1/accounts/{accountId}/cashflows", params={"run_id": runId})
+        return list((envelope.data or {}).get("cashflows", []))
+
+    def accountShares(self, accountId: str, runId: str) -> list[Mapping[str, Any]]:
+        envelope = self._request("GET", f"/api/v1/accounts/{accountId}/shares", params={"run_id": runId})
+        return list((envelope.data or {}).get("shares", []))
+
+    def accountAnalysis(self, accountId: str, runId: str) -> Mapping[str, Any]:
+        envelope = self._request("GET", f"/api/v1/accounts/{accountId}/analysis", params={"run_id": runId})
+        return dict(envelope.data or {})
+
     # ---- 策略 / 数据 / 基金 ----
     def strategies(self) -> list[Mapping[str, Any]]:
         envelope = self._request("GET", "/api/v1/strategies")
