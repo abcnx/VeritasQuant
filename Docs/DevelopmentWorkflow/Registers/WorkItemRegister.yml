@@ -5239,15 +5239,24 @@ Records:
   TestEvidence: tests/unit/reliability/test_candidate_freeze.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T21:30:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T21:10:11Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第七批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T21:30:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第七批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#229
+    MergedAt: '2026-08-02T21:10:11Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第七批 PR #229 合并，M2 Gate 另行推进'
