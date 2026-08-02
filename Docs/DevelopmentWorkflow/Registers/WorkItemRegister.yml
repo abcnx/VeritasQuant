@@ -5667,19 +5667,31 @@ Records:
   TestEvidence: tests/unit/signals/test_signal_latency.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:49:52Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第二批 PR 合并后验收
+  NextAction: P3-006~008 已验收归档；P3-009/010 为运行/Gate 类任务待模拟盘环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#237
+    MergedAt: '2026-08-02T22:49:01Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第二批 PR #237 合并；信号运维与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:41:32Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第二批开发完成（建立信号端到端延迟 SLI 和告警），本地验证全绿
-
+  - Ts: '2026-08-02T22:49:52Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #237 已合并，P3-006 验收通过归档
 - WorkItemId: TSK-P3-007
   PlanTaskId: P3-007
   Title: 建立信号/人工偏差分析报告
@@ -5700,19 +5712,31 @@ Records:
   TestEvidence: tests/unit/signals/test_deviation_report.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:49:52Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第二批 PR 合并后验收
+  NextAction: P3-006~008 已验收归档；P3-009/010 为运行/Gate 类任务待模拟盘环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#237
+    MergedAt: '2026-08-02T22:49:01Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第二批 PR #237 合并；信号运维与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:41:32Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第二批开发完成（建立信号/人工偏差分析报告），本地验证全绿
-
+  - Ts: '2026-08-02T22:49:52Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #237 已合并，P3-007 验收通过归档
 - WorkItemId: TSK-P3-008
   PlanTaskId: P3-008
   Title: 完成通知故障、重复确认和权限撤销测试
@@ -5734,15 +5758,28 @@ Records:
   TestEvidence: tests/integration/test_p3_signal_ops_safety.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T22:49:52Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P3 第二批 PR 合并后验收
+  NextAction: P3-006~008 已验收归档；P3-009/010 为运行/Gate 类任务待模拟盘环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#237
+    MergedAt: '2026-08-02T22:49:01Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P3 第二批 PR #237 合并；信号运维与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T22:41:32Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P3 第二批开发完成（完成通知故障、重复确认和权限撤销测试），本地验证全绿
+  - Ts: '2026-08-02T22:49:52Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #237 已合并，P3-008 验收通过归档
