@@ -2938,3 +2938,31 @@ Records:
         Actor: BeeAgent
         Action: 静态契约测试 10/10 通过，ruff/mypy/Preflight/依赖锁校验通过；等待 PR 后 CI database job 集成验证
         Evidence: Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md
+  - WorkItemId: TSK-P2-002
+    PlanTaskId: P2-002
+    Title: 实现数据库端 inbox/outbox、租约和 fencing token
+    Description: 实现 PostgreSQL 持久化 inbox（幂等+冲突隔离）、outbox（至少一次投递+按序号发布）、单活租约（TTL 10s/续租 3s/单调 fencing token）与写入门禁 guard；双写者旧 token 写入被持久层拒绝。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["6.1", "12.3"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [P2-001]
+    AcceptanceCriteria: 双写者测试中旧 token 写入被拒绝；重投无重复副作用
+    TestEvidence: [src/veritasquant/infrastructure/persistence/LeaseStore.py, src/veritasquant/infrastructure/persistence/InboxStore.py, src/veritasquant/infrastructure/persistence/OutboxStore.py, tests/unit/infrastructure/test_lease_inbox_outbox_stores.py, tests/integration/database/test_postgres_inbox_outbox_lease.py, Docs/DevelopmentWorkflow/P2/P2-002InboxOutboxLeaseEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T16:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T16:40:00Z"
+        Actor: BeeAgent
+        Action: 实现数据库 inbox/outbox/租约与 fencing token，单元测试 25/25 通过，登记 P2-002
+        Evidence: src/veritasquant/infrastructure/persistence/LeaseStore.py

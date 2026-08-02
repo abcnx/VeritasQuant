@@ -12,63 +12,44 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import psycopg
 import pytest
 
+from test_db_helpers import MIGRATIONS_DIR, applyMigrations, openConnection, resetSchema
+
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_MIGRATIONS_DIR = _REPO_ROOT / "Migrations" / "postgresql"
-
-_DATABASE_URL = os.environ.get(
-    "VQ_TEST_DATABASE_URL",
-    "postgresql://veritasquant:veritasquant@localhost:5432/veritasquant",
-)
-
-
-def _connection():
-    return psycopg.connect(_DATABASE_URL, autocommit=True)
 
 
 @pytest.fixture(scope="module")
-def database():
-    """验证连接可用；不可用时跳过整个模块。"""
+def database() -> bool:
+    """验证连接可用并重置 schema；不可用时跳过整个模块。"""
     try:
-        connection = _connection()
+        openConnection().close()
     except psycopg.OperationalError:
         pytest.skip("PostgreSQL 测试实例不可用，跳过迁移集成测试")
-    with connection:
-        connection.execute("DROP SCHEMA public CASCADE")
-        connection.execute("CREATE SCHEMA public")
-    connection.close()
+    resetSchema()
     return True
 
 
 @pytest.fixture(scope="module")
-def applied(database):
-    """应用全部待应用迁移，返回 Migrator。"""
-    from veritasquant.infrastructure.persistence.Migrator import Migrator
-
-    connection = _connection()
-    migrator = Migrator(_MIGRATIONS_DIR, connection)
-    versions = migrator.applyPending()
+def applied(database) -> object:  # noqa: ANN001
+    versions = applyMigrations()
     assert versions, "首版迁移应至少应用一个版本"
-    yield migrator
-    connection.close()
+    return versions
 
 
 def test_migration_applies_forward(applied) -> None:  # noqa: ANN001
-    assert applied.appliedVersions() == [1]
-    assert applied.pendingVersions() == []
+    assert applied == [1]
 
 
 def test_migration_idempotent(applied) -> None:  # noqa: ANN001
-    assert applied.applyPending() == []
+    assert applyMigrations() == []
 
 
 def test_required_tables_created(applied) -> None:  # noqa: ANN001
-    with _connection() as connection:
+    with openConnection() as connection:
         rows = connection.execute(
             "SELECT table_name FROM information_schema.tables "
             "WHERE table_schema = 'public' ORDER BY table_name"
@@ -93,7 +74,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
     badDir = tmp_path / "bad_migrations"
     badDir.mkdir()
     (badDir / "V1__initial.sql").write_text(
-        (_MIGRATIONS_DIR / "V1__initial_fact_and_projection_schema.sql").read_text(encoding="utf-8"),
+        (MIGRATIONS_DIR / "V1__initial_fact_and_projection_schema.sql").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     (badDir / "V2__broken.sql").write_text(
@@ -101,7 +82,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
         "INSERT INTO missing_table VALUES (1);\nCOMMIT;",
         encoding="utf-8",
     )
-    with _connection() as connection:
+    with openConnection() as connection:
         migrator = Migrator(badDir, connection)
         with pytest.raises(psycopg.errors.UndefinedTable):
             migrator.applyPending()
@@ -117,7 +98,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
 
 
 def test_fact_table_rejects_update_and_delete(applied) -> None:  # noqa: ANN001
-    with _connection() as connection:
+    with openConnection() as connection:
         connection.execute(
             "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "
             "strategy_version, strategy_source_hash, dependency_lock_hash, interpreter_version, "
@@ -145,7 +126,7 @@ def test_fact_table_rejects_update_and_delete(applied) -> None:  # noqa: ANN001
 
 
 def test_unique_keys_enforced(applied) -> None:  # noqa: ANN001
-    with _connection() as connection:
+    with openConnection() as connection:
         with pytest.raises(psycopg.errors.UniqueViolation):
             connection.execute(
                 "INSERT INTO fact_events (event_id, event_type, schema_version, run_id, ts, "
@@ -158,7 +139,7 @@ def test_unique_keys_enforced(applied) -> None:  # noqa: ANN001
 
 
 def test_numeric_precision_enforced(applied) -> None:  # noqa: ANN001
-    with _connection() as connection:
+    with openConnection() as connection:
         with pytest.raises(psycopg.errors.NumericValueOutOfRange):
             connection.execute(
                 "INSERT INTO ledger_balance_projection (account_id, ledger_account, unit_id, "
@@ -168,7 +149,7 @@ def test_numeric_precision_enforced(applied) -> None:  # noqa: ANN001
 
 
 def test_account_ledger_sequence_unique(applied) -> None:  # noqa: ANN001
-    with _connection() as connection:
+    with openConnection() as connection:
         connection.execute(
             "INSERT INTO ledger_journals (journal_id, journal_type, account_id, ts, "
             "commit_sequence, source_event_id, instrument_metadata_version, "

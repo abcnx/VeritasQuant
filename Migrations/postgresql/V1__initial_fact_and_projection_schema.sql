@@ -118,6 +118,8 @@ CREATE INDEX idx_fact_events_correlation
 -- ---------------------------------------------------------------------
 -- 4. inbox / outbox（可重试输入幂等 + 领域提交后至少一次投递）
 -- ---------------------------------------------------------------------
+CREATE SEQUENCE IF NOT EXISTS inbox_receipt_seq START 1;
+
 CREATE TABLE inbox_records (
     idempotency_key      TEXT        PRIMARY KEY,
     content_hash         TEXT        NOT NULL,
@@ -146,6 +148,8 @@ CREATE TABLE inbox_conflicts (
 );
 CREATE INDEX idx_inbox_conflicts_key
     ON inbox_conflicts (run_id, partition_id, idempotency_key);
+
+CREATE SEQUENCE IF NOT EXISTS outbox_sequence_seq START 1;
 
 CREATE TABLE outbox_records (
     outbox_id        TEXT        PRIMARY KEY,

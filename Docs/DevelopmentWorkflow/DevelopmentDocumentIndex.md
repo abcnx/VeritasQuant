@@ -39,3 +39,4 @@
 所有新增开发过程文档应保存于 `Docs/DevelopmentWorkflow/`；设计决策变更仍必须同步修改技术方案。
 | P2-001 数据库迁移证据 | [P2-001PostgresSchemaEvidence.md](P2/P2-001PostgresSchemaEvidence.md) | 首版 PostgreSQL 事实表/投影表/索引/迁移器/CI database job 证据。 |
 | P2 数据库迁移 | [Migrations/postgresql/](../../Migrations/postgresql/V1__initial_fact_and_projection_schema.sql) | 版本化数据库迁移（禁止运行时自动改表）。 |
+| P2-002 inbox/outbox/租约证据 | [P2-002InboxOutboxLeaseEvidence.md](P2/P2-002InboxOutboxLeaseEvidence.md) | 数据库 inbox/outbox/单活租约与 fencing token 证据。 |
