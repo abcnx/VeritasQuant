@@ -113,6 +113,18 @@ class SimBrokerOrderGatewayV1:
         self._byBroker: dict[str, str] = {}  # broker -> client
         self._outcomes: dict[str, SubmitOutcomeV1] = {}
         self._counter = 0
+        self._submitTimestamps: list[datetime] = []
+
+    def _enforceRateLimit(self) -> None:
+        """限频：滑动窗口内发单数不得超过能力清单 maxOrderRatePerSecond。"""
+        now = datetime.now(timezone.utc)
+        windowStart = now - timedelta(seconds=1)
+        self._submitTimestamps = [t for t in self._submitTimestamps if t >= windowStart]
+        if len(self._submitTimestamps) >= self._negotiator.capability.maxOrderRatePerSecond:
+            raise BrokerPortError(
+                f"限频：每秒最多 {self._negotiator.capability.maxOrderRatePerSecond} 笔，拒绝发单"
+            )
+        self._submitTimestamps.append(now)
 
     def submit(
         self,
@@ -128,6 +140,18 @@ class SimBrokerOrderGatewayV1:
         self._sessionManager.validate(session)
         if not session.hasPermission("order:submit"):
             raise BrokerPortError("会话缺少 order:submit 权限")
+        self._enforceRateLimit()
+        # 同一 clientOrderId 重复提交：返回既有映射（幂等，不重复记账）
+        existing = self._mappings.get(request.clientOrderId)
+        if existing is not None:
+            prior = self._outcomes[request.clientOrderId]
+            return SubmitOutcomeV1(
+                outcome=OrderOutcome.Accepted
+                if prior.outcome is OrderOutcome.Accepted
+                else OrderOutcome.TimeoutUnknown,
+                brokerOrderId=existing.brokerOrderId,
+                brokerState=prior.brokerState,
+            )
         self._counter += 1
         brokerOrderId = f"broker-{self._counter:06d}"
         if simulateReject:
