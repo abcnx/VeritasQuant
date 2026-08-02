@@ -1,6 +1,6 @@
 # P2-012 基金事件 Schema 注册与计划到期生成器 — 实现证据
 
-- **PlanTaskId：** P2-012 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** IN_PROGRESS → IN_REVIEW
+- **PlanTaskId：** P2-012 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** ACCEPTED（PR #219/#220/#221 已合并）
 
 ## 1. 实现内容
 | 工件 | 路径 | 说明 |
