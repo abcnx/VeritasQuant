@@ -1,4 +1,4 @@
-"""P2-039 M2A 候选版本冻结与容量预演组件。"""
+"""P2-039~043 可靠性组件：候选版本冻结、容量预演、崩溃演练与周复核。"""
 
 from __future__ import annotations
 
@@ -14,6 +14,21 @@ from veritasquant.reliability.CandidateFreeze import (
     SeverityLevel,
     buildCandidateFreeze,
 )
+from veritasquant.reliability.CrashDrill import (
+    CrashDrillEvidenceWindowV1,
+    CrashDrillReportV1,
+    DrillOutcome,
+    DrillState,
+    PAPER_RTO_TARGET,
+    buildCrashDrillReport,
+)
+from veritasquant.reliability.WeeklyReview import (
+    DailyReconciliationResultV1,
+    DataGapV1,
+    WeeklyReviewReportV1,
+    WeeklyReviewStatus,
+    WeeklyReviewerV1,
+)
 
 __all__ = [
     "CandidateFreezeStoreV1",
@@ -26,4 +41,15 @@ __all__ = [
     "PeakForecastV1",
     "SeverityLevel",
     "buildCandidateFreeze",
+    "CrashDrillEvidenceWindowV1",
+    "CrashDrillReportV1",
+    "DrillOutcome",
+    "DrillState",
+    "PAPER_RTO_TARGET",
+    "buildCrashDrillReport",
+    "DailyReconciliationResultV1",
+    "DataGapV1",
+    "WeeklyReviewReportV1",
+    "WeeklyReviewStatus",
+    "WeeklyReviewerV1",
 ]

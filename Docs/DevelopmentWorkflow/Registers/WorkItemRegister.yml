@@ -5260,3 +5260,95 @@ Records:
     - Security-baseline
     - Database-migrations
     Notes: '第七批 PR #229 合并，M2 Gate 另行推进'
+- WorkItemId: TSK-P2-041
+  PlanTaskId: P2-041
+  Title: 在证据窗口完成 3 次进程崩溃和恢复演练
+  Description: CrashDrillReportV1 演练报告（注入点/检测时间/RTO/RPO/事实投影哈希/outbox 清空/人工审批/唯一结论）；CrashDrillEvidenceWindowV1 累计 3 次 PASS；RTO<=15min、RPO=0、活动控制 100%、未解释差异 0
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '12.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 6
+  Dependencies:
+  - P2-039
+  AcceptanceCriteria: 每次 RTO <=15 分钟、RPO=0、活动控制 100%、未解释差异 0
+  TestEvidence: tests/unit/reliability/test_crash_drill.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第八批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第八批开发完成（演练报告能力，实际演练需运行环境）
+- WorkItemId: TSK-P2-042
+  PlanTaskId: P2-042
+  Title: 每周复核数据缺口、账本/订单/持仓对账和重复副作用
+  Description: WeeklyReviewerV1 周复核用例（60 日窗口每日对账差异 0、数据缺口隔离/修复证据、重复副作用计数 0）；WeeklyReviewReportV1 唯一状态 CLEAN/HAS_FINDINGS/INSUFFICIENT
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '13'
+  - '8.1'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 4
+  Dependencies:
+  - P2-041
+  AcceptanceCriteria: 60 日每日差异为 0；所有缺口有隔离/修复证据；重复副作用计数为 0
+  TestEvidence: tests/unit/reliability/test_weekly_review.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第八批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第八批开发完成（复核工具能力，实际周复核需运行数据）
+- WorkItemId: TSK-P2-043
+  PlanTaskId: P2-043
+  Title: 执行 M2 Gate 并发布 StageGateReport
+  Description: StageGateReportBuilderV1.m2PlatformChecks（6 项平台正确性）与 m2StrategyChecks（4 项策略晋级）；平台与策略 Gate 分别唯一结论；仅 PASS 的冻结版本进入阶段 3
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 3
+  Dependencies:
+  - P2-042
+  AcceptanceCriteria: 平台与策略 Gate 分别给出结论；仅 PASS 的冻结版本进入阶段 3
+  TestEvidence: tests/unit/application/test_m2_gate_checks.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第八批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第八批开发完成（Gate 检查能力，实际执行需模拟盘数据）
