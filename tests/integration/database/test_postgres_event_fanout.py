@@ -76,9 +76,8 @@ def database() -> bool:
 @pytest.fixture()
 def stores(database):
     with openConnection() as connection:
-        connection.execute("DELETE FROM fact_events WHERE run_id = %s", (_RUN,))
+        connection.execute("TRUNCATE fact_events, partition_leases")
         connection.execute("DELETE FROM run_manifests WHERE run_id = %s", (_RUN,))
-        connection.execute("DELETE FROM partition_leases WHERE account_group_id IN (%s, %s)", (_GROUP_A, _GROUP_B))
         connection.execute(
             "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "
             "strategy_version, strategy_source_hash, dependency_lock_hash, interpreter_version, "
@@ -96,15 +95,15 @@ def stores(database):
     connection = openConnection()
     leaseStore = LeaseStoreV1(connection)
     eventStore = EventStoreV1(connection, leaseStore)
-    lease = leaseStore.acquire(_GROUP_A, _HOLDER, ttlSeconds=30)
-    leaseStore.acquire(_GROUP_B, _HOLDER, ttlSeconds=30)
-    yield leaseStore, eventStore, lease
+    leaseA = leaseStore.acquire(_GROUP_A, _HOLDER, ttlSeconds=30)
+    leaseB = leaseStore.acquire(_GROUP_B, _HOLDER, ttlSeconds=30)
+    yield leaseStore, eventStore, leaseA, leaseB
     connection.close()
 
 
 class TestEventStoreAndFanout:
     def test_same_event_fans_out_with_identical_hash_and_rank_order(self, stores) -> None:  # noqa: ANN001
-        _, eventStore, lease = stores
+        _, eventStore, leaseA, leaseB = stores
         fanout = DeterministicFanoutV1(
             (
                 FanoutTargetV1(_GROUP_B, 2),
@@ -115,10 +114,11 @@ class TestEventStoreAndFanout:
         # 快分区 A 已消费 3 个事件，慢分区 B 为 0：分区快慢不改事件内容
         sequences = {_GROUP_A: 3, _GROUP_B: 0}
         deliveries = fanout.plan(event, sequences)
+        tokens = {_GROUP_A: leaseA.fencingToken, _GROUP_B: leaseB.fencingToken}
         for delivery in deliveries:
             eventStore.append(
                 delivery.event, delivery.accountGroupId, delivery.partitionRank,
-                delivery.deliverySequence, _HOLDER, lease.fencingToken,
+                delivery.deliverySequence, _HOLDER, tokens[delivery.accountGroupId],
             )
         with openConnection() as connection:
             rows = connection.execute(
@@ -133,44 +133,46 @@ class TestEventStoreAndFanout:
         assert len(hashes) == 1, "同一共享事件在所有分区必须保持相同内容哈希"
 
     def test_partition_sequences_advance_independently(self, stores) -> None:  # noqa: ANN001
-        _, eventStore, lease = stores
+        _, eventStore, leaseA, leaseB = stores
         fanout = DeterministicFanoutV1(
             (
                 FanoutTargetV1(_GROUP_A, 1),
                 FanoutTargetV1(_GROUP_B, 2),
             )
         )
+        tokens = {_GROUP_A: leaseA.fencingToken, _GROUP_B: leaseB.fencingToken}
         for index in range(1, 4):
             event = _makeEvent(f"evt-seq-{index}")
             for delivery in fanout.plan(event, {}):
                 eventStore.append(
                     delivery.event, delivery.accountGroupId, delivery.partitionRank,
-                    delivery.deliverySequence, _HOLDER, lease.fencingToken,
+                    delivery.deliverySequence, _HOLDER, tokens[delivery.accountGroupId],
                 )
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_A) == 3
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_B) == 3
         assert eventStore.countByPartition(_RUN, _GROUP_A) == 3
         # 慢分区追赶：再投递一个，只影响该分区序号
         event = _makeEvent("evt-seq-4")
+        tokens = {_GROUP_A: leaseA.fencingToken, _GROUP_B: leaseB.fencingToken}
         for delivery in fanout.plan(event, {_GROUP_A: 3, _GROUP_B: 3}):
             eventStore.append(
                 delivery.event, delivery.accountGroupId, delivery.partitionRank,
-                delivery.deliverySequence, _HOLDER, lease.fencingToken,
+                delivery.deliverySequence, _HOLDER, tokens[delivery.accountGroupId],
             )
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_A) == 4
         assert eventStore.latestDeliverySequence(_RUN, _GROUP_B) == 4
 
     def test_append_same_event_id_idempotent(self, stores) -> None:  # noqa: ANN001
-        _, eventStore, lease = stores
+        _, eventStore, leaseA, leaseB = stores
         event = _makeEvent("evt-dup")
-        first = eventStore.append(event, _GROUP_A, 1, 1, _HOLDER, lease.fencingToken)
-        second = eventStore.append(event, _GROUP_A, 1, 99, _HOLDER, lease.fencingToken)
+        first = eventStore.append(event, _GROUP_A, 1, 1, _HOLDER, leaseA.fencingToken)
+        second = eventStore.append(event, _GROUP_A, 1, 99, _HOLDER, leaseA.fencingToken)
         assert first == 1
         assert second == 1  # 同 event_id 幂等返回原 delivery_sequence
         assert eventStore.countByPartition(_RUN, _GROUP_A) == 1
 
     def test_stale_token_write_rejected(self, stores) -> None:  # noqa: ANN001
-        leaseStore, eventStore, lease = stores
+        leaseStore, eventStore, leaseA, leaseB = stores
         with openConnection() as connection:
             connection.execute(
                 "UPDATE partition_leases SET lease_expires_at = now() - interval '1 second' "
@@ -181,4 +183,4 @@ class TestEventStoreAndFanout:
         from veritasquant.infrastructure.persistence.LeaseStore import LeaseError
 
         with pytest.raises(LeaseError):
-            eventStore.append(_makeEvent("evt-stale"), _GROUP_A, 1, 1, _HOLDER, lease.fencingToken)
+            eventStore.append(_makeEvent("evt-stale"), _GROUP_A, 1, 1, _HOLDER, leaseA.fencingToken)
