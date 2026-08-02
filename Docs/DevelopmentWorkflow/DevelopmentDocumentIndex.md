@@ -37,3 +37,8 @@
 | P1-041~076 实现证据 | [P1-041SnapshotEvidence.md](P1/P1-041SnapshotEvidence.md) 至 [P1-076StageGateReportEvidence.md](P1/P1-076StageGateReportEvidence.md)（36 份） | 账户快照、ledger 随机序列、订单/状态机/回报、执行适配器、Bar 路径、执行模型、流动性、原子边界、model-based 测试、风控模型/规范化/关联/策略引擎/审批/控制/规则/原子风险/契约、策略基类/指标窗口/沙箱/示例策略/回测服务、绩效/双轨报告/工件索引/防前视/安全套件、端到端/跨平台/性能/审计/Gate 证据。 |
 
 所有新增开发过程文档应保存于 `Docs/DevelopmentWorkflow/`；设计决策变更仍必须同步修改技术方案。
+| P2-001 数据库迁移证据 | [P2-001PostgresSchemaEvidence.md](P2/P2-001PostgresSchemaEvidence.md) | 首版 PostgreSQL 事实表/投影表/索引/迁移器/CI database job 证据。 |
+| P2 数据库迁移 | [Migrations/postgresql/](../../Migrations/postgresql/V1__initial_fact_and_projection_schema.sql) | 版本化数据库迁移（禁止运行时自动改表）。 |
+| P2-002 inbox/outbox/租约证据 | [P2-002InboxOutboxLeaseEvidence.md](P2/P2-002InboxOutboxLeaseEvidence.md) | 数据库 inbox/outbox/单活租约与 fencing token 证据。 |
+| P2-003 事件扇出证据 | [P2-003EventFanoutEvidence.md](P2/P2-003EventFanoutEvidence.md) | 共享事件持久化与确定性分区扇出证据。 |
+| P2-004~007 实现证据 | [P2-004AccountGroupWorkerEvidence.md](P2/P2-004AccountGroupWorkerEvidence.md)、[P2-005RiskSnapshotEvidence.md](P2/P2-005RiskSnapshotEvidence.md)、[P2-006PaperTradingEvidence.md](P2/P2-006PaperTradingEvidence.md)、[P2-007CheckpointReconciliationEvidence.md](P2/P2-007CheckpointReconciliationEvidence.md) | 账户组 worker、风险快照屏障、纸上交易、checkpoint/对账证据。 |

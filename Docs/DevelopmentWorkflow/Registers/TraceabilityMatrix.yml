@@ -78,6 +78,10 @@ Rows:
     TestIds: [INTEGRATION-ACCOUNT-PARTITION-001, DRILL-PARTITION-LEASE-001]
     CiSuites: [Integration, CrashRecovery]
     LatestGate: M2
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [Migrations/postgresql/V1__initial_fact_and_projection_schema.sql, tests/contract/migrations/test_postgres_migration_schema.py, tests/integration/database/test_postgres_migrations.py, Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md]
+      Gaps: 缺 P2-002/003 实现、账户分区集成测试与 M2 Gate 证据
   - RequirementId: R-010
     TechSpecRef: "8.4"
     PlanTaskIds: [P1-045, P1-046, P1-047, P1-048, P1-049, P1-050, P1-051]
@@ -140,6 +144,10 @@ Rows:
     TestIds: [DRILL-RELIABILITY-POLICY-001, DRILL-BACKUP-RESTORE-001]
     CiSuites: [CrashRecovery, Integration]
     LatestGate: M2
+    ExecutionEvidence:
+      Status: PARTIAL_AUTHOR_EVIDENCE
+      EvidenceLinks: [Migrations/postgresql/V1__initial_fact_and_projection_schema.sql, src/veritasquant/infrastructure/persistence/Migrator.py, tests/integration/database/test_postgres_migrations.py, Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md]
+      Gaps: 缺备份恢复演练与 M2 Gate 证据
   - RequirementId: R-017
     TechSpecRef: "11.5"
     PlanTaskIds: [P2-030, P2-031, P2-032]
