@@ -1,6 +1,6 @@
 # P2-013/014 场外基金申购/赎回状态机 — 实现证据
 
-- **PlanTaskId：** P2-013 / P2-014 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** IN_PROGRESS → IN_REVIEW
+- **PlanTaskId：** P2-013 / P2-014 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** ACCEPTED（PR #219/#220/#221 已合并）
 
 ## 1. 实现内容
 | 工件 | 路径 | 说明 |

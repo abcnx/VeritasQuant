@@ -2922,7 +2922,7 @@ Records:
     TestEvidence: [tests/contract/migrations/test_postgres_migration_schema.py, tests/integration/database/test_postgres_migrations.py, Migrations/postgresql/V1__initial_fact_and_projection_schema.sql, Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T16:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -2930,6 +2930,10 @@ Records:
     NextAction: 提交第一批 P2-001~007 PR 至上游 dev；合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T15:40:00Z"
         Actor: BeeAgent
         Action: 创建首版迁移、迁移执行器与测试，登记 P2-001 工作项
@@ -2954,7 +2958,7 @@ Records:
     TestEvidence: [src/veritasquant/infrastructure/persistence/LeaseStore.py, src/veritasquant/infrastructure/persistence/InboxStore.py, src/veritasquant/infrastructure/persistence/OutboxStore.py, tests/unit/infrastructure/test_lease_inbox_outbox_stores.py, tests/integration/database/test_postgres_inbox_outbox_lease.py, Docs/DevelopmentWorkflow/P2/P2-002InboxOutboxLeaseEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T16:40:00Z"
     Blocked: false
     BlockedReason: ""
@@ -2962,6 +2966,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T16:40:00Z"
         Actor: BeeAgent
         Action: 实现数据库 inbox/outbox/租约与 fencing token，单元测试 25/25 通过，登记 P2-002
@@ -2982,7 +2990,7 @@ Records:
     TestEvidence: [src/veritasquant/infrastructure/persistence/EventStore.py, src/veritasquant/core/Fanout.py, tests/unit/core/test_fanout.py, tests/integration/database/test_postgres_event_fanout.py, Docs/DevelopmentWorkflow/P2/P2-003EventFanoutEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T17:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -2990,6 +2998,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T17:10:00Z"
         Actor: BeeAgent
         Action: 实现事件持久化与确定性扇出，全量测试 513 通过，登记 P2-003
@@ -3010,7 +3022,7 @@ Records:
     TestEvidence: [src/veritasquant/application/AccountGroupTopology.py, src/veritasquant/application/AccountGroupWorker.py, tests/unit/application/test_account_group_worker.py, Docs/DevelopmentWorkflow/P2/P2-004AccountGroupWorkerEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T17:40:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3018,6 +3030,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T17:40:00Z"
         Actor: BeeAgent
         Action: 实现账户组拓扑与 worker（串行/并行/隔离/LIVE 检查），13 用例通过
@@ -3038,7 +3054,7 @@ Records:
     TestEvidence: [src/veritasquant/risk/PortfolioSnapshot.py, tests/unit/risk/test_portfolio_snapshot.py, Docs/DevelopmentWorkflow/P2/P2-005RiskSnapshotEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T17:40:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3046,6 +3062,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T17:40:00Z"
         Actor: BeeAgent
         Action: 实现快照屏障与组合只读评估，12 用例通过
@@ -3066,7 +3086,7 @@ Records:
     TestEvidence: [src/veritasquant/execution/IncrementalFeed.py, src/veritasquant/execution/PaperTradingAdapter.py, tests/unit/execution/test_paper_trading_adapter.py, Docs/DevelopmentWorkflow/P2/P2-006PaperTradingEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T17:40:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3074,6 +3094,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T17:40:00Z"
         Actor: BeeAgent
         Action: 实现纸上交易适配器与增量接入断流保护，7 用例通过
@@ -3094,7 +3118,7 @@ Records:
     TestEvidence: [src/veritasquant/infrastructure/persistence/CheckpointStore.py, src/veritasquant/application/Reconciliation.py, tests/unit/application/test_reconciliation_checkpoint.py, tests/integration/database/test_postgres_checkpoint.py, Docs/DevelopmentWorkflow/P2/P2-007CheckpointReconciliationEvidence.md]
     RiskLinks: [RSK-P2-001]
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-02T17:40:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3102,6 +3126,10 @@ Records:
     NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-02T17:40:00Z"
         Actor: BeeAgent
         Action: 实现 checkpoint 存储与每日对账，7 单元用例 + 4 集成用例
@@ -3122,7 +3150,7 @@ Records:
     TestEvidence: [src/veritasquant/infrastructure/messaging/StreamTransport.py, src/veritasquant/infrastructure/messaging/RedisStreamTransport.py, src/veritasquant/infrastructure/messaging/StreamPolicy.py, tests/unit/infrastructure/test_stream_transport.py, tests/integration/database/test_redis_stream_transport.py, Docs/DevelopmentWorkflow/P2/P2-008StreamTransportEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3130,6 +3158,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现可替换跨进程传输（内存+Redis Streams），11 单元用例通过
@@ -3150,7 +3182,7 @@ Records:
     TestEvidence: [src/veritasquant/monitoring/TradingReadiness.py, tests/unit/monitoring/test_trading_readiness.py, Docs/DevelopmentWorkflow/P2/P2-009BackpressureEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3158,6 +3190,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现背压与 trading-readiness 门禁，12 单元用例通过
@@ -3178,7 +3214,7 @@ Records:
     TestEvidence: [src/veritasquant/data/FundNav.py, tests/unit/data/test_fund_nav.py, Docs/DevelopmentWorkflow/P2/P2-010-011FundNavEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3186,6 +3222,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现基金净值 Schema 与版本化日历/费率/保守策略
@@ -3206,7 +3246,7 @@ Records:
     TestEvidence: [src/veritasquant/data/FundNavImporter.py, tests/unit/data/test_fund_nav.py, Docs/DevelopmentWorkflow/P2/P2-010-011FundNavEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3214,6 +3254,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现基金净值导入、质量检查与 manifest 生成
@@ -3234,7 +3278,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/FundEvents.py, src/veritasquant/funds/FundEventRegistration.py, tests/unit/funds/test_fund_event_registration.py, Docs/DevelopmentWorkflow/P2/P2-012FundEventsEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3242,6 +3286,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 注册基金事件 Schema 并实现计划到期生成器，9 单元用例通过
@@ -3262,7 +3310,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/FundStateMachines.py, tests/unit/funds/test_fund_state_machines.py, Docs/DevelopmentWorkflow/P2/P2-013-014FundStateMachinesEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3270,6 +3318,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现场外基金申购状态机，全边覆盖测试通过
@@ -3290,7 +3342,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/FundStateMachines.py, tests/unit/funds/test_fund_state_machines.py, Docs/DevelopmentWorkflow/P2/P2-013-014FundStateMachinesEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T00:20:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3298,6 +3350,10 @@ Records:
     NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T00:20:00Z"
         Actor: BeeAgent
         Action: 实现场外基金赎回与结算状态机，重放路径测试通过
@@ -3318,7 +3374,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/FundShares.py, tests/unit/funds/test_fund_shares.py, Docs/DevelopmentWorkflow/P2/P2-015-016SharesBudgetEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3326,6 +3382,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现基金份额 journal，8 用例通过
@@ -3346,7 +3406,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/InvestmentBudget.py, tests/unit/funds/test_investment_budget.py, Docs/DevelopmentWorkflow/P2/P2-015-016SharesBudgetEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3354,6 +3414,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现入金与预算策略，10 用例通过
@@ -3374,7 +3438,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/PlanCalendar.py, tests/unit/funds/test_plan_calendar.py, Docs/DevelopmentWorkflow/P2/P2-017-018PlanCalendarAmountEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3382,6 +3446,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现计划日历与节假日行为，7 用例通过
@@ -3402,7 +3470,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/AmountRules.py, tests/unit/funds/test_amount_rules.py, Docs/DevelopmentWorkflow/P2/P2-017-018PlanCalendarAmountEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3410,6 +3478,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现三种日频金额模式，13 用例通过
@@ -3430,7 +3502,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/SmartPlans.py, tests/unit/funds/test_smart_plans.py, Docs/DevelopmentWorkflow/P2/P2-019SmartPlansEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3438,6 +3510,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现六类智能定投方案，14 用例通过
@@ -3458,7 +3534,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/FundDsl.py, tests/unit/funds/test_fund_dsl.py, Docs/DevelopmentWorkflow/P2/P2-020FundDslEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3466,6 +3542,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现受限基金 DSL，13 用例通过（含安全负例）
@@ -3486,7 +3566,7 @@ Records:
     TestEvidence: [src/veritasquant/funds/PortfolioAllocation.py, tests/unit/funds/test_portfolio_allocation.py, Docs/DevelopmentWorkflow/P2/P2-021PortfolioAllocationEvidence.md]
     RiskLinks: []
     TargetDate: 当前迭代
-    Status: IN_REVIEW
+    Status: ACCEPTED
     StatusChangedTs: "2026-08-03T02:10:00Z"
     Blocked: false
     BlockedReason: ""
@@ -3494,6 +3574,10 @@ Records:
     NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
     EscalateTs: ""
     AuditHistory:
+      - Ts: "2026-08-03T02:35:00Z"
+        Actor: BeeAgent
+        Action: PR 已由 ACANX 合并至上游 dev（#219/#220/#221），验收通过，流转 ACCEPTED
+        Evidence: https://github.com/ACANX/VeritasQuant/pull/219
       - Ts: "2026-08-03T02:10:00Z"
         Actor: BeeAgent
         Action: 实现多基金分配与账户隔离，8 用例通过

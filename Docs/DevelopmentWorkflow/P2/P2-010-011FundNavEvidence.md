@@ -1,6 +1,6 @@
 # P2-010/011 FundNavSchemaV1、基金状态/费率/日历与净值导入 — 实现证据
 
-- **PlanTaskId：** P2-010 / P2-011 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** IN_PROGRESS → IN_REVIEW
+- **PlanTaskId：** P2-010 / P2-011 | **里程碑：** M2A | **作者：** BeeAgent | **状态：** ACCEPTED（PR #219/#220/#221 已合并）
 
 ## 1. 实现内容
 | 工件 | 路径 | 说明 |

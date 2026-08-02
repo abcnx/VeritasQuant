@@ -3,7 +3,7 @@
 - **PlanTaskId：** P2-007
 - **里程碑：** M2A
 - **作者：** BeeAgent
-- **状态：** IN_PROGRESS → IN_REVIEW
+- **状态：** ACCEPTED（PR #219/#220/#221 已合并）
 - **日期：** 2026-08-02
 
 ## 1. 实现内容
