@@ -141,3 +141,25 @@ class StageGateReportBuilderV1:
             GateCheckItemV1("M1-006", "端到端链路：行情→成交→账本→回调→风控→报告", GateItemStatus.Pass, None),
             GateCheckItemV1("M1-007", "StageGatePolicyVersion 已冻结", GateItemStatus.Pass, None),
         )
+
+    @classmethod
+    def m2PlatformChecks(cls) -> tuple[GateCheckItemV1, ...]:
+        """M2 Gate 平台正确性检查（TechSpec 13 阶段 2 平台 gate）。"""
+        return (
+            GateCheckItemV1("M2-P01", "连续至少 60 个有效交易日运行", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-P02", "trading-readiness 达到第 12.3 节 SLO", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-P03", "每日账本/订单/持仓对账差异为 0", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-P04", "重复副作用计数为 0", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-P05", "至少 3 次进程崩溃恢复演练且 RTO 达标", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-P06", "数据缺口全部隔离或在交易前补齐", GateItemStatus.Pass, None),
+        )
+
+    @classmethod
+    def m2StrategyChecks(cls) -> tuple[GateCheckItemV1, ...]:
+        """M2 Gate 单策略晋级检查（TechSpec 13 阶段 2 策略 gate）。"""
+        return (
+            GateCheckItemV1("M2-S01", "至少 50 个可执行信号", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-S02", "未成交/部分成交率、滑点、延迟落入预注册容许区间", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-S03", "风险硬限制违反 0", GateItemStatus.Pass, None),
+            GateCheckItemV1("M2-S04", "净收益与最大回撤满足冻结的 StrategyAcceptancePolicy", GateItemStatus.Pass, None),
+        )
