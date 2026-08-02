@@ -5646,3 +5646,103 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #235 已合并，P3-005 验收通过归档
+
+- WorkItemId: TSK-P3-006
+  PlanTaskId: P3-006
+  Title: 建立信号端到端延迟 SLI 和告警
+  Description: SignalLatencyEvaluatorV1 信号端到端延迟 SLI：事件可用至送达 p50/p95/p99 线性插值；99.5% 10 秒内送达目标；缺样本返回 INSUFFICIENT_EVIDENCE 不判通过；SignalLatencyAlertV1 告警含 run/account/处置链接
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 5
+  Dependencies:
+  - P3-002
+  - P2-036
+  AcceptanceCriteria: 可计算事件可用至送达 p50/p95/p99；缺样本不判通过
+  TestEvidence: tests/unit/signals/test_signal_latency.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:41:32Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第二批开发完成（建立信号端到端延迟 SLI 和告警），本地验证全绿
+
+- WorkItemId: TSK-P3-007
+  PlanTaskId: P3-007
+  Title: 建立信号/人工偏差分析报告
+  Description: SignalDeviationAnalyzerV1 信号/人工偏差分析：NOT_EXECUTED/DIRECTION/QUANTITY/PRICE_SLIPPAGE 偏差类别；每条偏差必须有结构化原因（人工提供），analyzer 不伪造；DeviationReportV1 未解释偏差计数与账户定位
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 6
+  Dependencies:
+  - P3-004
+  - P3-005
+  AcceptanceCriteria: 每条未执行或偏差有结构化原因；账户记录差异可定位
+  TestEvidence: tests/unit/signals/test_deviation_report.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:41:32Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第二批开发完成（建立信号/人工偏差分析报告），本地验证全绿
+
+- WorkItemId: TSK-P3-008
+  PlanTaskId: P3-008
+  Title: 完成通知故障、重复确认和权限撤销测试
+  Description: 集成测试 test_p3_signal_ops_safety.py：通知失败不改变交易控制；重复路由/重复动作/重复命令/重复确认不产生重复副作用；权限撤销后不能操作（RBAC 默认拒绝）
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 7
+  Dependencies:
+  - P3-003
+  - P3-004
+  - P3-005
+  AcceptanceCriteria: 重复副作用 0；权限撤销后不能操作；P0/P1 控制不受通知状态影响
+  TestEvidence: tests/integration/test_p3_signal_ops_safety.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:41:32Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:41:32Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第二批开发完成（完成通知故障、重复确认和权限撤销测试），本地验证全绿
