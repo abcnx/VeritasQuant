@@ -76,7 +76,7 @@ def database() -> bool:
 @pytest.fixture()
 def stores(database):
     with openConnection() as connection:
-        connection.execute("TRUNCATE fact_events, partition_leases")
+        connection.execute("TRUNCATE fact_events, partition_leases, run_manifests CASCADE")
         connection.execute("DELETE FROM run_manifests WHERE run_id = %s", (_RUN,))
         connection.execute(
             "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "

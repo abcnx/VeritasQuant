@@ -120,9 +120,9 @@ def test_fact_table_rejects_update_and_delete(applied) -> None:  # noqa: ANN001
             "now(), now(), 'src', 'prod', '1.0', 'corr', 'V1', 10, 0, 0, 1, '{}', '0'*64, "
             "'ag-test', 0, 1)"
         )
-        with pytest.raises(psycopg.errors.RaiseException):
+        with pytest.raises(psycopg.errors.ObjectNotInPrerequisiteState):
             connection.execute("UPDATE fact_events SET priority = 1 WHERE event_id = 'evt-1'")
-        with pytest.raises(psycopg.errors.RaiseException):
+        with pytest.raises(psycopg.errors.ObjectNotInPrerequisiteState):
             connection.execute("DELETE FROM fact_events WHERE event_id = 'evt-1'")
 
 
