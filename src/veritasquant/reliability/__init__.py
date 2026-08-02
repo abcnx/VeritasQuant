@@ -29,6 +29,13 @@ from veritasquant.reliability.WeeklyReview import (
     WeeklyReviewStatus,
     WeeklyReviewerV1,
 )
+from veritasquant.reliability.ObservabilityWiring import (
+    InstrumentedGroupWorker,
+    InstrumentedLedgerStore,
+    ObservabilityWiringV1,
+    RuntimeSnapshotV1,
+    SloObservationRecorderV1,
+)
 
 __all__ = [
     "CandidateFreezeStoreV1",
@@ -52,4 +59,9 @@ __all__ = [
     "WeeklyReviewReportV1",
     "WeeklyReviewStatus",
     "WeeklyReviewerV1",
+    "InstrumentedGroupWorker",
+    "InstrumentedLedgerStore",
+    "ObservabilityWiringV1",
+    "RuntimeSnapshotV1",
+    "SloObservationRecorderV1",
 ]
