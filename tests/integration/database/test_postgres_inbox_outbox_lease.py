@@ -39,6 +39,11 @@ def database() -> bool:
 def seededRun(database) -> str:  # noqa: ANN001
     runId = _RUN
     with openConnection() as connection:
+        # 先清引用表再重建 run_manifests（不可变事实表禁止 DELETE，使用 TRUNCATE）
+        connection.execute(
+            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, "
+            "partition_leases, fact_events, run_manifests"
+        )
         connection.execute(
             "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "
             "strategy_version, strategy_source_hash, dependency_lock_hash, interpreter_version, "
