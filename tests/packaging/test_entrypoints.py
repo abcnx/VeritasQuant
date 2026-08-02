@@ -17,6 +17,7 @@ ENTRYPOINTS = {
     "vq-trading-worker": "veritasquant.apps.server.TradingWorker",
     "vq-scheduler-service": "veritasquant.apps.server.SchedulerService",
     "vq-gui-client": "veritasquant.apps.gui_client.GuiClient",
+    "vq-gui": "veritasquant.apps.gui_client.GuiServer",
     "vq-job-data-ingestion": "veritasquant.jobs.DataIngestionJob",
     "vq-job-account-reconciliation": "veritasquant.jobs.AccountReconciliationJob",
     "vq-job-execution-calibration": "veritasquant.jobs.ExecutionCalibrationJob",
