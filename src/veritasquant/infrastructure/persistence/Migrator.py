@@ -18,6 +18,17 @@ from psycopg import Connection
 
 _MIGRATION_NAME = re.compile(r"^V(\d+)__[A-Za-z0-9_\-]+\.sql$")
 
+_VERSION_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS schema_version (
+    version          TEXT        NOT NULL,
+    description      TEXT        NOT NULL,
+    installed_by     TEXT        NOT NULL DEFAULT current_user,
+    installed_on     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    success          BOOLEAN     NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (version)
+)
+"""
+
 
 class MigrationError(RuntimeError):
     """迁移文件命名、读取或执行失败。"""
@@ -36,6 +47,7 @@ class Migrator:
 
     def appliedVersions(self) -> list[int]:
         """返回已成功应用的迁移版本（升序）。"""
+        self._ensureVersionTable()
         rows = self._connection.execute(
             "SELECT version FROM schema_version WHERE success = TRUE ORDER BY version"
         ).fetchall()
@@ -65,6 +77,10 @@ class Migrator:
         finally:
             with self._connection.transaction():
                 self._connection.execute("SELECT pg_advisory_unlock(%s)", (self._LOCK_ID,))
+
+    def _ensureVersionTable(self) -> None:
+        """确保版本表存在（首版迁移本身包含该表；此处幂等创建避免先有鸡先有蛋）。"""
+        self._connection.execute(_VERSION_TABLE_SQL)
 
     def _applyOne(self, version: int) -> None:
         path = self._pathFor(version)
