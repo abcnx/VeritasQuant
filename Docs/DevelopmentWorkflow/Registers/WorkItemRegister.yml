@@ -2994,3 +2994,115 @@ Records:
         Actor: BeeAgent
         Action: 实现事件持久化与确定性扇出，全量测试 513 通过，登记 P2-003
         Evidence: src/veritasquant/core/Fanout.py
+  - WorkItemId: TSK-P2-004
+    PlanTaskId: P2-004
+    Title: 实现账户组 worker、组内 account_rank 和故障隔离
+    Description: 实现 AccountGroupTopologyV1（组内 rank 唯一、执行模式一致）与 validateGroupPartitioning（账户跨组唯一、分区排名唯一、LIVE 不混组）；AccountGroupWorkerV1 组内按 rank 串行，GroupWorkerPoolV1 组间并行且单组失败隔离。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["3.2"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [P2-003]
+    AcceptanceCriteria: 组内串行、组间并行；单组失败不污染其他组；LIVE 与非 LIVE 不能混组
+    TestEvidence: [src/veritasquant/application/AccountGroupTopology.py, src/veritasquant/application/AccountGroupWorker.py, tests/unit/application/test_account_group_worker.py, Docs/DevelopmentWorkflow/P2/P2-004AccountGroupWorkerEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T17:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T17:40:00Z"
+        Actor: BeeAgent
+        Action: 实现账户组拓扑与 worker（串行/并行/隔离/LIVE 检查），13 用例通过
+        Evidence: src/veritasquant/application/AccountGroupWorker.py
+  - WorkItemId: TSK-P2-005
+    PlanTaskId: P2-005
+    Title: 实现 AccountRiskSnapshot 屏障和组合只读评估
+    Description: 实现 AccountRiskSnapshotV1（屏障+版本+内容哈希）、PortfolioSnapshotSetV1（同屏障收齐）与 PortfolioSnapshotRegistryV1（tryAssemble 缺失/不同步返回 None，维持更严格控制）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["3.3"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-004]
+    AcceptanceCriteria: 不齐或不同 barrier 的快照不能拼接；缺失时保持更严格控制
+    TestEvidence: [src/veritasquant/risk/PortfolioSnapshot.py, tests/unit/risk/test_portfolio_snapshot.py, Docs/DevelopmentWorkflow/P2/P2-005RiskSnapshotEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T17:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T17:40:00Z"
+        Actor: BeeAgent
+        Action: 实现快照屏障与组合只读评估，12 用例通过
+        Evidence: src/veritasquant/risk/PortfolioSnapshot.py
+  - WorkItemId: TSK-P2-006
+    PlanTaskId: P2-006
+    Title: 实现纸上交易适配器和增量市场事件接入
+    Description: 实现 IncrementalMarketFeedV1（增量接入+断流保护）与 PaperTradingAdapterV1（相同订单/回报契约；保护状态拒绝发单；显式恢复）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["7", "13"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 9
+    Dependencies: [P2-004]
+    AcceptanceCriteria: 适配器遵循相同订单/回报契约；断流进入保护状态而非继续发单
+    TestEvidence: [src/veritasquant/execution/IncrementalFeed.py, src/veritasquant/execution/PaperTradingAdapter.py, tests/unit/execution/test_paper_trading_adapter.py, Docs/DevelopmentWorkflow/P2/P2-006PaperTradingEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T17:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T17:40:00Z"
+        Actor: BeeAgent
+        Action: 实现纸上交易适配器与增量接入断流保护，7 用例通过
+        Evidence: src/veritasquant/execution/PaperTradingAdapter.py
+  - WorkItemId: TSK-P2-007
+    PlanTaskId: P2-007
+    Title: 实现模拟盘 checkpoint、重启和每日对账
+    Description: 实现 CheckpointStoreV1（partition_checkpoints 幂等保存/读取，与领域写入同事务，重启 RPO=0）与 DailyReconciliationV1（账本/订单/持仓差异检测、分类、恢复门禁）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["6.3", "12.3"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-006]
+    AcceptanceCriteria: 重启后 RPO=0；账户/订单/持仓差异可检测、分类并阻止恢复
+    TestEvidence: [src/veritasquant/infrastructure/persistence/CheckpointStore.py, src/veritasquant/application/Reconciliation.py, tests/unit/application/test_reconciliation_checkpoint.py, tests/integration/database/test_postgres_checkpoint.py, Docs/DevelopmentWorkflow/P2/P2-007CheckpointReconciliationEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T17:40:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T17:40:00Z"
+        Actor: BeeAgent
+        Action: 实现 checkpoint 存储与每日对账，7 单元用例 + 4 集成用例
+        Evidence: src/veritasquant/application/Reconciliation.py

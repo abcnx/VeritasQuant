@@ -41,3 +41,4 @@
 | P2 数据库迁移 | [Migrations/postgresql/](../../Migrations/postgresql/V1__initial_fact_and_projection_schema.sql) | 版本化数据库迁移（禁止运行时自动改表）。 |
 | P2-002 inbox/outbox/租约证据 | [P2-002InboxOutboxLeaseEvidence.md](P2/P2-002InboxOutboxLeaseEvidence.md) | 数据库 inbox/outbox/单活租约与 fencing token 证据。 |
 | P2-003 事件扇出证据 | [P2-003EventFanoutEvidence.md](P2/P2-003EventFanoutEvidence.md) | 共享事件持久化与确定性分区扇出证据。 |
+| P2-004~007 实现证据 | [P2-004AccountGroupWorkerEvidence.md](P2/P2-004AccountGroupWorkerEvidence.md)、[P2-005RiskSnapshotEvidence.md](P2/P2-005RiskSnapshotEvidence.md)、[P2-006PaperTradingEvidence.md](P2/P2-006PaperTradingEvidence.md)、[P2-007CheckpointReconciliationEvidence.md](P2/P2-007CheckpointReconciliationEvidence.md) | 账户组 worker、风险快照屏障、纸上交易、checkpoint/对账证据。 |
