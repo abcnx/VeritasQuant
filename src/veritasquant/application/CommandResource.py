@@ -138,7 +138,9 @@ class CommandStore(Protocol):
 
     def get(self, commandId: str) -> CommandRecordV1 | None: ...
 
-    def update(self, record: CommandRecordV1) -> CommandRecordV1: ...
+    def update(
+        self, record: CommandRecordV1, expectedUpdatedTs: datetime | None = None
+    ) -> CommandRecordV1: ...
 
     def findByIdempotencyScope(self, scope: str) -> CommandRecordV1 | None: ...
 
@@ -230,7 +232,8 @@ class CommandService:
                 resultReference=updated.resultReference,
                 failure=failure,
             )
-        return self._store.update(updated)
+        # 乐观并发控制：期望写入基于读取时的 updatedTs，冲突则拒绝覆盖
+        return self._store.update(updated, expectedUpdatedTs=record.updatedTs)
 
     def get(self, commandId: str) -> CommandRecordV1 | None:
         return self._store.get(commandId)

@@ -43,6 +43,7 @@ SET status = %s,
     failure_retryable = %s,
     failure_details = %s
 WHERE command_id = %s
+  AND updated_ts = %s
 """
 
 _GET_SQL = """
@@ -109,7 +110,10 @@ class PostgresCommandStore(CommandStore):
         row = self._connection.execute(_GET_SQL, (commandId,)).fetchone()
         return _toRecord(row) if row is not None else None
 
-    def update(self, record: CommandRecordV1) -> CommandRecordV1:
+    def update(
+        self, record: CommandRecordV1, expectedUpdatedTs: datetime | None = None
+    ) -> CommandRecordV1:
+        baseline = expectedUpdatedTs or record.createdTs
         with self._connection.transaction():
             try:
                 cursor = self._connection.execute(
@@ -124,12 +128,15 @@ class PostgresCommandStore(CommandStore):
                         _failureField(record, "retryable"),
                         Jsonb(_failureField(record, "details") or {}),
                         record.commandId,
+                        baseline,
                     ),
                 )
             except Exception as error:
                 raise CommandStoreError(f"命令状态更新失败: {error}") from error
             if cursor.rowcount != 1:
-                raise CommandStoreError(f"命令不存在: {record.commandId}")
+                raise CommandStoreError(
+                    f"命令并发版本冲突: {record.commandId} (期望 updated_ts={baseline})"
+                )
         return record
 
     def findByIdempotencyScope(self, scope: str) -> CommandRecordV1 | None:

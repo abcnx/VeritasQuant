@@ -39,12 +39,14 @@ class InMemoryCommandStore(CommandStore):
     def get(self, commandId: str) -> CommandRecordV1 | None:
         return self._records.get(commandId)
 
-    def update(self, record: CommandRecordV1) -> CommandRecordV1:
+    def update(self, record: CommandRecordV1, expectedUpdatedTs=None) -> CommandRecordV1:
         existing = self._records.get(record.commandId)
         if existing is None:
             raise CommandError(f"命令不存在: {record.commandId}")
         if existing.idempotencyScope != record.idempotencyScope:
             raise CommandError("身份字段不可变")
+        if expectedUpdatedTs is not None and existing.updatedTs != expectedUpdatedTs:
+            raise CommandError(f"命令并发版本冲突: {record.commandId}")
         self._records[record.commandId] = record
         return record
 
@@ -189,6 +191,40 @@ class TestCommandLifecycle:
         record, _ = _submit(service)
         with pytest.raises(CommandStateConflict):
             service.transition(record.commandId, CommandStatus.Succeeded)
+
+    def test_concurrent_update_conflict_does_not_overwrite(self) -> None:
+        """并发冲突不覆盖：基于读取时 updatedTs 的乐观锁拒绝陈旧写入。"""
+        store = _store()
+        service = _service(store)
+        record, _ = _submit(service)
+        # 两个并发读都拿到 PENDING 基线
+        firstRead = service.get(record.commandId)
+        assert firstRead is not None
+        # 第一个写入推进到 AUTHORIZING
+        service.transition(record.commandId, CommandStatus.Authorizing)
+        # 第二个基于陈旧基线（PENDING 的 updatedTs）推进 -> 拒绝
+        stale = CommandRecordV1(
+            commandId=firstRead.commandId,
+            commandType=firstRead.commandType,
+            accountId=firstRead.accountId,
+            runId=firstRead.runId,
+            requestedBy=firstRead.requestedBy,
+            idempotencyScope=firstRead.idempotencyScope,
+            payloadHash=firstRead.payloadHash,
+            payload=firstRead.payload,
+            expectedVersion=firstRead.expectedVersion,
+            confirmationTokenId=firstRead.confirmationTokenId,
+            status=CommandStatus.Authorizing,
+            createdTs=firstRead.createdTs,
+            updatedTs=firstRead.updatedTs,
+        )
+        with pytest.raises(CommandError, match="并发版本冲突"):
+            store.update(stale, expectedUpdatedTs=firstRead.updatedTs)
+        # 当前状态未被覆盖
+        current = service.get(record.commandId)
+        assert current is not None
+        assert current.status is CommandStatus.Authorizing
+        assert current.updatedTs > firstRead.updatedTs
 
     def test_get_unknown_command_returns_none(self) -> None:
         service = _service()

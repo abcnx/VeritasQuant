@@ -34,7 +34,12 @@ class InMemoryCommandStore(CommandStore):
     def get(self, commandId: str):
         return self._records.get(commandId)
 
-    def update(self, record):
+    def update(self, record, expectedUpdatedTs=None):
+        existing = self._records.get(record.commandId)
+        if existing is None:
+            raise CommandError("命令不存在")
+        if expectedUpdatedTs is not None and existing.updatedTs != expectedUpdatedTs:
+            raise CommandError("命令并发版本冲突")
         self._records[record.commandId] = record
         return record
 
