@@ -18,6 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHttpException
 from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
 from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
 from veritasquant.apps.server.DomainRoutes import DomainApis, buildDomainRouter
+from veritasquant.apps.server.MetricsRoutes import buildMetricsRouter
 from veritasquant.apps.server.SecurityMiddleware import SecurityMiddleware
 from veritasquant.apps.server.StateStreamRoutes import (
     StreamDependencies,
@@ -219,6 +220,8 @@ def createApp(deps: ApiDependencies) -> FastAPI:
 
     if deps.streamDeps is not None:
         app.include_router(buildStreamRouter(deps.streamDeps))
+
+    app.include_router(buildMetricsRouter())
 
     return app
 

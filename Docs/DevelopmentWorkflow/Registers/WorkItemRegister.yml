@@ -5097,3 +5097,98 @@ Records:
     - Security-baseline
     - Database-migrations
     Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
+- WorkItemId: TSK-P2-036
+  PlanTaskId: P2-036
+  Title: 接入 Prometheus 指标和 Grafana 基础看板
+  Description: 纯标准库 Prometheus 文本格式指标注册表（Counter/Gauge/Histogram+标签）；/metrics 端点（text/plain 豁免信封）；指标采集器覆盖 readiness 三层门禁、事件延迟、订单状态机、账本提交、outbox 年龄/条数、队列利用率/连接、API 错误码、日志降级
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '12.3'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P2-009
+  - P2-024
+  AcceptanceCriteria: 覆盖 readiness、事件延迟、订单、账本、outbox、队列、错误码和日志降级；抓取只读不改变交易状态
+  TestEvidence: tests/unit/monitoring/test_prometheus_metrics.py; tests/unit/apps/test_metrics_routes.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第六批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:10:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第六批开发完成
+- WorkItemId: TSK-P2-037
+  PlanTaskId: P2-037
+  Title: 建立 SLO 计算、错误预算和告警路由
+  Description: SloPolicyV1 按执行模式阈值（TechSpec 12.3 表）；滚动 30 交易日窗口聚合；正确性指标零错误预算（一次违约即停止）；样本不足=证据不足；AlertRouterV1 生成带 run/account/处置链接与 dedupe key 的告警并写入指标
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '12.3'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P2-036
+  AcceptanceCriteria: 指标按模式计算；正确性指标零预算；告警含 run/account/处置链接
+  TestEvidence: tests/unit/monitoring/test_slo_calculator.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第六批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:10:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第六批开发完成
+- WorkItemId: TSK-P2-038
+  PlanTaskId: P2-038
+  Title: 完成多账户、API、调度、基金端到端集成测试
+  Description: tests/integration/test_e2e_multi_account_schedule_funds.py：组间并行与单组故障隔离（跨账户串扰 0）、LIVE 混组全局拒绝、调度幂等触发/重试/终态、基金份额 journal 幂等与账户隔离、R-013 命令幂等 202/409 映射；全部内存实现 CI Quality 可直接运行
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '3.2'
+  - '8.1'
+  - '11.5'
+  - '12.2'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 12
+  Dependencies:
+  - P2-001
+  - P2-037
+  AcceptanceCriteria: R-009/R-013/R-016/R-017 及基金链路证据完整；跨账户串扰为 0
+  TestEvidence: tests/integration/test_e2e_multi_account_schedule_funds.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:10:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第六批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:10:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第六批开发完成
