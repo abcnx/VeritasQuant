@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 from psycopg import Connection
+from psycopg.types.json import Jsonb
 
 from veritasquant.core.Events import EventEnvelopeV1
 from veritasquant.infrastructure.persistence.LeaseStore import LeaseStoreV1
@@ -75,14 +76,13 @@ class EventStoreV1:
                     event.correlationId, event.causationId, event.accountId,
                     event.subaccountId, event.eventOrderingVersion, event.phase,
                     event.priority, event.sourceRank, event.sourceSequence,
-                    event.payload.model_dump(mode="json", by_alias=True),
+                    Jsonb(event.payload.model_dump(mode="json", by_alias=True)),
                     event.contentHash, accountGroupId, partitionRank, deliverySequence,
                 ),
             )
             row = self._connection.execute(_FETCH_BY_ID_SQL, (event.eventId,)).fetchone()
             assert row is not None, "事件写入后记录必须存在"
             return int(row[4])
-
     def latestDeliverySequence(self, runId: str, accountGroupId: str) -> int:
         """返回分区当前最大投递序号（0 表示尚无事件）。"""
         row = self._connection.execute(

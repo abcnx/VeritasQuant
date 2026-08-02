@@ -87,7 +87,13 @@ class LeaseStoreV1:
         if ttlSeconds <= 0:
             raise LeaseError("租约 TTL 必须为正")
         with self._connection.transaction():
-            self._connection.execute(_ACQUIRE_SQL, (accountGroupId, holder, ttlSeconds, ttlSeconds))
+            inserted = self._connection.execute(
+                _ACQUIRE_SQL, (accountGroupId, holder, ttlSeconds, ttlSeconds)
+            )
+            if inserted.rowcount == 1:
+                # 全新租约：token 从 1 开始
+                return LeaseV1(accountGroupId, holder, 1, self._expiryFor(ttlSeconds))
+            # 已存在：仅当过期或持有者相同时抢占（token 单调 +1）
             row = self._connection.execute(
                 _TAKE_OVER_SQL, (holder, ttlSeconds, ttlSeconds, accountGroupId, holder)
             ).fetchone()
@@ -97,12 +103,16 @@ class LeaseStoreV1:
                     "FROM partition_leases WHERE account_group_id = %s",
                     (accountGroupId,),
                 ).fetchone()
-                holderName = current[1] if current else "unknown"
+                holderName = current[0] if current else "unknown"
                 raise LeaseError(
                     f"账户组 {accountGroupId} 租约被 {holderName} 持有且未过期"
                 )
             token, expiresAt = row
         return LeaseV1(accountGroupId, holder, token, expiresAt)
+
+    @staticmethod
+    def _expiryFor(ttlSeconds: int) -> datetime:
+        return datetime.now(timezone.utc) + timedelta(seconds=ttlSeconds)
 
     def renew(self, accountGroupId: str, holder: str, fencingToken: int, ttlSeconds: int = 10) -> bool:
         """续租；非当前持有者、token 不匹配或已过期返回 False。"""
