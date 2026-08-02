@@ -3,7 +3,7 @@
 - **任务：** P3-006（ISSUE #178）、P3-007（#179）、P3-008（#180）
 - **日期：** 2026-08-03
 - **实现：** BeeAgent
-- **PR：** 本 PR（P3 第二批）
+- **PR：** ACANX/VeritasQuant#237（已合并 2026-08-02T22:49:01Z）
 
 ## 范围
 
@@ -37,6 +37,13 @@
 - Preflight：0 issues
 - 全量 pytest：1104 passed / 36 skipped（skipped 为 PG/Redis 集成，CI database job 覆盖）
 - 新增测试：35 用例（P3-006: 13 + P3-007: 12 + P3-008: 10）
+- CI 4/4：Quality-ubuntu ✅ / Quality-windows ✅ / Security-baseline ✅ / Database-migrations ✅（PR #237 run 30770687682）
+
+## 验收结论
+
+- **状态：** P3-006~008 全部 ACCEPTED（2026-08-03，流转 PR 本 PR）
+- **依据：** 信号延迟 SLI、偏差分析与安全测试能力已交付并通过 CI；验收标准逐项对照见上表
+- **遗留：** 延迟 SLI 真实样本依赖模拟盘 20 交易日运行与 50 条信号（P3-009），M3 Gate 前补充
 
 ## 风险与开放项
 
