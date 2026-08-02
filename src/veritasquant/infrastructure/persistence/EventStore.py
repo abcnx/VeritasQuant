@@ -28,12 +28,12 @@ INSERT INTO fact_events (
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s::jsonb, %s, %s, %s, %s
 )
-ON CONFLICT (event_id) DO NOTHING
+ON CONFLICT (event_id, account_group_id) DO NOTHING
 """
 
 _FETCH_BY_ID_SQL = """
 SELECT event_id, content_hash, account_group_id, partition_rank, delivery_sequence
-FROM fact_events WHERE event_id = %s
+FROM fact_events WHERE event_id = %s AND account_group_id = %s
 """
 
 _LATEST_DELIVERY_SQL = """
@@ -80,7 +80,7 @@ class EventStoreV1:
                     event.contentHash, accountGroupId, partitionRank, deliverySequence,
                 ),
             )
-            row = self._connection.execute(_FETCH_BY_ID_SQL, (event.eventId,)).fetchone()
+            row = self._connection.execute(_FETCH_BY_ID_SQL, (event.eventId, accountGroupId)).fetchone()
             assert row is not None, "事件写入后记录必须存在"
             return int(row[4])
     def latestDeliverySequence(self, runId: str, accountGroupId: str) -> int:

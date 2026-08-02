@@ -29,6 +29,21 @@ def database() -> bool:
 def store(database):  # noqa: ANN001
     connection = openConnection()
     connection.execute("DELETE FROM partition_checkpoints WHERE run_id = %s", (_RUN,))
+    connection.execute("DELETE FROM run_manifests WHERE run_id = %s", (_RUN,))
+    connection.execute(
+        "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "
+        "strategy_version, strategy_source_hash, dependency_lock_hash, interpreter_version, "
+        "sandbox_image_digest, strategy_sandbox_policy_version, strategy_dsl_schema_version, "
+        "investment_plan_schema_version, config_hash, config_schema_version, data_version_id, "
+        "asset_capability_version, account_group_id, account_ranks, random_seed, ts_precision, "
+        "event_ordering_version, execution_model_version, fund_execution_model_version, "
+        "nav_availability_policy_version, bar_path_model_version, liquidity_allocation_version, "
+        "risk_policy_version, reliability_policy_version, started_at) "
+        "VALUES (%s, 'v', '0'*64, 'v', '0'*64, '0'*64, 'v', 'd', 'v', 'v', 'v', "
+        "'0'*64, 'v', 'dv', 'v', 'ag', '{}', 1, 'MILLISECOND', 'V1', 'v', 'v', 'v', 'v', 'v', "
+        "'v', 'v', now())",
+        (_RUN,),
+    )
     checkpointStore = CheckpointStoreV1(connection)
     yield checkpointStore
     connection.close()

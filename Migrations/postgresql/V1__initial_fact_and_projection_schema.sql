@@ -72,7 +72,7 @@ CREATE INDEX idx_run_manifests_started_at ON run_manifests (started_at);
 --    保证分区内顺序与账户隔离；物理分区在账户组拓扑冻结后演进。
 -- ---------------------------------------------------------------------
 CREATE TABLE fact_events (
-    event_id                  TEXT        PRIMARY KEY,
+    event_id                  TEXT        NOT NULL,
     event_type                TEXT        NOT NULL,
     schema_version            TEXT        NOT NULL,
     run_id                    TEXT        NOT NULL REFERENCES run_manifests (run_id),
@@ -94,9 +94,11 @@ CREATE TABLE fact_events (
     source_sequence           BIGINT      NOT NULL CHECK (source_sequence >= 0),
     payload                   JSONB       NOT NULL,
     content_hash              TEXT        NOT NULL,
-    account_group_id          TEXT,
+    account_group_id          TEXT        NOT NULL,
     partition_rank            INTEGER     NOT NULL DEFAULT 0 CHECK (partition_rank >= 0),
-    delivery_sequence         BIGINT      NOT NULL CHECK (delivery_sequence >= 1)
+    delivery_sequence         BIGINT      NOT NULL CHECK (delivery_sequence >= 1),
+    -- 同一共享事件在每个账户组分区各持有一行（主键 = 事件 + 分区）
+    PRIMARY KEY (event_id, account_group_id)
 );
 -- 分区内确定性顺序：同一共享事件在每个分区必须按相同 delivery_sequence 扇出
 CREATE UNIQUE INDEX uq_fact_events_partition_delivery
