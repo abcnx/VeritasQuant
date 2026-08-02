@@ -154,14 +154,22 @@ def test_status_update_allowed(store: PostgresCommandStore) -> None:
 
 
 def test_duplicate_scope_rejected_by_unique_index(store: PostgresCommandStore) -> None:
-    """同幂等作用域并发双写只有一个成功。"""
+    """同幂等作用域并发双写只有一个成功：直接写库触发唯一索引。"""
+    from veritasquant.application.CommandResource import CommandRecordV1
+
     service = _service(store)
-    _submit(service, commandId="cmd-001")
-    connection = openConnection()
-    try:
-        with pytest.raises(CommandStoreError):
-            store = PostgresCommandStore(connection)
-            service2 = _service(store)
-            _submit(service2, commandId="cmd-002")
-    finally:
-        connection.close()
+    first, _ = _submit(service, commandId="cmd-001")
+    assert first.status is CommandStatus.Pending
+    # 绕过幂等查询直接 create 同作用域命令 -> 唯一索引拒绝
+    duplicate = CommandRecordV1(
+        commandId="cmd-002",
+        commandType="FUND_SUBSCRIBE",
+        accountId="acc-1",
+        runId="run-1",
+        requestedBy="user-1",
+        idempotencyScope=_SCOPE,
+        payloadHash="a" * 64,
+        payload={"fundSymbol": "FUND-A", "amount": "100.00"},
+    )
+    with pytest.raises(CommandStoreError):
+        store.create(duplicate)
