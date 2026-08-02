@@ -3302,3 +3302,199 @@ Records:
         Actor: BeeAgent
         Action: 实现场外基金赎回与结算状态机，重放路径测试通过
         Evidence: src/veritasquant/funds/FundStateMachines.py
+  - WorkItemId: TSK-P2-015
+    PlanTaskId: P2-015
+    Title: 实现基金份额、费用、分红和确认 journal
+    Description: 实现 FundShareLedgerV1：确认/赎回/分红 journal；ROUND_HALF_EVEN 份额精度；confirmationId 幂等；逐单位平衡与多账户隔离。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.7", "5.8"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [P2-013, P2-014]
+    AcceptanceCriteria: 份额精度和舍入正确；重复确认不重复份额；现金/份额逐单位平衡
+    TestEvidence: [src/veritasquant/funds/FundShares.py, tests/unit/funds/test_fund_shares.py, Docs/DevelopmentWorkflow/P2/P2-015-016SharesBudgetEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现基金份额 journal，8 用例通过
+        Evidence: src/veritasquant/funds/FundShares.py
+  - WorkItemId: TSK-P2-016
+    PlanTaskId: P2-016
+    Title: 实现定投入金、预算和资金不足策略
+    Description: 实现 DepositLedgerV1（入金独立幂等记账、不计收益）与 InvestmentBudgetV1（Reject/Cap/Skip 资金不足策略、预算裁剪、周期重置）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.8", "5.9"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-015]
+    AcceptanceCriteria: ExternalDeposit 独立幂等记账；Reject/Cap/Skip 行为固定；入金不计收益
+    TestEvidence: [src/veritasquant/funds/InvestmentBudget.py, tests/unit/funds/test_investment_budget.py, Docs/DevelopmentWorkflow/P2/P2-015-016SharesBudgetEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现入金与预算策略，10 用例通过
+        Evidence: src/veritasquant/funds/InvestmentBudget.py
+  - WorkItemId: TSK-P2-017
+    PlanTaskId: P2-017
+    Title: 实现 Daily/Weekly/Biweekly/Monthly/自定义计划日历
+    Description: 实现 CustomPlanCalendarV1（自定义跳过日）、PlanTriggerDeduplicatorV1（每有效日只触发一次）、HolidayAccumulatorV1（Skip/Accumulate + 预算裁剪）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.9"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 7
+    Dependencies: [P2-012]
+    AcceptanceCriteria: 每个有效日只触发一次；节假日 Skip/Accumulate 行为和预算裁剪通过
+    TestEvidence: [src/veritasquant/funds/PlanCalendar.py, tests/unit/funds/test_plan_calendar.py, Docs/DevelopmentWorkflow/P2/P2-017-018PlanCalendarAmountEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现计划日历与节假日行为，7 用例通过
+        Evidence: src/veritasquant/funds/PlanCalendar.py
+  - WorkItemId: TSK-P2-018
+    PlanTaskId: P2-018
+    Title: 实现 Fixed、RuleBased、ExplicitSeries 三种日频金额模式
+    Description: 实现三种金额规则（固定/规则/显式序列）；缺日策略 Skip/UsePrevious/Zero；来源哈希；预算边界。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.9"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-017]
+    AcceptanceCriteria: 缺日策略、不同基金额度、来源哈希和预算边界测试通过
+    TestEvidence: [src/veritasquant/funds/AmountRules.py, tests/unit/funds/test_amount_rules.py, Docs/DevelopmentWorkflow/P2/P2-017-018PlanCalendarAmountEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现三种日频金额模式，13 用例通过
+        Evidence: src/veritasquant/funds/AmountRules.py
+  - WorkItemId: TSK-P2-019
+    PlanTaskId: P2-019
+    Title: 实现六类内置智能定投方案
+    Description: 实现六类方案（固定金额/均线偏离/估值分位/回撤倍增/目标价值/目标收益）；固定参数 Schema + planHash + 逐期决定（只用当时可用数据）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.9", "5.10"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 12
+    Dependencies: [P2-018, P2-011]
+    AcceptanceCriteria: 每类有固定参数 Schema、基准数据和逐期预期决定；只用当时可用数据
+    TestEvidence: [src/veritasquant/funds/SmartPlans.py, tests/unit/funds/test_smart_plans.py, Docs/DevelopmentWorkflow/P2/P2-019SmartPlansEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现六类智能定投方案，14 用例通过
+        Evidence: src/veritasquant/funds/SmartPlans.py
+  - WorkItemId: TSK-P2-020
+    PlanTaskId: P2-020
+    Title: 实现受限基金 DSL 解析、类型检查和中间表示
+    Description: 实现 FundDsl 安全解析（仅 ast 语法分析，禁 eval）；白名单变量/函数/运算符；类型检查；注册业务码 DSL-1001~1004。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.9", "11.4"]
+    Owner: DE/CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [P1-001, P2-018]
+    AcceptanceCriteria: 仅白名单表达式/动作；禁止 eval、文件、网络和未来变量；错误返回注册业务码
+    TestEvidence: [src/veritasquant/funds/FundDsl.py, tests/unit/funds/test_fund_dsl.py, Docs/DevelopmentWorkflow/P2/P2-020FundDslEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现受限基金 DSL，13 用例通过（含安全负例）
+        Evidence: src/veritasquant/funds/FundDsl.py
+  - WorkItemId: TSK-P2-021
+    PlanTaskId: P2-021
+    Title: 实现多基金分配、权重竞争和组合预算
+    Description: 实现 PortfolioAllocatorV1（权重降序确定性分配、总额不超预算/现金/风险上限）与 AccountIsolatedAllocatorV1（多账户隔离）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.9", "5.10"]
+    Owner: DE/CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-019, P2-020]
+    AcceptanceCriteria: 同日分配总额不超预算/现金/风险上限；顺序确定且多账户隔离
+    TestEvidence: [src/veritasquant/funds/PortfolioAllocation.py, tests/unit/funds/test_portfolio_allocation.py, Docs/DevelopmentWorkflow/P2/P2-021PortfolioAllocationEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T02:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第三批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T02:10:00Z"
+        Actor: BeeAgent
+        Action: 实现多基金分配与账户隔离，8 用例通过
+        Evidence: src/veritasquant/funds/PortfolioAllocation.py
