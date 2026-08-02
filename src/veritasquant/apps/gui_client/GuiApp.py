@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from veritasquant.apps.gui_client.ApiClient import ApiClient, ApiClientError
+from veritasquant.apps.gui_client import Pages
 
 # Streamlit 延迟导入（保持离线校验入口无副作用）
 _ST = None
@@ -39,16 +40,17 @@ class Page:
 
 def _page_not_implemented(client: ApiClient) -> None:  # noqa: ANN001
     st = _st()
-    st.info("该页面将在后续任务中实现（P2-032/033）。")
+    st.info("该页面将在后续任务中实现（P2-033）。")
 
 
-# 页面注册表（P2-031 只提供框架与导航；具体页面由 P2-032/033 填充）
+# 页面注册表：P2-032 实现数据导入/策略/定投/回测操作页
 _DEFAULT_PAGES: tuple[Page, ...] = (
     Page("dashboard", "仪表盘", _page_not_implemented),
-    Page("strategies", "策略管理", _page_not_implemented),
-    Page("plans", "定投计划", _page_not_implemented),
+    Page("data_import", "数据导入", Pages.renderImportPage),
+    Page("strategies", "策略管理", Pages.renderStrategiesPage),
+    Page("plans", "定投计划", Pages.renderPlansPage),
     Page("accounts", "账户管理", _page_not_implemented),
-    Page("backtests", "回测中心", _page_not_implemented),
+    Page("backtests", "回测中心", Pages.renderBacktestsPage),
     Page("analysis", "结果分析", _page_not_implemented),
     Page("monitoring", "实时监控", _page_not_implemented),
     Page("settings", "系统设置", _page_not_implemented),
