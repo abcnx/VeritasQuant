@@ -7,9 +7,12 @@ AllowedLicenses:
   - Apache-2.0
   - BSD-3-Clause
   - PSF-2.0
+  - LGPL-3.0-only
 PackageExceptions: {}
 VulnerabilitySla:
   CriticalHours: 24
   HighHours: 72
   MediumDays: 30
   LowDays: 90
+# 2026-08-02 依赖审阅：新增 psycopg[binary] 运行时依赖（P2-002 数据库访问），
+# psycopg 3.x 与 psycopg-binary 采用 LGPL-3.0-only 许可证，批准加入白名单。
