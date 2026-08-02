@@ -42,7 +42,7 @@ def seededRun(database) -> str:  # noqa: ANN001
         # 先清引用表再重建 run_manifests（不可变事实表禁止 DELETE，使用 TRUNCATE）
         connection.execute(
             "TRUNCATE inbox_records, inbox_conflicts, outbox_records, "
-            "partition_leases, fact_events, run_manifests"
+            "partition_leases, fact_events, run_manifests CASCADE"
         )
         connection.execute(
             "INSERT INTO run_manifests (run_id, code_version, event_schema_registry_hash, "
@@ -71,7 +71,8 @@ def stores(seededRun: str):
     """
     with openConnection() as connection:
         connection.execute(
-            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, partition_leases"
+            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, "
+            "partition_leases, run_manifests CASCADE"
         )
     connection = openConnection()
     leaseStore = LeaseStoreV1(connection)
