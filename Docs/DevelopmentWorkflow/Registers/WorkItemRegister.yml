@@ -5783,3 +5783,168 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #237 已合并，P3-008 验收通过归档
+
+- WorkItemId: TSK-P4-002
+  PlanTaskId: P4-002
+  Title: 定义统一 BrokerPort 和能力协商
+  Description: BrokerCapabilityV1 能力清单（订单类型/时间生效/方向/标的/市场/会话能力）；BrokerPort 统一端口；CapabilityNegotiatorV1 发单前能力协商（不支持能力在发单前拒绝，第三方字段不扩散）
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.1'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 7
+  Dependencies:
+  - P4-001
+  - P1-043
+  AcceptanceCriteria: 不支持能力在发单前拒绝；第三方字段只停留在适配边界
+  TestEvidence: tests/unit/broker/test_broker_port.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:08:02Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第一批开发完成（定义统一 BrokerPort 和能力协商），本地验证全绿
+
+- WorkItemId: TSK-P4-003
+  PlanTaskId: P4-003
+  Title: 实现仿真券商认证、会话和最小权限凭据接入
+  Description: BrokerCredentialV1（repr 打码不入日志）；CredentialResolver 凭据解析端口；SessionManagerV1 会话建立/校验/轮换/撤销；令牌只存哈希；最小权限集合
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.1'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P4-001
+  AcceptanceCriteria: 凭据不入代码/配置/日志；过期、撤销和轮换测试通过
+  TestEvidence: tests/unit/broker/test_broker_session.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:08:02Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第一批开发完成（实现仿真券商认证、会话和最小权限凭据接入），本地验证全绿
+
+- WorkItemId: TSK-P4-004
+  PlanTaskId: P4-004
+  Title: 实现订单发送、受理、拒绝、撤单和查询映射
+  Description: BrokerOrderMappingV1 双向 ID 映射；OrderStatusMapperV1 券商状态映射；SimBrokerOrderGatewayV1 仿真券商网关（能力协商+认证+发单/撤单/查询；超时进入 TIMEOUT_UNKNOWN 不盲目重发）
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.1'
+  - '7.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 12
+  Dependencies:
+  - P4-002
+  - P4-003
+  AcceptanceCriteria: client/broker ID 可追溯；超时进入 RECONCILIATION_REQUIRED，不盲目重发
+  TestEvidence: tests/unit/broker/test_broker_order_gateway.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:08:02Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第一批开发完成（实现订单发送、受理、拒绝、撤单和查询映射），本地验证全绿
+
+- WorkItemId: TSK-P4-005
+  PlanTaskId: P4-005
+  Title: 实现异步回报、序列缺口、迟到成交和更正映射
+  Description: BrokerReportV1 原始回报；ReportDeduplicatorV1 去重；ReportSequenceGuardV1 缺口/乱序/迟到判定；ReportCorrectionV1 更正映射（替换不新增记账）；UnknownOrderIsolationV1 未知订单隔离并查询
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.1'
+  - '7.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P4-004
+  AcceptanceCriteria: 重复/乱序/断线重放不重复记账；未知订单隔离并查询
+  TestEvidence: tests/unit/broker/test_report_handling.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:08:02Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第一批开发完成（实现异步回报、序列缺口、迟到成交和更正映射），本地验证全绿
+
+- WorkItemId: TSK-P4-006
+  PlanTaskId: P4-006
+  Title: 实现开盘/盘中/收盘及重连对账
+  Description: BrokerReconcilerV1 逐项核对（订单/成交/持仓/现金）；ReconciliationReportV1 差异门禁（未解释差异阻止交易）；InMemoryBrokerStateProviderV1 测试用状态提供者
+  Stage: P4
+  Milestone: M4
+  TechSpecRefs:
+  - '7.4'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P4-004
+  - P4-005
+  AcceptanceCriteria: 本地与券商订单、成交、持仓、现金逐项核对；未解释差异阻止交易
+  TestEvidence: tests/unit/broker/test_reconciliation.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T23:08:02Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P4 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T23:08:02Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P4 第一批开发完成（实现开盘/盘中/收盘及重连对账），本地验证全绿
