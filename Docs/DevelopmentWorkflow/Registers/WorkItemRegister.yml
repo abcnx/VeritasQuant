@@ -5424,3 +5424,164 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #233 已合并，观测接线能力验收通过；60 日运行证据待模拟盘环境补充
+
+- WorkItemId: TSK-P3-001
+  PlanTaskId: P3-001
+  Title: 定义 SignalReference、人工审核、人工成交和忽略原因契约
+  Description: SignalReferenceV1 不可变信号参考（状态/版本/账户/策略/来源事件/操作者字段完整）；ManualReviewActionV1 人工审核动作（身份/理由/ts/版本/审计）；ManualExecutionV1 人工成交登记；IgnoreReasonV1 结构化忽略原因
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 6
+  Dependencies:
+  - M2
+  AcceptanceCriteria: 状态、版本、账户、策略、来源事件和操作者字段完整且不可变
+  TestEvidence: tests/unit/signals/test_signal_reference.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:10:26Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第一批开发完成（定义 SignalReference、人工审核、人工成交和忽略原因契约），本地验证全绿
+
+- WorkItemId: TSK-P3-002
+  PlanTaskId: P3-002
+  Title: 实现近实时信号生成与幂等发布
+  Description: SignalGeneratorV1 确定性生成（相同输入策略 checksum 一致）；SignalPublisherV1 幂等发布（账户+策略+来源事件为幂等键，重复事件不重复信号，同键异内容冲突留档）
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P3-001
+  AcceptanceCriteria: 相同输入与冻结策略 checksum 一致；重复事件不重复信号
+  TestEvidence: tests/unit/signals/test_signal_generator.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:10:26Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第一批开发完成（实现近实时信号生成与幂等发布），本地验证全绿
+
+- WorkItemId: TSK-P3-003
+  PlanTaskId: P3-003
+  Title: 实现通知路由、模板、重试和失败隔离
+  Description: NotificationTemplateV1 确定性模板渲染；NotificationRouterV1 按渠道路由 + 有界重试 + 失败隔离；投递以 signal+channel 为幂等键，重试不重复人工任务；投递结果可审计
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P3-002
+  AcceptanceCriteria: 通知失败不改变交易控制；重试不重复人工任务；投递结果可审计
+  TestEvidence: tests/unit/signals/test_notification_router.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:10:26Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第一批开发完成（实现通知路由、模板、重试和失败隔离），本地验证全绿
+
+- WorkItemId: TSK-P3-004
+  PlanTaskId: P3-004
+  Title: 实现人工确认、忽略和成交登记 API/GUI
+  Description: ManualActionServiceV1 人工动作登记服务；SignalRoutes 提供 POST /api/v1/signals/{id}/actions 与 /executions；每个动作有身份/理由/ts/版本/审计；不直接修改内核或账本
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P3-001
+  - P3-003
+  AcceptanceCriteria: 每个动作有身份、理由、ts、版本和审计；不能直接修改内核或账本
+  TestEvidence: tests/unit/signals/test_manual_action_service.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:10:26Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第一批开发完成（实现人工确认、忽略和成交登记 API/GUI），本地验证全绿
+
+- WorkItemId: TSK-P3-005
+  PlanTaskId: P3-005
+  Title: 将人工成交通过授权命令写入订单/账本
+  Description: ManualExecutionExecutorV1 通过 CommandResource 提交 manual_execution 授权命令；仅 AUTHORIZING/ACCEPTED/RUNNING 状态可写入订单/账本；绕过命令资源或直接改投影被拒绝
+  Stage: P3
+  Milestone: M3
+  TechSpecRefs:
+  - '8.7'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P3-004
+  AcceptanceCriteria: 对账一致；绕过命令资源或直接改投影的请求被拒绝
+  TestEvidence: tests/unit/signals/test_manual_execution.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T22:10:26Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P3 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T22:10:26Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P3 第一批开发完成（将人工成交通过授权命令写入订单/账本），本地验证全绿

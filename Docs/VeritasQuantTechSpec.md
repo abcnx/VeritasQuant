@@ -731,6 +731,35 @@ YAML 文档中的项目自有字段统一使用 PascalCase，并通过唯一显�
 
 回测中，内部规则检测器只能使用当时已消费的行情、订单和账户事件。外部和人工预警必须有原始发布时间与平台可用时间；缺少该信息时仅可用于研究标注，不可参与自动交易决策。报告单独列出每条告警的触发时间、解除时间、风险动作、被拦截订单、对收益和回撤的影响，以便评估规则是否过度干预或遗漏风险。
 
+### 8.7 信号参考、人工审核与人工成交契约
+
+阶段 3 信号参考闭环提供近实时跟随、通知、人工审核与成交登记。`SignalReference` 是信号参考的不可变记录，固定字段为：状态（`PENDING/CONFIRMED/IGNORED/EXECUTED/EXPIRED`）、版本、账户、策略、来源事件和操作者；信号方向、数量和冻结策略在相同输入下 checksum 一致（P3-002 生成器契约），重复事件不重复信号。
+
+```python
+class SignalReferenceV1:
+    signalReferenceId: str        # 唯一标识
+    version: int                  # 生命周期版本，>=1
+    status: SignalStatus          # PENDING/CONFIRMED/IGNORED/EXECUTED/EXPIRED
+    accountId: str
+    strategyId: str
+    strategyChecksum: str         # 冻结策略 SHA-256
+    sourceEventId: str            # 触发来源事件
+    sourceEventType: str
+    direction: str                # BUY/SELL/HOLD
+    quantity: str                 # Decimal 字符串，禁止 float
+    priceLimit: str | None
+    operatorId: str | None
+    generatedTs: datetime         # 事件可用时间，不取服务器时间
+    expiresAt: datetime | None
+    previousSignalReferenceId: str | None  # 版本链引用
+```
+
+生命周期推进必须派生新的不可变记录（`version+1` 并引用 `previousSignalReferenceId`），不得原地覆写。信号生成以 `(accountId, strategyId, sourceEventId)` 为幂等键：同键同内容视为重复投递并返回既有信号，同键不同内容视为协议冲突并拒绝持久化、留档审计。
+
+人工审核动作（确认/忽略/成交登记）必须携带身份、理由、ts、版本和审计字段；忽略动作必须提供结构化忽略原因（`IgnoreReason`：reasonCode + detail + source）。人工动作只登记待执行意图，不得直接修改内核或账本；人工成交必须通过授权命令（`manual_execution`）写入订单/账本——绕过命令资源或直接修改投影的请求被拒绝，命令状态未达 `AUTHORIZING/ACCEPTED/RUNNING` 不得写入。人工成交偏差必须有结构化原因覆盖（P3 策略 gate：偏差结构化原因覆盖率 100%）。
+
+通知路由与交易处置分离：通知失败不改变交易控制；投递以 `(signalReferenceId, channel)` 为幂等键，重试不重复创建人工任务；每次投递尝试、送达状态、确认人均留档审计。
+
 ## 9. 策略开发与结构化 DSL
 
 ### 9.1 通用策略 DSL
