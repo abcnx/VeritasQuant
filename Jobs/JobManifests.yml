@@ -1,2 +1,70 @@
 ManifestVersion: "1.0"
-Jobs: []
+Schedules:
+  - ScheduleId: DailyMarketDataImport
+    ScheduleVersion: "1.0.0"
+    JobType: DATA_IMPORT
+    Command: vq-job-data-ingestion
+    ParameterSchemaVersion: "1"
+    Parameters:
+      source: cn-feed
+      instrument_id: 510300.SH
+    ScheduleExpression: "30 1 * * *"
+    TimeZone: UTC
+    MisfirePolicy: Skip
+    ConcurrencyPolicy: Forbid
+    LockTtlSeconds: 60
+    TimeoutSeconds: 3600
+    MaxAttempts: 3
+    BackoffPolicy: Exponential
+    Enabled: true
+
+  - ScheduleId: DailyAccountReconciliation
+    ScheduleVersion: "1.0.0"
+    JobType: RECONCILIATION
+    Command: vq-job-account-reconciliation
+    ParameterSchemaVersion: "1"
+    Parameters:
+      account_group: default
+    ScheduleExpression: "0 2 * * *"
+    TimeZone: UTC
+    MisfirePolicy: Skip
+    ConcurrencyPolicy: Forbid
+    LockTtlSeconds: 60
+    TimeoutSeconds: 3600
+    MaxAttempts: 3
+    BackoffPolicy: Exponential
+    Enabled: true
+
+  - ScheduleId: WeeklyExecutionCalibration
+    ScheduleVersion: "1.0.0"
+    JobType: EXECUTION_CALIBRATION
+    Command: vq-job-execution-calibration
+    ParameterSchemaVersion: "1"
+    Parameters:
+      model_version: v1.0
+    ScheduleExpression: "0 3 * * 1"
+    TimeZone: UTC
+    MisfirePolicy: Skip
+    ConcurrencyPolicy: Forbid
+    LockTtlSeconds: 120
+    TimeoutSeconds: 7200
+    MaxAttempts: 2
+    BackoffPolicy: Exponential
+    Enabled: true
+
+  - ScheduleId: WeeklyReportGeneration
+    ScheduleVersion: "1.0.0"
+    JobType: REPORT_GENERATION
+    Command: vq-job-report-generation
+    ParameterSchemaVersion: "1"
+    Parameters:
+      report_type: full
+    ScheduleExpression: "0 4 * * 1"
+    TimeZone: UTC
+    MisfirePolicy: Skip
+    ConcurrencyPolicy: Forbid
+    LockTtlSeconds: 60
+    TimeoutSeconds: 3600
+    MaxAttempts: 3
+    BackoffPolicy: Exponential
+    Enabled: true

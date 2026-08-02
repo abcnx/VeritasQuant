@@ -1,8 +1,9 @@
 """数据导入任务 console script 入口。
 
-- 接收 `--job-run-id` 与 `--job-execution-key`（调度幂等契约，TechSpec 11.5）；
-- 业务幂等由 command_id/inbox/outbox/checkpoint 保证；
-- 离线参数校验无副作用（packaging 契约）。
+- 接收 --job-run-id / --job-execution-key（调度幂等契约，TechSpec 11.5）；
+- 复用 JobTasks.DataImportTask（P2-035 任务清单，业务幂等由执行键
+  哈希 + command_id/inbox/outbox/checkpoint 保证）；
+- 退出码：0 成功 / 2 参数无效 / 3 业务失败 / 4 幂等跳过。
 """
 
 from __future__ import annotations
@@ -10,14 +11,13 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 
+from veritasquant.application.JobTasks import runTask
 from veritasquant.jobs.JobEntrypoint import JobEntrypoint
 
 _PROG = "vq-job-data-ingestion"
 
 
 class DataIngestionJob(JobEntrypoint):
-    """数据导入任务：校验执行键后触发数据导入命令。"""
-
     def __init__(self) -> None:
         super().__init__(_PROG, "运行 VeritasQuant 数据导入任务")
 
@@ -28,19 +28,14 @@ class DataIngestionJob(JobEntrypoint):
         return parser
 
     def run(self, arguments: argparse.Namespace) -> int:
-        # 此处只做参数与执行键校验；实际导入逻辑复用 application 用例
-        # （P2-035 数据导入任务清单落地业务实现）。
-        if not arguments.source:
-            print("--source 必填", file=__import__("sys").stderr)
-            return 2
-        if not arguments.instrument_id:
-            print("--instrument-id 必填", file=__import__("sys").stderr)
-            return 2
-        print(
-            f"job_run_id={arguments.job_run_id} execution_key={arguments.job_execution_key} "
-            f"source={arguments.source} instrument={arguments.instrument_id}"
+        result = runTask(
+            "DATA_IMPORT",
+            arguments.job_run_id,
+            arguments.job_execution_key,
+            {"source": arguments.source, "instrument_id": arguments.instrument_id},
         )
-        return 0
+        print(result.message)
+        return result.exitCode
 
 
 def main(argv: Sequence[str] | None = None) -> int:
