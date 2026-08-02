@@ -115,9 +115,10 @@ def test_fact_table_rejects_update_and_delete(applied) -> None:  # noqa: ANN001
         connection.execute(
             "INSERT INTO fact_events (event_id, event_type, schema_version, run_id, ts, ingested_at, "
             "source, producer, producer_version, correlation_id, event_ordering_version, phase, "
-            "priority, source_rank, source_sequence, payload, content_hash, partition_rank, "
-            "delivery_sequence) VALUES ('evt-1', 'TestEvent', 'V1', 'run-test', now(), now(), "
-            "'src', 'prod', '1.0', 'corr', 'V1', 10, 0, 0, 1, '{}', '0'*64, 0, 1)"
+            "priority, source_rank, source_sequence, payload, content_hash, account_group_id, "
+            "partition_rank, delivery_sequence) VALUES ('evt-1', 'TestEvent', 'V1', 'run-test', "
+            "now(), now(), 'src', 'prod', '1.0', 'corr', 'V1', 10, 0, 0, 1, '{}', '0'*64, "
+            "'ag-test', 0, 1)"
         )
         with pytest.raises(psycopg.errors.RaiseException):
             connection.execute("UPDATE fact_events SET priority = 1 WHERE event_id = 'evt-1'")
@@ -132,9 +133,9 @@ def test_unique_keys_enforced(applied) -> None:  # noqa: ANN001
                 "INSERT INTO fact_events (event_id, event_type, schema_version, run_id, ts, "
                 "ingested_at, source, producer, producer_version, correlation_id, "
                 "event_ordering_version, phase, priority, source_rank, source_sequence, payload, "
-                "content_hash, partition_rank, delivery_sequence) "
+                "content_hash, account_group_id, partition_rank, delivery_sequence) "
                 "VALUES ('evt-1', 'TestEvent', 'V1', 'run-test', now(), now(), 'src', 'prod', "
-                "'1.0', 'corr', 'V1', 10, 0, 0, 1, '{}', '0'*64, 0, 1)"
+                "'1.0', 'corr', 'V1', 10, 0, 0, 1, '{}', '0'*64, 'ag-test', 0, 1)"
             )
 
 
