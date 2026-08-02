@@ -65,41 +65,39 @@ def seededRun(database) -> str:  # noqa: ANN001
 
 @pytest.fixture()
 def stores(seededRun: str):
-    """清理租约/收件/外发残留并返回 store 三件套与 A 租约。
+    """清理租约/收件/外发残留并返回 store 三件套。
 
-    不可变事实表（inbox_records/inbox_conflicts）禁止 DELETE，使用 TRUNCATE。
+    不可变事实表（inbox_records/inbox_conflicts）禁止 DELETE，使用 TRUNCATE；
+    run_manifests 由 seededRun 提供，不在本清理范围。
     """
     with openConnection() as connection:
         connection.execute(
-            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, "
-            "partition_leases, run_manifests CASCADE"
+            "TRUNCATE inbox_records, inbox_conflicts, outbox_records, partition_leases"
         )
     connection = openConnection()
     leaseStore = LeaseStoreV1(connection)
     inboxStore = InboxStoreV1(connection, leaseStore)
     outboxStore = OutboxStoreV1(connection, leaseStore)
-    lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
-    yield leaseStore, inboxStore, outboxStore, lease
+    yield leaseStore, inboxStore, outboxStore
     connection.close()
 
 
 class TestLeaseFencing:
     def test_acquire_renew_release_lifecycle(self, stores) -> None:  # noqa: ANN001
-        leaseStore, _, _, lease = stores
-        assert lease.fencingToken == 1
+        leaseStore, _, _ = stores
         lease = leaseStore.acquire(_GROUP, _HOLDER_A)
         assert lease.fencingToken == 1
         assert leaseStore.renew(_GROUP, _HOLDER_A, lease.fencingToken)
         assert leaseStore.release(_GROUP, _HOLDER_A, lease.fencingToken)
 
     def test_second_writer_rejected_while_lease_active(self, stores) -> None:  # noqa: ANN001
-        leaseStore, _, _, _ = stores
+        leaseStore, _, _ = stores
         leaseStore.acquire(_GROUP, _HOLDER_A)
         with pytest.raises(LeaseError):
             leaseStore.acquire(_GROUP, _HOLDER_B)
 
     def test_expired_lease_can_be_taken_over_with_incremented_token(self, stores) -> None:  # noqa: ANN001
-        leaseStore, _, _, _ = stores
+        leaseStore, _, _ = stores
         leaseA = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=1)
         assert leaseA.fencingToken == 1
         # 模拟 A 过期：直接修改 expires_at
@@ -116,7 +114,7 @@ class TestLeaseFencing:
 
     def test_old_token_write_rejected_by_guard(self, stores) -> None:  # noqa: ANN001
         """双写者验收：A 丢失租约后，旧 token 的所有写入被持久层拒绝。"""
-        leaseStore, inboxStore, _, lease = stores
+        leaseStore, inboxStore, _ = stores
         leaseA = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=1)
         with openConnection() as connection:
             connection.execute(
@@ -133,7 +131,8 @@ class TestLeaseFencing:
 
 class TestInboxIdempotency:
     def test_accept_applies_once_and_duplicate_returns_original(self, stores, seededRun: str) -> None:  # noqa: ANN001
-        _, inboxStore, _, lease = stores
+        leaseStore, inboxStore, _ = stores
+        lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
         first = inboxStore.accept("key-1", "b" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
         assert first.disposition.value == "APPLIED"
         second = inboxStore.accept("key-1", "b" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
@@ -146,7 +145,8 @@ class TestInboxIdempotency:
         assert count == 1  # 重投无重复副作用
 
     def test_same_key_different_hash_isolated_conflict(self, stores) -> None:  # noqa: ANN001
-        _, inboxStore, _, lease = stores
+        leaseStore, inboxStore, _ = stores
+        lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
         inboxStore.accept("key-2", "c" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
         with pytest.raises(InboxError):
             inboxStore.accept("key-2", "d" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
@@ -160,7 +160,8 @@ class TestInboxIdempotency:
 
 class TestOutboxAtLeastOnce:
     def test_publish_pending_in_sequence_and_idempotent(self, stores) -> None:  # noqa: ANN001
-        _, _, outboxStore, lease = stores
+        leaseStore, _, outboxStore = stores
+        lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
         delivered: list[str] = []
         outboxStore.enqueue("msg-1", "orders", "e" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
         outboxStore.enqueue("msg-2", "orders", "f" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
@@ -174,9 +175,10 @@ class TestOutboxAtLeastOnce:
         assert delivered == ["msg-1", "msg-2"]
 
     def test_enqueue_same_message_id_idempotent(self, stores) -> None:  # noqa: ANN001
-        _, _, outboxStore, lease = stores
-        first = outboxStore.enqueue("msg-dup", "orders", "g" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
-        second = outboxStore.enqueue("msg-dup", "orders", "g" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
+        leaseStore, _, outboxStore = stores
+        lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
+        first = outboxStore.enqueue("msg-dup", "orders", "a" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
+        second = outboxStore.enqueue("msg-dup", "orders", "a" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
         assert first.sequence == second.sequence
         with openConnection() as connection:
             count = connection.execute(
@@ -185,8 +187,9 @@ class TestOutboxAtLeastOnce:
         assert count == 1
 
     def test_failed_publisher_keeps_message_pending(self, stores) -> None:  # noqa: ANN001
-        _, _, outboxStore, lease = stores
-        outboxStore.enqueue("msg-fail", "orders", "h" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
+        leaseStore, _, outboxStore = stores
+        lease = leaseStore.acquire(_GROUP, _HOLDER_A, ttlSeconds=30)
+        outboxStore.enqueue("msg-fail", "orders", "b" * 64, _RUN, _PARTITION, _GROUP, _HOLDER_A, lease.fencingToken)
 
         def failingPublisher(_message) -> None:  # noqa: ANN001
             raise RuntimeError("broker unreachable")
