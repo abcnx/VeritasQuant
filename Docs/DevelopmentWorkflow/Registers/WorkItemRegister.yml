@@ -4832,18 +4832,27 @@ Records:
   TestEvidence: tests/unit/application/test_security.py; tests/unit/apps/test_security_middleware.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并（含 F401 修复），M2 Gate 另行推进'
 - WorkItemId: TSK-P2-030
   PlanTaskId: P2-030
   Title: 实现鉴权 SSE 状态流和有界 replay cursor
@@ -4864,18 +4873,27 @@ Records:
   TestEvidence: tests/unit/application/test_state_stream.py; tests/unit/apps/test_state_stream_routes.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-031
   PlanTaskId: P2-031
   Title: 实现 Streamlit 框架、导航和 API Client
@@ -4895,18 +4913,27 @@ Records:
   TestEvidence: tests/unit/apps/gui_client/test_api_client.py; test_gui_framework.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-032
   PlanTaskId: P2-032
   Title: 实现数据导入、策略、定投计划和回测操作页
@@ -4926,18 +4953,27 @@ Records:
   TestEvidence: tests/unit/apps/gui_client/test_pages.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-033
   PlanTaskId: P2-033
   Title: 实现账户、结果分析、逐笔账本和监控页
@@ -4959,18 +4995,27 @@ Records:
   TestEvidence: tests/unit/apps/gui_client/test_account_pages.py; tests/unit/apps/test_domain_routes.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-034
   PlanTaskId: P2-034
   Title: 实现调度计划、JobRun 状态机和 console job 入口
@@ -4990,18 +5035,27 @@ Records:
   TestEvidence: tests/unit/application/test_scheduling.py; tests/unit/jobs/test_job_entrypoints.py; tests/unit/apps/test_scheduler_service.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-035
   PlanTaskId: P2-035
   Title: 实现数据导入、对账、校准和报告任务清单
@@ -5022,15 +5076,24 @@ Records:
   TestEvidence: tests/unit/jobs/test_job_tasks.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T20:10:53Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T20:27:12Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: 第五批 PR 合并后验收
+  NextAction: M2 Gate 另行推进
   EscalateTs: null
   AuditHistory:
   - Ts: '2026-08-02T20:10:53Z'
     Actor: BeeAgent
     Action: CREATED
     Note: 第五批开发完成
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#225
+    MergedAt: '2026-08-02T20:27:12Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第五批 PR #225 合并，M2 Gate 另行推进'
