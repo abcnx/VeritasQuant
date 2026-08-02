@@ -4518,8 +4518,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-022FundPerformanceEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4530,6 +4530,15 @@ Records:
     Actor: BeeAgent
     Action: 实现 TWR/XIRR/本金/规则贡献报告，全量测试通过
     Evidence: src/veritasquant/funds/FundPerformance.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-023
   PlanTaskId: P2-023
   Title: 建立基金防前视、状态机和完整回归套件
@@ -4552,8 +4561,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-023AntiLookaheadEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4564,6 +4573,15 @@ Records:
     Actor: BeeAgent
     Action: 建立防前视回归套件并修复 MaDeviationPlanV1 前视缺陷
     Evidence: tests/regression/test_fund_anti_lookahead.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-024
   PlanTaskId: P2-024
   Title: 建立 FastAPI 应用、依赖注入、版本路由和健康接口
@@ -4591,8 +4609,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-024ApiAppEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4603,6 +4621,15 @@ Records:
     Actor: BeeAgent
     Action: 实现 FastAPI 组装、依赖注入、版本路由与健康接口，真实启动验证通过
     Evidence: src/veritasquant/apps/server/ApiApp.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-025
   PlanTaskId: P2-025
   Title: 实现统一响应中间件和异常处理器
@@ -4627,8 +4654,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-025MiddlewareEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4639,6 +4666,15 @@ Records:
     Actor: BeeAgent
     Action: 实现统一响应中间件与异常边界强化
     Evidence: src/veritasquant/apps/server/ApiMiddleware.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-026
   PlanTaskId: P2-026
   Title: 实现不可变命令资源和幂等键存储
@@ -4665,8 +4701,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-026CommandResourceEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4677,6 +4713,15 @@ Records:
     Actor: BeeAgent
     Action: 实现不可变命令资源、幂等键存储与 V2 迁移
     Evidence: src/veritasquant/application/CommandResource.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-027
   PlanTaskId: P2-027
   Title: 实现资源版本、ETag、expected_version 和长任务状态机
@@ -4700,8 +4745,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-027CommandApiEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4712,6 +4757,15 @@ Records:
     Actor: BeeAgent
     Action: 实现命令 API（202 受理/取消/失败快照）与乐观并发控制
     Evidence: src/veritasquant/apps/server/CommandRoutes.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
 - WorkItemId: TSK-P2-028
   PlanTaskId: P2-028
   Title: 实现账户、策略、数据、回测、基金计划和报告 API
@@ -4735,8 +4789,8 @@ Records:
   - Docs/DevelopmentWorkflow/P2/P2-028DomainApiEvidence.md
   RiskLinks: []
   TargetDate: 当前迭代
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T19:17:23Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T19:35:59Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
@@ -4747,3 +4801,12 @@ Records:
     Actor: BeeAgent
     Action: 实现账户/策略/数据/回测/基金/报告 API 路由
     Evidence: src/veritasquant/apps/server/DomainRoutes.py
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#223
+    MergedAt: '2026-08-02T19:33:44Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: '第四批 PR #223 合并，M2 Gate 另行推进'
