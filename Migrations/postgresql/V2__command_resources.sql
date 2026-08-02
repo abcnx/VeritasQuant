@@ -52,23 +52,25 @@ CREATE INDEX IF NOT EXISTS idx_command_records_status
 
 -- 身份冻结触发器：禁止修改不可变身份字段
 CREATE OR REPLACE FUNCTION assert_command_identity_frozen() RETURNS trigger AS $$
-DECLARE
-    frozen_fields TEXT[] := ARRAY[
-        'command_id', 'command_type', 'account_id', 'run_id', 'requested_by',
-        'idempotency_scope', 'payload_hash', 'payload', 'expected_version',
-        'confirmation_token_id', 'created_ts'
-    ];
-    field_name TEXT;
 BEGIN
     IF TG_OP = 'DELETE' THEN
         RAISE EXCEPTION 'command_records 禁止 DELETE（审计保留）';
     END IF;
     IF TG_OP = 'UPDATE' THEN
-        FOREACH field_name IN ARRAY frozen_fields LOOP
-            IF NEW[field_name] IS DISTINCT FROM OLD[field_name] THEN
-                RAISE EXCEPTION '命令身份字段不可变: %', field_name;
-            END IF;
-        END LOOP;
+        -- 身份字段逐列比较（记录类型不支持变量下标，必须显式列出）
+        IF NEW.command_id IS DISTINCT FROM OLD.command_id
+           OR NEW.command_type IS DISTINCT FROM OLD.command_type
+           OR NEW.account_id IS DISTINCT FROM OLD.account_id
+           OR NEW.run_id IS DISTINCT FROM OLD.run_id
+           OR NEW.requested_by IS DISTINCT FROM OLD.requested_by
+           OR NEW.idempotency_scope IS DISTINCT FROM OLD.idempotency_scope
+           OR NEW.payload_hash IS DISTINCT FROM OLD.payload_hash
+           OR NEW.payload IS DISTINCT FROM OLD.payload
+           OR NEW.expected_version IS DISTINCT FROM OLD.expected_version
+           OR NEW.confirmation_token_id IS DISTINCT FROM OLD.confirmation_token_id
+           OR NEW.created_ts IS DISTINCT FROM OLD.created_ts THEN
+            RAISE EXCEPTION '命令身份字段不可变';
+        END IF;
         IF NEW.updated_ts <= OLD.updated_ts THEN
             RAISE EXCEPTION 'updated_ts 必须单调递增';
         END IF;

@@ -8,6 +8,7 @@ AllowedLicenses:
   - BSD-3-Clause
   - PSF-2.0
   - LGPL-3.0-only
+  - MPL-2.0
 PackageExceptions: {}
 VulnerabilitySla:
   CriticalHours: 24
@@ -16,3 +17,6 @@ VulnerabilitySla:
   LowDays: 90
 # 2026-08-02 依赖审阅：新增 psycopg[binary] 运行时依赖（P2-002 数据库访问），
 # psycopg 3.x 与 psycopg-binary 采用 LGPL-3.0-only 许可证，批准加入白名单。
+# 2026-08-03 依赖审阅：新增 httpx（dev 依赖，FastAPI TestClient）传递引入
+# certifi（TLS 证书包）采用 MPL-2.0 许可证（file-level copyleft，宽松可商用），
+# 批准加入白名单。

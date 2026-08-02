@@ -5,6 +5,7 @@ Rows:
   PlanTaskIds:
   - P1-003
   - P1-007
+  - P2-023
   TestIds:
   - UNIT-TIME-001
   - PROPERTY-EVENT-ORDERING-001
@@ -248,6 +249,11 @@ Rows:
   - P2-024
   - P2-028
   - P2-029
+  - P2-022
+  - P2-023
+  - P2-025
+  - P2-026
+  - P2-027
   TestIds:
   - CONTRACT-API-COMMANDS-001
   - CONTRACT-API-IDEMPOTENCY-001
@@ -353,88 +359,3 @@ Rows:
     - Docs/DevelopmentWorkflow/P1/P1-025LogicalClockEvidence.md
     - Docs/DevelopmentWorkflow/P1/P1-026EventBusEvidence.md
     Gaps: 缺完整事件循环集成、跨进程总线契约和 M1 Gate 证据
-- RequirementId: R-019
-  TechSpecRef: 8.1, 10.1, 12.2.4
-  PlanTaskIds:
-  - P2-022
-  - P2-023
-  TestIds:
-  - UNIT-FUND-PERFORMANCE-001
-  - REGRESSION-FUND-ANTI-LOOKAHEAD-001
-  CiSuites:
-  - UnitContract
-  - Regression
-  LatestGate: M2
-  ExecutionEvidence:
-    Status: AUTHOR_EVIDENCE
-    EvidenceLinks:
-    - src/veritasquant/funds/FundPerformance.py
-    - tests/unit/funds/test_fund_performance.py
-    - tests/regression/test_fund_anti_lookahead.py
-    - Docs/DevelopmentWorkflow/P2/P2-022FundPerformanceEvidence.md
-    - Docs/DevelopmentWorkflow/P2/P2-023AntiLookaheadEvidence.md
-    Gaps: 待第四批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
-- RequirementId: R-020
-  TechSpecRef: 10.2, 11.1, 12.3
-  PlanTaskIds:
-  - P2-024
-  - P2-025
-  TestIds:
-  - UNIT-API-APP-001
-  - UNIT-API-MIDDLEWARE-001
-  CiSuites:
-  - UnitContract
-  - Packaging
-  LatestGate: M2
-  ExecutionEvidence:
-    Status: AUTHOR_EVIDENCE
-    EvidenceLinks:
-    - src/veritasquant/apps/server/ApiApp.py
-    - src/veritasquant/apps/server/ApiMiddleware.py
-    - tests/unit/apps/test_api_app.py
-    - tests/unit/apps/test_api_middleware.py
-    - Docs/DevelopmentWorkflow/P2/P2-024ApiAppEvidence.md
-    - Docs/DevelopmentWorkflow/P2/P2-025MiddlewareEvidence.md
-    Gaps: 待第四批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
-- RequirementId: R-021
-  TechSpecRef: 10.2.2
-  PlanTaskIds:
-  - P2-026
-  - P2-027
-  TestIds:
-  - UNIT-COMMAND-RESOURCE-001
-  - UNIT-COMMAND-API-001
-  - INTEGRATION-COMMAND-STORE-001
-  CiSuites:
-  - UnitContract
-  - Integration
-  LatestGate: M2
-  ExecutionEvidence:
-    Status: AUTHOR_EVIDENCE
-    EvidenceLinks:
-    - src/veritasquant/application/CommandResource.py
-    - src/veritasquant/apps/server/CommandRoutes.py
-    - src/veritasquant/infrastructure/persistence/CommandStore.py
-    - Migrations/postgresql/V2__command_resources.sql
-    - tests/unit/application/test_command_resource.py
-    - tests/unit/apps/test_command_routes.py
-    - tests/integration/database/test_postgres_command_resource.py
-    - Docs/DevelopmentWorkflow/P2/P2-026CommandResourceEvidence.md
-    - Docs/DevelopmentWorkflow/P2/P2-027CommandApiEvidence.md
-    Gaps: 待第四批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
-- RequirementId: R-022
-  TechSpecRef: 10.1, 10.2
-  PlanTaskIds:
-  - P2-028
-  TestIds:
-  - UNIT-DOMAIN-API-001
-  CiSuites:
-  - UnitContract
-  LatestGate: M2
-  ExecutionEvidence:
-    Status: AUTHOR_EVIDENCE
-    EvidenceLinks:
-    - src/veritasquant/apps/server/DomainRoutes.py
-    - tests/unit/apps/test_domain_routes.py
-    - Docs/DevelopmentWorkflow/P2/P2-028DomainApiEvidence.md
-    Gaps: 待第四批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
