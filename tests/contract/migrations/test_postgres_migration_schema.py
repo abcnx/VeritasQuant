@@ -181,6 +181,43 @@ def test_unique_keys_declared() -> None:
         assert index in text, f"缺少唯一索引 {index}（{purpose}）"
 
 
+def test_v2_command_resources_declared() -> None:
+    """P2-026：V2 迁移必须声明命令资源表、幂等唯一与身份冻结触发器。"""
+    v2 = next(
+        (path for path in _migrationFiles() if path.name.startswith("V2__")),
+        None,
+    )
+    assert v2 is not None, "缺少 V2 迁移文件"
+    text = v2.read_text(encoding="utf-8")
+    assert re.search(r"CREATE TABLE\s+IF NOT EXISTS\s+command_records\b", text)
+    for column in (
+        "command_id",
+        "command_type",
+        "account_id",
+        "run_id",
+        "requested_by",
+        "idempotency_scope",
+        "payload_hash",
+        "payload",
+        "expected_version",
+        "confirmation_token_id",
+        "status",
+        "created_ts",
+        "updated_ts",
+        "result_reference",
+        "failure_code",
+        "failure_error_code",
+        "failure_catalog_version",
+        "failure_retryable",
+        "failure_details",
+    ):
+        assert re.search(rf"\b{re.escape(column)}\s+", text), f"command_records 缺少列 {column}"
+    assert "uq_command_records_idempotency_scope" in text, "缺少幂等作用域唯一索引"
+    assert "assert_command_identity_frozen" in text, "缺少身份冻结触发器函数"
+    assert "TRIGGER trg_command_records_frozen" in text, "缺少命令冻结触发器"
+    assert "payload_hash ~ '^[0-9a-f]{64}$'" in text, "payload_hash 必须为 SHA-256 格式"
+
+
 def test_migrator_discovery_logic(tmp_path: Path) -> None:
     """不连数据库，验证 Migrator 的文件发现与命名校验逻辑。"""
     from veritasquant.infrastructure.persistence.Migrator import Migrator, MigrationError
