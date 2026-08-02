@@ -39,6 +39,7 @@ class RedisStreamTransportV1:
 
     def pendingCount(self, streamKey: str) -> int:
         """未确认消息数（积压可见性）。"""
+        self.ensureGroup(streamKey)
         try:
             summary = self._client.xpending(streamKey, self._groupName)
             if not summary:
@@ -55,14 +56,25 @@ class RedisStreamTransportV1:
             # BUSYGROUP：消费组已存在，属预期
             pass
 
-    def consume(self, streamKey: str, limit: int = 100) -> tuple[TransportMessageV1, ...]:
-        """读取未确认消息（至少一次语义）；空流返回空元组。"""
+    def consume(
+        self,
+        streamKey: str,
+        limit: int = 100,
+        *,
+        readPending: bool = False,
+    ) -> tuple[TransportMessageV1, ...]:
+        """读取消息（至少一次语义）。
+
+        readPending=False 时读取组内新消息（id=">"）；True 时从 pending
+        列表重新读取未确认消息（id="0"），用于消费者重连后恢复位点。
+        """
         if limit <= 0:
             raise StreamTransportError("limit 必须为正")
         self.ensureGroup(streamKey)
+        readId = "0" if readPending else ">"
         try:
             entries = self._client.xreadgroup(
-                self._groupName, "consumer-1", {streamKey: ">"}, count=limit
+                self._groupName, "consumer-1", {streamKey: readId}, count=limit
             )
         except Exception as error:  # noqa: BLE001
             raise StreamTransportError(f"Redis 消费失败: {error}") from error

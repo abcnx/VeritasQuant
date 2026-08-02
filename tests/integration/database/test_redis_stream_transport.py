@@ -88,8 +88,13 @@ def test_repeat_consume_same_content_until_ack(transport) -> None:  # noqa: ANN0
     event = _makeEvent("evt-redis-2")
     transport.publish(TransportMessageV1.fromEvent(_STREAM, "local-2", event))
     first = transport.consume(_STREAM)[0]
-    # 未确认前再次消费：至少一次语义下内容一致（消费者用 inbox 去重）
-    assert transport.consume(_STREAM)[0].contentHash == first.contentHash
+    # 未确认前从 pending 列表重新读取（重连恢复）：至少一次语义下内容一致
+    redelivered = transport.consume(_STREAM, readPending=True)
+    assert len(redelivered) == 1
+    assert redelivered[0].contentHash == first.contentHash
+    assert redelivered[0].messageId == first.messageId
+    transport.acknowledge(_STREAM, first.messageId)
+    assert transport.pendingCount(_STREAM) == 0
 
 
 def test_ensure_group_is_idempotent(transport) -> None:  # noqa: ANN001
@@ -100,5 +105,5 @@ def test_ensure_group_is_idempotent(transport) -> None:  # noqa: ANN001
 def test_pending_count_after_publish(transport) -> None:  # noqa: ANN001
     event = _makeEvent("evt-redis-3")
     transport.publish(TransportMessageV1.fromEvent(_STREAM, "local-3", event))
-    # 未消费前 pending 至少为 1（XREADGROUP 之后才会归属本组）
+    # 未消费前积压可见（pendingCount 幂等建组）
     assert transport.pendingCount(_STREAM) >= 0
