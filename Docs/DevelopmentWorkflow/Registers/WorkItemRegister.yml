@@ -3106,3 +3106,199 @@ Records:
         Actor: BeeAgent
         Action: 实现 checkpoint 存储与每日对账，7 单元用例 + 4 集成用例
         Evidence: src/veritasquant/application/Reconciliation.py
+  - WorkItemId: TSK-P2-008
+    PlanTaskId: P2-008
+    Title: 引入 Redis Streams 作为可替换跨进程传输
+    Description: 实现 StreamTransportV1 协议 + InMemoryStreamTransportV1（本地可测）+ RedisStreamTransportV1（XADD/XREADGROUP/XACK）；传输元数据不进入事件哈希；背压与指数退避重连策略。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["3.3", "11.3"]
+    Owner: CE/SRE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-003]
+    AcceptanceCriteria: 传输元数据不进入事件哈希；重复、积压和重连测试通过
+    TestEvidence: [src/veritasquant/infrastructure/messaging/StreamTransport.py, src/veritasquant/infrastructure/messaging/RedisStreamTransport.py, src/veritasquant/infrastructure/messaging/StreamPolicy.py, tests/unit/infrastructure/test_stream_transport.py, tests/integration/database/test_redis_stream_transport.py, Docs/DevelopmentWorkflow/P2/P2-008StreamTransportEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现可替换跨进程传输（内存+Redis Streams），11 单元用例通过
+        Evidence: src/veritasquant/infrastructure/messaging/StreamTransport.py
+  - WorkItemId: TSK-P2-009
+    PlanTaskId: P2-009
+    Title: 实现背压、磁盘/队列阈值与 trading-readiness
+    Description: 实现 QueueThresholdPolicyV1（70%/90%）、DiskSpacePolicyV1（20%/10%）、TradingReadinessGateV1（8 项检查）；硬阈值禁止新增风险且关键写入不丢弃。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["12.3"]
+    Owner: SRE/CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [P2-004, P2-008]
+    AcceptanceCriteria: 70%/90% 阈值行为符合方案；硬阈值时禁止新增风险且不丢关键事件
+    TestEvidence: [src/veritasquant/monitoring/TradingReadiness.py, tests/unit/monitoring/test_trading_readiness.py, Docs/DevelopmentWorkflow/P2/P2-009BackpressureEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现背压与 trading-readiness 门禁，12 单元用例通过
+        Evidence: src/veritasquant/monitoring/TradingReadiness.py
+  - WorkItemId: TSK-P2-010
+    PlanTaskId: P2-010
+    Title: 实现 FundNavSchemaV1、基金状态、费率和日历版本
+    Description: 实现 FundNavSchemaV1（ts/nav_date 分离、ts>=ingested/published、Decimal 精确）、FundStatusV1、FundRateScheduleV1、FundCalendarV1、NavAvailabilityPolicyV1 保守策略。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.5"]
+    Owner: DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 8
+    Dependencies: [M1, P1-014]
+    AcceptanceCriteria: nav_date 与可用 ts 分离；未知发布时间按保守策略；修订生成新版本
+    TestEvidence: [src/veritasquant/data/FundNav.py, tests/unit/data/test_fund_nav.py, Docs/DevelopmentWorkflow/P2/P2-010-011FundNavEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现基金净值 Schema 与版本化日历/费率/保守策略
+        Evidence: src/veritasquant/data/FundNav.py
+  - WorkItemId: TSK-P2-011
+    PlanTaskId: P2-011
+    Title: 实现基金净值/估值/状态导入、质量和 manifest
+    Description: 实现 FundNavImporterV1：原始记录→不可变净值；缺发布时间保守策略+质量标志；重复主键隔离；修订 SupersedesDataVersionId 新版本 + DataManifestV1。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.5", "5.6"]
+    Owner: DE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 9
+    Dependencies: [P2-010, P1-020]
+    AcceptanceCriteria: 暂停申赎、费率、确认延迟和缺失发布时间可见；失败进入隔离
+    TestEvidence: [src/veritasquant/data/FundNavImporter.py, tests/unit/data/test_fund_nav.py, Docs/DevelopmentWorkflow/P2/P2-010-011FundNavEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现基金净值导入、质量检查与 manifest 生成
+        Evidence: src/veritasquant/data/FundNavImporter.py
+  - WorkItemId: TSK-P2-012
+    PlanTaskId: P2-012
+    Title: 注册基金事件 Schema 和计划到期事件生成器
+    Description: 实现 5 个基金事件载荷并注册进 EventSchemaRegistry；InvestmentPlanDueGeneratorV1 用版本化基金日历将本地计划时间确定性转 UTC，历史触发不依赖服务器当前时间。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["4.1", "5.9"]
+    Owner: CE/DE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 7
+    Dependencies: [P2-010, P1-006]
+    AcceptanceCriteria: 计划时间确定性转 UTC；历史触发不依赖服务器当前时间
+    TestEvidence: [src/veritasquant/funds/FundEvents.py, src/veritasquant/funds/FundEventRegistration.py, tests/unit/funds/test_fund_event_registration.py, Docs/DevelopmentWorkflow/P2/P2-012FundEventsEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 注册基金事件 Schema 并实现计划到期生成器，9 单元用例通过
+        Evidence: src/veritasquant/funds/FundEventRegistration.py
+  - WorkItemId: TSK-P2-013
+    PlanTaskId: P2-013
+    Title: 实现场外基金申购状态机
+    Description: 实现 FundApplicationStateMachineV1（SUBSCRIPTION）：CREATED->ACCEPTED->WAITING_NAV->CONFIRMED，非终态可 REJECT/CANCEL；受理冻结、失败释放；转换历史可重放。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.7"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 9
+    Dependencies: [P2-012, P1-034]
+    AcceptanceCriteria: CREATED 至 CONFIRMED/REJECTED/CANCELLED 全边覆盖；受理冻结、失败释放正确
+    TestEvidence: [src/veritasquant/funds/FundStateMachines.py, tests/unit/funds/test_fund_state_machines.py, Docs/DevelopmentWorkflow/P2/P2-013-014FundStateMachinesEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现场外基金申购状态机，全边覆盖测试通过
+        Evidence: src/veritasquant/funds/FundStateMachines.py
+  - WorkItemId: TSK-P2-014
+    PlanTaskId: P2-014
+    Title: 实现场外基金赎回与结算状态机
+    Description: 实现 REDEMPTION 状态机：CREATED->ACCEPTED->WAITING_NAV->SETTLEMENT->COMPLETED，拒绝/取消路径；费用、到账和拒绝路径可重放。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["5.7"]
+    Owner: CE/QA
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 9
+    Dependencies: [P2-013]
+    AcceptanceCriteria: WAITING_NAV/SETTLEMENT、费用、到账和拒绝路径可重放
+    TestEvidence: [src/veritasquant/funds/FundStateMachines.py, tests/unit/funds/test_fund_state_machines.py, Docs/DevelopmentWorkflow/P2/P2-013-014FundStateMachinesEvidence.md]
+    RiskLinks: []
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-03T00:20:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第二批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-03T00:20:00Z"
+        Actor: BeeAgent
+        Action: 实现场外基金赎回与结算状态机，重放路径测试通过
+        Evidence: src/veritasquant/funds/FundStateMachines.py
