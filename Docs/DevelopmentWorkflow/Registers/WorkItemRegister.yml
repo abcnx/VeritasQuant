@@ -2906,3 +2906,35 @@ Records:
         Actor: BeeAgent
         Action: PR #121 已由 ACANX 合并至上游 dev；验收通过，流转 ACCEPTED
         Evidence: src/veritasquant/application/StageGateReport.py
+  - WorkItemId: TSK-P2-001
+    PlanTaskId: P2-001
+    Title: 设计 PostgreSQL 事实表、投影表、索引和首版迁移
+    Description: 完成首版 PostgreSQL 迁移：21 张表（事件事实、inbox/outbox、租约、检查点、账本、订单、成交、风控、运行清单、投影）+ 不可变触发器 + 复合唯一键 + NUMERIC 精度约束 + 账户作用域列；配套版本化迁移执行器与静态/集成测试。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["3.2", "6.1", "11.3", "12.3"]
+    Owner: CE/TL
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [M1]
+    AcceptanceCriteria: 迁移可前滚/失败回滚；NUMERIC 精度、唯一键、不可变约束和账户分区正确
+    TestEvidence: [tests/contract/migrations/test_postgres_migration_schema.py, tests/integration/database/test_postgres_migrations.py, Migrations/postgresql/V1__initial_fact_and_projection_schema.sql, Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T16:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 提交第一批 P2-001~007 PR 至上游 dev；合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T15:40:00Z"
+        Actor: BeeAgent
+        Action: 创建首版迁移、迁移执行器与测试，登记 P2-001 工作项
+        Evidence: Migrations/postgresql/V1__initial_fact_and_projection_schema.sql
+      - Ts: "2026-08-02T16:10:00Z"
+        Actor: BeeAgent
+        Action: 静态契约测试 10/10 通过，ruff/mypy/Preflight/依赖锁校验通过；等待 PR 后 CI database job 集成验证
+        Evidence: Docs/DevelopmentWorkflow/P2/P2-001PostgresSchemaEvidence.md
