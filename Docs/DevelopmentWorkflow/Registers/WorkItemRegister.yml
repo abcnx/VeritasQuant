@@ -5192,3 +5192,35 @@ Records:
     Actor: BeeAgent
     Action: CREATED
     Note: 第六批开发完成
+- WorkItemId: TSK-P2-039
+  PlanTaskId: P2-039
+  Title: 冻结 M2A 候选版本并完成容量/故障预演
+  Description: CandidateFreezeV1 冻结清单（代码版本/依赖锁哈希/事件 Schema 注册表哈希/沙箱/DSL/计划/配置/风控/可靠性政策版本 + 冻结身份哈希）；CapacityForecasterV1 按证据窗口 60 日外推队列/磁盘/数据库峰值，2x 容量覆盖预演；S0/S1 阻断冻结；容量不足拒绝冻结
+  Stage: P2
+  Milestone: M2A
+  TechSpecRefs:
+  - '12.2'
+  - '12.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 7
+  Dependencies:
+  - P2-038
+  AcceptanceCriteria: 无 S0/S1；队列/磁盘/数据库容量至少覆盖证据窗口 2 倍预测峰值
+  TestEvidence: tests/unit/reliability/test_candidate_freeze.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-02T21:30:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 第七批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-02T21:30:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 第七批开发完成
