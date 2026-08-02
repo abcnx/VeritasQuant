@@ -43,6 +43,9 @@ class ResponseEnvelopeMiddleware(BaseHTTPMiddleware):
         contentType = response.headers.get("content-type", "")
         if "application/json" not in contentType:
             return response
+        # OpenAPI/docs 等框架自产 JSON 不套用业务信封
+        if request.url.path in ("/openapi.json", "/docs", "/redoc") or request.url.path.endswith("/openapi.json"):
+            return response
         body = b"".join([chunk async for chunk in response.body_iterator])  # type: ignore[attr-defined]
         try:
             payload = json.loads(body.decode("utf-8"))

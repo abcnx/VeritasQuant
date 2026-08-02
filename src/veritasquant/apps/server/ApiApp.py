@@ -11,11 +11,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHttpException
 
 from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
 from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
+from veritasquant.apps.server.DomainRoutes import DomainApis, buildDomainRouter
 from veritasquant.application.ApiApp import (
     ApiVersionInfoV1,
     ApiVersionProvider,
@@ -40,6 +42,7 @@ class ApiDependencies:
     versionProvider: ApiVersionProvider
     readinessProbes: tuple[ReadinessProbe, ...] = ()
     commandApi: CommandApi | None = None
+    domainApis: DomainApis | None = None
     requestIdExtractor: Callable[[Request], str | None] | None = None
     traceIdExtractor: Callable[[Request], str | None] | None = None
     _health: HealthService = field(init=False, repr=False)
@@ -68,6 +71,16 @@ def createApp(deps: ApiDependencies) -> FastAPI:
         openapi_url=f"{API_V1_PREFIX}/openapi.json",
     )
     app.add_middleware(ResponseEnvelopeMiddleware, catalog=deps.errorCatalog)  # type: ignore[arg-type]
+
+    @app.exception_handler(RequestValidationError)
+    async def validationExceptionHandler(
+        request: Request, exception: RequestValidationError
+    ) -> JSONResponse:
+        # 字段/Schema 校验失败统一映射为 VALIDATION_ERROR(1001)
+        requestId = deps.requestIdExtractor(request) if deps.requestIdExtractor else None
+        traceId = deps.traceIdExtractor(request) if deps.traceIdExtractor else None
+        mapped = mapException(BusinessException(1001, {}), deps.errorCatalog, requestId, traceId)
+        return JSONResponse(status_code=mapped.httpStatus, content=mapped.envelope.toWire())
 
     @app.exception_handler(StarletteHttpException)
     async def httpExceptionHandler(request: Request, exception: StarletteHttpException) -> JSONResponse:
@@ -143,6 +156,9 @@ def createApp(deps: ApiDependencies) -> FastAPI:
     if deps.commandApi is not None:
         app.include_router(buildCommandRouter(deps.commandApi))
 
+    if deps.domainApis is not None:
+        app.include_router(buildDomainRouter(deps.domainApis))
+
     return app
 
 
@@ -151,6 +167,7 @@ def buildApiDependencies(
     versionProvider: ApiVersionProvider,
     readinessProbes: tuple[ReadinessProbe, ...] = (),
     commandApi: CommandApi | None = None,
+    domainApis: DomainApis | None = None,
     requestIdExtractor: Callable[[Request], str | None] | None = None,
     traceIdExtractor: Callable[[Request], str | None] | None = None,
 ) -> ApiDependencies:
@@ -160,6 +177,7 @@ def buildApiDependencies(
         versionProvider=versionProvider,
         readinessProbes=readinessProbes,
         commandApi=commandApi,
+        domainApis=domainApis,
         requestIdExtractor=requestIdExtractor,
         traceIdExtractor=traceIdExtractor,
     )
