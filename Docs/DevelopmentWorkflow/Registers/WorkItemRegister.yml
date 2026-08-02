@@ -2966,3 +2966,31 @@ Records:
         Actor: BeeAgent
         Action: 实现数据库 inbox/outbox/租约与 fencing token，单元测试 25/25 通过，登记 P2-002
         Evidence: src/veritasquant/infrastructure/persistence/LeaseStore.py
+  - WorkItemId: TSK-P2-003
+    PlanTaskId: P2-003
+    Title: 实现共享事件持久化和确定性分区扇出
+    Description: 实现 EventStoreV1（fact_events 持久化、同 event_id 幂等）与 DeterministicFanoutV1（partition_rank 升序冻结目标、各分区独立投递序号、事件内容跨分区一致）。
+    Stage: M2A
+    Milestone: M2A
+    TechSpecRefs: ["3.2", "3.3"]
+    Owner: CE
+    Approver: TL/QA
+    Priority: P2
+    EstimatePersonDays: 10
+    Dependencies: [P2-002]
+    AcceptanceCriteria: 相同 event/hash 按固定 partition_rank 扇出；分区快慢不改事件内容
+    TestEvidence: [src/veritasquant/infrastructure/persistence/EventStore.py, src/veritasquant/core/Fanout.py, tests/unit/core/test_fanout.py, tests/integration/database/test_postgres_event_fanout.py, Docs/DevelopmentWorkflow/P2/P2-003EventFanoutEvidence.md]
+    RiskLinks: [RSK-P2-001]
+    TargetDate: 当前迭代
+    Status: IN_REVIEW
+    StatusChangedTs: "2026-08-02T17:10:00Z"
+    Blocked: false
+    BlockedReason: ""
+    BlockedBy: ""
+    NextAction: 第一批 PR 合并后由非作者 QA/领域负责人验收流转 ACCEPTED
+    EscalateTs: ""
+    AuditHistory:
+      - Ts: "2026-08-02T17:10:00Z"
+        Actor: BeeAgent
+        Action: 实现事件持久化与确定性扇出，全量测试 513 通过，登记 P2-003
+        Evidence: src/veritasquant/core/Fanout.py
