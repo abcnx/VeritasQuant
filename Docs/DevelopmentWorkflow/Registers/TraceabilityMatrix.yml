@@ -189,13 +189,18 @@ Rows:
   - P1-049
   - P1-050
   - P1-051
+  - P4-002
+  - P4-003
+  - P4-004
+  - P4-005
+  - P4-006
   TestIds:
   - MODEL-BAR-PATH-001
   - REGRESSION-LIQUIDITY-POOL-001
   CiSuites:
   - PropertyModel
   - Regression
-  LatestGate: M1
+  LatestGate: M4
   ExecutionEvidence:
     Status: PARTIAL_AUTHOR_EVIDENCE
     EvidenceLinks:
