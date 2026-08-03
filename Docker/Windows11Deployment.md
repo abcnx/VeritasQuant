@@ -98,7 +98,7 @@ Copy-Item Docker\.env.deploy.example Docker\.env.deploy
 ### 步骤 2：环境自检（无需 Docker 也可运行）
 
 ```powershell
-python scripts/DeployServer.py check
+python3 scripts/DeployServer.py check
 ```
 
 该命令校验编排文件语法（`docker compose config --quiet`）。
@@ -109,7 +109,7 @@ python scripts/DeployServer.py check
 
 ```powershell
 # 拉取 ghcr.io/acanx/veritasquant:latest
-python scripts/DeployServer.py start   # 首次启动会自动拉取镜像
+python3 scripts/DeployServer.py start   # 首次启动会自动拉取镜像
 ```
 
 如需固定版本，在 `Docker/.env.deploy` 中设置（tag 必须与 GitHub Packages 页面实际发布的 tag 完全一致，见 6.6）：
@@ -128,18 +128,18 @@ docker pull ghcr.io/acanx/veritasquant:latest
 > 中 `server.build` 块注释，并把 `image` 改回 `veritasquant/server:local`，然后：
 >
 > ```powershell
-> python scripts/DeployServer.py build
+> python3 scripts/DeployServer.py build
 > ```
 
 ### 步骤 4：启动服务端
 
 ```powershell
-python scripts/DeployServer.py start
+python3 scripts/DeployServer.py start
 ```
 
 - `--wait` 会等待三个容器健康检查全部通过；
-- 查看状态：`python scripts/DeployServer.py status`；
-- 查看日志：`python scripts/DeployServer.py logs --service server`。
+- 查看状态：`python3 scripts/DeployServer.py status`；
+- 查看日志：`python3 scripts/DeployServer.py logs --service server`。
 
 ### 步骤 5：验证服务端
 
@@ -160,9 +160,9 @@ curl http://localhost:18000/api/v1/version
 
 ```powershell
 # 使用项目 venv（建议）或全局环境
-python -m venv .venv-client
+python3 -m venv .venv-client
 .\.venv-client\Scripts\Activate.ps1
-python -m pip install -e .
+python3 -m pip install -e .
 ```
 
 客户端入口即可用（`vq-run-backtest --help` 验证）。
@@ -194,7 +194,7 @@ vq-gui --api http://localhost:18000
 ### 步骤 8：停止服务端
 
 ```powershell
-python scripts/DeployServer.py stop
+python3 scripts/DeployServer.py stop
 ```
 
 - 停止并删除容器与网络；
@@ -239,7 +239,7 @@ Docker Desktop → Settings → Docker Engine，配置镜像加速器后 `Apply 
 ### 6.7 容器启动后立即退出
 
 ```powershell
-python scripts/DeployServer.py logs --service server
+python3 scripts/DeployServer.py logs --service server
 ```
 
 常见原因：端口冲突、`read_only: true` 下写入只读路径。确认 `.env.deploy` 中
@@ -247,7 +247,7 @@ python scripts/DeployServer.py logs --service server
 
 ### 6.8 客户端连不上服务端
 
-- 确认容器健康：`python scripts/DeployServer.py status`；
+- 确认容器健康：`python3 scripts/DeployServer.py status`；
 - 确认宿主端口：`curl http://localhost:18000/health/live`；
 - 客户端配置中 API 地址使用 `http://localhost:18000`（勿用 `127.0.0.1` 时混用 IPv6）。
 

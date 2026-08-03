@@ -9,11 +9,11 @@
 - `stop`    ：停止并删除容器与网络（保留数据卷）。
 
 用法（PowerShell）：
-    python scripts/DeployServer.py check
-    python scripts/DeployServer.py start
-    python scripts/DeployServer.py status
-    python scripts/DeployServer.py logs --service server
-    python scripts/DeployServer.py stop
+    python3 scripts/DeployServer.py check
+    python3 scripts/DeployServer.py start
+    python3 scripts/DeployServer.py status
+    python3 scripts/DeployServer.py logs --service server
+    python3 scripts/DeployServer.py stop
 """
 
 from __future__ import annotations
