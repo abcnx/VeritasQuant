@@ -30,6 +30,9 @@ class _StubVersionProvider(ApiVersionProvider):
 
 
 class _StubAccounts(AccountViewProvider):
+    def accounts(self) -> tuple[dict, ...]:
+        return ({"account_id": "acc-1", "execution_mode": "PAPER", "run_id": None},)
+
     def account(self, accountId: str, runId: str) -> dict:
         if accountId != "acc-1":
             raise ResourceNotFound(f"账户不存在: {accountId}")
@@ -102,6 +105,17 @@ def _client(**depsOverrides) -> TestClient:
 
 
 class TestAccountApi:
+    def test_accounts_list(self) -> None:
+        """GET /api/v1/accounts 返回账户列表。"""
+        client = _client()
+        response = client.get("/api/v1/accounts")
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["code"] == 0
+        assert payload["data"]["accounts"] == [
+            {"account_id": "acc-1", "execution_mode": "PAPER", "run_id": None}
+        ]
+
     def test_account_requires_explicit_ids(self) -> None:
         client = _client()
         response = client.get("/api/v1/accounts/acc-1?run_id=run-1")

@@ -81,6 +81,10 @@ cd VeritasQuant
 | `vq-gui` / `vq-gui-client` | GUI 客户端 |
 | `vq-import-market-data` / `vq-validate-market-data` | 数据导入与校验 |
 
+> GUI 的账户/策略/回测页面依赖领域 API（服务端已接线）。账户列表来自
+> `.env.deploy` 的 `VQ_ACCOUNTS`（逗号分隔，如 `VQ_ACCOUNTS=acc-paper-001,acc-paper-002`）；
+> 策略/标的/基金目录当前为空，后续阶段接入。
+
 ---
 
 ## 5. 详细部署步骤
