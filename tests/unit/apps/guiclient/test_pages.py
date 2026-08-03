@@ -10,7 +10,9 @@ from veritasquant.apps.guiclient.Pages import (
     ImportRequest,
     PlanDraft,
     StrategyDraft,
+    UploadImportRequest,
     submitImport,
+    submitUploadImport,
     validateDsl,
 )
 
@@ -80,6 +82,56 @@ class TestSubmitImport:
         result = submitImport(client, request)
         assert result["command_id"] == "cmd-1"
         assert result["status"] == "PENDING"
+
+
+class TestUploadImportRequest:
+    def test_valid_upload(self) -> None:
+        request = UploadImportRequest(fileName="a.mvsv", source="cn-feed", upsertMode="FIELD")
+        assert request.validate() == []
+
+    def test_missing_file(self) -> None:
+        request = UploadImportRequest(fileName="", source="cn-feed", upsertMode="FIELD")
+        assert any("文件" in e for e in request.validate())
+
+    def test_missing_source(self) -> None:
+        request = UploadImportRequest(fileName="a.mvsv", source="  ", upsertMode="FIELD")
+        assert any("数据源" in e for e in request.validate())
+
+    def test_invalid_mode(self) -> None:
+        request = UploadImportRequest(fileName="a.mvsv", source="cn-feed", upsertMode="SNAPSHOT")
+        assert any("覆盖模式" in e for e in request.validate())
+
+
+class TestSubmitUploadImport:
+    def test_upload_sends_file(self) -> None:
+        captured: dict = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:  # noqa: ANN001
+            captured["url"] = str(request.url)
+            captured["content"] = request.content
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "message": "行情导入完成",
+                    "data": {
+                        "batch_id": "import_518880_20260804120000",
+                        "secu_code": "518880",
+                        "market_code": 1,
+                        "record_count": 3,
+                        "content_sha256": "a" * 64,
+                        "mode": "FIELD",
+                    },
+                },
+            )
+
+        client = ApiClient("http://test", transport=httpx.MockTransport(handler))
+        request = UploadImportRequest(fileName="NVDA.mvsv", source="cn-feed", upsertMode="FIELD")
+        result = submitUploadImport(client, request, b"mvsv-content")
+
+        assert "imports/upload" in captured["url"]
+        assert result["secu_code"] == "518880"
+        assert result["record_count"] == 3
 
 
 class TestStrategyDraft:

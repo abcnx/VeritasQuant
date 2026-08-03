@@ -49,22 +49,22 @@ vq-gui --api-url http://localhost:18000 --serve
 
 ### 3.2 数据导入
 
-**功能**：提交数据导入命令（创建新数据版本前需确认）。
+**功能**：上传 MVSV-1 行情文件，服务端解析后**字段级覆盖**导入 PostgreSQL（`finv_quote_secu_kline_min`）。
 
 **表单字段**：
 
 | 字段 | 说明 |
 | --- | --- |
+| 文件选择 | 本地 MVSV-1 行情文件（`POST /api/v1/imports/upload` multipart 上传，上限 50 MiB） |
 | 数据源 | 如 `cn-feed` |
-| 标的 ID | 如 `510300.SH` |
-| 开始/结束日期 | 导入区间（开始不能晚于结束） |
-| 导入模式 | `FULL`（全量）/ `INCREMENTAL`（增量） |
+| 覆盖模式 | `FIELD`（只覆盖有值的字段，推荐）/ `ROW`（整行覆盖） |
 
-**使用步骤**：填写表单 → 提交 → 勾选"我确认导入数据将创建新数据版本" → 受理成功显示 `command_id` 与状态。
+**使用步骤**：选择文件 → 填写数据源/覆盖模式 → 勾选“我确认导入将覆盖同时刻同证券的对应字段值” → 上传并导入 → 显示导入统计（证券、条数、批次）。
 
 **注意事项**：
-- 导入会改动数据版本，属危险操作，**必须勾选确认**才能提交；
-- 提交走命令 API（`POST /api/v1/commands`）；命令 API 生产接线完成后可用，当前若返回 `[1002] 404` 属预期（接线任务进行中）。
+- 导入按主键 `(ts, market_code, secu_code)` 覆盖同键数据，属危险操作，**必须勾选确认**才能提交；
+- 每次导入自动登记批次（`quote_ingest_batches`）并在发生覆盖时写入修正审计（`quote_revision_log`）；
+- 服务端未配置 PG（`VQ_POSTGRES_*` 环境变量）时上传返回 `[4001]`。
 
 ### 3.3 策略管理
 
@@ -173,7 +173,7 @@ vq-gui --api-url http://localhost:18000 --serve
 | ⑥ 返回受理 | API → GUI | 成功 `202 {command_id, status}`；失败：字段非法 → `400/1001`、幂等冲突 → `409/1003` |
 | ⑦ 命令执行 | 任务端 `vq-job-data-ingestion` | `DataImportTask`：参数校验（缺失 → 退出码 2）、**执行键幂等**（同一执行键不重复导入）、生成 checkpoint `ckpt:data_import:<run>` |
 | ⑧ 状态推进 | 执行端 → `CommandService.transition` | 状态机 `PENDING→AUTHORIZING→ACCEPTED→RUNNING→SUCCEEDED/FAILED`；FAILED 必须携带失败快照（code/error_code/catalog_version/retryable/details） |
-| ⑨ 数据落点 | 数据层 | 行情/净值数据文件（Mvsv/Parquet）+ 数据版本清单（DataManifest）；导入目录见 `VQ_DATA_DIR` |
+| ⑨ 数据落点 | 数据层 | 上传导入：MVSV-1 → 解析 → 字段级覆盖 upsert 到 `finv_quote_secu_kline_min`（主键 ts+market_code+secu_code）；批次登记 `quote_ingest_batches`，覆盖写修正审计 `quote_revision_log` |
 
 **成功场景**：提交后返回 202 受理 → 轮询 `GET /api/v1/commands/{command_id}` 看到 `SUCCEEDED` → 数据进入版本库，可用于回测/模拟盘。
 
@@ -187,7 +187,7 @@ vq-gui --api-url http://localhost:18000 --serve
 
 | 菜单 | 操作 | 关联 API | 处理要点 |
 | --- | --- | --- | --- |
-| 数据导入 | 提交导入 | `POST /api/v1/commands`（DATA_IMPORT） | 命令受理制；幂等键防重复；数据落盘见 5.1 |
+| 数据导入 | 上传导入 | `POST /api/v1/imports/upload`（multipart） | 上传 MVSV-1 → 服务端解析 → 字段级覆盖写 `finv_quote_secu_kline_min`；批次/修正审计自动登记 |
 | 策略管理 | 列表 / 新建 | `GET /api/v1/strategies`；保存为本地草稿 | 列表当前为空（目录后续接入）；DSL 仅本地结构校验 |
 | 定投计划 | 创建计划 | 本地草稿（提交走命令流程） | 字段本地校验（周期/金额模式/正数金额/资金来源） |
 | 账户管理 | 列表 / 详情 | `GET /api/v1/accounts`；`GET /api/v1/accounts/{id}?run_id=` | 列表来自服务端 `VQ_ACCOUNTS`；账户不存在 → `1002` |
@@ -199,7 +199,8 @@ vq-gui --api-url http://localhost:18000 --serve
 
 1. **启动参数**：必须 `--api-url <地址> --serve`，缺 `--serve` 直接退出；
 2. **账户来源**：服务端 `VQ_ACCOUNTS` 环境变量（未配置 → 各页面"无可用账户"）；
-3. **命令 API 接线**：数据导入提交、策略保存、定投计划创建走命令 API（`/api/v1/commands`），生产接线任务完成后可用；当前若报 404 属预期；
+3. **命令 API 接线**：策略保存、定投计划创建走命令 API（`/api/v1/commands`），生产接线任务完成后可用；当前若报 404 属预期；
+4. **数据导入**：上传文件直接导入 PG（`/api/v1/imports/upload`），不依赖命令 API；
 4. **目录为空**：策略/标的/基金目录当前返回空列表（生产最小实现，后续阶段接入）；
 5. **账户隔离**：结果分析/实时监控必须先选侧边栏账户，查询严格按账户隔离；
 6. **危险操作确认**：导入/启动/取消等操作必须勾选确认，防止误操作；

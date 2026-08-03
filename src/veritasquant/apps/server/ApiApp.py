@@ -18,6 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHttpException
 from veritasquant.apps.server.ApiMiddleware import ResponseEnvelopeMiddleware
 from veritasquant.apps.server.CommandRoutes import CommandApi, buildCommandRouter
 from veritasquant.apps.server.DomainRoutes import DomainApis, buildDomainRouter
+from veritasquant.apps.server.ImportRoutes import ImportApi, buildImportRouter
 from veritasquant.apps.server.MetricsRoutes import buildMetricsRouter
 from veritasquant.apps.server.SecurityMiddleware import SecurityMiddleware
 from veritasquant.apps.server.StateStreamRoutes import (
@@ -55,6 +56,7 @@ class ApiDependencies:
     readinessProbes: tuple[ReadinessProbe, ...] = ()
     commandApi: CommandApi | None = None
     domainApis: DomainApis | None = None
+    importApi: ImportApi | None = None
     streamDeps: StreamDependencies | None = None
     securityService: SecurityService | None = None
     requestIdExtractor: Callable[[Request], str | None] | None = None
@@ -215,6 +217,9 @@ def createApp(deps: ApiDependencies) -> FastAPI:
     if deps.commandApi is not None:
         app.include_router(buildCommandRouter(deps.commandApi))
 
+    if deps.importApi is not None:
+        app.include_router(buildImportRouter(deps.importApi))
+
     if deps.domainApis is not None:
         app.include_router(buildDomainRouter(deps.domainApis))
 
@@ -232,6 +237,7 @@ def buildApiDependencies(
     readinessProbes: tuple[ReadinessProbe, ...] = (),
     commandApi: CommandApi | None = None,
     domainApis: DomainApis | None = None,
+    importApi: ImportApi | None = None,
     streamDeps: StreamDependencies | None = None,
     securityService: SecurityService | None = None,
     requestIdExtractor: Callable[[Request], str | None] | None = None,
@@ -244,6 +250,7 @@ def buildApiDependencies(
         readinessProbes=readinessProbes,
         commandApi=commandApi,
         domainApis=domainApis,
+        importApi=importApi,
         streamDeps=streamDeps,
         securityService=securityService,
         requestIdExtractor=requestIdExtractor,

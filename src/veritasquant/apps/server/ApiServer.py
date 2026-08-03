@@ -8,9 +8,12 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from collections.abc import Sequence
 
 from veritasquant.application.Entrypoints import configureStandardStreams
+
+logger = logging.getLogger("veritasquant.apps.server.api_server")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -122,12 +125,31 @@ def _serve(arguments: argparse.Namespace) -> int:
         principalProvider=_DefaultPrincipalProvider(),
         streamService=streamService,
     )
+
+    # 行情导入：用户上传 MVSV → PostgreSQL（finv_quote_secu_kline_min）
+    from veritasquant.application.QuoteImportService import QuoteImportService
+    from veritasquant.apps.server.ImportRoutes import ImportApi
+    from veritasquant.infrastructure.persistence.QuoteStore import MinuteQuoteStore, connectQuoteDb
+
+    try:
+        quoteConnection = connectQuoteDb()
+    except Exception:  # noqa: BLE001 - 未配置 PG 时导入端点不可用，其余 API 照常
+        logger.warning("行情导入未接线：PG 连接不可用（设置 VQ_POSTGRES_* 环境变量）")
+        quoteConnection = None
+    importApi = None
+    if quoteConnection is not None:
+        importApi = ImportApi(
+            service=QuoteImportService(MinuteQuoteStore(quoteConnection)),
+            catalog=catalog,
+        )
+
     deps = buildApiDependencies(
         errorCatalog=catalog,
         versionProvider=provider,
         readinessProbes=(ErrorCatalogProbe(catalog),),
         securityService=securityService,
         domainApis=_buildDomainApis(catalog),
+        importApi=importApi,
         streamDeps=streamDeps,
         requestIdExtractor=requestIdFromState,
         traceIdExtractor=traceIdFromState,

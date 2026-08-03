@@ -214,3 +214,37 @@ class ApiClient:
     def reports(self) -> list[Mapping[str, Any]]:
         envelope = self._request("GET", "/api/v1/reports")
         return list(envelope.data.get("reports", [])) if envelope.data else []
+
+    # ---- 行情导入（文件上传） ----
+    def uploadImport(
+        self,
+        fileName: str,
+        content: bytes,
+        source: str,
+        upsertMode: str = "FIELD",
+        importedBy: str = "gui",
+    ) -> Mapping[str, Any]:
+        """上传 MVSV 行情文件并导入（POST /api/v1/imports/upload）。"""
+        url = "/api/v1/imports/upload"
+        try:
+            response = self._client.post(
+                url,
+                headers=self._headers(),
+                data={
+                    "source": source,
+                    "upsert_mode": upsertMode,
+                    "imported_by": importedBy,
+                },
+                files={"file": (fileName, content, "application/octet-stream")},
+            )
+        except httpx.HTTPError as error:
+            raise ApiClientError(2006, f"网络错误: {error}", 0, True) from error
+        try:
+            payload = response.json()
+        except json.JSONDecodeError:
+            raise ApiClientError(2006, "响应非 JSON", response.status_code, False) from None
+        envelope = EnvelopeV1.fromWire(payload)
+        if envelope.code >= 1000:
+            retryable = bool((envelope.error or {}).get("retryable", False))
+            raise ApiClientError(envelope.code, envelope.message, response.status_code, retryable)
+        return dict(envelope.data or {})
