@@ -112,10 +112,10 @@ python scripts/DeployServer.py check
 python scripts/DeployServer.py start   # 首次启动会自动拉取镜像
 ```
 
-如需指定版本（如 0.1.1），在 `Docker/.env.deploy` 中设置：
+如需固定版本，在 `Docker/.env.deploy` 中设置（tag 必须与 GitHub Packages 页面实际发布的 tag 完全一致，见 6.6）：
 
 ```
-VQ_IMAGE_TAG=0.1.1
+VQ_IMAGE_TAG=latest
 ```
 
 手动拉取验证：
@@ -233,8 +233,8 @@ Docker Desktop → Settings → Docker Engine，配置镜像加速器后 `Apply 
 
 ### 6.6 拉取到不存在的版本 tag
 
-- 检查 `VQ_IMAGE_TAG` 拼写（如 `0.1.1` 需与发布 tag 一致，大写 `V` 前缀是 Git tag，镜像 tag 不带 `V`）；
-- 查看已发布 tag：`docker manifest inspect ghcr.io/acanx/veritasquant:0.1.1` 或 GitHub Packages 页面。
+- 检查 `VQ_IMAGE_TAG` 拼写：必须与 GitHub Packages 页面实际发布的 tag 完全一致（Git tag `V0.1.2` 触发构建时发布的镜像 tag 为 `0.1.2` 与 `latest`，镜像 tag 不带 `V` 前缀）；
+- 查看已发布 tag：`docker manifest inspect ghcr.io/acanx/veritasquant:latest` 或 GitHub Packages 页面（`https://github.com/users/ACANX/packages/container/package/veritasquant`）。
 
 ### 6.7 容器启动后立即退出
 
