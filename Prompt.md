@@ -74,22 +74,32 @@ FinvQuant 是一个**量化策略交易平台**，采用**前后端分离**架�
 
 ## 6. 部署与镜像
 
-### 6.1 镜像（GitHub Packages / GHCR）
-| 镜像 | 内容 | 端口 |
-|------|------|------|
-| `ghcr.io/acanx/finvquant-server` | Go 服务端 | 16001 |
-| `ghcr.io/acanx/finvquant-web` | 前端（Nginx） | 16002 |
+### 6.1 All-in-One 镜像（GitHub Packages / GHCR）
+
+**单镜像 `ghcr.io/acanx/finvquant`**：一个容器同时提供服务端与前端（Go 内嵌前端构建产物，单进程双端口）。
+
+| 端口 | 服务 |
+|------|------|
+| 16001 | Go 服务端 API（Gin） |
+| 16002 | 前端 Web（内嵌静态资源，SPA fallback） |
+
+> 设计说明：前端静态文件通过 `go:embed` 内嵌进 Go 二进制，无需独立 Nginx 镜像，拉取**一个镜像**即可完整部署。
 
 ### 6.2 本地 Docker 部署
+
 ```bash
+# 方式一：Compose 一键（含 PG18 / Redis8）
 cp deploy/.env.example deploy/.env   # 按需修改
 docker compose --env-file deploy/.env up -d
-# 或直接使用已发布镜像：
-docker pull ghcr.io/acanx/finvquant-server:latest
-docker pull ghcr.io/acanx/finvquant-web:latest
+
+# 方式二：直接拉取 All-in-One 镜像运行
+docker pull ghcr.io/acanx/finvquant:latest
+docker run -d --name finvquant -p 16001:16001 -p 16002:16002 \
+  -e FINV_PG_HOST=host.docker.internal -e FINV_REDIS_ADDR=host.docker.internal:6379 \
+  ghcr.io/acanx/finvquant:latest
 ```
 
-### 6.3 依赖服务（Compose 内置）
+### 6.3 依赖服务（Compose 内置，独立镜像）
 - `postgres`：`postgres:18-alpine`（宿主映射 5433）
 - `redis`：`redis:8-alpine`（宿主映射 6380）
 
@@ -100,7 +110,7 @@ docker pull ghcr.io/acanx/finvquant-web:latest
 - 流程：
   1. `build-server`：Go vet + build + test（Go 1.25.3）
   2. `build-web`：npm ci + build（Node 24）
-  3. `docker`（非 PR）：构建并推送 server/web 镜像到 GHCR（latest + 版本 tag）
+  3. `docker`（非 PR）：构建并推送 **All-in-One 镜像** `ghcr.io/acanx/finvquant`（latest + 版本 tag）
   4. `docker-pr`（PR）：仅构建不推送，验证镜像可构建
 
 ## 8. 端口约定（汇总）
@@ -126,3 +136,4 @@ docker pull ghcr.io/acanx/finvquant-web:latest
 | 日期 | 变更 | 说明 |
 |------|------|------|
 | 2026-08-04 | 初始版本 | 初始化 Go 服务端（Gin 最新 / PG18 / Redis8 / Go 1.25.3）+ Vue3+Vite8+Vuetify4 前端；端口 16001/16002；GHCR 镜像构建与 Docker Compose 部署；.gitignore 改 Go 版 |
+| 2026-08-04 | All-in-One 镜像 | 合并 server/web 双镜像为单镜像 `ghcr.io/acanx/finvquant`：前端经 `go:embed` 内嵌进 Go 二进制，单进程双端口（16001 API + 16002 前端），拉取一个镜像即可完整部署 |

@@ -49,6 +49,11 @@ func (c *Config) ListenAddr() string {
 	return c.Host + ":" + c.Port
 }
 
+// WebListenAddr 返回前端监听地址（默认 0.0.0.0:16002）。
+func (c *Config) WebListenAddr() string {
+	return c.Host + ":" + envOr("FINV_WEB_PORT", "16002")
+}
+
 func envOr(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

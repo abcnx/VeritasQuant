@@ -1,24 +1,25 @@
-# FinvQuant 前后端分离部署（Docker Compose）
-#   - server : Go 服务端（Gin），默认端口 16001
-#   - web    : 前端（Vue3+Vite8+Vuetify4 → Nginx），默认端口 16002
-#   - postgres: PostgreSQL 18
-#   - redis  : Redis 8
+# FinvQuant All-in-One 部署（Docker Compose）
+#   - finvquant : 单镜像（Go 服务端 16001 + 内嵌前端 16002）
+#   - postgres : PostgreSQL 18
+#   - redis    : Redis 8
 #
 # 使用：cp deploy/.env.example deploy/.env && docker compose --env-file deploy/.env up -d
-# 生产镜像：ghcr.io/acanx/finvquant-server / ghcr.io/acanx/finvquant-web
+# 镜像：ghcr.io/acanx/finvquant（docker pull 后直接部署）
 
 services:
-  server:
-    image: ghcr.io/acanx/finvquant-server:${FINV_IMAGE_TAG:-latest}
+  finvquant:
+    image: ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fq-server
+    container_name: finvquant
     ports:
-      - "16001:16001"
+      - "16001:16001"   # 服务端 API
+      - "16002:16002"   # 前端 Web
     environment:
       FINV_SERVER_HOST: "0.0.0.0"
       FINV_SERVER_PORT: "16001"
+      FINV_WEB_PORT: "16002"
       FINV_PG_HOST: postgres
       FINV_PG_PORT: "5432"
       FINV_PG_USER: ${FINV_PG_USER:-finvquant}
@@ -38,18 +39,6 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-
-  web:
-    image: ghcr.io/acanx/finvquant-web:${FINV_IMAGE_TAG:-latest}
-    build:
-      context: ./Web
-      dockerfile: Dockerfile
-    container_name: fq-web
-    ports:
-      - "16002:16002"
-    depends_on:
-      - server
-    restart: unless-stopped
 
   postgres:
     image: postgres:18-alpine
