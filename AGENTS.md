@@ -25,6 +25,22 @@
 
 FinvQuant 是一个面向多资产的**严格事件驱动量化交易平台**，支持多种基金智能定投方案和用户自定义定投规则的历史回测。在进入模拟盘、券商仿真和受控实盘前，必须先产出可复现的研究和回测结果。
 
+## 技术栈（前后端分离）
+
+### 服务端（Go）
+
+- **Go 1.25.3**，标准模块化结构：`cmd/server` + `internal/{api,config,database,redisclient}`。
+- 依赖（均为最新）：**Gin v1.12.0**、**go-redis v9.22**、**pgx/v5**（PostgreSQL 18 驱动）。
+- 默认端口 **16001**；健康检查 `/api/v1/health/live|ready`、版本 `/api/v1/version`。
+- 配置走环境变量（`FINV_*`），默认值适配 Docker Compose。
+
+### 前端（Web/）
+
+- **Vue3 + Vite 8.2 + Vuetify 4.1**（TypeScript）。
+- 默认端口 **16002**；开发环境 `/api` 代理 + 生产环境 Nginx 反代到服务端 16001。
+
+> 当前实现说明：All-in-One 镜像（`ghcr.io/acanx/finvquant`）中，前端构建产物经 `go:embed` 内嵌进 Go 服务端二进制，单进程双端口（16001 API + 16002 前端），无需独立 Nginx 容器；详见 `Prompt.md`。
+
 ## 归档规则
 
 `VeritasQuant/Archive/` 保存已合并到技术方案中的历史源文档。除非任务明确要求维护归档，否则**不得修改、移动或删除**其中的文件。设计决策变更时，必须同步更新 `VeritasQuant/Docs/VeritasQuantTechSpec.md`。
