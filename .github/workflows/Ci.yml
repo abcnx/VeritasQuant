@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  packages: write  # 推送容器镜像到 ghcr.io（GitHub Packages）
 
 # ---------------------------------------------------------------------------
 # 全局版本常量：包版本号唯一来源。
@@ -130,3 +131,68 @@ jobs:
           name: database-migration-evidence
           path: artifacts/
           retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # 服务端镜像构建并发布到 GitHub Container Registry（ghcr.io）。
+  # - tag 推送（V*）→ 构建 <version> 与 latest 镜像（正式发布）；
+  # - push 到 main/dev → 构建 latest（预发布）；
+  # - workflow_dispatch → 手动构建（默认 latest）。
+  # 认证使用 GitHub 内置 GITHUB_TOKEN（permissions.packages: write），无需外部凭据。
+  # ---------------------------------------------------------------------------
+  build-image:
+    name: Build & publish server image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-ref: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Docker 镜像仓库名必须全小写；github.repository 可能是 ACANX/VeritasQuant。
+      - name: Normalize lowercase image repository
+        id: repo
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      # 手动触发时生成带版本前缀的 yyyyMMddHHmm 时间戳 tag（UTC），
+      # 如 VQ_VERSION=0.1.1 → 0.1.1-202608031217。
+      - name: Generate timestamp tag for manual build
+        id: timestamp
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "tag=${{ env.VQ_VERSION }}-$(date -u +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.repo.outputs.image }}
+          tags: |
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/V') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' }}
+            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/tags/V') }}
+            type=raw,value=${{ steps.timestamp.outputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=semver,pattern={{version}}
+            type=sha,format=short
+      - name: Build and push server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Docker/Dockerfile
+          # PR 验证构建但不上推送（PR 的 GITHUB_TOKEN 无 packages:write）；
+          # push/tag 时推送 ghcr.io。
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Verify image is pullable
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE="${{ steps.repo.outputs.image }}:latest"
+          docker pull "$IMAGE"
+          docker image inspect "$IMAGE" --format '镜像已就绪: {{.RepoDigests}}'
