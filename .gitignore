@@ -9,3 +9,6 @@ build/
 artifacts/
 *.egg-info/
 var/
+
+# 部署环境变量（含明文密码，禁止提交）
+Docker/.env.deploy
