@@ -256,6 +256,43 @@ python3 scripts/DeployServer.py logs --service server
 - PostgreSQL/Redis 使用命名卷（`vq-postgres` / `vq-redis`），`stop` 不删数据；
 - 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录。
 
+### 6.10 客户端 pip 安装失败（No matching distribution found for setuptools）
+
+症状：`python3 -m pip install -e .` 报 `Could not find a version that satisfies the requirement setuptools>=69 (from versions: none)`。
+
+常见原因：**系统代理拦截了 PyPI 请求**（构建隔离阶段 pip 需要从镜像源拉取 setuptools，请求被代理吃掉后返回空列表）。
+
+解决（按顺序尝试）：
+
+```powershell
+# ① 关掉系统代理 / VPN 后重试
+python3 -m pip install -e .
+
+# ② 或换源安装（阿里云镜像国内更快）
+python3 -m pip install -e . -i https://mirrors.aliyun.com/pypi/simple/
+
+# ③ 永久换源
+python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+
+# ④ 若代理必须开启，检查环境变量代理是否指向失效地址并修正
+Remove-Item Env:HTTP_PROXY, Env:HTTPS_PROXY   # 临时清除后再试
+```
+
+### 6.11 PowerShell 中 curl 显示中文乱码 / curl 命令报错
+
+PowerShell 5.1 中 `curl` 是 `Invoke-WebRequest` 的别名（不是真正的 curl）：
+
+- 中文乱码：`Invoke-WebRequest` 按系统代码页（GBK）解码 UTF-8 JSON 导致；
+- `curl --version` / `curl -v` 报错：别名把参数当 PowerShell 参数解析。
+
+解决：使用真正的 curl：
+
+```powershell
+curl.exe -s http://localhost:18000/api/v1/version
+```
+
+或先切换控制台代码页为 UTF-8：`chcp 65001`。
+
 ---
 
 ## 7. 安全与边界
