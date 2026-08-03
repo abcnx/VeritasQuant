@@ -133,7 +133,12 @@ def test_ci_builds_and_publishes_ghcr_image() -> None:
     assert "secrets.GITHUB_TOKEN" in steps
     # 构建并推送（build-push-action）
     assert "docker/build-push-action" in steps
-    assert "ghcr.io/${{ github.repository }}" in steps
+    # 镜像仓库名必须转小写（Docker 命名规范；github.repository 可能含大写）
+    assert "steps.repo.outputs.image" in steps
+    ci_text = (ROOT / ".github" / "workflows" / "Ci.yml").read_text(encoding="utf-8")
+    assert "Normalize lowercase image repository" in ci_text
+    assert "${GITHUB_REPOSITORY,,}" in ci_text  # bash 小写化
+    assert "ghcr.io/${{ github.repository }}" not in ci_text  # 禁止大写直用
     # 版本 tag：V* 触发发布版本镜像；main/dev 刷新 latest
     assert "latest" in steps
     assert "refs/tags/V" in steps
@@ -141,7 +146,6 @@ def test_ci_builds_and_publishes_ghcr_image() -> None:
     assert "Generate timestamp tag for manual build" in "\n".join(
         step.get("name", "") for step in build_image["steps"]
     )
-    ci_text = (ROOT / ".github" / "workflows" / "Ci.yml").read_text(encoding="utf-8")
     assert "%Y%m%d%H%M" in ci_text
     assert "github.event_name == 'workflow_dispatch'" in ci_text
     # 时间戳版本必须带版本前缀（如 0.1.1-202608031217）

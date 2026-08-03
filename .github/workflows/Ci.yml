@@ -157,6 +157,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # Docker 镜像仓库名必须全小写；github.repository 可能是 ACANX/VeritasQuant。
+      - name: Normalize lowercase image repository
+        id: repo
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       # 手动触发时生成带版本前缀的 yyyyMMddHHmm 时间戳 tag（UTC），
       # 如 VQ_VERSION=0.1.1 → 0.1.1-202608031217。
       - name: Generate timestamp tag for manual build
@@ -167,7 +171,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ steps.repo.outputs.image }}
           tags: |
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/V') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' }}
             type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/tags/V') }}
@@ -189,6 +193,6 @@ jobs:
       - name: Verify image is pullable
         if: github.event_name != 'pull_request'
         run: |
-          IMAGE="ghcr.io/${{ github.repository }}:latest"
+          IMAGE="${{ steps.repo.outputs.image }}:latest"
           docker pull "$IMAGE"
           docker image inspect "$IMAGE" --format '镜像已就绪: {{.RepoDigests}}'
