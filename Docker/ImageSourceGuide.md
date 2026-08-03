@@ -11,7 +11,26 @@
 > 该错误是访问 Docker Hub 认证服务（auth.docker.io）时连接被断开——网络不可达的典型表现。
 > **仅影响 Docker Hub 上的镜像**（postgres、redis 等）；本项目 server 镜像在 ghcr.io，通常不受影响。
 
-## 1. 方案 A：命令行临时指定镜像源（单次，推荐先试这个）
+## 1. 手动拉取本项目 server 镜像（ghcr.io）
+
+ghcr.io 不走 Docker Hub 加速器，环境可直接访问，无需镜像源配置：
+
+```powershell
+# 拉取最新版
+docker pull ghcr.io/acanx/veritasquant:latest
+
+# 拉取指定版本（镜像 tag 不带 V 前缀：Git tag V0.1.2 对应镜像 tag 0.1.2）
+docker pull ghcr.io/acanx/veritasquant:0.1.2
+```
+
+查看已发布 tag：GitHub Packages 页面（`https://github.com/users/ACANX/packages/container/package/veritasquant`）
+或 `docker manifest inspect ghcr.io/acanx/veritasquant:latest`。
+
+> 拉取失败排查：`denied / unauthorized` → 镜像非 public 或需登录
+> （`echo $env:GITHUB_TOKEN | docker login ghcr.io -u <用户名> --password-stdin`）；
+> `manifest unknown` → tag 不存在（核对 Packages 页面实际 tag）。
+
+## 2. 方案 A：命令行临时指定镜像源（单次，推荐先试这个）
 
 Docker Hub 官方镜像的完整名称是 `library/<镜像>`（如 `library/postgres`、`library/redis`）。
 默认不写源地址时 Docker 走 Docker Hub；**加上源地址前缀即改为从该源拉取**：
@@ -42,7 +61,7 @@ docker tag <源地址>/library/<镜像名>:<tag> <镜像名>:<tag>
 
 第三方镜像（如 `bitnami/postgresql`）用 `<源地址>/bitnami/postgresql:<tag>` 的格式。
 
-## 2. 方案 B：Docker Desktop 永久配置镜像加速器（一劳永逸）
+## 3. 方案 B：Docker Desktop 永久配置镜像加速器（一劳永逸）
 
 1. Docker Desktop → **Settings → Docker Engine**；
 2. 在 JSON 中加 `registry-mirrors`（保留原有内容）：
@@ -60,7 +79,7 @@ docker tag <源地址>/library/<镜像名>:<tag> <镜像名>:<tag>
 3. **Apply & Restart** 重启 Docker；
 4. 之后 `docker pull postgres:18-alpine` 等命令自动走镜像源，无需手动 tag。
 
-## 3. 镜像源地址清单
+## 4. 镜像源地址清单
 
 | 源 | 地址 | 说明 |
 | --- | --- | --- |
@@ -73,7 +92,7 @@ docker tag <源地址>/library/<镜像名>:<tag> <镜像名>:<tag>
 > 企业/办公网络建议优先使用公司内部 registry 或为 Docker 配置 HTTP 代理
 > （Settings → Resources → Proxies），更稳定合规。
 
-## 4. 验证
+## 5. 验证
 
 ```powershell
 # 确认本地镜像已就绪
@@ -87,7 +106,7 @@ python3 scripts/DeployServer.py start
 curl.exe http://localhost:18000/health/live
 ```
 
-## 5. 注意事项
+## 6. 注意事项
 
 - 镜像加速器只代理 Docker Hub；ghcr.io（本项目 server 镜像）不走加速器，环境能直接访问；
 - 方案 A 不修改任何配置，只影响本机当前 tag；方案 B 写入 Docker Engine 全局配置；
