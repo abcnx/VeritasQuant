@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from veritasquant.apps.gui_client.GuiApp import GuiContext
-from veritasquant.apps.gui_client.GuiServer import main as guiMain
+from veritasquant.apps.guiclient.GuiApp import GuiContext
+from veritasquant.apps.guiclient.GuiServer import main as guiMain
 
 
 def test_gui_context_default_pages() -> None:

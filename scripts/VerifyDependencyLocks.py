@@ -28,8 +28,8 @@ def collectLockNames(path: Path) -> set[str]:
 def verify(root: Path) -> list[str]:
     """验证 runtime/dev 声明都能在相应锁文件中定位到精确版本。"""
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    runtimeLock = collectLockNames(root / "requirements" / "Runtime.lock")
-    developmentLock = collectLockNames(root / "requirements" / "Development.lock") | runtimeLock
+    runtimeLock = collectLockNames(root / "Requirements" / "Runtime.lock")
+    developmentLock = collectLockNames(root / "Requirements" / "Development.lock") | runtimeLock
     errors: list[str] = []
     for requirement in project.get("dependencies", []):
         name = _normalize(_requirementName(requirement))

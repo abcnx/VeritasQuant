@@ -42,7 +42,7 @@
 - 复核对象：`scripts/ScanSecrets.py`、`scripts/VerifyLicenses.py`、`Configs/Security/LicensePolicy.yml`、`tests/unit/scripts/test_engineering_scripts.py` 与 `.github/workflows/Ci.yml`。
 - 秘密扫描：负例演练（含 `api_key` 赋值与 PRIVATE KEY 样本）返回 `secret findings: 1`、退出码 1，正确阻断；输出仅含路径/行号/规则名，不回显疑似秘密值。仓库根目录扫描 `secret findings: 0`（CI 干净环境）。
 - 许可证策略：`ApprovalStatus: APPROVED`（ApprovedBy: ProjectAuthor，2026-07-31），允许 MIT/Apache-2.0/BSD-3-Clause/PSF-2.0；`VerifyLicenses.py` 实测 `license issues: 0`。
-- 漏洞 SLA：Critical 24 小时 / High 72 小时 / Medium 30 天 / Low 90 天；CI Security baseline 使用 `pip_audit -r requirements/Runtime.lock`，近期运行持续 SUCCESS。
+- 漏洞 SLA：Critical 24 小时 / High 72 小时 / Medium 30 天 / Low 90 天；CI Security baseline 使用 `pip_audit -r Requirements/Runtime.lock`，近期运行持续 SUCCESS。
 - 单元测试 `test_engineering_scripts.py`（7 项，含秘密阻断与许可证批准门禁）全部通过。
 
 本快照证明 P0-011 验收标准（测试秘密能被阻断；高危漏洞有处置 SLA；许可证白名单经批准）的实现证据与 CI 配置相符。独立人类 SRE 对首次审计报告原始工件的复核仍作为 M0 Gate 前的治理行动保留，不替代或改变本工作项的验收。
