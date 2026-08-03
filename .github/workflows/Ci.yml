@@ -42,9 +42,9 @@ jobs:
       - name: Build distribution packages
         run: python3 -m build
       - name: Verify repository-external wheel installation
-        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.0-py3-none-any.whl
+        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.1-py3-none-any.whl
       - name: Collect test evidence
-        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-0.1.0-py3-none-any.whl --artifact dist/veritasquant-0.1.0.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
+        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-0.1.1-py3-none-any.whl --artifact dist/veritasquant-0.1.1.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
       - name: Upload quality evidence
         uses: actions/upload-artifact@v4
         with:
