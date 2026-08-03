@@ -1,24 +1,25 @@
-# FinvQuant 前后端分离部署（Docker Compose）
-#   - server : Go 服务端（Gin），默认端口 16001
-#   - web    : 前端（Vue3+Vite8+Vuetify4 → Nginx），默认端口 16002
-#   - postgres: PostgreSQL 18
-#   - redis  : Redis 8
+# FinvQuant All-in-One 部署（Docker Compose）
+#   - finvquant : 单镜像（Go 服务端 16001 + 内嵌前端 16002）
+#   - postgres : PostgreSQL 18
+#   - redis    : Redis 8
 #
-# 使用：cp deploy/.env.example deploy/.env && docker compose --env-file deploy/.env up -d
-# 生产镜像：ghcr.io/acanx/finvquant-server / ghcr.io/acanx/finvquant-web
+# 使用：cp Deploy/.env.example Deploy/.env && docker compose --env-file Deploy/.env up -d
+# 镜像：ghcr.io/acanx/finvquant（docker pull 后直接部署）
 
 services:
-  server:
-    image: ghcr.io/acanx/finvquant-server:${FINV_IMAGE_TAG:-latest}
+  finvquant:
+    image: ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fq-server
+    container_name: finvquant
     ports:
-      - "16001:16001"
+      - "16001:16001"   # 服务端 API
+      - "16002:16002"   # 前端 Web
     environment:
       FINV_SERVER_HOST: "0.0.0.0"
       FINV_SERVER_PORT: "16001"
+      FINV_WEB_PORT: "16002"
       FINV_PG_HOST: postgres
       FINV_PG_PORT: "5432"
       FINV_PG_USER: ${FINV_PG_USER:-finvquant}
@@ -39,18 +40,6 @@ services:
       timeout: 5s
       retries: 5
 
-  web:
-    image: ghcr.io/acanx/finvquant-web:${FINV_IMAGE_TAG:-latest}
-    build:
-      context: ./Web
-      dockerfile: Dockerfile
-    container_name: fq-web
-    ports:
-      - "16002:16002"
-    depends_on:
-      - server
-    restart: unless-stopped
-
   postgres:
     image: postgres:18-alpine
     container_name: fq-postgres
@@ -62,7 +51,13 @@ services:
     ports:
       - "127.0.0.1:${FINV_PG_EXPOSE_PORT:-5433}:5432"
     volumes:
-      - finvquant-pgdata:/var/lib/postgresql/data
+      # PG 数据目录映射到 Docker 宿主机文件系统（容器重建/删除不丢数据）
+      # 默认：Deploy/pgdata（项目相对目录）；Windows 示例：
+      #   FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
+      # ⚠️ PG18+ 镜像数据目录变更：挂载点为 /var/lib/postgresql（单一挂载），
+      #    实际数据在宿主目录下的 18/ 子目录；挂载 /var/lib/postgresql/data
+      #    会被镜像判定为 unused mount 并拒绝启动。
+      - ${FINV_PG_DATA_DIR:-./pgdata}:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${FINV_PG_USER:-finvquant} -d ${FINV_PG_DATABASE:-finvquant}"]
       interval: 10s
@@ -86,5 +81,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  finvquant-pgdata:
+  # PG 数据已绑定挂载到宿主机目录（FINV_PG_DATA_DIR），不再需要命名卷
   finvquant-redisdata:

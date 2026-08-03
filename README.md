@@ -9,18 +9,20 @@
 ## 快速开始（Docker）
 
 ```bash
-cp deploy/.env.example deploy/.env   # 按需修改
-docker compose --env-file deploy/.env up -d
+cp Deploy/.env.example Deploy/.env   # 按需修改
+docker compose --env-file Deploy/.env up -d
 ```
 
 - 前端控制台：http://localhost:16002
 - 服务端 API：http://localhost:16001/api/v1/health/live
 
-或直接使用已发布镜像：
+或直接使用 All-in-One 镜像：
 
 ```bash
-docker pull ghcr.io/acanx/finvquant-server:latest
-docker pull ghcr.io/acanx/finvquant-web:latest
+docker pull ghcr.io/acanx/finvquant:latest
+docker run -d --name finvquant -p 16001:16001 -p 16002:16002 \
+  -e FINV_PG_HOST=host.docker.internal -e FINV_REDIS_ADDR=host.docker.internal:6379 \
+  ghcr.io/acanx/finvquant:latest
 ```
 
 ## 本地开发
@@ -38,7 +40,7 @@ cd Web && npm install && npm run dev
 ```
 ├── cmd/  internal/       # Go 服务端
 ├── Web/                  # Vue3+Vite8+Vuetify4 前端
-├── deploy/               # Docker Compose 编排
+├── Deploy/               # Docker Compose 编排
 ├── .github/workflows/    # CI/CD（构建 + 推送 GHCR）
 ├── Prompt.md             # 结构化需求文档（持续更新）
 └── VeritasQuant/         # 既有子项目（Python 量化平台，历史保留）

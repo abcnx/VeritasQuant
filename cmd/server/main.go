@@ -1,7 +1,9 @@
-// Package server 提供 FinvQuant 量化策略交易平台服务端入口。
+// Package server 提供 FinvQuant 量化策略交易平台服务端入口（All-in-One）。
 //
 // 技术栈：Go 1.25.3 + Gin v1.12 + PostgreSQL 18（pgx/v5）+ Redis 8（go-redis/v9）。
-// 默认监听端口：16001。
+// 单进程双端口：
+//   - 16001：API 服务（/api/v1/*，Gin）
+//   - 16002：前端静态资源（内嵌 Web/dist，SPA fallback）
 package main
 
 import (
@@ -21,6 +23,7 @@ import (
 	"github.com/acanx/finvquant/internal/config"
 	"github.com/acanx/finvquant/internal/database"
 	"github.com/acanx/finvquant/internal/redisclient"
+	"github.com/acanx/finvquant/internal/static"
 )
 
 // 版本信息（构建时通过 -ldflags 注入）。
@@ -52,24 +55,30 @@ func main() {
 	}
 	defer rdb.Close()
 
-	router := api.NewRouter(&api.Deps{
-		Pool:    pool,
-		Redis:   rdb,
-		Version: version,
-		Commit:  commit,
-		Server:  "finvquant-server",
-	})
-
-	server := &http.Server{
+	// 16001：API 服务
+	apiServer := &http.Server{
 		Addr:              cfg.ListenAddr(),
-		Handler:           router,
+		Handler:           api.NewRouter(&api.Deps{Pool: pool, Redis: rdb, Version: version, Commit: commit, Server: "finvquant"}),
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	// 16002：前端静态资源（内嵌）
+	webServer := &http.Server{
+		Addr:              cfg.WebListenAddr(),
+		Handler:           static.Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
-		log.Printf("[finvquant] 服务端启动，监听 %s（Go %s）", cfg.ListenAddr(), runtime.Version())
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("[finvquant] 服务端异常退出: %v", err)
+		log.Printf("[finvquant] API 服务启动，监听 %s（Go %s）", cfg.ListenAddr(), runtime.Version())
+		if err := apiServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("[finvquant] API 服务异常退出: %v", err)
+		}
+	}()
+	go func() {
+		log.Printf("[finvquant] 前端服务启动，监听 %s", cfg.WebListenAddr())
+		if err := webServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("[finvquant] 前端服务异常退出: %v", err)
 		}
 	}()
 
@@ -77,5 +86,6 @@ func main() {
 	log.Println("[finvquant] 收到退出信号，优雅关闭...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_ = server.Shutdown(shutdownCtx)
+	_ = apiServer.Shutdown(shutdownCtx)
+	_ = webServer.Shutdown(shutdownCtx)
 }

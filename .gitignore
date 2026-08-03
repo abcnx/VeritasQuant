@@ -42,7 +42,11 @@ dist/
 # ---- Node（Web 前端兜底）----
 node_modules/
 Web/dist/
+# Go embed 前端产物（构建时生成，不提交）
+internal/webui/dist/
 
 # ---- 部署 ----
-deploy/.env
+Deploy/.env
 Docker/.env.deploy
+# PG 数据目录（宿主机映射，本机生成的 pgdata 不提交）
+Deploy/pgdata/
