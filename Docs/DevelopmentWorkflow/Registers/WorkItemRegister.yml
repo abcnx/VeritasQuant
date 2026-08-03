@@ -6549,3 +6549,129 @@ Records:
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第二批开发完成（建立生产监控、分页告警和 24x7 联系树），本地验证全绿
+- WorkItemId: TSK-P5-011
+  PlanTaskId: P5-011
+  Title: 建立不可变审计、日志访问和保留策略
+  Description: AuditTrailStoreV1 不可变审计（追加型存储，普通用户不能删改，六域检索，哈希链完整性）；AuditRetentionPolicyV1 按域保留期（PURGE 仅 Administrator 且归档留痕）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.8'
+  - '12.1'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 7
+  Dependencies:
+  - P5-010
+  AcceptanceCriteria: 普通用户不能删改；检索覆盖命令、审批、风险、订单、账本和人工动作
+  TestEvidence: tests/unit/security/test_audit_trail.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第三批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:15:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第三批开发完成（建立不可变审计、日志访问和保留策略），本地验证全绿
+- WorkItemId: TSK-P5-012
+  PlanTaskId: P5-012
+  Title: 建立 WAL/对象版本化备份与恢复自动验证
+  Description: WalArchivePolicyV1 WAL 归档间隔策略（实盘 <= 5 分钟）；BackupReadabilityVerifierV1 备份可读性自动验证；RecoveryEnvironmentV1 恢复环境与生产隔离；BackupRecoveryServiceV1 恢复验证（RTO<=1h/RPO<=5min/账本哈希/控制 100%/差异 0）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.8'
+  - '12.3'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P2-001
+  - P5-002
+  AcceptanceCriteria: WAL 间隔 <=5 分钟；备份可读性自动验证；恢复环境与生产隔离
+  TestEvidence: tests/unit/reliability/test_backup_recovery.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第三批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:15:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第三批开发完成（建立 WAL/对象版本化备份与恢复自动验证），本地验证全绿
+- WorkItemId: TSK-P5-013
+  PlanTaskId: P5-013
+  Title: 编写启动、停机、断连、对账、账本异常、密钥泄漏 Runbook
+  Description: RunbookV1 结构化 Runbook（触发/权限/步骤/验证/回退/证据/升级联系人八要素）；RunbookRegistryV1 六类场景全覆盖校验；启动/停机/断连/对账/账本异常/密钥泄漏标准 Runbook
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.8'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P5-010
+  AcceptanceCriteria: 每个 Runbook 含触发、权限、步骤、验证、回退、证据和升级联系人
+  TestEvidence: tests/unit/reliability/test_runbook.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第三批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:15:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第三批开发完成（编写六类 Runbook），本地验证全绿
+- WorkItemId: TSK-P5-014
+  PlanTaskId: P5-014
+  Title: 完成依赖/镜像/策略源码/沙箱安全冻结
+  Description: VulnerabilityGateV1 漏洞 Gate（CVSS>=7.0 阻断）；LicenseGateV1 许可证白名单；SecurityFreezeServiceV1 安全冻结（依赖锁+镜像摘要+策略源码哈希+>=2 审批人+不可变 freezeHash）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.8'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P5-001
+  - P4-014
+  AcceptanceCriteria: 漏洞与许可证 Gate 通过；镜像摘要、依赖锁、源码哈希和审批齐全
+  TestEvidence: tests/unit/security/test_supply_chain_freeze.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第三批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:15:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第三批开发完成（完成依赖/镜像/策略源码/沙箱安全冻结），本地验证全绿
