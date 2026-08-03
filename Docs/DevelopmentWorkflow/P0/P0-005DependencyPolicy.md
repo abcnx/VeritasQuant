@@ -8,8 +8,8 @@
 
 ## 依赖分组
 
-- 运行时依赖：`pyproject.toml` 的 `project.dependencies`，镜像到 `requirements/Runtime.lock`。
-- 开发依赖：`project.optional-dependencies.dev`，镜像到 `requirements/Development.lock`。
+- 运行时依赖：`pyproject.toml` 的 `project.dependencies`，镜像到 `Requirements/Runtime.lock`。
+- 开发依赖：`project.optional-dependencies.dev`，镜像到 `Requirements/Development.lock`。
 - 安全、类型、格式、测试和构建工具只能进入开发依赖，不随运行 wheel 引入。
 
 ## 锁定与审阅

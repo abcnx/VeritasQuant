@@ -34,7 +34,7 @@ jobs:
       - name: Install locked development dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+          python3 -m pip install -r Requirements/Runtime.lock -r Requirements/Development.lock
           python3 -m pip install -e .
       - name: Validate dependency locks and repository conventions
         run: |
@@ -74,11 +74,11 @@ jobs:
       - name: Install locked audit dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+          python3 -m pip install -r Requirements/Runtime.lock -r Requirements/Development.lock
       - name: Scan repository for secrets
         run: python3 scripts/ScanSecrets.py
       - name: Audit runtime dependency vulnerabilities
-        run: python3 -m pip_audit -r requirements/Runtime.lock
+        run: python3 -m pip_audit -r Requirements/Runtime.lock
       - name: Verify approved license baseline
         run: python3 scripts/VerifyLicenses.py --policy Configs/Security/LicensePolicy.yml
 
@@ -118,7 +118,7 @@ jobs:
       - name: Install locked development dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+          python3 -m pip install -r Requirements/Runtime.lock -r Requirements/Development.lock
           python3 -m pip install -e .
       - name: Run database migration integration tests
         env:

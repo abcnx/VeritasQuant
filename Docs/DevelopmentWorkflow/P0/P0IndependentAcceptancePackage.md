@@ -23,7 +23,7 @@
 | 2 | `python3 scripts/VerifyDependencyLocks.py` | `0`，含 `dependency lock issues: 0` | 控制台日志 |
 | 3 | `python3 scripts/Preflight.py` | `0`，含 `preflight issues: 0` | 控制台日志 |
 | 4 | `python3 scripts/ScanSecrets.py` | `0`，含 `secret findings: 0` | 控制台日志 |
-| 5 | `python3 -m pip_audit -r requirements/Runtime.lock` | `0`，无已知漏洞 | 控制台日志 |
+| 5 | `python3 -m pip_audit -r Requirements/Runtime.lock` | `0`，无已知漏洞 | 控制台日志 |
 | 6 | `python3 scripts/VerifyLicenses.py --policy Configs/Security/LicensePolicy.yml` | `0`，含 `license issues: 0` | 控制台日志及 `LicensePolicy.yml` 审阅记录 |
 | 7 | `python3 -m pytest tests/unit/scripts/test_engineering_scripts.py tests/contract/test_p0_engineering_baseline.py -q` | `0`，失败、错误、跳过均为 0 | JUnit 或控制台日志 |
 | 8 | `python3 -m coverage run -m pytest tests/unit tests/contract tests/packaging --junitxml artifacts/IndependentQa.junit.xml` | `0`，JUnit 的 failures/errors/skipped 均为 0 | `IndependentQa.junit.xml` |

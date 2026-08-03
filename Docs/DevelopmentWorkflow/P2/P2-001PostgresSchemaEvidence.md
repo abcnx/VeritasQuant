@@ -88,7 +88,7 @@ JUnit 证据：`artifacts/DatabaseJUnit.xml`（CI 上传 `database-migration-evi
 ## 5. 依赖变更
 
 - `pyproject.toml`：新增运行时依赖 `psycopg[binary]>=3.2,<4`。
-- `requirements/Runtime.lock`：固定 `psycopg==3.3.4`、`psycopg-binary==3.3.4`（支持 Python 3.13/3.14 wheel）。
+- `Requirements/Runtime.lock`：固定 `psycopg==3.3.4`、`psycopg-binary==3.3.4`（支持 Python 3.13/3.14 wheel）。
 - 通过 `scripts/VerifyDependencyLocks.py` 一致性校验。
 
 ## 6. 已知限制与风险

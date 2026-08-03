@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from veritasquant.apps.gui_client.ApiClient import ApiClient, ApiClientError
+from veritasquant.apps.guiclient.ApiClient import ApiClient, ApiClientError
 
 
 def _clientFor(handler) -> ApiClient:  # noqa: ANN001

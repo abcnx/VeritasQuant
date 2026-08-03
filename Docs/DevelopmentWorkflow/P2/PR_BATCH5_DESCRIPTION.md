@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | P2-029 | 基础 RBAC、请求/追踪 ID、审计和限频 | `application/Security.py`、`apps/server/SecurityMiddleware.py` |
 | P2-030 | 鉴权 SSE 状态流和有界 replay cursor | `application/StateStream.py`、`apps/server/StateStreamRoutes.py` |
-| P2-031 | Streamlit 框架、导航和 API Client | `apps/gui_client/ApiClient.py`、`GuiApp.py`、`GuiServer.py` |
-| P2-032 | 数据导入、策略、定投计划和回测操作页 | `apps/gui_client/Pages.py` |
+| P2-031 | Streamlit 框架、导航和 API Client | `apps/guiclient/ApiClient.py`、`GuiApp.py`、`GuiServer.py` |
+| P2-032 | 数据导入、策略、定投计划和回测操作页 | `apps/guiclient/Pages.py` |
 | P2-033 | 账户、结果分析、逐笔账本和监控页 | `DomainRoutes.py` 扩展、`Pages.py` |
 | P2-034 | 调度计划、JobRun 状态机和 console job 入口 | `application/Scheduling.py`、`jobs/JobEntrypoint.py`、`SchedulerService.py` |
 | P2-035 | 数据导入、对账、校准和报告任务清单 | `application/JobTasks.py`、`jobs/*`、`Jobs/JobManifests.yml` |

@@ -1203,7 +1203,7 @@ VeritasQuant/
 │       │   │   ├── TradingWorker.py
 │       │   │   ├── SchedulerService.py
 │       │   │   └── ServiceContainer.py
-│       │   └── gui_client/
+│       │   └── guiclient/
 │       │       ├── __init__.py
 │       │       ├── GuiClient.py
 │       │       ├── ApiClient.py
@@ -1266,7 +1266,7 @@ VeritasQuant/
 目录职责和依赖规则如下：
 
 1. **可复用模块与业务代码**：`src/veritasquant/` 是唯一可被其他模块导入的业务包。领域状态和规则分别归入 `core`、`data`、`instruments`、`accounts`、`strategy`、`execution` 与 `risk`；跨模块用例放入 `application`；数据库、消息队列、文件系统和第三方连接实现放入 `infrastructure`。业务模块不得反向依赖 `Apps`、`Jobs` 或 `scripts`。
-2. **可安装应用入口**：`src/veritasquant/apps/` 保存持久化服务和 GUI 的 `main()` 入口、依赖组装、健康检查、信号处理和优雅停机。API 服务、交易工作进程、调度进程和 GUI 可独立启动；入口必须调用 `application` 用例，不得复制风控、撮合或账本逻辑。`gui_client` 只能通过 `ApiClient` 调用服务 API，不得直接访问交易内核或数据库。
+2. **可安装应用入口**：`src/veritasquant/apps/` 保存持久化服务和 GUI 的 `main()` 入口、依赖组装、健康检查、信号处理和优雅停机。API 服务、交易工作进程、调度进程和 GUI 可独立启动；入口必须调用 `application` 用例，不得复制风控、撮合或账本逻辑。`guiclient` 只能通过 `ApiClient` 调用服务 API，不得直接访问交易内核或数据库。
 3. **可安装任务入口**：`src/veritasquant/jobs/` 中每个模块定义一个可独立执行、可重试且幂等的 `main()`，负责参数解析、分布式锁或互斥、`run_id`、结构化日志和退出码；实际采集、对账、校准及报告逻辑复用 `application`。任务不得依赖常驻 API 进程内存状态，调度器更换不应改变任务行为。
 4. **正式 CLI 与临时脚本**：稳定的人工、CI 和运维命令实现放入 `src/veritasquant/cli/` 并由 `pyproject.toml` 暴露。根级 `scripts/` 只保存源码树维护、打包验证或有明确期限的诊断脚本，不是生产入口，也不进入 wheel；其脚本不得承载业务规则。`scripts/temporary/` 中每个文件须注明负责人、用途、创建日期和最迟清理日期，不得被生产入口、任务、测试或其他模块导入。需要长期保留的逻辑必须移入可安装包并补充测试。
 5. **部署清单**：根级 `Apps/` 和 `Jobs/` 只保存 UTF-8 `.yml` 部署/注册清单，不含 `.py`、`__init__.py` 或可导入代码，也不进入 wheel。清单只能引用已安装 console script、外部配置路径、资源限制和部署参数；不得通过相对路径执行仓库中的 Python 文件。其子目录、文件名和项目自有字段继续使用 PascalCase。容器和编排模板仍归 `Docker/`，业务配置仍归 `Configs/`。
@@ -1299,7 +1299,7 @@ veritasquant = ["resources/**/*"]
 vq-api-server = "veritasquant.apps.server.ApiServer:main"
 vq-trading-worker = "veritasquant.apps.server.TradingWorker:main"
 vq-scheduler-service = "veritasquant.apps.server.SchedulerService:main"
-vq-gui-client = "veritasquant.apps.gui_client.GuiClient:main"
+vq-gui-client = "veritasquant.apps.guiclient.GuiClient:main"
 vq-job-data-ingestion = "veritasquant.jobs.DataIngestionJob:main"
 vq-job-account-reconciliation = "veritasquant.jobs.AccountReconciliationJob:main"
 vq-job-execution-calibration = "veritasquant.jobs.ExecutionCalibrationJob:main"

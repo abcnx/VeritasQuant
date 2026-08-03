@@ -41,7 +41,7 @@ def _serve(arguments: argparse.Namespace) -> int:
     """以子进程启动 Streamlit 入口脚本。"""
     import os
 
-    from veritasquant.apps.gui_client.GuiApp import serve as guiServe
+    from veritasquant.apps.guiclient.GuiApp import serve as guiServe
 
     entryScript = _writeEntryScript(guiServe, arguments.api_url, arguments.token)
     command = [
@@ -77,7 +77,7 @@ def _writeEntryScript(guiServe: object, apiUrl: str, token: str | None) -> str:
     script = (
         "import sys\n"
         "sys.path.insert(0, 'src')\n"
-        f"from veritasquant.apps.gui_client.GuiApp import serve\n"
+        f"from veritasquant.apps.guiclient.GuiApp import serve\n"
         f"serve({apiUrl!r}, {tokenLiteral})\n"
     )
     handle, path = tempfile.mkstemp(suffix=".py", prefix="vq_gui_entry_")
