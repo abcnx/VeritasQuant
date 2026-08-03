@@ -73,6 +73,10 @@ services:
       POSTGRES_PASSWORD: ${VQ_POSTGRES_PASSWORD:?必须设置 VQ_POSTGRES_PASSWORD 环境变量}
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      # 暴露给宿主机 pg 客户端管理（pgAdmin/DBeaver/psql）。
+      # 默认仅绑定本机回环 127.0.0.1，不暴露到局域网；如需局域网访问改为 0.0.0.0。
+      - "127.0.0.1:${VQ_POSTGRES_PORT:-5432}:5432"
     volumes:
       # 数据目录映射宿主 Windows 目录（可经 VQ_POSTGRES_DATA_DIR 覆盖）。
       # ⚠️ PG18+ 镜像数据目录结构变更：挂载点为 /var/lib/postgresql（单一挂载），

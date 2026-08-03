@@ -81,6 +81,27 @@ cd VeritasQuant
 | `vq-gui` / `vq-gui-client` | GUI 客户端 |
 | `vq-import-market-data` / `vq-validate-market-data` | 数据导入与校验 |
 
+### 4.3 管理数据库（本机 pg 客户端连接容器）
+
+PostgreSQL 已映射到宿主回环地址，可用 pgAdmin / DBeaver / psql 等客户端连接管理：
+
+| 参数 | 值 |
+|------|-----|
+| Host | `127.0.0.1`（localhost） |
+| Port | `5432`（`VQ_POSTGRES_PORT` 可改） |
+| Database | `veritasquant` |
+| User | `veritasquant` |
+| Password | `Docker\.env.deploy` 中的 `VQ_POSTGRES_PASSWORD` |
+
+示例（psql）：
+
+```powershell
+psql -h 127.0.0.1 -p 5432 -U veritasquant -d veritasquant
+```
+
+> 默认仅绑定本机回环，不暴露到局域网；如需局域网访问，修改 compose 中
+> `127.0.0.1:${VQ_POSTGRES_PORT:-5432}:5432` 为 `0.0.0.0` 并评估安全风险。
+
 ---
 
 ## 5. 详细部署步骤
@@ -296,6 +317,16 @@ curl.exe -s http://localhost:18000/api/v1/version
 
 或先切换控制台代码页为 UTF-8：`chcp 65001`。
 
+### 6.12 PostgreSQL 18 数据目录结构变化（unused mount 拒绝启动）
+
+PG18+ 官方镜像改变了数据目录结构，与 16/17 不兼容：
+
+- 数据不再存放于 `/var/lib/postgresql/data`，而是 `/var/lib/postgresql/<大版本>/`（如 `18/`）；
+- compose 挂载点必须为 `/var/lib/postgresql`（单一挂载）；挂到 `/var/lib/postgresql/data` 会被镜像判定为 unused mount 并**拒绝启动**（docker-library/postgres#1259），表现为容器启动约 1s 即退出、`vq-postgresql is unhealthy`；
+- 宿主数据实际落在 `<VQ_POSTGRES_DATA_DIR>/18/` 子目录（如 `D:\...\PostgreSQL\18\`）；
+- 该结构便于 `pg_upgrade --link` 跨版本升级（如 18 → 19）；
+- 从 PG16/17 迁移：旧数据格式不兼容，先 `pg_dump` 备份再 `pg_restore` 恢复（见 7.2 场景 A）。
+
 ---
 
 ## 7. 版本升级与数据运维（SOP）
@@ -429,7 +460,8 @@ docker image rm ghcr.io/acanx/veritasquant:0.1.2
 
 ## 8. 安全与边界
 
-- 本编排仅用于本地模拟盘/仿真；PostgreSQL 未对外暴露端口（仅容器网络内）；
+- 本编排仅用于本地模拟盘/仿真；
+- PostgreSQL 默认仅绑定宿主回环 `127.0.0.1:5432`（供本机 pg 客户端管理），不暴露到局域网；如需局域网访问，将映射改为 `0.0.0.0` 并评估风险；
 - `.env.deploy` 含明文密码，已被 `.gitignore` 忽略，不要提交；
 - 实盘（LIVE）默认禁用；任何实盘启用必须先走 Change 流程并满足
   [TechSpec 13 阶段 5 gate](Docs/VeritasQuantTechSpec.md)。
