@@ -52,11 +52,8 @@ FinvQuant 是一个面向多资产的**严格事件驱动量化交易平台**，
 | [`Docs/DevSpec/ErrorCodeSpec.md`](Docs/DevSpec/ErrorCodeSpec.md) | 错误码规范（号段/目录） |
 | [`Docs/DevSpec/FileNamingSpec.md`](Docs/DevSpec/FileNamingSpec.md) | 文件命名规范 |
 | [`Docs/DevSpec/DocSpec.md`](Docs/DevSpec/DocSpec.md) | 文档规范 |
+| [`Docs/DevSpec/GitSpec.md`](Docs/DevSpec/GitSpec.md) | Git 提交规范 |
 | [`Docs/DevSpec/FileEncodingSpec.md`](Docs/DevSpec/FileEncodingSpec.md) | 文件编码规范 |
-
-## 归档规则
-
-`VeritasQuant/Archive/` 保存已合并到技术方案中的历史源文档。除非任务明确要求维护归档，否则**不得修改、移动或删除**其中的文件。设计决策变更时，必须同步更新 `VeritasQuant/Docs/VeritasQuantTechSpec.md`。
 
 ## 工作约定
 
