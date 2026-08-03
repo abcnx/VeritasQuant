@@ -96,20 +96,20 @@ def test_ci_and_package_metadata_use_python_313_baseline() -> None:
 def test_ci_uses_single_global_version_constant() -> None:
     """Ci.yml 必须通过全局常量引用包版本，禁止硬编码 wheel/sdist 版本号。
 
-    升级版本时只需改两处：pyproject.toml 与 Ci.yml 顶层的 VQ_PACKAGE_VERSION。
+    升级版本时只需改两处：pyproject.toml 与 Ci.yml 顶层的 VQ_VERSION。
     """
     ci = (ROOT / ".github" / "workflows" / "Ci.yml").read_text(encoding="utf-8")
     # 全局常量必须存在
-    assert "VQ_PACKAGE_VERSION" in ci
-    # 所有 wheel/sdist 引用必须通过常量（${{ env.VQ_PACKAGE_VERSION }}），禁止硬编码版本
-    assert "veritasquant-${{ env.VQ_PACKAGE_VERSION }}-py3-none-any.whl" in ci
-    assert "veritasquant-${{ env.VQ_PACKAGE_VERSION }}.tar.gz" in ci
+    assert "VQ_VERSION" in ci
+    # 所有 wheel/sdist 引用必须通过常量（${{ env.VQ_VERSION }}），禁止硬编码版本
+    assert "veritasquant-${{ env.VQ_VERSION }}-py3-none-any.whl" in ci
+    assert "veritasquant-${{ env.VQ_VERSION }}.tar.gz" in ci
     # 常量值必须与 pyproject.toml 一致（单一来源原则）
     workflow = loadYaml(".github/workflows/Ci.yml")
-    constant = workflow["env"]["VQ_PACKAGE_VERSION"]
+    constant = workflow["env"]["VQ_VERSION"]
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert f'version = "{constant}"' in project
     # 不得残留硬编码的 veritasquant-<版本> 文件名（常量引用除外）
     for line in ci.splitlines():
-        if "veritasquant-" in line and "VQ_PACKAGE_VERSION" not in line:
+        if "veritasquant-" in line and "VQ_VERSION" not in line:
             raise AssertionError(f"发现硬编码版本引用: {line.strip()}")

@@ -14,7 +14,7 @@ permissions:
 # 与 pyproject.toml [project].version 保持一致。
 # ---------------------------------------------------------------------------
 env:
-  VQ_PACKAGE_VERSION: "0.1.1"
+  VQ_VERSION: "0.1.1"
 
 jobs:
   quality:
@@ -50,9 +50,9 @@ jobs:
       - name: Build distribution packages
         run: python3 -m build
       - name: Verify repository-external wheel installation
-        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-${{ env.VQ_PACKAGE_VERSION }}-py3-none-any.whl
+        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-${{ env.VQ_VERSION }}-py3-none-any.whl
       - name: Collect test evidence
-        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-${{ env.VQ_PACKAGE_VERSION }}-py3-none-any.whl --artifact dist/veritasquant-${{ env.VQ_PACKAGE_VERSION }}.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
+        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-${{ env.VQ_VERSION }}-py3-none-any.whl --artifact dist/veritasquant-${{ env.VQ_VERSION }}.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
       - name: Upload quality evidence
         uses: actions/upload-artifact@v4
         with:
