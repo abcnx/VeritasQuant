@@ -6978,3 +6978,42 @@ Records:
     Actor: BeeAgent
     Action: CREATED
     Note: ISSUE #253 部署交付物完成（Dockerfile/编排/脚本/教程），本地验证全绿
+- WorkItemId: TSK-RELEASE-001
+  PlanTaskId: RELEASE-001
+  Title: VeritasQuant 0.1.1 版本发布（dev 累积修改同步 main）
+  Description: 版本 0.1.0 → 0.1.1（pyproject.toml/__init__.py/Ci.yml 同步）；PR #255 将 dev 累积 158 提交作为 0.1.1 发布同步 main（33fd1dc）；创建并推送 tag V0.1.1（指向 33fd1dc）；PR #256（main→dev 反向同步）已 APPROVED 待合并；清理 feat/release-0.1.1 分支
+  Stage: RELEASE
+  Milestone: NONE
+  TechSpecRefs:
+  - '12.2'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 1
+  Dependencies:
+  - DEPLOY-001
+  AcceptanceCriteria: 0.1.1 wheel/sdist 构建成功；版本号三处一致；tag V0.1.1 指向发布提交；main 同步 dev 全部累积修改
+  TestEvidence: scripts/VerifyPackage.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T11:05:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 0.1.1 发布完成；等待 PR #256 合并后 dev 同步
+  EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#255
+    MergedAt: '2026-08-03T10:58:24Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'PR #255 合并（33fd1dc）；tag V0.1.1 已推送 upstream+fork'
+  AuditHistory:
+  - Ts: '2026-08-03T11:05:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: 0.1.1 版本发布完成（PR #255 合并 + tag V0.1.1 + 分支清理）
