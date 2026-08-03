@@ -41,6 +41,18 @@ FinvQuant 是一个面向多资产的**严格事件驱动量化交易平台**，
 
 > 当前实现说明：All-in-One 镜像（`ghcr.io/acanx/finvquant`）中，前端构建产物经 `go:embed` 内嵌进 Go 服务端二进制，单进程双端口（16001 API + 16002 前端），无需独立 Nginx 容器；详见 `Prompt.md`。
 
+## 开发规范（Docs/DevSpec/）
+
+仓库开发规范按类别存放于 `Docs/DevSpec/`：
+
+| 规范文件 | 类别 |
+|----------|------|
+| [`Docs/DevSpec/LogSpec.md`](Docs/DevSpec/LogSpec.md) | 日志与可观测性 |
+| [`Docs/DevSpec/APIErrorCodeSpec.md`](Docs/DevSpec/APIErrorCodeSpec.md) | API 与业务错误码 |
+| [`Docs/DevSpec/FileNamingSpec.md`](Docs/DevSpec/FileNamingSpec.md) | 文件命名规范 |
+| [`Docs/DevSpec/DocSpec.md`](Docs/DevSpec/DocSpec.md) | 文档规范 |
+| [`Docs/DevSpec/FileEncodingSpec.md`](Docs/DevSpec/FileEncodingSpec.md) | 文件编码规范 |
+
 ## 归档规则
 
 `VeritasQuant/Archive/` 保存已合并到技术方案中的历史源文档。除非任务明确要求维护归档，否则**不得修改、移动或删除**其中的文件。设计决策变更时，必须同步更新 `VeritasQuant/Docs/VeritasQuantTechSpec.md`。
