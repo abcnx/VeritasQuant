@@ -46,5 +46,7 @@ Web/dist/
 internal/webui/dist/
 
 # ---- 部署 ----
-deploy/.env
+Deploy/.env
 Docker/.env.deploy
+# PG 数据目录（宿主机映射，本机生成的 pgdata 不提交）
+Deploy/pgdata/
