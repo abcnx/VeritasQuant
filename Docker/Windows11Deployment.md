@@ -65,10 +65,11 @@ cd VeritasQuant
 | Redis | `redis:8-alpine` | 跨进程事件分发（Redis Streams） |
 
 > 服务端镜像由 GitHub Actions（CI `build-image` job）构建并发布到
-> GitHub Container Registry（ghcr.io）。**每次构建均发布版本 tag**（如 `0.1.2`，
-> 来自 `VQ_VERSION` 常量）与 `latest`（push 到 main/dev 刷新）；Git tag 推送
-> （如 `V0.1.2`）额外发布 `V0.1.2` 与去 V 版本 tag；手动触发（workflow_dispatch）
-> 额外生成带版本前缀的时间戳镜像（如 `0.1.2-202608031217`，UTC）。
+> GitHub Container Registry（ghcr.io）。镜像 tag 规则：
+> - **dev 推送**：`0.1.2-<UTC时间戳>`（如 `0.1.2-202608031852`，每次 dev 构建唯一可追溯）+ `latest`；
+> - **main 推送**：`0.1.2`（版本 tag，来自 `VQ_VERSION`）+ `latest`；
+> - **Git tag `V0.1.2`**：`V0.1.2` + `0.1.2` + `latest`；
+> - **手动触发（workflow_dispatch）**：`0.1.2-<UTC时间戳>` + `latest`。
 > Windows 部署直接拉取即可，无需本地构建。
 
 ### 4.2 客户端（Windows 本地）
@@ -450,8 +451,9 @@ docker image rm ghcr.io/acanx/veritasquant:0.1.2
 # ③ 若 Schema 已变更导致应用不兼容，按 7.2 场景 A 恢复数据库备份
 ```
 
-**镜像 tag 语义**：每次构建均发布版本 tag（如 `0.1.2`，来自 `VQ_VERSION` 常量）与 `latest`；
-Git tag `V0.1.2` 触发时额外发布 `V0.1.2` 与去 V 版本 tag；手动触发构建额外生成 `0.1.2-yyyyMMddHHmm` 时间戳 tag。
+**镜像 tag 语义**：dev 推送生成 `0.1.2-<UTC时间戳>`（每次构建唯一）+ `latest`；
+main 推送生成 `0.1.2`（版本 tag）+ `latest`；Git tag `V0.1.2` 额外发布 `V0.1.2` 与去 V 版本 tag；
+手动触发（workflow_dispatch）生成 `0.1.2-<UTC时间戳>` + `latest`。不用 `sha-*` 作为镜像 tag。
 
 ### 7.5 升级检查清单
 

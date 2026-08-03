@@ -143,12 +143,16 @@ def test_ci_builds_and_publishes_ghcr_image() -> None:
     assert "latest" in steps
     assert "refs/tags/V" in steps
     # 手动触发（workflow_dispatch）生成带版本前缀的 yyyyMMddHHmm 时间戳 tag
-    assert "Generate timestamp tag for manual build" in "\n".join(
+    assert "Generate timestamp tag for dev push and manual build" in "\n".join(
         step.get("name", "") for step in build_image["steps"]
     )
     assert "%Y%m%d%H%M" in ci_text
     assert "github.event_name == 'workflow_dispatch'" in ci_text
     # 时间戳版本必须带版本前缀（如 0.1.2-202608031217）
-    assert "${{ env.VQ_VERSION }}-$(date -u +%Y%m%d%H%M)" in ci_text
+    assert 'echo "tag=${{ env.VQ_VERSION }}-$TS"' in ci_text
+    # dev 推送生成时间戳 tag（0.1.2-<UTC时间戳>），main 推送生成版本 tag（0.1.2）
+    assert "github.ref == 'refs/heads/dev'" in ci_text
+    assert "github.ref == 'refs/heads/main'" in ci_text
+    assert "type=sha,format=short" not in ci_text  # 禁止 sha-* 作为镜像 tag
     # 全局版本常量 VQ_VERSION 必须存在（版本单一来源）
     assert workflow["env"]["VQ_VERSION"]
