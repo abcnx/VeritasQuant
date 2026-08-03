@@ -9,11 +9,11 @@
 
 services:
   server:
-    image: ghcr.io/acanx/finvquant-server:${FINV_IMAGE_TAG:-latest}
+    image: ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: finvquant-server
+    container_name: fq-server
     ports:
       - "16001:16001"
     environment:
@@ -44,7 +44,7 @@ services:
     build:
       context: ./Web
       dockerfile: Dockerfile
-    container_name: finvquant-web
+    container_name: fq-web
     ports:
       - "16002:16002"
     depends_on:
@@ -53,7 +53,7 @@ services:
 
   postgres:
     image: postgres:18-alpine
-    container_name: finvquant-postgres
+    container_name: fq-postgres
     environment:
       POSTGRES_USER: ${FINV_PG_USER:-finvquant}
       POSTGRES_PASSWORD: ${FINV_PG_PASSWORD:-finvquant}
@@ -72,7 +72,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: finvquant-redis
+    container_name: fq-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "127.0.0.1:${FINV_REDIS_EXPOSE_PORT:-6380}:6379"
