@@ -6915,3 +6915,35 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #250 已合并，TSK-P5-021 验收通过归档（能力就绪）
+- WorkItemId: TSK-P6-007
+  PlanTaskId: P6-007
+  Title: Optuna/MLflow 优化与模型管理
+  Description: 纯标准库实现离线优化（不引入 optuna/mlflow 依赖）：ExperimentTrackerV1 试验追踪（训练/验证/留出三段隔离、可复现哈希）；HyperparameterSearchV1 确定性超参搜索（网格/随机/顺序）；OptimizationGateV1 Gate 隔离（自动采用永远 PENDING、冻结政策+留出达标+双人批准才采用）
+  Stage: P6
+  Milestone: NONE
+  TechSpecRefs:
+  - '8.10'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: Medium
+  EstimatePersonDays: 8
+  Dependencies:
+  - P1-075
+  - P4-009
+  AcceptanceCriteria: 训练/验证/留出隔离，试验可复现，不能自动绕过策略 Gate
+  TestEvidence: tests/unit/optimization/test_experiment_tracker.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T10:15:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P6 第一批 PR 合并后验收（启动条件 M1 稳定已满足）
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T10:15:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P6-007 开发完成（离线优化与模型管理，纯标准库），本地验证全绿

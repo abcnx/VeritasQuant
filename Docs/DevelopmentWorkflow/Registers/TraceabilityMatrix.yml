@@ -199,6 +199,7 @@ Rows:
   - P4-009
   - P4-010
   - P5-007
+  - P6-007
   TestIds:
   - MODEL-BAR-PATH-001
   - REGRESSION-LIQUIDITY-POOL-001
