@@ -198,6 +198,7 @@ Rows:
   - P4-008
   - P4-009
   - P4-010
+  - P5-007
   TestIds:
   - MODEL-BAR-PATH-001
   - REGRESSION-LIQUIDITY-POOL-001
@@ -347,6 +348,9 @@ Rows:
   - P2-042
   - P2-040
   - P3-006
+  - P5-008
+  - P5-009
+  - P5-010
   TestIds:
   - DRILL-RELIABILITY-POLICY-001
   - DRILL-BACKUP-RESTORE-001

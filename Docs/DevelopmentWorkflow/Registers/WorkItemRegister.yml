@@ -6411,3 +6411,141 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #243 已合并，P5-006 验收通过归档
+
+- WorkItemId: TSK-P5-007
+  PlanTaskId: P5-007
+  Title: 完成实盘适配器、幂等下单和权威对账
+  Description: LiveBrokerAdapterV1 实盘适配器（未知结果不生成新 ID，同 clientOrderId 重试复用原 ID）；AuthorityReconcilerV1 权威对账（券商为权威，订单/持仓/现金逐项核对，差异阻止交易）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '7.1'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 12
+  Dependencies:
+  - P4-004
+  - P4-005
+  - P4-006
+  - P5-003
+  AcceptanceCriteria: 发送结果未知不生成新 ID；每日现金/持仓/订单/成交差异为 0
+  TestEvidence: tests/unit/broker/test_live_broker.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:51:57Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第二批开发完成（完成实盘适配器、幂等下单和权威对账），本地验证全绿
+
+- WorkItemId: TSK-P5-008
+  PlanTaskId: P5-008
+  Title: 实现独立紧急停止、只减仓和恢复审批
+  Description: EmergencyStopControllerV1 独立紧急停止（不依赖 GUI/通知；STOP_ALL/REDUCE_ONLY 状态机）；恢复审批（控制/账本/对账全部校验 + 双人批准）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.2'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P5-005
+  - P5-006
+  AcceptanceCriteria: 紧急停止不依赖 GUI/通知；恢复前控制、账本和对账全部校验
+  TestEvidence: tests/unit/broker/test_emergency_stop.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:51:57Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第二批开发完成（实现独立紧急停止、只减仓和恢复审批），本地验证全绿
+
+- WorkItemId: TSK-P5-009
+  PlanTaskId: P5-009
+  Title: 完成生产 trading-readiness 门禁
+  Description: TradingReadinessGateV1 生产门禁（行情/时钟/券商/账本/控制/队列/磁盘/沙箱八类检查；任一 FAIL 或未执行即禁止发单）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '12.3'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P5-002
+  - P5-003
+  - P5-004
+  - P5-005
+  - P5-006
+  - P5-007
+  - P5-008
+  AcceptanceCriteria: 行情、时钟、券商、账本、控制、队列、磁盘、沙箱任一不合格即禁止发单
+  TestEvidence: tests/unit/broker/test_live_readiness_gate.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:51:57Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第二批开发完成（完成生产 trading-readiness 门禁），本地验证全绿
+
+- WorkItemId: TSK-P5-010
+  PlanTaskId: P5-010
+  Title: 建立生产监控、分页告警和 24x7 联系树
+  Description: PagingServiceV1 分页告警（S0/S1 端到端送达确认、无人确认自动升级、每告警链接 Runbook）；OnCallContactV1 24x7 联系树
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '12.1'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P5-009
+  AcceptanceCriteria: S0/S1 告警端到端送达；无人确认自动升级；每个告警链接 Runbook
+  TestEvidence: tests/unit/broker/test_paging.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第二批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:51:57Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第二批开发完成（建立生产监控、分页告警和 24x7 联系树），本地验证全绿
