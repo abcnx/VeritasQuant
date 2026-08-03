@@ -3,7 +3,7 @@
 - **任务：** P5-002（ISSUE #198）、P5-003（#199）、P5-004（#200）、P5-005（#201）、P5-006（#202）
 - **日期：** 2026-08-03
 - **实现：** BeeAgent
-- **PR：** 本 PR（P5 第一批）
+- **PR：** ACANX/VeritasQuant#243（已合并 2026-08-03T00:29:09Z）
 
 ## 范围
 
@@ -37,6 +37,13 @@
 - Preflight：0 issues
 - 全量 pytest：1255 passed / 36 skipped（skipped 为 PG/Redis 集成，CI database job 覆盖）
 - 新增测试：57 用例（P5-002: 10 + P5-003: 10 + P5-004: 13 + P5-005: 14 + P5-006: 10）
+- CI 4/4：Quality-ubuntu ✅ / Quality-windows ✅ / Security-baseline ✅ / Database-migrations ✅（PR #243 run 30773888386）
+
+## 验收结论
+
+- **状态：** P5-002~006 全部 ACCEPTED（2026-08-03，流转 PR 本 PR）
+- **依据：** 实盘安全核心能力（环境隔离/密钥服务/TLS 令牌/双人授权/白名单硬上限）已交付并通过 CI；验收标准逐项对照见上表
+- **遗留：** P5-001 威胁建模/安全评审待 ACANX 决策；P5-007~010 为下一批开发
 
 ## 风险与开放项
 
