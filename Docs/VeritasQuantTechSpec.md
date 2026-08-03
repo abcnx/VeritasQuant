@@ -796,13 +796,13 @@ class SignalReferenceV1:
 
 Windows 11 本地验证环境按以下契约部署（ISSUE #253）：服务端以 Docker 容器方式运行（API + PostgreSQL + Redis 编排），客户端在宿主直接运行连接服务端，完成模拟盘（`PAPER`）与券商仿真（`SIMULATION`）实验；实盘（`LIVE`）默认禁用。
 
-**镜像**：`Docker/Dockerfile` 多阶段构建——builder 阶段在隔离环境构建 wheel，runtime 阶段仅携带运行时依赖并以非 root 用户（`vq`，uid/gid 10001）运行；容器只读根文件系统，运行产物写入挂载卷与 `tmpfs`；默认入口 `vq-api-server --serve --host 0.0.0.0 --port 8000`，镜像内健康检查校验 `/health/live`。
+**镜像**：`Docker/Dockerfile` 多阶段构建——builder 阶段在隔离环境构建 wheel，runtime 阶段仅携带运行时依赖并以非 root 用户（`vq`，uid/gid 10001）运行；容器只读根文件系统，运行产物写入挂载卷与 `tmpfs`；默认入口 `vq-api-server --serve --host 0.0.0.0 --port 18000`（使用 12000 以后端口，避开 8000/8080 等常用端口），镜像内健康检查校验 `/health/live`。
 
 **编排**：`Docker/docker-compose.deploy.yml` 定义 `server`/`postgresql`/`redis` 三服务，均带健康检查与 `restart: unless-stopped`；PostgreSQL 使用 `scram-sha-256` 认证，密码经宿主环境变量 `VQ_POSTGRES_PASSWORD` 必填注入（未设置拒绝启动），数据/Redis 使用持久卷（`stop` 不删数据）；`server` 仅暴露宿主映射端口，`read_only: true` + `no-new-privileges` 最小权限。
 
 **部署脚本**：`scripts/DeployServer.py` 提供 `check`（Docker 不可用时明确失败不回落本机服务）/`build`/`start`（构建并等待健康检查）/`status`/`logs`/`stop`（保留数据卷）子命令；环境变量模板 `Docker/.env.deploy.example`，真实 `.env.deploy` 含明文密码已被 `.gitignore` 忽略。
 
-**客户端**：宿主 Python ≥ 3.13 安装 wheel 后，`vq-run-backtest`（离线回测）、`vq-run-paper-trading`（模拟盘）、`vq-gui`（GUI）连接 `http://localhost:8000` 完成实验；部署教程 `Docker/Windows11Deployment.md` 覆盖环境要求（Docker Desktop/WSL2）、依赖说明与详细步骤及常见问题。
+**客户端**：宿主 Python ≥ 3.13 安装 wheel 后，`vq-run-backtest`（离线回测）、`vq-run-paper-trading`（模拟盘）、`vq-gui`（GUI）连接 `http://localhost:18000` 完成实验；部署教程 `Docker/Windows11Deployment.md` 覆盖环境要求（Docker Desktop/WSL2）、依赖说明与详细步骤及常见问题。
 
 ## 9. 策略开发与结构化 DSL
 

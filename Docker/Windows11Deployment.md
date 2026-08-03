@@ -59,7 +59,7 @@ cd VeritasQuant
 
 | 组件 | 镜像/来源 | 说明 |
 |------|-----------|------|
-| API 服务 | 本项目构建（`veritasquant/server:local`） | FastAPI + Uvicorn，默认 `0.0.0.0:8000` |
+| API 服务 | 本项目构建（`veritasquant/server:local`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000` |
 | PostgreSQL | `postgres:16.4-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
 | Redis | `redis:7.4-alpine` | 跨进程事件分发（Redis Streams） |
 
@@ -86,7 +86,7 @@ Copy-Item Docker\.env.deploy.example Docker\.env.deploy
 # 用编辑器打开 Docker\.env.deploy，设置：
 #   VQ_POSTGRES_PASSWORD=你的强密码（至少 12 位）
 #   VQ_ENVIRONMENT=PAPER        （或 SIMULATION）
-#   VQ_API_PORT=8000            （宿主映射端口）
+#   VQ_API_PORT=18000         （宿主映射端口，12000 以后避开常用端口）
 ```
 
 ### 步骤 2：环境自检（无需 Docker 也可运行）
@@ -119,13 +119,13 @@ python scripts/DeployServer.py start
 
 ```powershell
 # liveness：进程存活
-curl http://localhost:8000/health/live
+curl http://localhost:18000/health/live
 
 # readiness：就绪门禁
-curl http://localhost:8000/health/ready
+curl http://localhost:18000/health/ready
 
 # 版本
-curl http://localhost:8000/api/v1/version
+curl http://localhost:18000/api/v1/version
 ```
 
 预期：`/health/live` 返回 `{"code":0,"data":{"status":"ALIVE",...}}`。
@@ -152,13 +152,13 @@ vq-run-backtest --config .\你的回测配置.yml
 **模拟盘实验（连接服务端）：**
 
 ```powershell
-vq-run-paper-trading --config .\你的模拟盘配置.yml --api http://localhost:8000
+vq-run-paper-trading --config .\你的模拟盘配置.yml --api http://localhost:18000
 ```
 
 **GUI 客户端（连接服务端）：**
 
 ```powershell
-vq-gui --api http://localhost:8000
+vq-gui --api http://localhost:18000
 ```
 
 > 说明：具体实验参数以各 console script 的 `--help` 与
@@ -190,10 +190,10 @@ python scripts/DeployServer.py stop
 `docker compose` 会以 `VQ_POSTGRES_PASSWORD` 为必填变量，未设置时启动失败。
 在 `Docker/.env.deploy` 中填入密码后重试。
 
-### 6.3 端口 8000 被占用
+### 6.3 端口 18000 被占用
 
-- 修改 `Docker/.env.deploy` 中 `VQ_API_PORT=8001` 后重启；
-- 或释放占用：`netstat -ano | findstr :8000` → `taskkill /PID <pid> /F`。
+- 修改 `Docker/.env.deploy` 中 `VQ_API_PORT=18001` 后重启；
+- 或释放占用：`netstat -ano | findstr :18000` → `taskkill /PID <pid> /F`。
 
 ### 6.4 镜像拉取慢 / 超时
 
@@ -211,8 +211,8 @@ python scripts/DeployServer.py logs --service server
 ### 6.6 客户端连不上服务端
 
 - 确认容器健康：`python scripts/DeployServer.py status`；
-- 确认宿主端口：`curl http://localhost:8000/health/live`；
-- 客户端配置中 API 地址使用 `http://localhost:8000`（勿用 `127.0.0.1` 时混用 IPv6）。
+- 确认宿主端口：`curl http://localhost:18000/health/live`；
+- 客户端配置中 API 地址使用 `http://localhost:18000`（勿用 `127.0.0.1` 时混用 IPv6）。
 
 ### 6.7 数据持久化
 

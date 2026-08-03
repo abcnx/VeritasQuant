@@ -13,7 +13,7 @@ name: veritasquant-deploy
 services:
   # ---------------------------------------------------------------------------
   # 应用服务端：API 服务（含 /health/live、/health/ready、业务 API）。
-  # 默认以非 root 用户运行，仅暴露 8000。
+  # 默认以非 root 用户运行，仅暴露 18000。
   # ---------------------------------------------------------------------------
   server:
     build:
@@ -25,20 +25,20 @@ services:
       # 运行模式：PAPER（模拟盘）或 SIMULATION（券商仿真）。
       # 实盘 LIVE 默认禁用；显式设置也不得绕过运行门禁。
       VQ_ENVIRONMENT: ${VQ_ENVIRONMENT:-PAPER}
-      # 服务端监听地址/端口（容器内固定 8000，宿主映射见 ports）。
+      # 服务端监听地址/端口（容器内固定 18000，宿主映射见 ports）。
       VQ_SERVER_HOST: 0.0.0.0
-      VQ_SERVER_PORT: "8000"
+      VQ_SERVER_PORT: "18000"
       # 时间与日志：UTC 日志、上海时区便于本地观察。
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - "${VQ_API_PORT:-8000}:8000"
+      - "${VQ_API_PORT:-18000}:18000"
     volumes:
       # 运行产物（回测输出、报告、日志落盘目录）。
       - vq-runtime:/opt/veritasquant/runtime
       # 数据导入目录（宿主侧挂载外部行情文件用，可自行调整路径）。
       - ${VQ_DATA_DIR:-./data}:/opt/veritasquant/data
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2).status==200 else 1)"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:18000/health/live', timeout=2).status==200 else 1)"]
       interval: 10s
       timeout: 3s
       start_period: 20s

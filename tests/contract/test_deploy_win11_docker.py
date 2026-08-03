@@ -28,7 +28,8 @@ def test_dockerfile_exists_and_multi_stage() -> None:
     assert "FROM python:3.13-slim AS builder" in text
     assert "FROM python:3.13-slim AS runtime" in text
     assert "USER vq" in text  # 非 root 运行
-    assert "EXPOSE 8000" in text
+    assert "EXPOSE 18000" in text
+    assert '"--port", "18000"' in text
     assert "ENTRYPOINT" in text
     assert "HEALTHCHECK" in text
 
@@ -47,7 +48,7 @@ def test_deploy_compose_server_service() -> None:
     server = compose["services"]["server"]
     assert server["build"]["dockerfile"] == "Docker/Dockerfile"
     assert server["read_only"] is True
-    assert server["ports"] == ["${VQ_API_PORT:-8000}:8000"]
+    assert server["ports"] == ["${VQ_API_PORT:-18000}:18000"]
     assert "depends_on" in server
 
 
@@ -131,3 +132,17 @@ def test_tutorial_covers_requirements_deps_and_steps() -> None:
     assert "health" in text
     # 常见问题
     assert "常见问题" in text
+
+
+def test_deploy_uses_high_port_not_common_ports() -> None:
+    """服务端使用 12000 以后端口，避开 8000/8080 常用端口。"""
+    dockerfile = DOCKERFILE.read_text(encoding="utf-8")
+    compose = DEPLOY_COMPOSE.read_text(encoding="utf-8")
+    tutorial = TUTORIAL.read_text(encoding="utf-8")
+    env_template = ENV_TEMPLATE.read_text(encoding="utf-8")
+    combined = dockerfile + compose + tutorial + env_template
+    # 暴露/映射/监听端口必须是 12000 以后
+    assert "18000" in combined
+    # 不得再监听/暴露 8000 或 8080（允许出现的是注释里的"避开"说明与 FAQ 提及）
+    assert ":8000" not in combined.replace("避开 8000/8080", "").replace("8000/8080", "")
+    assert ":8080" not in combined.replace("避开 8000/8080", "").replace("8000/8080", "")

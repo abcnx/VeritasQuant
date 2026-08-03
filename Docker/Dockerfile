@@ -55,11 +55,12 @@ USER vq
 
 # 健康检查：默认只验证进程存活（容器编排层再做 readiness）。
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2).status==200 else 1)" || exit 1
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:18000/health/live', timeout=2).status==200 else 1)" || exit 1
 
-EXPOSE 8000
+EXPOSE 18000
 
 # 默认入口：API 服务（--serve 才真正启动）。可用 docker compose 覆盖为
 # vq-trading-worker / vq-scheduler-service 等其他 console script。
+# 使用 12000 以后的端口，避开 8000/8080 等常用端口。
 ENTRYPOINT ["vq-api-server"]
-CMD ["--serve", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["--serve", "--host", "0.0.0.0", "--port", "18000"]
