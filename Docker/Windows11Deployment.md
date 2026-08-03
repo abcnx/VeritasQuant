@@ -59,9 +59,15 @@ cd VeritasQuant
 
 | 组件 | 镜像/来源 | 说明 |
 |------|-----------|------|
-| API 服务 | 本项目构建（`veritasquant/server:local`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000` |
+| API 服务 | `ghcr.io/acanx/veritasquant:<tag>`（GitHub Packages 构建，默认 `latest`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000`；也可本地构建（`veritasquant/server:local`） |
 | PostgreSQL | `postgres:16.4-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
 | Redis | `redis:7.4-alpine` | 跨进程事件分发（Redis Streams） |
+
+> 服务端镜像由 GitHub Actions（CI `build-image` job）构建并发布到
+> GitHub Container Registry（ghcr.io）。tag 推送（如 `V0.1.1`）会发布对应版本镜像与
+> `latest`；push 到 main/dev 也会刷新 `latest`；手动触发（workflow_dispatch）时
+> 会额外生成带版本前缀的时间戳镜像（如 `0.1.1-202608031217`，UTC）。
+> Windows 部署直接拉取即可，无需本地构建。
 
 ### 4.2 客户端（Windows 本地）
 
@@ -97,13 +103,33 @@ python scripts/DeployServer.py check
 
 该命令校验编排文件语法（`docker compose config --quiet`）。
 
-### 步骤 3：构建镜像
+### 步骤 3：拉取服务端镜像（默认方式，无需本地构建）
+
+服务端镜像由 GitHub Actions 构建并发布到 ghcr.io。默认编排直接拉取 `latest`：
 
 ```powershell
-python scripts/DeployServer.py build
+# 拉取 ghcr.io/acanx/veritasquant:latest
+python scripts/DeployServer.py start   # 首次启动会自动拉取镜像
 ```
 
-构建日志出现 `Successfully tagged veritasquant/server:local` 即成功。
+如需指定版本（如 0.1.1），在 `Docker/.env.deploy` 中设置：
+
+```
+VQ_IMAGE_TAG=0.1.1
+```
+
+手动拉取验证：
+
+```powershell
+docker pull ghcr.io/acanx/veritasquant:latest
+```
+
+> **可选：本地构建**（不使用 GitHub 镜像时）——取消 `Docker/docker-compose.deploy.yml`
+> 中 `server.build` 块注释，并把 `image` 改回 `veritasquant/server:local`，然后：
+>
+> ```powershell
+> python scripts/DeployServer.py build
+> ```
 
 ### 步骤 4：启动服务端
 
@@ -199,7 +225,18 @@ python scripts/DeployServer.py stop
 
 Docker Desktop → Settings → Docker Engine，配置镜像加速器后 `Apply & Restart`。
 
-### 6.5 容器启动后立即退出
+### 6.5 拉取 ghcr.io 镜像失败（denied / unauthorized）
+
+- 确认 `Docker/.env.deploy` 中 `VQ_IMAGE_OWNER` 与镜像实际命名空间一致（默认 `acanx`）；
+- 私有镜像需先登录：`echo $env:GITHUB_TOKEN | docker login ghcr.io -u <用户名> --password-stdin`（公开镜像无需登录）；
+- 确认镜像已发布：在 GitHub 仓库 Packages 页面查看 `ghcr.io/acanx/veritasquant` 是否存在对应 tag。
+
+### 6.6 拉取到不存在的版本 tag
+
+- 检查 `VQ_IMAGE_TAG` 拼写（如 `0.1.1` 需与发布 tag 一致，大写 `V` 前缀是 Git tag，镜像 tag 不带 `V`）；
+- 查看已发布 tag：`docker manifest inspect ghcr.io/acanx/veritasquant:0.1.1` 或 GitHub Packages 页面。
+
+### 6.7 容器启动后立即退出
 
 ```powershell
 python scripts/DeployServer.py logs --service server
@@ -208,13 +245,13 @@ python scripts/DeployServer.py logs --service server
 常见原因：端口冲突、`read_only: true` 下写入只读路径。确认 `.env.deploy` 中
 `VQ_DATA_DIR` 指向宿主可写目录。
 
-### 6.6 客户端连不上服务端
+### 6.8 客户端连不上服务端
 
 - 确认容器健康：`python scripts/DeployServer.py status`；
 - 确认宿主端口：`curl http://localhost:18000/health/live`；
 - 客户端配置中 API 地址使用 `http://localhost:18000`（勿用 `127.0.0.1` 时混用 IPv6）。
 
-### 6.7 数据持久化
+### 6.9 数据持久化
 
 - PostgreSQL/Redis 使用命名卷（`vq-postgres` / `vq-redis`），`stop` 不删数据；
 - 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录。

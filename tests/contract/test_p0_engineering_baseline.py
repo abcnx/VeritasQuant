@@ -113,3 +113,38 @@ def test_ci_uses_single_global_version_constant() -> None:
     for line in ci.splitlines():
         if "veritasquant-" in line and "VQ_VERSION" not in line:
             raise AssertionError(f"发现硬编码版本引用: {line.strip()}")
+
+
+@pytest.mark.stable_id("P0-005-003")
+def test_ci_builds_and_publishes_ghcr_image() -> None:
+    """CI 必须包含 ghcr.io 镜像构建 job（GitHub Packages 发布服务端镜像）。"""
+    workflow = loadYaml(".github/workflows/Ci.yml")
+    jobs = workflow["jobs"]
+    assert "build-image" in jobs
+    build_image = jobs["build-image"]
+    # 需要 packages: write 权限（推送 ghcr.io）
+    assert build_image["permissions"]["packages"] == "write"
+    steps = "\n".join(
+        step.get("uses", "") + "\n" + str(step.get("with", ""))
+        for step in build_image["steps"]
+    )
+    # 登录 ghcr.io 使用内置 GITHUB_TOKEN（不引入外部凭据）
+    assert "docker/login-action" in steps
+    assert "secrets.GITHUB_TOKEN" in steps
+    # 构建并推送（build-push-action）
+    assert "docker/build-push-action" in steps
+    assert "ghcr.io/${{ github.repository }}" in steps
+    # 版本 tag：V* 触发发布版本镜像；main/dev 刷新 latest
+    assert "latest" in steps
+    assert "refs/tags/V" in steps
+    # 手动触发（workflow_dispatch）生成带版本前缀的 yyyyMMddHHmm 时间戳 tag
+    assert "Generate timestamp tag for manual build" in "\n".join(
+        step.get("name", "") for step in build_image["steps"]
+    )
+    ci_text = (ROOT / ".github" / "workflows" / "Ci.yml").read_text(encoding="utf-8")
+    assert "%Y%m%d%H%M" in ci_text
+    assert "github.event_name == 'workflow_dispatch'" in ci_text
+    # 时间戳版本必须带版本前缀（如 0.1.1-202608031217）
+    assert "${{ env.VQ_VERSION }}-$(date -u +%Y%m%d%H%M)" in ci_text
+    # 全局版本常量 VQ_VERSION 必须存在（版本单一来源）
+    assert workflow["env"]["VQ_VERSION"]

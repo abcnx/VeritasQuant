@@ -46,10 +46,13 @@ def test_deploy_compose_has_three_services_with_healthchecks() -> None:
 def test_deploy_compose_server_service() -> None:
     compose = yaml.safe_load(DEPLOY_COMPOSE.read_text(encoding="utf-8"))
     server = compose["services"]["server"]
-    assert server["build"]["dockerfile"] == "Docker/Dockerfile"
+    # 默认引用 GitHub Packages（ghcr.io）镜像；本地构建块保留为注释选项
+    assert "ghcr.io/" in server["image"]
     assert server["read_only"] is True
     assert server["ports"] == ["${VQ_API_PORT:-18000}:18000"]
     assert "depends_on" in server
+    # 本地构建选项必须仍可用（Dockerfile 与 build 块存在）
+    assert DOCKERFILE.is_file()
 
 
 def test_deploy_compose_postgres_requires_password() -> None:
