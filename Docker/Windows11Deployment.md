@@ -60,8 +60,8 @@ cd VeritasQuant
 | 组件 | 镜像/来源 | 说明 |
 |------|-----------|------|
 | API 服务 | `ghcr.io/acanx/veritasquant:<tag>`（GitHub Packages 构建，默认 `latest`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000`；也可本地构建（`veritasquant/server:local`） |
-| PostgreSQL | `postgres:16.4-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
-| Redis | `redis:7.4-alpine` | 跨进程事件分发（Redis Streams） |
+| PostgreSQL | `postgres:18-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
+| Redis | `redis:8-alpine` | 跨进程事件分发（Redis Streams） |
 
 > 服务端镜像由 GitHub Actions（CI `build-image` job）构建并发布到
 > GitHub Container Registry（ghcr.io）。tag 推送（如 `V0.1.1`）会发布对应版本镜像与
@@ -199,8 +199,8 @@ python3 scripts/DeployServer.py stop
 ```
 
 - 停止并删除容器与网络；
-- **数据卷保留**（PostgreSQL/Redis 数据不丢失）；
-- 如需彻底清理数据：`docker compose -f Docker\docker-compose.deploy.yml down --volumes`。
+- **数据保留**：PostgreSQL 数据在宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`，Redis 数据在 `vq-redis` 命名卷，均不丢失；
+- 如需彻底清理：`docker compose -f Docker\docker-compose.deploy.yml down --volumes`（仅删除命名卷；PostgreSQL 宿主目录需手动删除）。
 
 ---
 
@@ -254,8 +254,10 @@ python3 scripts/DeployServer.py logs --service server
 
 ### 6.9 数据持久化
 
-- PostgreSQL/Redis 使用命名卷（`vq-postgres` / `vq-redis`），`stop` 不删数据；
-- 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录。
+- PostgreSQL 数据映射宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`（`VQ_POSTGRES_DATA_DIR` 可覆盖），容器删除不丢数据；
+- Redis 使用命名卷 `vq-redis`，`stop` 不删数据；
+- 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录；
+- ⚠️ PostgreSQL 大版本升级（如 16 → 18）数据目录格式不兼容：先 `pg_dump` 备份再迁移，或确认无重要数据后删除旧卷/旧目录。
 
 ### 6.10 客户端 pip 安装失败（No matching distribution found for setuptools）
 
@@ -296,7 +298,135 @@ curl.exe -s http://localhost:18000/api/v1/version
 
 ---
 
-## 7. 安全与边界
+## 7. 版本升级与数据运维（SOP）
+
+> 总原则：**先备份、再升级；升级可回滚；变更留痕**（发布、备份、回滚操作建议登记 Change，见 [开发工作流](Docs/VeritasQuantDevelopmentWorkflow.md)）。
+
+### 7.1 数据备份（Backup）
+
+**PostgreSQL（推荐 `pg_dump` 一致性逻辑备份，发布前必做）：**
+
+```powershell
+# ① 全量逻辑备份（custom 格式，含压缩）
+docker exec vq-postgresql pg_dump -U veritasquant -d veritasquant -Fc -f /tmp/vq_backup.dump
+# ② 拷贝到宿主备份目录（先创建目录）
+New-Item -ItemType Directory -Force -Path D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup | Out-Null
+docker cp vq-postgresql:/tmp/vq_backup.dump D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup\vq_$(Get-Date -Format yyyyMMdd_HHmmss).dump
+```
+
+> ⚠️ 必须通过 `pg_dump` 做一致性逻辑备份；**不要直接复制数据目录文件**（PG 运行中文件级复制不一致）。
+
+**Redis（AOF 已开启，发布前导出快照）：**
+
+```powershell
+docker exec vq-redis redis-cli --rdb /tmp/vq_redis.rdb
+docker cp vq-redis:/tmp/vq_redis.rdb D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup\vq_redis_$(Get-Date -Format yyyyMMdd_HHmmss).rdb
+```
+
+**运行产物与导入数据：**
+
+```powershell
+# vq-runtime 卷（回测输出/报告/日志）
+docker run --rm -v vq-runtime:/data -v D:/Dev/Docker/HostFileSystem/VeritasQuant/Backup:/backup alpine sh -c "cp -a /data/. /backup/runtime_$(Get-Date -Format yyyyMMdd)/"
+# VQ_DATA_DIR 宿主目录直接复制即可
+Copy-Item -Recurse .\data D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup\data_$(Get-Date -Format yyyyMMdd)
+```
+
+**建议频率**：每日定时备份 + 每次版本发布前必做。
+
+### 7.2 数据迁移（Migration）
+
+**场景 A：PostgreSQL 大版本升级（如 16 → 18，数据目录格式不兼容）**
+
+```powershell
+# ① 先按 7.1 备份
+# ② 停止服务
+python3 scripts/DeployServer.py stop
+# ③ 升级编排中的镜像版本（如 postgres:18-alpine），并确认宿主数据目录为空
+#    （旧版本数据文件与新版本不兼容，PG 会拒绝启动，需先清空/移走旧目录）
+# ④ 启动（新数据目录自动初始化）
+python3 scripts/DeployServer.py start
+# ⑤ 恢复数据
+Copy-Item D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup\vq_20260804.dump .\restore.dump
+docker cp .\restore.dump vq-postgresql:/tmp/restore.dump
+docker exec vq-postgresql pg_restore -U veritasquant -d veritasquant --clean --if-exists /tmp/restore.dump
+Remove-Item .\restore.dump
+```
+
+**场景 B：应用 Schema 迁移**
+
+服务端启动时自动执行版本化数据库迁移（V1/V2/V3），升级应用镜像**无需手动迁移**；迁移前仍建议先备份。
+
+**场景 C：PostgreSQL 数据目录更换位置**
+
+```powershell
+python3 scripts/DeployServer.py stop   # 停止后文件级复制才安全
+Copy-Item -Recurse D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQLNew
+# 修改 .env.deploy 的 VQ_POSTGRES_DATA_DIR 指向新目录
+python3 scripts/DeployServer.py start
+```
+
+### 7.3 关停（Shutdown）
+
+- 正常关停（保留全部数据）：`python3 scripts/DeployServer.py stop`；
+- 彻底清理（删除命名卷 `vq-runtime` / `vq-redis`；PostgreSQL 宿主目录需手动删除）：
+  `docker compose -f Docker\docker-compose.deploy.yml down --volumes`；
+- 升级前关停：直接 `stop` 即可，数据均在宿主目录/命名卷中，不会丢失。
+
+### 7.4 升级到新版本（Upgrade）
+
+**标准流程（7 步）：**
+
+```powershell
+# ① 记录当前版本
+curl.exe http://localhost:18000/api/v1/version
+
+# ② 按 7.1 备份（PG + Redis + 运行产物）
+
+# ③ 确认新版本镜像已发布（GitHub Packages 页面或 manifest 检查）
+docker manifest inspect ghcr.io/acanx/veritasquant:0.1.3
+
+# ④ 编辑 Docker\.env.deploy，将 VQ_IMAGE_TAG 固定为新版本（不建议长期用 latest）
+#    VQ_IMAGE_TAG=0.1.3
+
+# ⑤ 重新部署（compose 检测镜像变化自动重建 server 容器）
+python3 scripts/DeployServer.py start
+
+# ⑥ 验证
+curl.exe http://localhost:18000/health/live
+curl.exe http://localhost:18000/health/ready
+curl.exe http://localhost:18000/api/v1/version   # 应显示新版本号
+
+# ⑦ 验收通过后可选清理旧版本镜像
+docker image rm ghcr.io/acanx/veritasquant:0.1.2
+```
+
+**回滚：**
+
+```powershell
+# ① .env.deploy 的 VQ_IMAGE_TAG 改回旧版本（如 0.1.2）
+# ② python3 scripts/DeployServer.py start
+# ③ 若 Schema 已变更导致应用不兼容，按 7.2 场景 A 恢复数据库备份
+```
+
+**镜像 tag 语义**：Git tag `V0.1.2` 触发 CI 发布去 V 版本 tag `0.1.2` 与 `latest`；push main/dev 刷新 `latest`；手动触发构建生成 `0.1.2-yyyyMMddHHmm` 时间戳 tag。
+
+### 7.5 升级检查清单
+
+| 步骤 | 操作 | 命令/位置 |
+| --- | --- | --- |
+| 1 | 备份 PostgreSQL | `pg_dump` + `docker cp`（7.1） |
+| 2 | 备份 Redis | `redis-cli --rdb` + `docker cp`（7.1） |
+| 3 | 记录当前版本 | `/api/v1/version` |
+| 4 | 确认新版本镜像存在 | Packages 页面 / `docker manifest inspect` |
+| 5 | 固定版本 tag | `.env.deploy` 的 `VQ_IMAGE_TAG` |
+| 6 | 重新部署 | `python3 scripts/DeployServer.py start` |
+| 7 | 验证 live/ready/version | `/health/live`、`/health/ready`、`/api/v1/version` |
+| 8 | 回滚预案确认 | 旧版本镜像仍可拉取 / 备份文件完好 |
+
+---
+
+## 8. 安全与边界
 
 - 本编排仅用于本地模拟盘/仿真；PostgreSQL 未对外暴露端口（仅容器网络内）；
 - `.env.deploy` 含明文密码，已被 `.gitignore` 忽略，不要提交；
