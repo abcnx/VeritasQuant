@@ -9,7 +9,7 @@
 
 services:
   server:
-    image: ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}
+    image: ghcr.io/acanx/finvquant-server:${FINV_IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
