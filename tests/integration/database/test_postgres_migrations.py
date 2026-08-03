@@ -93,7 +93,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
         ).fetchall()
         assert rows == [], "失败迁移的部分对象必须回滚"
         versionRows = connection.execute(
-            "SELECT version FROM schema_version WHERE version = '4'"
+            "SELECT version FROM schema_version WHERE version = '5'"
         ).fetchall()
         assert versionRows == [], "失败迁移不得记录版本"
 
