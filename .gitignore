@@ -1,14 +1,33 @@
-# 通用
+# ============================================================
+# FinvQuant 仓库根目录忽略规则（Go 服务端为主）
+# VeritasQuant/ 子项目有独立的 .gitignore，此处为根目录兜底
+# ============================================================
+
+# ---- Go ----
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+coverage.html
+vendor/
+
+# ---- 通用 ----
 .DS_Store
 *.log
 *.tmp
-
-# 编辑器
-.idea/
-.vscode/
 *.swp
 
-# Python（子项目 VeritasQuant/ 内有更完整的规则，此处兜底）
+# ---- 编辑器 ----
+.idea/
+.vscode/
+*.code-workspace
+
+# ---- Python（VeritasQuant 子项目兜底）----
 __pycache__/
 .venv/
 *.py[cod]
@@ -19,7 +38,11 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-artifacts/
 
-# 部署环境变量（含明文密码，禁止提交）
+# ---- Node（Web 前端兜底）----
+node_modules/
+Web/dist/
+
+# ---- 部署 ----
+deploy/.env
 Docker/.env.deploy

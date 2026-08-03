@@ -1,0 +1,90 @@
+# FinvQuant 前后端分离部署（Docker Compose）
+#   - server : Go 服务端（Gin），默认端口 16001
+#   - web    : 前端（Vue3+Vite8+Vuetify4 → Nginx），默认端口 16002
+#   - postgres: PostgreSQL 18
+#   - redis  : Redis 8
+#
+# 使用：cp deploy/.env.example deploy/.env && docker compose --env-file deploy/.env up -d
+# 生产镜像：ghcr.io/acanx/finvquant-server / ghcr.io/acanx/finvquant-web
+
+services:
+  server:
+    image: ghcr.io/acanx/finvquant-server:${FINV_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finvquant-server
+    ports:
+      - "16001:16001"
+    environment:
+      FINV_SERVER_HOST: "0.0.0.0"
+      FINV_SERVER_PORT: "16001"
+      FINV_PG_HOST: postgres
+      FINV_PG_PORT: "5432"
+      FINV_PG_USER: ${FINV_PG_USER:-finvquant}
+      FINV_PG_PASSWORD: ${FINV_PG_PASSWORD:-finvquant}
+      FINV_PG_DATABASE: ${FINV_PG_DATABASE:-finvquant}
+      FINV_REDIS_ADDR: redis:6379
+      FINV_REDIS_PASSWORD: ${FINV_REDIS_PASSWORD:-}
+      FINV_MODE: release
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:16001/api/v1/health/live >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ghcr.io/acanx/finvquant-web:${FINV_IMAGE_TAG:-latest}
+    build:
+      context: ./Web
+      dockerfile: Dockerfile
+    container_name: finvquant-web
+    ports:
+      - "16002:16002"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: finvquant-postgres
+    environment:
+      POSTGRES_USER: ${FINV_PG_USER:-finvquant}
+      POSTGRES_PASSWORD: ${FINV_PG_PASSWORD:-finvquant}
+      POSTGRES_DB: ${FINV_PG_DATABASE:-finvquant}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "127.0.0.1:${FINV_PG_EXPOSE_PORT:-5433}:5432"
+    volumes:
+      - finvquant-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${FINV_PG_USER:-finvquant} -d ${FINV_PG_DATABASE:-finvquant}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    container_name: finvquant-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${FINV_REDIS_EXPOSE_PORT:-6380}:6379"
+    volumes:
+      - finvquant-redisdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  finvquant-pgdata:
+  finvquant-redisdata:

@@ -1,0 +1,154 @@
+# FinvQuant CI/CD：构建并推送 Docker 镜像到 GitHub Packages (GHCR)
+#   - server: ghcr.io/acanx/finvquant-server（Go 服务端，端口 16001）
+#   - web   : ghcr.io/acanx/finvquant-web（Vue3+Vite8+Vuetify4 前端，端口 16002）
+#
+# 触发：push 到 dev/main/FinvQuant、tag v*、PR、手动
+# tag 规则：latest（dev/main/FinvQuant 推送）+ 版本 tag（v* 推送时使用 git tag）
+
+name: FinvQuant CI/CD
+
+on:
+  push:
+    branches: [dev, main, FinvQuant]
+    tags: ["v*"]
+  pull_request:
+    branches: [dev, main, FinvQuant]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAMESPACE: ghcr.io/acanx
+  SERVER_IMAGE: ghcr.io/acanx/finvquant-server
+  WEB_IMAGE: ghcr.io/acanx/finvquant-web
+
+jobs:
+  # ------------------------------------------------------------------
+  # 1. Go 服务端构建与测试
+  # ------------------------------------------------------------------
+  build-server:
+    name: Build Go server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+          cache-dependency-path: go.sum
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Go build
+        run: go build -o /tmp/finvquant-server ./cmd/server
+
+      - name: Go test
+        run: go test ./... -count=1
+
+  # ------------------------------------------------------------------
+  # 2. 前端构建
+  # ------------------------------------------------------------------
+  build-web:
+    name: Build Vue web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: Web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  # ------------------------------------------------------------------
+  # 3. 构建并推送 Docker 镜像到 GHCR
+  # ------------------------------------------------------------------
+  docker:
+    name: Build & push images (GHCR)
+    needs: [build-server, build-web]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tags
+        id: tags
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "tags=latest,${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tags=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ env.SERVER_IMAGE }}:${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Build & push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Web
+          file: Web/Dockerfile
+          push: true
+          tags: ${{ env.WEB_IMAGE }}:${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+  # ------------------------------------------------------------------
+  # 4. PR 验证：仅构建镜像不推送
+  # ------------------------------------------------------------------
+  docker-pr:
+    name: Build images (PR validation)
+    needs: [build-server, build-web]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build server image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: ${{ env.SERVER_IMAGE }}:pr-check
+
+      - name: Build web image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Web
+          file: Web/Dockerfile
+          push: false
+          tags: ${{ env.WEB_IMAGE }}:pr-check
