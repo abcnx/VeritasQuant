@@ -6779,3 +6779,100 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #248 已合并，TSK-P5-014 验收通过归档
+- WorkItemId: TSK-P5-017
+  PlanTaskId: P5-017
+  Title: 冻结影子运行账户、策略、额度和验收政策
+  Description: ShadowFreezeEntryV1/ShadowFreezeServiceV1 影子运行冻结（账户/策略/额度/验收政策四类全覆盖；双人签署禁止同人双签；recordHash 不可变；SUPERSEDED 历史保留；篡改检测）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.9'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 4
+  Dependencies:
+  - P5-001
+  - P5-016
+  AcceptanceCriteria: 版本与上限经双人签署；观察前不得修改阈值解释结果
+  TestEvidence: tests/unit/security/test_shadow_freeze.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第四批 PR 合并后验收（能力就绪；实际影子运行需模拟盘环境）
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第四批开发完成（冻结影子运行账户、策略、额度和验收政策），本地验证全绿
+- WorkItemId: TSK-P5-019
+  PlanTaskId: P5-019
+  Title: 完成上线前安全、可靠性和操作准备评审
+  Description: ReviewCheckV1/GoLiveReviewServiceV1 上线前评审（安全/可靠性/操作准备三类全覆盖；FAIL/NOT_EXECUTED 阻断；S0/S1、未解释对账、超期高风险行动项为 0 + 人工签署才 PASS）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.9'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 6
+  Dependencies:
+  - P5-010
+  - P5-013
+  - P5-014
+  AcceptanceCriteria: 开放 S0/S1、未解释对账、超期高风险和阻断行动项均为 0
+  TestEvidence: tests/unit/security/test_go_live_review.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第四批 PR 合并后验收（能力就绪；正式评审需上线前执行）
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第四批开发完成（完成上线前安全、可靠性和操作准备评审），本地验证全绿
+- WorkItemId: TSK-P5-021
+  PlanTaskId: P5-021
+  Title: 每日 Go/No-Go 审核并保留决策证据
+  Description: DailyMetricSnapshotV1/RiskStateV1/DailyGoNoGoServiceV1 每日审核（指标快照+风险状态+审批人+唯一决策 GO/NO_GO；硬限制失败自动退回仿真；决策哈希可审计）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '8.9'
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 4
+  Dependencies:
+  - P5-017
+  - P5-019
+  AcceptanceCriteria: 每日有指标快照、风险状态、审批人和唯一决策；失败自动退回仿真
+  TestEvidence: tests/unit/security/test_daily_go_no_go.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T09:50:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第四批 PR 合并后验收（能力就绪；每日执行需影子运行阶段）
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T09:50:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第四批开发完成（每日 Go/No-Go 审核并保留决策证据），本地验证全绿
