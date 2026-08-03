@@ -57,39 +57,78 @@ def submitImport(client: ApiClient, request: ImportRequest) -> Mapping[str, Any]
     return client.submitCommand(payload)
 
 
+@dataclass(frozen=True, slots=True)
+class UploadImportRequest:
+    """文件上传导入请求（表单模型）。"""
+
+    fileName: str
+    source: str
+    upsertMode: str  # FIELD / ROW
+
+    def validate(self) -> list[str]:
+        """校验输入；返回错误列表（空 = 通过）。"""
+        errors: list[str] = []
+        if not self.fileName:
+            errors.append("请选择要上传的 MVSV 文件")
+        if not self.source.strip():
+            errors.append("数据源不能为空")
+        if self.upsertMode not in ("FIELD", "ROW"):
+            errors.append("覆盖模式必须为 FIELD 或 ROW")
+        return errors
+
+
+def submitUploadImport(
+    client: ApiClient,
+    request: UploadImportRequest,
+    content: bytes,
+) -> Mapping[str, Any]:
+    """上传 MVSV 文件并导入（服务端解析 + 字段级覆盖写 PG）。"""
+    return client.uploadImport(
+        fileName=request.fileName,
+        content=content,
+        source=request.source.strip(),
+        upsertMode=request.upsertMode,
+    )
+
+
 def renderImportPage(client: ApiClient) -> None:  # noqa: ANN001
-    """数据导入操作页（Streamlit 渲染）。"""
+    """数据导入操作页：上传 MVSV 文件 → 服务端导入 PostgreSQL。"""
     st = _st()
     st.markdown("#### 数据导入")
-    with st.form("import_form"):
+    st.caption("上传 MVSV-1 行情文件，服务端解析后字段级覆盖导入 PostgreSQL（finv_quote_secu_kline_min）。")
+    with st.form("import_upload_form"):
+        uploaded = st.file_uploader("选择 MVSV 行情文件", type=["mvsv", "txt"])
         source = st.text_input("数据源", placeholder="如: cn-feed")
-        instrumentId = st.text_input("标的 ID", placeholder="如: 510300.SH")
-        col1, col2 = st.columns(2)
-        startDate = col1.date_input("开始日期")
-        endDate = col2.date_input("结束日期")
-        importMode = st.selectbox("导入模式", ["FULL", "INCREMENTAL"])
-        submitted = st.form_submit_button("提交导入", type="primary")
+        upsertMode = st.selectbox("覆盖模式", ["FIELD", "ROW"],
+                                  help="FIELD=只覆盖有值的字段（推荐）；ROW=整行覆盖")
+        submitted = st.form_submit_button("上传并导入", type="primary")
 
     if submitted:
-        request = ImportRequest(
+        if uploaded is None:
+            st.error("请选择要上传的 MVSV 文件")
+            return
+        request = UploadImportRequest(
+            fileName=uploaded.name,
             source=source,
-            instrumentId=instrumentId,
-            startDate=startDate.isoformat() if hasattr(startDate, "isoformat") else str(startDate),
-            endDate=endDate.isoformat() if hasattr(endDate, "isoformat") else str(endDate),
-            importMode=importMode,
+            upsertMode=upsertMode,
         )
         errors = request.validate()
         if errors:
             for issue in errors:
                 st.error(issue)
             return
-        # 危险操作确认（导入会改动数据版本）
-        if not st.checkbox("我确认导入数据将创建新数据版本"):
+        # 危险操作确认（导入会覆盖同键行情数据）
+        if not st.checkbox("我确认导入将覆盖同时刻同证券的对应字段值"):
             st.warning("请确认后提交")
             return
         try:
-            result = submitImport(client, request)
-            st.success(f"导入已受理: {result.get('command_id', '?')} 状态 {result.get('status', '?')}")
+            content = uploaded.getvalue()
+            result = submitUploadImport(client, request, content)
+            st.success(
+                f"导入完成: {result.get('secu_code', '?')} "
+                f"(market={result.get('market_code', '?')}) {result.get('record_count', 0)} 条"
+            )
+            st.caption(f"批次: {result.get('batch_id', '-')} | 覆盖模式: {result.get('mode', '-')}")
         except ApiClientError as error:
             _showError(error)
 

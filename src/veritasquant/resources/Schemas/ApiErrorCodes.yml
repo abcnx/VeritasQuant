@@ -101,6 +101,15 @@ Errors:
     IntroducedVersion: "1.0"
     Deprecated: false
     DetailSchema: {}
+  - Code: 4001
+    ErrorCode: DATA_IMPORT_CONTRACT_INVALID
+    Domain: Data
+    HttpStatus: 422
+    Retryable: false
+    MessageKey: data_import.contract_invalid
+    IntroducedVersion: "1.0"
+    Deprecated: false
+    DetailSchema: {}
   - Code: 6201
     ErrorCode: INSUFFICIENT_AVAILABLE_CASH
     Domain: Account

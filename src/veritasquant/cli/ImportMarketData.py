@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import logging
 import sys
 from collections.abc import Sequence
@@ -25,8 +24,8 @@ import yaml
 
 from veritasquant.application.Entrypoints import configureStandardStreams
 from veritasquant.core.CanonicalJson import canonicalHash
-from veritasquant.data.Mvsv import MvsvFormatError, MvsvReaderV1, MvsvRecordV1
-from veritasquant.data.QuoteRow import QuoteRowV1, UpsertMode
+from veritasquant.data.MvsvImport import parseMvsvPath
+from veritasquant.data.QuoteRow import UpsertMode
 from veritasquant.infrastructure.persistence.QuoteStore import (
     MinuteQuoteStore,
     connectQuoteDb,
@@ -76,40 +75,6 @@ def _loadConfig(configPath: Path) -> dict:
     return config
 
 
-def _rowFromRecord(
-    marketCode: int,
-    secuCode: str,
-    record: MvsvRecordV1,
-) -> QuoteRowV1:
-    """将 MVSV-1 记录映射为行情表行。"""
-    local = record.sourceLocalTime
-    return QuoteRowV1.model_validate({
-        "MarketCode": marketCode,
-        "SecuCode": secuCode,
-        "Ts": int(record.sourceTs.timestamp()),
-        "Date": local.year * 10_000 + local.month * 100 + local.day,
-        "Time": local.hour * 10_000 + local.minute * 100 + local.second,
-        "PrevClose": record.previousClose,
-        "Open": record.open,
-        "High": record.high,
-        "Low": record.low,
-        "Close": record.close,
-        "Paocd": None,
-        "Volume": int(record.volume),
-        "Turnover": record.turnover,
-        "ExtField": None,
-        "Remark": None,
-    })
-
-
-def _fileSha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _batchId(secuCode: str) -> str:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     return f"import_{secuCode}_{stamp}"
@@ -124,29 +89,20 @@ def _importFile(
     dryRun: bool,
 ) -> dict:
     """解析单个 MVSV 文件；store 为 None 或 dryRun 时不写库。"""
-    reader = MvsvReaderV1(path)
-    header = reader.readHeader()
-    headerValues = header.values
-    if "MarketCode" not in headerValues:
-        raise MvsvFormatError(f"{path}: 头部缺少 MarketCode（市场数字代码）")
-    marketCode = int(headerValues["MarketCode"])
-    secuCode = headerValues["Code"]
+    result = parseMvsvPath(path)
+    rows = result.rows
 
-    rows: list[QuoteRowV1] = []
-    for record in reader.iterRecords():
-        rows.append(_rowFromRecord(marketCode, secuCode, record))
-
-    result = {
+    summary: dict = {
         "path": str(path),
-        "market_code": marketCode,
-        "secu_code": secuCode,
+        "market_code": result.marketCode,
+        "secu_code": result.secuCode,
         "count": len(rows),
-        "file_sha256": _fileSha256(path),
+        "file_sha256": result.contentSha256,
     }
     if dryRun or store is None:
-        return result
+        return summary
 
-    batchId = _batchId(secuCode)
+    batchId = _batchId(result.secuCode)
     totalUpdated = 0
     for offset in range(0, len(rows), _UPSERT_BATCH_ROWS):
         chunk = rows[offset : offset + _UPSERT_BATCH_ROWS]
@@ -161,9 +117,9 @@ def _importFile(
     store.registerBatch(
         ingestBatchId=batchId,
         source=str(config["Source"]),
-        marketCode=marketCode,
-        secuCode=secuCode,
-        dataVersionId=str(result["file_sha256"]),
+        marketCode=result.marketCode,
+        secuCode=result.secuCode,
+        dataVersionId=result.contentSha256,
         fileCount=1,
         recordCount=len(rows),
         mode=mode,
@@ -172,9 +128,9 @@ def _importFile(
         importedBy=importedBy,
         notes=config.get("Notes"),
     )
-    result["batch_id"] = batchId
-    result["updated"] = totalUpdated
-    return result
+    summary["batch_id"] = batchId
+    summary["updated"] = totalUpdated
+    return summary
 
 
 def main(argv: Sequence[str] | None = None) -> int:
