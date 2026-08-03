@@ -5,8 +5,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from veritasquant.apps.gui_client.ApiClient import ApiClient
-from veritasquant.apps.gui_client.Pages import AccountScope
+from veritasquant.apps.guiclient.ApiClient import ApiClient
+from veritasquant.apps.guiclient.Pages import AccountScope
 
 
 class TestAccountScopedEndpoints:

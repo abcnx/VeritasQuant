@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from veritasquant.apps.gui_client.ApiClient import ApiClient, ApiClientError
+from veritasquant.apps.guiclient.ApiClient import ApiClient, ApiClientError
 
 
 # ---------------------------------------------------------------- 数据导入页

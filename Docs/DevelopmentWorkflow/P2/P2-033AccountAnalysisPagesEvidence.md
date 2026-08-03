@@ -18,7 +18,7 @@
 ### API Client 扩展
 - accountLedger/accountCashFlows/accountShares/accountAnalysis 四方法
 
-### GUI 页面（`apps/gui_client/Pages.py`）
+### GUI 页面（`apps/guiclient/Pages.py`）
 - **账户管理页**：账户列表 + 详情加载（模式/适配器）
 - **结果分析页**：分析 JSON + 逐笔分录/现金流/份额三 tab
 - **实时监控页**：账户快照 + 模式指标，SSE 状态流提示
@@ -33,7 +33,7 @@
 | 双轨结果可核对 | analysis（TWR/XIRR/本金） | test_analysis |
 
 ## 测试结果
-- `tests/unit/apps/gui_client/test_account_pages.py`：5 个测试通过
+- `tests/unit/apps/guiclient/test_account_pages.py`：5 个测试通过
 - `tests/unit/apps/test_domain_routes.py`：新增 5 个端点测试通过
 - 全量 918 测试通过（2026-08-03，本地）
 - ruff/mypy: 通过
