@@ -314,6 +314,20 @@ PR 使用快速且有代表性的集合，主分支每日运行全量，夜间/�
 - wheel/镜像/SBOM/迁移/Schema/错误目录及其 SHA-256。
 - 关联工作项、风险、变更和 Release ID。
 
+### 8.3 CI 触发注意事项（Workflow 编写与 PR 来源）
+
+**8.3.1 fork PR 修改 workflow 文件不会自动运行 checks**
+
+- 现象：来自 fork 的 PR 若修改 `.github/workflows/` 下任何文件，GitHub 安全策略拒绝自动运行该 PR 的 checks；required checks 永久显示 `Expected — Waiting for status to be reported`，无法满足分支规则（ruleset）的合并条件。
+- 解法：将分支推送到上游仓库（需 collaborator 写权限），改为**同仓库 PR**（head 分支位于上游仓库，workflow 修改受信任，CI 自动运行）。
+- 备注：GitHub API 不支持把 fork PR 的 head 切换为同仓库分支（`head.repo` 不可变），需关闭原 PR 后重新创建。
+
+**8.3.2 GitHub Actions 表达式不支持字符串切片**
+
+- 现象：`${{ github.ref_name[1:] }}` 等 `[start:end]` 切片语法非法，导致 workflow 文件解析失败；push 触发的 run 名称显示为 workflow 文件路径（如 `.github/workflows/Ci.yml`）且立即 failure，PR 的 checks 永不产生。
+- 解法：用 shell 参数展开处理，例如去 V 前缀：`echo "stripped=${GITHUB_REF_NAME#V}" >> "$GITHUB_OUTPUT"`，后续 step 引用 `${{ steps.xxx.outputs.stripped }}`；非目标分支时输出为空，配合 `enable` 条件 `!= ''` 避免生成多余 tag。
+- 排查：workflow 文件无效时，Actions 页面的 run 名称不是 workflow 的 `name:` 而是文件路径（如 `.github/workflows/Ci.yml`）。
+
 ## 9. 发布与环境晋级工作流
 
 ### 9.1 环境链
