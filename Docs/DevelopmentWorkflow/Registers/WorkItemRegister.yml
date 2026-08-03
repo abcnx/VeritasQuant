@@ -6620,18 +6620,31 @@ Records:
   TestEvidence: tests/unit/security/test_audit_trail.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T09:30:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第三批 PR 合并后验收
+  NextAction: P5-011~014 已验收归档；后续 P5-015~022 为演练/运行/Gate 类待环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#248
+    MergedAt: '2026-08-03T09:24:43Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第三批 PR #248 合并；运行保障与供应链安全能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T09:15:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第三批开发完成（建立不可变审计、日志访问和保留策略），本地验证全绿
+  - Ts: '2026-08-03T09:30:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #248 已合并，TSK-P5-011 验收通过归档
 - WorkItemId: TSK-P5-012
   PlanTaskId: P5-012
   Title: 建立 WAL/对象版本化备份与恢复自动验证
@@ -6652,18 +6665,31 @@ Records:
   TestEvidence: tests/unit/reliability/test_backup_recovery.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T09:30:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第三批 PR 合并后验收
+  NextAction: P5-011~014 已验收归档；后续 P5-015~022 为演练/运行/Gate 类待环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#248
+    MergedAt: '2026-08-03T09:24:43Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第三批 PR #248 合并；运行保障与供应链安全能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T09:15:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第三批开发完成（建立 WAL/对象版本化备份与恢复自动验证），本地验证全绿
+  - Ts: '2026-08-03T09:30:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #248 已合并，TSK-P5-012 验收通过归档
 - WorkItemId: TSK-P5-013
   PlanTaskId: P5-013
   Title: 编写启动、停机、断连、对账、账本异常、密钥泄漏 Runbook
@@ -6683,18 +6709,31 @@ Records:
   TestEvidence: tests/unit/reliability/test_runbook.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T09:30:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第三批 PR 合并后验收
+  NextAction: P5-011~014 已验收归档；后续 P5-015~022 为演练/运行/Gate 类待环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#248
+    MergedAt: '2026-08-03T09:24:43Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第三批 PR #248 合并；运行保障与供应链安全能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T09:15:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第三批开发完成（编写六类 Runbook），本地验证全绿
+  - Ts: '2026-08-03T09:30:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #248 已合并，TSK-P5-013 验收通过归档
 - WorkItemId: TSK-P5-014
   PlanTaskId: P5-014
   Title: 完成依赖/镜像/策略源码/沙箱安全冻结
@@ -6715,15 +6754,28 @@ Records:
   TestEvidence: tests/unit/security/test_supply_chain_freeze.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T09:15:00Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T09:30:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第三批 PR 合并后验收
+  NextAction: P5-011~014 已验收归档；后续 P5-015~022 为演练/运行/Gate 类待环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#248
+    MergedAt: '2026-08-03T09:24:43Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第三批 PR #248 合并；运行保障与供应链安全能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T09:15:00Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第三批开发完成（完成依赖/镜像/策略源码/沙箱安全冻结），本地验证全绿
+  - Ts: '2026-08-03T09:30:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #248 已合并，TSK-P5-014 验收通过归档
