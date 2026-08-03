@@ -1,6 +1,9 @@
 # Title : US_NVDA_Min_V4_2026
 # Format : MVSV-1
 # Field : "ts|dt|o|c|l|h|v|t|cp|cr|p"
+# FieldType : "Int|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal"
+# FieldName : "Ts|DateTime|Open|Close|Low|High|Volume|Turnover|ChangePrice|ChangePercent|PrevClose"
+# 字段名称 : "时间戳(UTC)|日期|时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 15000
 # EffectiveTimeZone : "America/New_York"
 # TimeZoneSource : "StockMapping.db secu_futu.tz + stock.db t_stock"
