@@ -136,6 +136,8 @@ Server-Sent Events 状态流：`text/event-stream`，推送账户/订单/风险�
 
 账户列表。
 
+**业务处理逻辑**：列表来自服务端 `VQ_ACCOUNTS` 环境变量（逗号分隔账户 ID）；每个账户附带 `execution_mode`（取自 `VQ_ENVIRONMENT`，仅 PAPER/SIMULATION，拒绝 LIVE）与 `run_id`（默认 null）。未配置 `VQ_ACCOUNTS` 时返回空列表。
+
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | （无必填） | | 返回全部可见账户 |
@@ -147,6 +149,8 @@ Server-Sent Events 状态流：`text/event-stream`，推送账户/订单/风险�
 ### 5.2 GET /api/v1/accounts/{account_id}
 
 账户详情。`run_id` 查询参数可选（指定运行上下文）。
+
+**业务处理逻辑**：账户必须存在于 `VQ_ACCOUNTS` 配置，否则返回 `1002 RESOURCE_NOT_FOUND`（404，不泄露资源存在性之外的细节）；存在时返回账户元信息（`execution_mode`、`snapshot`）。账本/现金流/份额/分析在无投影数据时返回空集合。
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
@@ -210,6 +214,10 @@ Server-Sent Events 状态流：`text/event-stream`，推送账户/订单/风险�
 
 创建回测（返回 202）。
 
+**业务处理逻辑**：请求体经 `BacktestConfigV1` 严格校验（run_id/account_id/strategy_id/strategy_version/数据区间必填、`initial_cash` 为 Decimal 字符串、`execution_mode` 为 PAPER/SIMULATION、`random_seed` 整数）→ `BacktestApplicationServiceV1.createRun` 创建回测运行 → 返回 202 与 `{run_id, status}`。
+
+**失败场景**：校验失败 → `1001 VALIDATION_ERROR`（400）。
+
 请求体：
 
 ```json
@@ -270,6 +278,16 @@ Server-Sent Events 状态流：`text/event-stream`，推送账户/订单/风险�
 ### 8.1 POST /api/v1/commands
 
 幂等提交命令（返回 202；同键同载荷返回原命令；同键异载荷返回 1003/409）。
+
+**业务处理逻辑**（命令受理 + 异步执行）：
+
+1. 服务端计算**幂等作用域**（主体 + 账户 + 路由 + `idempotency_key`）；
+2. 查重：同键同载荷 → 返回原命令记录（重复提交安全）；同键异载荷 → `1003 IDEMPOTENCY_CONFLICT`（409）；
+3. 首次提交 → 创建命令资源写入 `command_records` 表（status=`PENDING`，身份字段冻结不可变）；
+4. 返回 `202 {command_id, status}`（受理）；
+5. 执行端推进状态机 `PENDING→AUTHORIZING→ACCEPTED→RUNNING→SUCCEEDED/FAILED`（支持取消）；
+6. **失败场景**：异步失败 → 状态 `FAILED` + 失败快照（`failure.code/error_code/catalog_version/retryable/details`）持久化在 `command_records.failure_*` 列，可审计；
+7. **数据落点**：命令资源在 `command_records` 表；具体业务数据由命令执行端（如 `vq-job-data-ingestion`）落盘（行情/净值文件 + DataManifest 数据版本）。
 
 请求体：
 
