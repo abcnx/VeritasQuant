@@ -1,0 +1,16 @@
+# NVDA 美股分钟行情导入配置（MVSV-1 示例）
+#
+# 使用：
+#   vq-import-market-data --config Configs/DataImports/NvdaMvsv.yml
+#   vq-import-market-data --config Configs/DataImports/NvdaMvsv.yml --dry-run
+#   vq-import-market-data --config Configs/DataImports/NvdaMvsv.yml --input-dir <其他目录> --mode ROW
+#
+# 输出表：finv_quote_secu_kline_min（V4 迁移）
+#   主键 (ts, market_code, secu_code)，同键后到数据按字段覆盖旧值。
+
+Source: "FT"                     # 数据供应商
+InputDir: "Data/US_NSDQ_NVDA"    # MVSV 输入目录（相对仓库根；可用 --input-dir 覆盖）
+TsPrecision: "Second"            # 时间戳精度
+UpsertMode: "FIELD"              # FIELD=字段级覆盖（非 NULL 覆盖、NULL 保留旧值）；ROW=整行覆盖
+ImportedBy: "bee-agent"          # 导入人/来源标识
+Notes: "NVDA 美股分钟行情示例（MarketCode=11，Market=NSDQ，MVSV-1）"

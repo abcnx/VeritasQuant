@@ -41,7 +41,8 @@ def applied(database) -> object:  # noqa: ANN001
 
 
 def test_migration_applies_forward(applied) -> None:  # noqa: ANN001
-    assert applied == [1, 2, 3]
+    # 当前迁移序列：V1 事实/投影、V2 命令资源、V3 数据字典、V4 历史行情
+    assert applied == [1, 2, 3, 4]
 
 
 def test_migration_idempotent(applied) -> None:  # noqa: ANN001
@@ -77,7 +78,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
         (MIGRATIONS_DIR / "V1__initial_fact_and_projection_schema.sql").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
-    (badDir / "V4__broken.sql").write_text(
+    (badDir / "V5__broken.sql").write_text(
         "BEGIN;\nCREATE TABLE partial_table (id TEXT PRIMARY KEY);\n"
         "INSERT INTO missing_table VALUES (1);\nCOMMIT;",
         encoding="utf-8",
@@ -92,7 +93,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
         ).fetchall()
         assert rows == [], "失败迁移的部分对象必须回滚"
         versionRows = connection.execute(
-            "SELECT version FROM schema_version WHERE version = '4'"
+            "SELECT version FROM schema_version WHERE version = '5'"
         ).fetchall()
         assert versionRows == [], "失败迁移不得记录版本"
 
