@@ -276,13 +276,18 @@ Rows:
   - P3-005
   - P3-007
   - P3-008
+  - P5-002
+  - P5-003
+  - P5-004
+  - P5-005
+  - P5-006
   TestIds:
   - CONTRACT-API-COMMANDS-001
   - CONTRACT-API-IDEMPOTENCY-001
   CiSuites:
   - UnitContract
   - Integration
-  LatestGate: M3
+  LatestGate: M5
   ExecutionEvidence:
     Status: PARTIAL_AUTHOR_EVIDENCE
     EvidenceLinks:

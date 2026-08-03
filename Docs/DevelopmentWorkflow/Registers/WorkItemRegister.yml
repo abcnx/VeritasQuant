@@ -6193,3 +6193,160 @@ Records:
     Actor: BeeAgent
     Action: 流转 ACCEPTED
     Note: PR #241 已合并，P4-010 验收通过归档
+
+- WorkItemId: TSK-P5-002
+  PlanTaskId: P5-002
+  Title: 实现实盘环境、账户组、网络和数据物理/逻辑隔离
+  Description: EnvironmentIsolationPolicyV1 环境隔离：LIVE 不能与非 LIVE 混组；测试凭据不能访问实盘（凭据环境绑定）；跨环境命令被拒绝
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 12
+  Dependencies:
+  - P5-001
+  AcceptanceCriteria: LIVE 不能与非 LIVE 混组；测试凭据不能访问实盘；跨环境命令被拒绝
+  TestEvidence: tests/unit/security/test_environment_isolation.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:10:33Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:10:33Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第一批开发完成（实现实盘环境、账户组、网络和数据物理/逻辑隔离），本地验证全绿
+
+- WorkItemId: TSK-P5-003
+  PlanTaskId: P5-003
+  Title: 实现密钥服务、轮换、撤销和最小权限
+  Description: SecretServiceV1 密钥生命周期：仓库/日志无秘密（repr 打码）；轮换保留版本历史不中断审计；撤销后旧凭据立即失效；最小权限访问门禁
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 9
+  Dependencies:
+  - P5-001
+  AcceptanceCriteria: 仓库/日志无秘密；轮换不中断审计；撤销后旧凭据立即失效
+  TestEvidence: tests/unit/security/test_secret_service.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:10:33Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:10:33Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第一批开发完成（实现密钥服务、轮换、撤销和最小权限），本地验证全绿
+
+- WorkItemId: TSK-P5-004
+  PlanTaskId: P5-004
+  Title: 实现 TLS、短期令牌和生产会话安全
+  Description: TlsPolicyV1 TLS 1.2+ 协议与弱密码套件黑名单；SessionSecurityServiceV1 短期令牌（哈希存储/过期/撤销/单次使用防重放）；令牌不进 URL
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P5-001
+  AcceptanceCriteria: TLS 1.2+；令牌不进 URL；过期/撤销/重放测试通过
+  TestEvidence: tests/unit/security/test_session_security.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:10:33Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:10:33Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第一批开发完成（实现 TLS、短期令牌和生产会话安全），本地验证全绿
+
+- WorkItemId: TSK-P5-005
+  PlanTaskId: P5-005
+  Title: 实现实盘双人授权和一次性确认凭证
+  Description: DualApprovalWorkflowV1 双人授权（拒绝同人双签/过期/payload/版本变化/重放）；OneTimeConfirmationServiceV1 一次性确认凭证（使用后失效防重放）
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 10
+  Dependencies:
+  - P2-029
+  - P5-004
+  AcceptanceCriteria: 同人双签、过期、payload/版本变化和重放全部拒绝并审计
+  TestEvidence: tests/unit/security/test_dual_approval.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:10:33Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:10:33Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第一批开发完成（实现实盘双人授权和一次性确认凭证），本地验证全绿
+
+- WorkItemId: TSK-P5-006
+  PlanTaskId: P5-006
+  Title: 实现账户/策略/标的/金额白名单和硬上限
+  Description: LiveWhitelistV1 批准组合清单；HardLimitV1 账户级/单笔/单日硬上限（不可由普通配置放宽）；LiveOrderGuardV1 发单前白名单+硬上限校验
+  Stage: P5
+  Milestone: M5
+  TechSpecRefs:
+  - '13'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 8
+  Dependencies:
+  - P5-002
+  - P5-005
+  AcceptanceCriteria: 非批准组合无法发单；账户级/单笔/单日上限不能由普通配置放宽
+  TestEvidence: tests/unit/security/test_live_order_guard.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T00:10:33Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: P5 第一批 PR 合并后验收
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T00:10:33Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: P5 第一批开发完成（实现账户/策略/标的/金额白名单和硬上限），本地验证全绿
