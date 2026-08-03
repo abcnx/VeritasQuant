@@ -6030,19 +6030,31 @@ Records:
   TestEvidence: tests/unit/broker/test_diagnostics.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:56:34Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第二批 PR 合并后验收
+  NextAction: P4-007~010 已验收归档；P4-011~014 为运行/Gate 类任务待仿真环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#241
+    MergedAt: '2026-08-02T23:55:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第二批 PR #241 合并；执行校准与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:37:50Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第二批开发完成（实现高精度诊断时间和执行原因采集），本地验证全绿
-
+  - Ts: '2026-08-02T23:56:34Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #241 已合并，P4-007 验收通过归档
 - WorkItemId: TSK-P4-008
   PlanTaskId: P4-008
   Title: 实现执行校准数据集和候选参数生成 Job
@@ -6063,19 +6075,31 @@ Records:
   TestEvidence: tests/unit/broker/test_calibration.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:56:34Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第二批 PR 合并后验收
+  NextAction: P4-007~010 已验收归档；P4-011~014 为运行/Gate 类任务待仿真环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#241
+    MergedAt: '2026-08-02T23:55:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第二批 PR #241 合并；执行校准与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:37:50Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第二批开发完成（实现执行校准数据集和候选参数生成 Job），本地验证全绿
-
+  - Ts: '2026-08-02T23:56:34Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #241 已合并，P4-008 验收通过归档
 - WorkItemId: TSK-P4-009
   PlanTaskId: P4-009
   Title: 实现候选模型 A/B 回测与批准流程
@@ -6096,19 +6120,31 @@ Records:
   TestEvidence: tests/unit/broker/test_model_approval.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:56:34Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第二批 PR 合并后验收
+  NextAction: P4-007~010 已验收归档；P4-011~014 为运行/Gate 类任务待仿真环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#241
+    MergedAt: '2026-08-02T23:55:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第二批 PR #241 合并；执行校准与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:37:50Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第二批开发完成（实现候选模型 A/B 回测与批准流程），本地验证全绿
-
+  - Ts: '2026-08-02T23:56:34Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #241 已合并，P4-009 验收通过归档
 - WorkItemId: TSK-P4-010
   PlanTaskId: P4-010
   Title: 完成券商契约、限频、断连和结果未知测试
@@ -6132,15 +6168,28 @@ Records:
   TestEvidence: tests/integration/test_p4_broker_contract_safety.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-02T23:37:50Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-02T23:56:34Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P4 第二批 PR 合并后验收
+  NextAction: P4-007~010 已验收归档；P4-011~014 为运行/Gate 类任务待仿真环境
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#241
+    MergedAt: '2026-08-02T23:55:39Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P4 第二批 PR #241 合并；执行校准与安全测试能力就绪'
   AuditHistory:
   - Ts: '2026-08-02T23:37:50Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P4 第二批开发完成（完成券商契约、限频、断连和结果未知测试），本地验证全绿
+  - Ts: '2026-08-02T23:56:34Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #241 已合并，P4-010 验收通过归档
