@@ -157,7 +157,45 @@ vq-gui --api-url http://localhost:18000 --serve
 - **账户上下文**：账户选择器（显示 `account_id · 执行模式`）+ 模式徽标（TechSpec 10.1 要求账户相关界面持续显示当前账户）；无账户时显示"无可用账户"；
 - **连接信息**：API 地址 + API 版本 / catalog 版本（API 不可达时显示红色错误）。
 
-## 5. 注意事项汇总
+## 5. 业务处理逻辑（菜单 → 接口 → 数据落点）
+
+### 5.1 数据导入全链路（示例）
+
+数据导入是典型的**命令受理 + 异步执行**流程：
+
+| 阶段 | 发生位置 | 处理逻辑 |
+| --- | --- | --- |
+| ① 表单校验 | GUI（本地） | `ImportRequest.validate`：数据源/标的不为空、日期区间合法、模式 FULL/INCREMENTAL |
+| ② 危险操作确认 | GUI | 必须勾选“我确认导入数据将创建新数据版本” |
+| ③ 提交命令 | GUI → API | `POST /api/v1/commands`，`command_type=DATA_IMPORT`，payload 含 source/instrument_id/start_date/end_date/import_mode |
+| ④ 幂等查重 | 服务端 `CommandService.submit` | 幂等作用域 = 主体+账户+路由+键；**同键同载荷** → 返回原命令；**同键异载荷** → `1003 IDEMPOTENCY_CONFLICT`（409） |
+| ⑤ 创建命令资源 | 服务端 → PostgreSQL | 写入 `command_records` 表（status=`PENDING`，身份字段冻结不可变） |
+| ⑥ 返回受理 | API → GUI | 成功 `202 {command_id, status}`；失败：字段非法 → `400/1001`、幂等冲突 → `409/1003` |
+| ⑦ 命令执行 | 任务端 `vq-job-data-ingestion` | `DataImportTask`：参数校验（缺失 → 退出码 2）、**执行键幂等**（同一执行键不重复导入）、生成 checkpoint `ckpt:data_import:<run>` |
+| ⑧ 状态推进 | 执行端 → `CommandService.transition` | 状态机 `PENDING→AUTHORIZING→ACCEPTED→RUNNING→SUCCEEDED/FAILED`；FAILED 必须携带失败快照（code/error_code/catalog_version/retryable/details） |
+| ⑨ 数据落点 | 数据层 | 行情/净值数据文件（Mvsv/Parquet）+ 数据版本清单（DataManifest）；导入目录见 `VQ_DATA_DIR` |
+
+**成功场景**：提交后返回 202 受理 → 轮询 `GET /api/v1/commands/{command_id}` 看到 `SUCCEEDED` → 数据进入版本库，可用于回测/模拟盘。
+
+**失败场景**：
+- 同步失败：`400/1001`（参数非法）、`409/1003`（幂等键冲突，同键异载荷）；
+- 异步失败：命令状态为 `FAILED`，`GET /api/v1/commands/{command_id}` 返回 `failure` 快照（code/error_code/catalog_version/retryable/details），失败原因可审计。
+
+> 当前状态：命令 API 生产接线完成后此链路全通；当前 GUI 提交可能返回 `[1002] 404`（接线任务进行中）。
+
+### 5.2 各菜单关联接口与处理要点
+
+| 菜单 | 操作 | 关联 API | 处理要点 |
+| --- | --- | --- | --- |
+| 数据导入 | 提交导入 | `POST /api/v1/commands`（DATA_IMPORT） | 命令受理制；幂等键防重复；数据落盘见 5.1 |
+| 策略管理 | 列表 / 新建 | `GET /api/v1/strategies`；保存为本地草稿 | 列表当前为空（目录后续接入）；DSL 仅本地结构校验 |
+| 定投计划 | 创建计划 | 本地草稿（提交走命令流程） | 字段本地校验（周期/金额模式/正数金额/资金来源） |
+| 账户管理 | 列表 / 详情 | `GET /api/v1/accounts`；`GET /api/v1/accounts/{id}?run_id=` | 列表来自服务端 `VQ_ACCOUNTS`；账户不存在 → `1002` |
+| 回测中心 | 列表 / 创建 / 启动 / 取消 | `GET /api/v1/backtests`；`POST /api/v1/backtests`；`POST /backtests/{run_id}/start\|cancel` | 创建走 `BacktestConfigV1` 校验（日期区间/initial_cash 正数/mode IDEAL\|REALISTIC）→ `BacktestApplicationServiceV1.createRun` → 202；非法状态操作 → `1001/400` |
+| 结果分析 | 查询分析 | `GET /api/v1/accounts/{id}/analysis\|ledger\|cashflows\|shares`（`run_id` 可选） | 先选侧边栏账户；无数据返回空集 |
+| 实时监控 | 账户快照 | `GET /api/v1/accounts/{id}`（`run_id` 可选） | 先选侧边栏账户；SSE 实时推送为后续能力 |
+
+## 6. 注意事项汇总
 
 1. **启动参数**：必须 `--api-url <地址> --serve`，缺 `--serve` 直接退出；
 2. **账户来源**：服务端 `VQ_ACCOUNTS` 环境变量（未配置 → 各页面"无可用账户"）；
@@ -167,7 +205,7 @@ vq-gui --api-url http://localhost:18000 --serve
 6. **危险操作确认**：导入/启动/取消等操作必须勾选确认，防止误操作；
 7. **错误提示**：统一信封格式 `错误 [code] HTTP status: message`；`retryable` 标记可重试。
 
-## 6. 常见问题
+## 7. 常见问题
 
 **Q：页面报 `错误 [1002] HTTP 404: platform.resource_not_found`？**
 A：领域/命令 API 未接线或资源不存在。确认服务端镜像已更新（领域 API 接线见 PR #275），且 `VQ_ACCOUNTS` 已配置。
@@ -178,7 +216,7 @@ A：服务端 `.env.deploy` 配置 `VQ_ACCOUNTS=acc-paper-001,acc-paper-002` 后
 **Q：点击提交没有反应？**
 A：命令类操作（数据导入/保存策略/创建计划）依赖命令 API 接线，当前可能返回 404；回测创建/启动/取消可用。
 
-## 7. 相关文档
+## 8. 相关文档
 
 - API 接口：`Docs/API/VeritasQuantApiReference.md`
 - 数据库表结构：`Docs/PG/VeritasQuantDatabaseSchema.md`
