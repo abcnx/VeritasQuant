@@ -61,7 +61,7 @@ cd VeritasQuant
 | 组件 | 镜像/来源 | 说明 |
 |------|-----------|------|
 | API 服务 | `ghcr.io/acanx/veritasquant:<tag>`（GitHub Packages 构建，默认 `latest`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000`；也可本地构建（`veritasquant/server:local`） |
-| PostgreSQL | `postgres:18-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
+| PostgreSQL | `postgres:18-alpine` | 事实/投影持久化（订单、成交、账户、审计）；数据挂载点 `/var/lib/postgresql`（18+ 镜像结构，实际在宿主 `18\` 子目录） |
 | Redis | `redis:8-alpine` | 跨进程事件分发（Redis Streams） |
 
 > 服务端镜像由 GitHub Actions（CI `build-image` job）构建并发布到
@@ -81,6 +81,27 @@ cd VeritasQuant
 | `vq-run-paper-trading` | 模拟盘交易 |
 | `vq-gui` / `vq-gui-client` | GUI 客户端 |
 | `vq-import-market-data` / `vq-validate-market-data` | 数据导入与校验 |
+
+### 4.3 管理数据库（本机 pg 客户端连接容器）
+
+PostgreSQL 已映射到宿主回环地址，可用 pgAdmin / DBeaver / psql 等客户端连接管理：
+
+| 参数 | 值 |
+|------|-----|
+| Host | `127.0.0.1`（localhost） |
+| Port | `5432`（`VQ_POSTGRES_PORT` 可改） |
+| Database | `veritasquant` |
+| User | `veritasquant` |
+| Password | `Docker\.env.deploy` 中的 `VQ_POSTGRES_PASSWORD` |
+
+示例（psql）：
+
+```powershell
+psql -h 127.0.0.1 -p 5432 -U veritasquant -d veritasquant
+```
+
+> 默认仅绑定本机回环，不暴露到局域网；如需局域网访问，修改 compose 中
+> `127.0.0.1:${VQ_POSTGRES_PORT:-5432}:5432` 为 `0.0.0.0` 并评估安全风险。
 
 ---
 
@@ -200,7 +221,7 @@ python3 scripts/DeployServer.py stop
 ```
 
 - 停止并删除容器与网络；
-- **数据保留**：PostgreSQL 数据在宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`，Redis 数据在 `vq-redis` 命名卷，均不丢失；
+- **数据保留**：PostgreSQL 数据在宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`（PG18+ 实际在其 `18\` 子目录），Redis 数据在 `vq-redis` 命名卷，均不丢失；
 - 如需彻底清理：`docker compose -f Docker\docker-compose.deploy.yml down --volumes`（仅删除命名卷；PostgreSQL 宿主目录需手动删除）。
 
 ---
@@ -258,7 +279,7 @@ python3 scripts/DeployServer.py logs --service server
 
 ### 6.9 数据持久化
 
-- PostgreSQL 数据映射宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`（`VQ_POSTGRES_DATA_DIR` 可覆盖），容器删除不丢数据；
+- PostgreSQL 数据映射宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`（`VQ_POSTGRES_DATA_DIR` 可覆盖），PG18+ 实际存放于其 `18\` 子目录，容器删除不丢数据；
 - Redis 使用命名卷 `vq-redis`，`stop` 不删数据；
 - 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录；
 - ⚠️ PostgreSQL 大版本升级（如 16 → 18）数据目录格式不兼容：先 `pg_dump` 备份再迁移，或确认无重要数据后删除旧卷/旧目录。
@@ -299,6 +320,16 @@ curl.exe -s http://localhost:18000/api/v1/version
 ```
 
 或先切换控制台代码页为 UTF-8：`chcp 65001`。
+
+### 6.12 PostgreSQL 18 数据目录结构变化（unused mount 拒绝启动）
+
+PG18+ 官方镜像改变了数据目录结构，与 16/17 不兼容：
+
+- 数据不再存放于 `/var/lib/postgresql/data`，而是 `/var/lib/postgresql/<大版本>/`（如 `18/`）；
+- compose 挂载点必须为 `/var/lib/postgresql`（单一挂载）；挂到 `/var/lib/postgresql/data` 会被镜像判定为 unused mount 并**拒绝启动**（docker-library/postgres#1259），表现为容器启动约 1s 即退出、`vq-postgresql is unhealthy`；
+- 宿主数据实际落在 `<VQ_POSTGRES_DATA_DIR>/18/` 子目录（如 `D:\...\PostgreSQL\18\`）；
+- 该结构便于 `pg_upgrade --link` 跨版本升级（如 18 → 19）；
+- 从 PG16/17 迁移：旧数据格式不兼容，先 `pg_dump` 备份再 `pg_restore` 恢复（见 7.2 场景 A）。
 
 ---
 
@@ -347,7 +378,8 @@ Copy-Item -Recurse .\data D:\Dev\Docker\HostFileSystem\VeritasQuant\Backup\data_
 # ② 停止服务
 python3 scripts/DeployServer.py stop
 # ③ 升级编排中的镜像版本（如 postgres:18-alpine），并确认宿主数据目录为空
-#    （旧版本数据文件与新版本不兼容，PG 会拒绝启动，需先清空/移走旧目录）
+#    （旧版本数据文件与新版本不兼容，PG 会拒绝启动，需先清空/移走旧目录；
+#     PG18+ 挂载点为 /var/lib/postgresql，数据实际在 <目录>/18/ 子目录）
 # ④ 启动（新数据目录自动初始化）
 python3 scripts/DeployServer.py start
 # ⑤ 恢复数据
@@ -365,7 +397,7 @@ Remove-Item .\restore.dump
 
 ```powershell
 python3 scripts/DeployServer.py stop   # 停止后文件级复制才安全
-Copy-Item -Recurse D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQLNew
+Copy-Item -Recurse D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQLNew   # 含 18/ 子目录一并复制
 # 修改 .env.deploy 的 VQ_POSTGRES_DATA_DIR 指向新目录
 python3 scripts/DeployServer.py start
 ```
@@ -432,7 +464,8 @@ docker image rm ghcr.io/acanx/veritasquant:0.1.2
 
 ## 8. 安全与边界
 
-- 本编排仅用于本地模拟盘/仿真；PostgreSQL 未对外暴露端口（仅容器网络内）；
+- 本编排仅用于本地模拟盘/仿真；
+- PostgreSQL 默认仅绑定宿主回环 `127.0.0.1:5432`（供本机 pg 客户端管理），不暴露到局域网；如需局域网访问，将映射改为 `0.0.0.0` 并评估风险；
 - `.env.deploy` 含明文密码，已被 `.gitignore` 忽略，不要提交；
 - 实盘（LIVE）默认禁用；任何实盘启用必须先走 Change 流程并满足
   [TechSpec 13 阶段 5 gate](Docs/VeritasQuantTechSpec.md)。
