@@ -8,7 +8,7 @@
 # 快速开始：
 #   docker compose -f Docker/docker-compose.deploy.yml up --build --wait
 #   （或使用 scripts/DeployServer.py 封装命令）
-name: veritasquant-deploy
+name: veritasquant
 
 services:
   # ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: Docker/Dockerfile
-    container_name: veritasquant-server
+    container_name: vq-server
     environment:
       # 运行模式：PAPER（模拟盘）或 SIMULATION（券商仿真）。
       # 实盘 LIVE 默认禁用；显式设置也不得绕过运行门禁。
@@ -60,11 +60,12 @@ services:
 
   # ---------------------------------------------------------------------------
   # PostgreSQL：事实/投影持久化（订单、成交、账户、审计等）。
-  # 使用持久卷，容器重建不丢数据。
+  # 数据目录映射宿主 Windows 目录（D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL），
+  # 容器重建/删除不丢数据；目录不存在时首次启动自动初始化。
   # ---------------------------------------------------------------------------
   postgresql:
-    image: postgres:16.4-alpine
-    container_name: veritasquant-postgresql
+    image: postgres:18-alpine
+    container_name: vq-postgresql
     environment:
       POSTGRES_DB: veritasquant
       POSTGRES_USER: veritasquant
@@ -73,7 +74,9 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      - vq-postgres:/var/lib/postgresql/data
+      # 数据目录映射宿主 Windows 目录（可经 VQ_POSTGRES_DATA_DIR 覆盖）；
+      # ⚠️ 大版本升级（16→18）时旧数据目录不兼容，需先 pg_dump 备份或删除旧卷。
+      - ${VQ_POSTGRES_DATA_DIR:-D:/Dev/Docker/HostFileSystem/VeritasQuant/PostgreSQL}:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U veritasquant -d veritasquant"]
       interval: 5s
@@ -92,8 +95,8 @@ services:
   # Redis：跨进程事件分发（Redis Streams）。
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7.4-alpine
-    container_name: veritasquant-redis
+    image: redis:8-alpine
+    container_name: vq-redis
     command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
     volumes:
       - vq-redis:/data
@@ -112,5 +115,4 @@ services:
 
 volumes:
   vq-runtime:
-  vq-postgres:
   vq-redis:

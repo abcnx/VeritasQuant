@@ -60,8 +60,8 @@ cd VeritasQuant
 | 组件 | 镜像/来源 | 说明 |
 |------|-----------|------|
 | API 服务 | `ghcr.io/acanx/veritasquant:<tag>`（GitHub Packages 构建，默认 `latest`） | FastAPI + Uvicorn，默认 `0.0.0.0:18000`；也可本地构建（`veritasquant/server:local`） |
-| PostgreSQL | `postgres:16.4-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
-| Redis | `redis:7.4-alpine` | 跨进程事件分发（Redis Streams） |
+| PostgreSQL | `postgres:18-alpine` | 事实/投影持久化（订单、成交、账户、审计） |
+| Redis | `redis:8-alpine` | 跨进程事件分发（Redis Streams） |
 
 > 服务端镜像由 GitHub Actions（CI `build-image` job）构建并发布到
 > GitHub Container Registry（ghcr.io）。tag 推送（如 `V0.1.1`）会发布对应版本镜像与
@@ -199,8 +199,8 @@ python3 scripts/DeployServer.py stop
 ```
 
 - 停止并删除容器与网络；
-- **数据卷保留**（PostgreSQL/Redis 数据不丢失）；
-- 如需彻底清理数据：`docker compose -f Docker\docker-compose.deploy.yml down --volumes`。
+- **数据保留**：PostgreSQL 数据在宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`，Redis 数据在 `vq-redis` 命名卷，均不丢失；
+- 如需彻底清理：`docker compose -f Docker\docker-compose.deploy.yml down --volumes`（仅删除命名卷；PostgreSQL 宿主目录需手动删除）。
 
 ---
 
@@ -254,8 +254,10 @@ python3 scripts/DeployServer.py logs --service server
 
 ### 6.9 数据持久化
 
-- PostgreSQL/Redis 使用命名卷（`vq-postgres` / `vq-redis`），`stop` 不删数据；
-- 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录。
+- PostgreSQL 数据映射宿主目录 `D:\Dev\Docker\HostFileSystem\VeritasQuant\PostgreSQL\`（`VQ_POSTGRES_DATA_DIR` 可覆盖），容器删除不丢数据；
+- Redis 使用命名卷 `vq-redis`，`stop` 不删数据；
+- 运行产物在 `vq-runtime` 卷与宿主 `VQ_DATA_DIR` 目录；
+- ⚠️ PostgreSQL 大版本升级（如 16 → 18）数据目录格式不兼容：先 `pg_dump` 备份再迁移，或确认无重要数据后删除旧卷/旧目录。
 
 ### 6.10 客户端 pip 安装失败（No matching distribution found for setuptools）
 
