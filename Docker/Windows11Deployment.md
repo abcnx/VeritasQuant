@@ -184,7 +184,8 @@ vq-run-paper-trading --config .\你的模拟盘配置.yml --api http://localhost
 **GUI 客户端（连接服务端）：**
 
 ```powershell
-vq-gui --api http://localhost:18000
+# 注意：--api-url 指定后端地址，--serve 才真正启动 GUI（缺省仅离线校验）
+vq-gui --api-url http://localhost:18000 --serve
 ```
 
 > 说明：具体实验参数以各 console script 的 `--help` 与
