@@ -41,6 +41,8 @@ class InvalidResource(Exception):
 class AccountViewProvider(Protocol):
     """账户视图端口。"""
 
+    def accounts(self) -> tuple[dict[str, Any], ...]: ...
+
     def account(self, accountId: str, runId: str) -> dict[str, Any]: ...
 
     def ledgerEntries(self, accountId: str, runId: str) -> tuple[dict[str, Any], ...]: ...
@@ -103,6 +105,12 @@ class DomainApis:
 def buildDomainRouter(apis: DomainApis) -> APIRouter:
     """注册六类领域 API 路由。"""
     router = APIRouter(prefix="/api/v1", tags=["domain"])
+
+    @router.get("/accounts")
+    async def accounts() -> JSONResponse:
+        _require(apis.accounts, "accounts")
+        assert apis.accounts is not None
+        return _ok(0, "账户列表", {"accounts": list(apis.accounts.accounts())})
 
     @router.get("/accounts/{account_id}")
     async def account(account_id: str, run_id: str) -> JSONResponse:
