@@ -78,7 +78,7 @@ def test_failed_migration_rolls_back(applied, tmp_path: Path) -> None:  # noqa: 
         (MIGRATIONS_DIR / "V1__initial_fact_and_projection_schema.sql").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
-    (badDir / "V4__broken.sql").write_text(
+    (badDir / "V5__broken.sql").write_text(
         "BEGIN;\nCREATE TABLE partial_table (id TEXT PRIMARY KEY);\n"
         "INSERT INTO missing_table VALUES (1);\nCOMMIT;",
         encoding="utf-8",

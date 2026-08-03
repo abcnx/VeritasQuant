@@ -23,6 +23,7 @@ from pathlib import Path
 
 import yaml
 
+from veritasquant.application.Entrypoints import configureStandardStreams
 from veritasquant.core.CanonicalJson import canonicalHash
 from veritasquant.data.Mvsv import MvsvFormatError, MvsvReaderV1, MvsvRecordV1
 from veritasquant.data.QuoteRow import QuoteRowV1, UpsertMode
@@ -178,6 +179,7 @@ def _importFile(
 
 def main(argv: Sequence[str] | None = None) -> int:
     """行情导入命令入口（vq-import-market-data）。"""
+    configureStandardStreams()
     try:
         arguments = _parseArguments(argv)
     except SystemExit as error:
