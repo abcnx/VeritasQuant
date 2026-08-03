@@ -7017,3 +7017,42 @@ Records:
     Actor: BeeAgent
     Action: CREATED
     Note: 0.1.1 版本发布完成（PR #255 合并 + tag V0.1.1 + 分支清理）
+- WorkItemId: TSK-RELEASE-002
+  PlanTaskId: RELEASE-002
+  Title: CI 版本号统一为全局常量 VQ_VERSION
+  Description: Ci.yml 顶层 env 定义 VQ_VERSION="0.1.1" 全局常量；wheel/sdist 文件名引用改为 ${{ env.VQ_VERSION }} 消除硬编码；新增 P0-005-002 契约测试（常量存在、引用正确、常量值=pyproject version、禁止硬编码）；版本升级只需改 pyproject.toml + Ci.yml 两处
+  Stage: RELEASE
+  Milestone: NONE
+  TechSpecRefs:
+  - '12.2'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: Medium
+  EstimatePersonDays: 1
+  Dependencies:
+  - RELEASE-001
+  AcceptanceCriteria: Ci.yml 无硬编码版本号；常量值与 pyproject.toml 一致；契约测试防回归
+  TestEvidence: tests/contract/test_p0_engineering_baseline.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T11:35:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: 已完成归档
+  EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#257
+    MergedAt: '2026-08-03T11:30:27Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'PR #257 合并；VQ_VERSION 全局常量统一版本控制'
+  AuditHistory:
+  - Ts: '2026-08-03T11:35:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: RELEASE-002 完成（VQ_VERSION 统一版本常量 + 契约测试）
