@@ -49,6 +49,7 @@ cd VeritasQuant
 | `Docker/Dockerfile` | 服务端应用镜像（多阶段构建，非 root 运行） |
 | `Docker/docker-compose.deploy.yml` | 服务端编排：API + PostgreSQL + Redis（持久卷、健康检查） |
 | `Docker/.env.deploy.example` | 环境变量模板（密码、端口、数据目录） |
+| `Docker/ImageSourceGuide.md` | 镜像源使用指南（国内网络绕过 Docker Hub 拉取 PG/Redis 镜像） |
 | `scripts/DeployServer.py` | 部署脚本（check/build/start/status/logs/stop） |
 
 ---
@@ -224,7 +225,10 @@ python3 scripts/DeployServer.py stop
 
 ### 6.4 镜像拉取慢 / 超时
 
-Docker Desktop → Settings → Docker Engine，配置镜像加速器后 `Apply & Restart`。
+- 国内网络访问 Docker Hub 不稳定（常见报错 `Get "https://auth.docker.io/token?...": EOF`），
+  详见独立指南 [Docker/ImageSourceGuide.md](ImageSourceGuide.md)：
+  - 命令行临时指定镜像源（`docker pull <源>/library/<镜像>:<tag>` + `docker tag`）；
+  - 或 Docker Desktop → Settings → Docker Engine 配置 `registry-mirrors` 后 `Apply & Restart`。
 
 ### 6.5 拉取 ghcr.io 镜像失败（denied / unauthorized）
 
