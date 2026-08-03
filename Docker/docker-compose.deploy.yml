@@ -16,10 +16,12 @@ services:
   # 默认以非 root 用户运行，仅暴露 18000。
   # ---------------------------------------------------------------------------
   server:
-    build:
-      context: ..
-      dockerfile: Docker/Dockerfile
-    image: veritasquant/server:local
+    # 默认拉取 GitHub Packages（ghcr.io）构建的镜像（由 CI build-image job 发布）。
+    # 如需本地构建，取消下一行 build 块注释并改回 image: veritasquant/server:local。
+    image: ghcr.io/${VQ_IMAGE_OWNER:-acanx}/veritasquant:${VQ_IMAGE_TAG:-latest}
+    # build:
+    #   context: ..
+    #   dockerfile: Docker/Dockerfile
     container_name: veritasquant-server
     environment:
       # 运行模式：PAPER（模拟盘）或 SIMULATION（券商仿真）。
