@@ -26,10 +26,21 @@
 | M0 Linux 验证证据 | [M0LinuxValidationEvidence.md](M0/M0LinuxValidationEvidence.md) | WSL Linux 大小写、构建、测试和仓库外 wheel 验证结果。 |
 | M0 独立角色与审阅 | [M0IndependentReviewEvidence.md](M0/M0IndependentReviewEvidence.md) | 非作者评审、独立 QA/SRE 与 Incident Commander 替补的确认和审阅记录。 |
 | M0 Gate 报告 | [M0StageGateReport.md](M0/M0StageGateReport.md) | P0-013 的强制证据检查表、指标、风险决议和人类签署位置。 |
+| M1 Gate 报告（待签署） | [M1StageGateReport.md](M1/M1StageGateReport.md)、[M1PreReview.md](M1/M1PreReview.md) | P1-076 的强制检查清单 7 项、指标样本、风险决议和人类签署位置；签署前状态为 DRAFT。 |
 | CI 治理记录 | [P0-006CiGovernance.md](P0/P0-006CiGovernance.md) | 必需检查、证据保留和待管理员配置。 |
 | 测试证据规范 | [TestEvidencePolicy.md](TestEvidencePolicy.md) | 稳定测试 ID、JUnit、覆盖率、种子和哈希规范。 |
 | 安全许可证策略 | [../../Configs/Security/LicensePolicy.yml](../../Configs/Security/LicensePolicy.yml) | 已批准的许可证白名单及漏洞处置 SLA。 |
 | Docker 开发依赖 | [../../Docker/DevelopmentEnvironment.md](../../Docker/DevelopmentEnvironment.md) | 临时 PostgreSQL/Redis 的启动和清理说明。 |
 | P1 实现证据 | [P1-001-P1-013Evidence.md](P1/P1-001-P1-013Evidence.md) | P1 作者测试、工件和残余风险。 |
+| P1-019~026 实现证据 | [P1-019ParquetWriteEvidence.md](P1/P1-019ParquetWriteEvidence.md)、[P1-020DataManifestEvidence.md](P1/P1-020DataManifestEvidence.md)、[P1-021QualityRulesEvidence.md](P1/P1-021QualityRulesEvidence.md)、[P1-022OrderedMergeEvidence.md](P1/P1-022OrderedMergeEvidence.md)、[P1-023BarAggregationEvidence.md](P1/P1-023BarAggregationEvidence.md)、[P1-024FixtureChecksumsEvidence.md](P1/P1-024FixtureChecksumsEvidence.md)、[P1-025LogicalClockEvidence.md](P1/P1-025LogicalClockEvidence.md)、[P1-026EventBusEvidence.md](P1/P1-026EventBusEvidence.md) | Parquet 写入、DataManifest、质量规则、归并、聚合、夹具、逻辑时钟与事件总线证据。 |
+| P1-027~040 实现证据 | [P1-027InboxEvidence.md](P1/P1-027InboxEvidence.md) 至 [P1-040AccountRoutingEvidence.md](P1/P1-040AccountRoutingEvidence.md) | inbox/事务/checkpoint/回测状态机/崩溃注入/恢复/账本模型与结算/预占/证券/期货/路由证据。 |
+| P1-041~076 实现证据 | [P1-041SnapshotEvidence.md](P1/P1-041SnapshotEvidence.md) 至 [P1-076StageGateReportEvidence.md](P1/P1-076StageGateReportEvidence.md)（36 份） | 账户快照、ledger 随机序列、订单/状态机/回报、执行适配器、Bar 路径、执行模型、流动性、原子边界、model-based 测试、风控模型/规范化/关联/策略引擎/审批/控制/规则/原子风险/契约、策略基类/指标窗口/沙箱/示例策略/回测服务、绩效/双轨报告/工件索引/防前视/安全套件、端到端/跨平台/性能/审计/Gate 证据。 |
 
 所有新增开发过程文档应保存于 `Docs/DevelopmentWorkflow/`；设计决策变更仍必须同步修改技术方案。
+| P2-001 数据库迁移证据 | [P2-001PostgresSchemaEvidence.md](P2/P2-001PostgresSchemaEvidence.md) | 首版 PostgreSQL 事实表/投影表/索引/迁移器/CI database job 证据。 |
+| P2 数据库迁移 | [Migrations/postgresql/](../../Migrations/postgresql/V1__initial_fact_and_projection_schema.sql) | 版本化数据库迁移（禁止运行时自动改表）。 |
+| P2-002 inbox/outbox/租约证据 | [P2-002InboxOutboxLeaseEvidence.md](P2/P2-002InboxOutboxLeaseEvidence.md) | 数据库 inbox/outbox/单活租约与 fencing token 证据。 |
+| P2-003 事件扇出证据 | [P2-003EventFanoutEvidence.md](P2/P2-003EventFanoutEvidence.md) | 共享事件持久化与确定性分区扇出证据。 |
+| P2-004~007 实现证据 | [P2-004AccountGroupWorkerEvidence.md](P2/P2-004AccountGroupWorkerEvidence.md)、[P2-005RiskSnapshotEvidence.md](P2/P2-005RiskSnapshotEvidence.md)、[P2-006PaperTradingEvidence.md](P2/P2-006PaperTradingEvidence.md)、[P2-007CheckpointReconciliationEvidence.md](P2/P2-007CheckpointReconciliationEvidence.md) | 账户组 worker、风险快照屏障、纸上交易、checkpoint/对账证据。 |
+| P2-008~014 实现证据 | [P2-008StreamTransportEvidence.md](P2/P2-008StreamTransportEvidence.md)、[P2-009BackpressureEvidence.md](P2/P2-009BackpressureEvidence.md)、[P2-010-011FundNavEvidence.md](P2/P2-010-011FundNavEvidence.md)、[P2-012FundEventsEvidence.md](P2/P2-012FundEventsEvidence.md)、[P2-013-014FundStateMachinesEvidence.md](P2/P2-013-014FundStateMachinesEvidence.md) | 传输/背压/基金净值/基金事件/申赎状态机证据。 |
+| P2-015~021 实现证据 | [P2-015-016SharesBudgetEvidence.md](P2/P2-015-016SharesBudgetEvidence.md)、[P2-017-018PlanCalendarAmountEvidence.md](P2/P2-017-018PlanCalendarAmountEvidence.md)、[P2-019SmartPlansEvidence.md](P2/P2-019SmartPlansEvidence.md)、[P2-020FundDslEvidence.md](P2/P2-020FundDslEvidence.md)、[P2-021PortfolioAllocationEvidence.md](P2/P2-021PortfolioAllocationEvidence.md) | 份额/入金/日历/金额/方案/DSL/分配证据。 |

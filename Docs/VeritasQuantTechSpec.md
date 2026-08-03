@@ -731,6 +731,79 @@ YAML 文档中的项目自有字段统一使用 PascalCase，并通过唯一显�
 
 回测中，内部规则检测器只能使用当时已消费的行情、订单和账户事件。外部和人工预警必须有原始发布时间与平台可用时间；缺少该信息时仅可用于研究标注，不可参与自动交易决策。报告单独列出每条告警的触发时间、解除时间、风险动作、被拦截订单、对收益和回撤的影响，以便评估规则是否过度干预或遗漏风险。
 
+### 8.7 信号参考、人工审核与人工成交契约
+
+阶段 3 信号参考闭环提供近实时跟随、通知、人工审核与成交登记。`SignalReference` 是信号参考的不可变记录，固定字段为：状态（`PENDING/CONFIRMED/IGNORED/EXECUTED/EXPIRED`）、版本、账户、策略、来源事件和操作者；信号方向、数量和冻结策略在相同输入下 checksum 一致（P3-002 生成器契约），重复事件不重复信号。
+
+```python
+class SignalReferenceV1:
+    signalReferenceId: str        # 唯一标识
+    version: int                  # 生命周期版本，>=1
+    status: SignalStatus          # PENDING/CONFIRMED/IGNORED/EXECUTED/EXPIRED
+    accountId: str
+    strategyId: str
+    strategyChecksum: str         # 冻结策略 SHA-256
+    sourceEventId: str            # 触发来源事件
+    sourceEventType: str
+    direction: str                # BUY/SELL/HOLD
+    quantity: str                 # Decimal 字符串，禁止 float
+    priceLimit: str | None
+    operatorId: str | None
+    generatedTs: datetime         # 事件可用时间，不取服务器时间
+    expiresAt: datetime | None
+    previousSignalReferenceId: str | None  # 版本链引用
+```
+
+生命周期推进必须派生新的不可变记录（`version+1` 并引用 `previousSignalReferenceId`），不得原地覆写。信号生成以 `(accountId, strategyId, sourceEventId)` 为幂等键：同键同内容视为重复投递并返回既有信号，同键不同内容视为协议冲突并拒绝持久化、留档审计。
+
+人工审核动作（确认/忽略/成交登记）必须携带身份、理由、ts、版本和审计字段；忽略动作必须提供结构化忽略原因（`IgnoreReason`：reasonCode + detail + source）。人工动作只登记待执行意图，不得直接修改内核或账本；人工成交必须通过授权命令（`manual_execution`）写入订单/账本——绕过命令资源或直接修改投影的请求被拒绝，命令状态未达 `AUTHORIZING/ACCEPTED/RUNNING` 不得写入。人工成交偏差必须有结构化原因覆盖（P3 策略 gate：偏差结构化原因覆盖率 100%）。
+
+通知路由与交易处置分离：通知失败不改变交易控制；投递以 `(signalReferenceId, channel)` 为幂等键，重试不重复创建人工任务；每次投递尝试、送达状态、确认人均留档审计。
+
+### 8.8 运行保障与供应链安全契约
+
+阶段 5 受控实盘前的运行保障能力按以下契约实现（P5-011~014）：
+
+**不可变审计**（P5-011）：审计条目追加后不可变，普通用户（非 `Auditor/Administrator`）禁止删除或修改历史记录；检索覆盖命令、审批、风险、订单、账本和人工动作六类审计域；每条目携带内容哈希与前序哈希链，任何篡改破坏链完整性。保留策略按域配置（默认 10 年），过期条目仅允许 `Administrator` 通过合规归档（`PURGE`）移除，且归档动作本身产生不可变审计记录；日志保留期、轮转和访问权限按环境配置，实盘日志只能由最小权限运维/审计角色访问。
+
+**WAL/对象版本化备份与恢复**（P5-012）：PostgreSQL 连续 WAL 归档间隔实盘不超过 5 分钟；对象存储启用版本化与不可变保留（`objectVersionId` + SHA-256 摘要）；备份可读性每月自动验证（摘要比对），未验证通过的备份不得用于恢复；恢复演练必须在与生产隔离的环境执行（隔离网络/凭据/数据目录），实盘恢复目标 RTO <= 1h、RPO <= 5min，恢复验证要求账本哈希一致、活动控制恢复 100%、未解释对账差异 0，并由非作者评审人工验证后才 `PASS`。
+
+**Runbook**（P5-013）：启动、停机、断连、对账、账本异常、密钥泄漏六类场景各维护一个结构化 Runbook；每个 Runbook 必须包含触发条件、所需权限（RBAC 角色）、有序执行步骤、完成验证、回退方案、证据记录和 24x7 升级联系人；注册表校验完整性，缺失任一要素或步骤乱序均拒绝登记。断连/账本异常/密钥泄漏 Runbook 按 S0 处置，恢复交易前必须对账差异为 0。
+
+**依赖/镜像/策略源码/沙箱安全冻结**（P5-014）：冻结清单锁定依赖（名称/版本/SHA-256/许可证）、镜像摘要（`sha256:<hex>` 不可变 digest）和策略/配置/策略工件源码哈希；冻结前漏洞 Gate 必须通过（CVSS >= 7.0 的 HIGH/CRITICAL 漏洞阻断）且许可证 Gate 通过（未批准许可证阻断）；冻结必须经至少两名审批人（非作者评审/双人授权）并生成不可变 `freezeHash`，冻结后任何变更需重新冻结。Gate 未执行视为不通过，不静默放行。
+
+### 8.9 影子运行冻结、上线评审与每日 Go/No-Go 契约
+
+阶段 5 受控实盘前的影子运行与上线决策按以下契约实现（P5-017/019/021）：
+
+**影子运行冻结**（P5-017）：上线观察前必须冻结影子运行账户、策略版本、额度（初始资金/订单上限）和验收政策（`StrategyAcceptancePolicy`）；冻结条目必须经至少两名互不相同的签署人（双人签署），任何单签或同一人双签均拒绝；冻结清单必须覆盖账户/策略/额度/验收政策四类对象，缺类拒绝；冻结后生成不可变 `recordHash`，观察前不得修改阈值解释结果——任何篡改破坏哈希校验，额度变更必须重新冻结并保留历史（`SUPERSEDED`）。初始资金与订单上限不超过冻结批准值。
+
+**上线前评审**（P5-019）：上线前必须完成安全（密钥轮换/隔离）、可靠性（备份可读性/门禁/对账）和操作准备（Runbook/演练/监控）三类检查；开放 S0/S1、未解释对账差异、超期高风险行动项任一不为 0 即 FAIL；未执行的检查视为不通过（不静默放行）；评审必须经非作者评审人工签署才 PASS，缺签署为 INSUFFICIENT_EVIDENCE。
+
+**每日 Go/No-Go**（P5-021）：影子运行/实盘期间每日生成审核记录，包含指标快照（净资产/持仓/订单/成交/资金与订单利用率）、风险状态（S0/S1 告警/硬限制违反/未解释对账/活动保护控制）、审批人和唯一决策（`GO/NO_GO`）；任一硬限制失败（利用率超 100% 或硬限制违反数 > 0）自动 `NO_GO` 并退回仿真；开放告警、对账差异或保护控制激活同样 `NO_GO`；每日记录含决策哈希，可审计追溯。
+
+### 8.10 离线优化与模型管理契约
+
+优化、机器学习训练和参数搜索仅在离线可复现的严格回测中进行（P6-007），采用训练、验证、留出三段划分并记录所有试验：
+
+**试验追踪**：每次候选评估产生不可变试验记录，包含参数、数据版本、随机种子、实现版本、训练/验证/留出分段成绩与状态；试验身份哈希只含确定性输入/输出（同输入同输出可复现），创建时间与自增 ID 不参与哈希；留出段成绩默认锁定（隔离观察），优化期间任何写入留出成绩的尝试被拒绝，仅批准评估流程显式解锁后可一次性记录并重新锁定。
+
+**超参搜索**：支持网格/随机/顺序三种确定性搜索策略；固定种子下同参数空间产生完全相同的参数序列与结果哈希；搜索只使用训练/验证段成绩选优（`bestByValidation`），禁止触碰留出段；每次评估经试验追踪器留痕。
+
+**Gate 隔离**：优化结果绝不自动晋级——任何自动采用尝试返回 `PENDING`；候选采用必须满足：冻结的 `StrategyAcceptancePolicy` 哈希匹配、留出段成绩达标（最小已平仓交易数、净收益下界、最大回撤限额）、至少两名互不相同的批准人；采用记录不可变含哈希，可审计追溯。
+
+### 8.11 容器化部署与本地运行契约
+
+Windows 11 本地验证环境按以下契约部署（ISSUE #253）：服务端以 Docker 容器方式运行（API + PostgreSQL + Redis 编排），客户端在宿主直接运行连接服务端，完成模拟盘（`PAPER`）与券商仿真（`SIMULATION`）实验；实盘（`LIVE`）默认禁用。
+
+**镜像**：`Docker/Dockerfile` 多阶段构建——builder 阶段在隔离环境构建 wheel，runtime 阶段仅携带运行时依赖并以非 root 用户（`vq`，uid/gid 10001）运行；容器只读根文件系统，运行产物写入挂载卷与 `tmpfs`；默认入口 `vq-api-server --serve --host 0.0.0.0 --port 18000`（使用 12000 以后端口，避开 8000/8080 等常用端口），镜像内健康检查校验 `/health/live`。
+
+**编排**：`Docker/docker-compose.deploy.yml` 定义 `server`/`postgresql`/`redis` 三服务，均带健康检查与 `restart: unless-stopped`；PostgreSQL 使用 `scram-sha-256` 认证，密码经宿主环境变量 `VQ_POSTGRES_PASSWORD` 必填注入（未设置拒绝启动），数据/Redis 使用持久卷（`stop` 不删数据）；`server` 仅暴露宿主映射端口，`read_only: true` + `no-new-privileges` 最小权限。
+
+**部署脚本**：`scripts/DeployServer.py` 提供 `check`（Docker 不可用时明确失败不回落本机服务）/`build`/`start`（构建并等待健康检查）/`status`/`logs`/`stop`（保留数据卷）子命令；环境变量模板 `Docker/.env.deploy.example`，真实 `.env.deploy` 含明文密码已被 `.gitignore` 忽略。
+
+**客户端**：宿主 Python ≥ 3.13 安装 wheel 后，`vq-run-backtest`（离线回测）、`vq-run-paper-trading`（模拟盘）、`vq-gui`（GUI）连接 `http://localhost:18000` 完成实验；部署教程 `Docker/Windows11Deployment.md` 覆盖环境要求（Docker Desktop/WSL2）、依赖说明与详细步骤及常见问题。
+
 ## 9. 策略开发与结构化 DSL
 
 ### 9.1 通用策略 DSL

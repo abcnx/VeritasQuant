@@ -42,9 +42,9 @@ jobs:
       - name: Build distribution packages
         run: python3 -m build
       - name: Verify repository-external wheel installation
-        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.0-py3-none-any.whl
+        run: python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.1-py3-none-any.whl
       - name: Collect test evidence
-        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-0.1.0-py3-none-any.whl --artifact dist/veritasquant-0.1.0.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
+        run: python3 scripts/CollectTestEvidence.py --junit artifacts/JUnit.xml --coverage artifacts/Coverage.xml --artifact dist/veritasquant-0.1.1-py3-none-any.whl --artifact dist/veritasquant-0.1.1.tar.gz --work-item P0-006 --work-item P0-009 --output artifacts/TestEvidence.json
       - name: Upload quality evidence
         uses: actions/upload-artifact@v4
         with:
@@ -72,3 +72,53 @@ jobs:
         run: python3 -m pip_audit -r requirements/Runtime.lock
       - name: Verify approved license baseline
         run: python3 scripts/VerifyLicenses.py --policy Configs/Security/LicensePolicy.yml
+
+  database:
+    name: Database migrations (P2-001)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_DB: veritasquant
+          POSTGRES_USER: veritasquant
+          POSTGRES_PASSWORD: veritasquant
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U veritasquant -d veritasquant"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+          --health-start-period 5s
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+          --health-start-period 5s
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install locked development dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements/Runtime.lock -r requirements/Development.lock
+          python3 -m pip install -e .
+      - name: Run database migration integration tests
+        env:
+          VQ_TEST_DATABASE_URL: postgresql://veritasquant:veritasquant@localhost:5432/veritasquant
+        run: |
+          python3 -m pytest tests/integration/database --junitxml artifacts/DatabaseJUnit.xml
+      - name: Upload database test evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-migration-evidence
+          path: artifacts/
+          retention-days: 90
