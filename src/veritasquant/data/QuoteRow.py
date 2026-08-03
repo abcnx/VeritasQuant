@@ -63,8 +63,8 @@ class QuoteRowV1(StrictModel):
     @field_validator("date")
     @classmethod
     def validateDate(cls, value: int | None) -> int | None:
-        if value is not None and not (19_900_101 <= value <= 21_001_231):
-            raise ValueError("date 必须是 yyyymmdd（19900101..21001231）")
+        if value is not None and not (19_500_101 <= value <= 21_001_231):
+            raise ValueError("date 必须是 yyyymmdd（19500101..21001231）")
         return value
 
     @field_validator("time")

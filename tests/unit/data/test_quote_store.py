@@ -121,7 +121,9 @@ class TestQuoteRowValidation:
 
     def test_date_range(self) -> None:
         with pytest.raises(ValueError):
-            makeRow(date=20241399)
+            makeRow(date=19_491_231)  # 低于 19500101
+        with pytest.raises(ValueError):
+            makeRow(date=22_000_101)  # 高于 21001231
 
     def test_time_range(self) -> None:
         with pytest.raises(ValueError):

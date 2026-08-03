@@ -41,7 +41,7 @@ def applied(database) -> object:  # noqa: ANN001
 
 
 def test_migration_applies_forward(applied) -> None:  # noqa: ANN001
-    assert applied == [1, 2]
+    assert applied == [1, 2, 3, 4]
 
 
 def test_migration_idempotent(applied) -> None:  # noqa: ANN001

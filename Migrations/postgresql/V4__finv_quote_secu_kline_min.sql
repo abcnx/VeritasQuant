@@ -20,7 +20,7 @@ CREATE TABLE finv_quote_secu_kline_min (
     -- ↑ 证券市场数字代码（Finv 编码：1=上交所、11=美股；具体以市场字典为准）
     secu_code    TEXT           NOT NULL,                    -- 证券代码（如 518880 / NVDA）
     ts           BIGINT         NOT NULL CHECK (ts >= 0),    -- UTC 时间戳（秒）
-    date         INTEGER        CHECK (date IS NULL OR (date BETWEEN 19900101 AND 21001231)), -- 交易日期 yyyymmdd
+    date         INTEGER        CHECK (date IS NULL OR (date BETWEEN 19500101 AND 21001231)), -- 交易日期 yyyymmdd
     "time"       INTEGER        CHECK ("time" IS NULL OR ("time" BETWEEN 0 AND 235959)),      -- 交易时间 hhmmss
     prev_close   NUMERIC(20,6),                              -- 前收盘价
     open         NUMERIC(20,6),                              -- 起始价
