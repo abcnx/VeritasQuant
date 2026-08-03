@@ -12,8 +12,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from veritasquant.apps.gui_client.ApiClient import ApiClient, ApiClientError
-from veritasquant.apps.gui_client import Pages
+from veritasquant.apps.guiclient.ApiClient import ApiClient, ApiClientError
+from veritasquant.apps.guiclient import Pages
 
 # Streamlit 延迟导入（保持离线校验入口无副作用）
 _ST = None

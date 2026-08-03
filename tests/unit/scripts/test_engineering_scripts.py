@@ -117,7 +117,7 @@ def test_evidence_collector_records_junit_environment_seed_and_artifact_hash(tmp
 
 @pytest.mark.stable_id("P0-011-002")
 def test_license_policy_requires_approval_before_it_can_pass(tmp_path: Path) -> None:
-    requirements = tmp_path / "requirements"
+    requirements = tmp_path / "Requirements"
     security = tmp_path / "Configs" / "Security"
     requirements.mkdir()
     security.mkdir(parents=True)

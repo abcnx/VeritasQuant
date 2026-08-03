@@ -74,7 +74,7 @@ def verify(root: Path, policyPath: Path, requireApproval: bool = True) -> list[s
         errors.append("许可证白名单尚未获得批准")
     allowed = set(policy.get("AllowedLicenses", []))
     exceptions = {normalizeName(name): licenseName for name, licenseName in policy.get("PackageExceptions", {}).items()}
-    names = lockPackageNames(root / "requirements" / "Development.lock")
+    names = lockPackageNames(root / "Requirements" / "Development.lock")
     for name in sorted(names):
         try:
             metadata = importlib.metadata.metadata(name)

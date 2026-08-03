@@ -243,8 +243,8 @@ Records:
   AcceptanceCriteria: Python 3.13+ 环境可重复安装；运行/开发依赖分组；锁文件差异可审阅
   TestEvidence:
   - pyproject.toml
-  - requirements/Runtime.lock
-  - requirements/Development.lock
+  - Requirements/Runtime.lock
+  - Requirements/Development.lock
   - scripts/VerifyDependencyLocks.py
   - Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md
   - Docs/DevelopmentWorkflow/P0/P0-003-P0-012TestEvidence.json
@@ -262,7 +262,7 @@ Records:
   - Ts: '2026-07-31T03:30:00Z'
     Actor: Codex
     Action: 将开发锁定项更新为精确版本
-    Evidence: requirements/Development.lock
+    Evidence: Requirements/Development.lock
   - Ts: '2026-07-31T09:34:03Z'
     Actor: Codex
     Action: 按 ProjectAuthor 当前会话决定将支持基线收窄为 Python 3.13+，并完成自动化复验
@@ -275,8 +275,8 @@ Records:
     Action: 复核 Python 3.13+ 基线、运行/开发依赖分组、精确锁文件及 Windows/Linux CI 的锁定安装；提交 P0-005 验收状态流转 PR，合并后归档为 ACCEPTED
     Evidence:
     - .github/workflows/Ci.yml
-    - requirements/Runtime.lock
-    - requirements/Development.lock
+    - Requirements/Runtime.lock
+    - Requirements/Development.lock
     - Docs/DevelopmentWorkflow/P0/P0-005DependencyPolicy.md
 - WorkItemId: TSK-P0-006
   PlanTaskId: P0-006
@@ -4910,7 +4910,7 @@ Records:
   Dependencies:
   - P2-028
   AcceptanceCriteria: GUI 所有数据只经 API；错误信封可统一展示；账户上下文始终可见
-  TestEvidence: tests/unit/apps/gui_client/test_api_client.py; test_gui_framework.py
+  TestEvidence: tests/unit/apps/guiclient/test_api_client.py; test_gui_framework.py
   RiskLinks: []
   TargetDate: '2026-08-03'
   Status: ACCEPTED
@@ -4950,7 +4950,7 @@ Records:
   Dependencies:
   - P2-031
   AcceptanceCriteria: 创建/校验/运行/暂停/查询主流程可用；危险操作有明确确认和状态反馈
-  TestEvidence: tests/unit/apps/gui_client/test_pages.py
+  TestEvidence: tests/unit/apps/guiclient/test_pages.py
   RiskLinks: []
   TargetDate: '2026-08-03'
   Status: ACCEPTED
@@ -4992,7 +4992,7 @@ Records:
   - P2-031
   - P2-022
   AcceptanceCriteria: 多账户切换不串数据；逐笔分录、现金流、份额和双轨结果可核对
-  TestEvidence: tests/unit/apps/gui_client/test_account_pages.py; tests/unit/apps/test_domain_routes.py
+  TestEvidence: tests/unit/apps/guiclient/test_account_pages.py; tests/unit/apps/test_domain_routes.py
   RiskLinks: []
   TargetDate: '2026-08-03'
   Status: ACCEPTED

@@ -6,7 +6,7 @@
 - **阶段/里程碑:** M2A 模拟盘与基金能力建设
 - **状态:** IN_REVIEW（等待第五批 PR 合并后验收）
 
-## 实现内容（`apps/gui_client/Pages.py`）
+## 实现内容（`apps/guiclient/Pages.py`）
 
 ### 数据导入页
 - ImportRequest 表单模型 + 校验（数据源/标的/日期区间/导入模式）
@@ -34,7 +34,7 @@
 | 危险操作有明确确认和状态反馈 | checkbox 确认 + success/error | test_inverted_date_range |
 
 ## 测试结果
-- `tests/unit/apps/gui_client/test_pages.py`：29 个测试通过
+- `tests/unit/apps/guiclient/test_pages.py`：29 个测试通过
 - 全量 918 测试通过（2026-08-03，本地）
 - ruff/mypy: 通过
 

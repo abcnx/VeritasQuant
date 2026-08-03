@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import httpx
 
-from veritasquant.apps.gui_client.ApiClient import ApiClient
-from veritasquant.apps.gui_client.Pages import (
+from veritasquant.apps.guiclient.ApiClient import ApiClient
+from veritasquant.apps.guiclient.Pages import (
     BacktestRequest,
     ImportRequest,
     PlanDraft,

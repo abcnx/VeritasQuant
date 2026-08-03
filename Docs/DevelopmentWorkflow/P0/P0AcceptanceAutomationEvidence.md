@@ -16,7 +16,7 @@
 - `python3 scripts/ScanSecrets.py`：`secret findings: 0`。
 - `python3 scripts/VerifyLicenses.py --policy Configs/Security/LicensePolicy.yml`：
   `license issues: 0`。
-- `python3 -m pip_audit -r requirements/Runtime.lock`：无已知漏洞。
+- `python3 -m pip_audit -r Requirements/Runtime.lock`：无已知漏洞。
 - `python3 -m pytest tests/unit tests/contract tests/packaging -q`：61 项通过。
 - `python3 -m build`：wheel 与 sdist 构建成功。
 - `python3 scripts/VerifyPackage.py --wheel dist/veritasquant-0.1.0-py3-none-any.whl`：
