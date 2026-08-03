@@ -1,0 +1,29 @@
+# 当前确认的 GitHub 责任账号。具体路径规则必须与根规则同步维护，避免覆盖根规则的责任映射。
+# 本文件由 VeritasQuant/.github/CODEOWNERS 复制并适配：子项目路径增加 VeritasQuant/ 前缀。
+* @ACANX @abcnx
+
+# 核心交易与数据契约（VeritasQuant 子项目）
+/VeritasQuant/src/veritasquant/core/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/accounts/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/execution/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/risk/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/data/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/strategy/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/application/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/infrastructure/ @ACANX @abcnx
+
+# 工程治理、配置与版本化契约（VeritasQuant 子项目）
+/VeritasQuant/.github/ @ACANX @abcnx
+/VeritasQuant/Configs/ @ACANX @abcnx
+/VeritasQuant/Docs/VeritasQuantTechSpec.md @ACANX @abcnx
+/VeritasQuant/Docs/DevelopmentWorkflow/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/resources/Schemas/ @ACANX @abcnx
+
+# 根目录工程文件（FinvQuant Go 服务端 + 前端 + 部署）
+/.github/ @ACANX @abcnx
+/cmd/ @ACANX @abcnx
+/internal/ @ACANX @abcnx
+/Web/ @ACANX @abcnx
+/Deploy/ @ACANX @abcnx
+/Dockerfile @ACANX @abcnx
+/Prompt.md @ACANX @abcnx
