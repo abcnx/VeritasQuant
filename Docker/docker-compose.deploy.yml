@@ -74,9 +74,12 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      # 数据目录映射宿主 Windows 目录（可经 VQ_POSTGRES_DATA_DIR 覆盖）；
-      # ⚠️ 大版本升级（16→18）时旧数据目录不兼容，需先 pg_dump 备份或删除旧卷。
-      - ${VQ_POSTGRES_DATA_DIR:-D:/Dev/Docker/HostFileSystem/VeritasQuant/PostgreSQL}:/var/lib/postgresql/data
+      # 数据目录映射宿主 Windows 目录（可经 VQ_POSTGRES_DATA_DIR 覆盖）。
+      # ⚠️ PG18+ 镜像数据目录结构变更：挂载点为 /var/lib/postgresql（单一挂载），
+      #    实际数据在宿主目录下的 18/ 子目录（如 .../PostgreSQL/18/）；
+      #    挂载到 /var/lib/postgresql/data 会被镜像判定为 unused mount 并拒绝启动。
+      # ⚠️ 大版本升级（16→18）时旧数据格式不兼容，需先 pg_dump 备份迁移。
+      - ${VQ_POSTGRES_DATA_DIR:-D:/Dev/Docker/HostFileSystem/VeritasQuant/PostgreSQL}:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U veritasquant -d veritasquant"]
       interval: 5s
