@@ -242,9 +242,11 @@ Rows:
   - P0-006
   - P0-009
   - P1-012
+  - DEPLOY-001
   TestIds:
   - PACKAGING-WHEEL-ENTRYPOINTS-001
   - PACKAGING-LINUX-CASE-001
+  - DEPLOY-WIN11-DOCKER-001
   CiSuites:
   - Packaging
   LatestGate: M1

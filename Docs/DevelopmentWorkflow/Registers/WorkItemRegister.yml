@@ -6947,3 +6947,34 @@ Records:
     Actor: BeeAgent
     Action: CREATED
     Note: P6-007 开发完成（离线优化与模型管理，纯标准库），本地验证全绿
+- WorkItemId: TSK-DEPLOY-001
+  PlanTaskId: DEPLOY-001
+  Title: Windows 11 Docker 服务端部署与本地客户端验证
+  Description: 交付服务端 Docker 镜像与编排（Dockerfile 多阶段构建 + docker-compose.deploy.yml 三服务）、部署脚本（DeployServer.py check/build/start/status/logs/stop）、环境变量模板（.env.deploy.example）与 Windows 11 部署教程（环境要求/依赖说明/详细步骤/FAQ）；本地客户端连接服务端完成模拟盘/券商仿真实验
+  Stage: DEPLOY
+  Milestone: NONE
+  TechSpecRefs:
+  - '8.11'
+  Owner: BeeAgent
+  Approver: ACANX
+  Priority: High
+  EstimatePersonDays: 5
+  Dependencies:
+  - P2-024
+  - P2-034
+  AcceptanceCriteria: Windows 11 + Docker Desktop 按教程可完整部署服务端（容器全部健康）；本地客户端可连接并运行模拟盘/仿真实验；部署说明覆盖环境要求、依赖说明与详细步骤
+  TestEvidence: tests/contract/test_deploy_win11_docker.py
+  RiskLinks: []
+  TargetDate: '2026-08-03'
+  Status: IN_REVIEW
+  StatusChangedTs: '2026-08-03T10:30:00Z'
+  Blocked: false
+  BlockedReason: ''
+  BlockedBy: ''
+  NextAction: DEPLOY PR 合并后验收；Windows 11 实测由 ACANX/朋友执行
+  EscalateTs: null
+  AuditHistory:
+  - Ts: '2026-08-03T10:30:00Z'
+    Actor: BeeAgent
+    Action: CREATED
+    Note: ISSUE #253 部署交付物完成（Dockerfile/编排/脚本/教程），本地验证全绿
