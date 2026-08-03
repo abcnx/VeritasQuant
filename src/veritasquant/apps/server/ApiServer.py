@@ -36,6 +36,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     return _serve(arguments)
 
 
+def _buildDomainApis(catalog):  # noqa: ANN001 - 延迟导入保持无副作用
+    """组装生产领域 API（P2-028 接线；PAPER/仿真最小视图实现）。
+
+    此前生产入口未注入 domainApis，导致领域端点（/accounts、/strategies、
+    /backtests 等）在生产镜像中全部 404（1002）。账户/目录视图为最小实现
+    （见 DomainViewProviders），命令 API 接线后续接入。
+    """
+    from veritasquant.application.BacktestService import BacktestApplicationServiceV1
+    from veritasquant.apps.server.DomainRoutes import DomainApis
+    from veritasquant.apps.server.DomainViewProviders import (
+        ServerAccountViewV1,
+        ServerFundViewV1,
+        ServerInstrumentViewV1,
+        ServerStrategyViewV1,
+    )
+
+    return DomainApis(
+        catalog=catalog,
+        backtest=BacktestApplicationServiceV1(),
+        accounts=ServerAccountViewV1(),
+        strategies=ServerStrategyViewV1(),
+        instruments=ServerInstrumentViewV1(),
+        funds=ServerFundViewV1(),
+    )
+
+
 def _serve(arguments: argparse.Namespace) -> int:
     """组装依赖并启动 uvicorn；运行错误返回非零退出码。"""
     import uvicorn
@@ -101,6 +127,7 @@ def _serve(arguments: argparse.Namespace) -> int:
         versionProvider=provider,
         readinessProbes=(ErrorCatalogProbe(catalog),),
         securityService=securityService,
+        domainApis=_buildDomainApis(catalog),
         streamDeps=streamDeps,
         requestIdExtractor=requestIdFromState,
         traceIdExtractor=traceIdFromState,
