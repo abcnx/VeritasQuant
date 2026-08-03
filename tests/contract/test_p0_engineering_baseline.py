@@ -148,7 +148,7 @@ def test_ci_builds_and_publishes_ghcr_image() -> None:
     )
     assert "%Y%m%d%H%M" in ci_text
     assert "github.event_name == 'workflow_dispatch'" in ci_text
-    # 时间戳版本必须带版本前缀（如 0.1.1-202608031217）
+    # 时间戳版本必须带版本前缀（如 0.1.2-202608031217）
     assert "${{ env.VQ_VERSION }}-$(date -u +%Y%m%d%H%M)" in ci_text
     # 全局版本常量 VQ_VERSION 必须存在（版本单一来源）
     assert workflow["env"]["VQ_VERSION"]
