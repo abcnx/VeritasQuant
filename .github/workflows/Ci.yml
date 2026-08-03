@@ -15,7 +15,7 @@ permissions:
 # 与 pyproject.toml [project].version 保持一致。
 # ---------------------------------------------------------------------------
 env:
-  VQ_VERSION: "0.1.1"
+  VQ_VERSION: "0.1.2"
 
 jobs:
   quality:
@@ -162,7 +162,7 @@ jobs:
         id: repo
         run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       # 手动触发时生成带版本前缀的 yyyyMMddHHmm 时间戳 tag（UTC），
-      # 如 VQ_VERSION=0.1.1 → 0.1.1-202608031217。
+      # 如 VQ_VERSION=0.1.2 → 0.1.2-202608031217。
       - name: Generate timestamp tag for manual build
         id: timestamp
         if: github.event_name == 'workflow_dispatch'
