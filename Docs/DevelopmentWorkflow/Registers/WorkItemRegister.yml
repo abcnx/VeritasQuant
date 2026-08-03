@@ -6434,18 +6434,31 @@ Records:
   TestEvidence: tests/unit/broker/test_live_broker.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T08:50:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第二批 PR 合并后验收
+  NextAction: P5-007~010 已验收归档；继续 P5-011~014 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#245
+    MergedAt: '2026-08-03T08:49:20Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第二批 PR #245 合并；实盘运行与监控能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T00:51:57Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第二批开发完成（完成实盘适配器、幂等下单和权威对账），本地验证全绿
+  - Ts: '2026-08-03T08:50:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #245 已合并，TSK-P5-007 验收通过归档
 
 - WorkItemId: TSK-P5-008
   PlanTaskId: P5-008
@@ -6467,18 +6480,31 @@ Records:
   TestEvidence: tests/unit/broker/test_emergency_stop.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T08:50:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第二批 PR 合并后验收
+  NextAction: P5-007~010 已验收归档；继续 P5-011~014 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#245
+    MergedAt: '2026-08-03T08:49:20Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第二批 PR #245 合并；实盘运行与监控能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T00:51:57Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第二批开发完成（实现独立紧急停止、只减仓和恢复审批），本地验证全绿
+  - Ts: '2026-08-03T08:50:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #245 已合并，TSK-P5-008 验收通过归档
 
 - WorkItemId: TSK-P5-009
   PlanTaskId: P5-009
@@ -6505,18 +6531,31 @@ Records:
   TestEvidence: tests/unit/broker/test_live_readiness_gate.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T08:50:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第二批 PR 合并后验收
+  NextAction: P5-007~010 已验收归档；继续 P5-011~014 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#245
+    MergedAt: '2026-08-03T08:49:20Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第二批 PR #245 合并；实盘运行与监控能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T00:51:57Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第二批开发完成（完成生产 trading-readiness 门禁），本地验证全绿
+  - Ts: '2026-08-03T08:50:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #245 已合并，TSK-P5-009 验收通过归档
 
 - WorkItemId: TSK-P5-010
   PlanTaskId: P5-010
@@ -6537,18 +6576,31 @@ Records:
   TestEvidence: tests/unit/broker/test_paging.py
   RiskLinks: []
   TargetDate: '2026-08-03'
-  Status: IN_REVIEW
-  StatusChangedTs: '2026-08-03T00:51:57Z'
+  Status: ACCEPTED
+  StatusChangedTs: '2026-08-03T08:50:00Z'
   Blocked: false
   BlockedReason: ''
   BlockedBy: ''
-  NextAction: P5 第二批 PR 合并后验收
+  NextAction: P5-007~010 已验收归档；继续 P5-011~014 开发
   EscalateTs: null
+  AcceptanceEvidence:
+    MergedPr: ACANX/VeritasQuant#245
+    MergedAt: '2026-08-03T08:49:20Z'
+    CiSuites:
+    - Quality-ubuntu
+    - Quality-windows
+    - Security-baseline
+    - Database-migrations
+    Notes: 'P5 第二批 PR #245 合并；实盘运行与监控能力就绪'
   AuditHistory:
   - Ts: '2026-08-03T00:51:57Z'
     Actor: BeeAgent
     Action: CREATED
     Note: P5 第二批开发完成（建立生产监控、分页告警和 24x7 联系树），本地验证全绿
+  - Ts: '2026-08-03T08:50:00Z'
+    Actor: BeeAgent
+    Action: 流转 ACCEPTED
+    Note: PR #245 已合并，TSK-P5-010 验收通过归档
 - WorkItemId: TSK-P5-011
   PlanTaskId: P5-011
   Title: 建立不可变审计、日志访问和保留策略
