@@ -1,0 +1,29 @@
+# API 规范（ApiSpec）
+
+> 所属：FinvQuant 开发规范 · 存放：`Docs/DevSpec/`
+> 适用范围：VeritasQuant API 服务的 REST 响应契约与异常映射。
+> 错误码定义见 [`ErrorCodeSpec.md`](ErrorCodeSpec.md)。
+
+## 1. 响应信封
+
+- 所有 REST JSON 响应顶层固定输出数值 `code` 和文本 `message`；`data`、`error`、`details`、`request_id`、`trace_id` 均为按语义可选字段。
+- 所有 wire 字段使用 **snake_case**。
+
+## 2. 响应状态形态
+
+- 成功码集合固定为 `{0, 1, 200, 202}`；成功及非错误业务状态响应**不得携带 `error`**；所有错误**必须携带 `error`**。
+
+## 3. 抛出与映射
+
+- 领域代码只通过统一 `BusinessException` 抛出**已注册业务码**；应用边界统一映射顶层 `code`、HTTP、嵌套 `error`、重试属性、本地化消息和公开详情。
+- 未注册业务码必须使**启动校验或 CI 失败**；敏感详情和堆栈**不得**进入 API 响应。
+
+## 4. 契约测试
+
+API 契约测试必须覆盖：
+
+- 固定成功码；
+- 特定业务状态；
+- 异常映射；
+- 命令失败快照；
+- 敏感详情过滤。
