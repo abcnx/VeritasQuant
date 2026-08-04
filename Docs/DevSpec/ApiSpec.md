@@ -33,3 +33,10 @@ API 契约测试必须覆盖：
 - 异常映射；
 - 命令失败快照；
 - 敏感详情过滤。
+
+## 6. 接口文档
+
+- **新开发的 API 接口，必须补充对应的 API 接口文档**，说明请求参数、响应结构、错误码与调用示例；接口行为或契约变更时须同步更新对应文档。
+- 文档位置通常在 `Docs/API/xxx/XXXX.md`（按业务模块建目录，文档名与端点资源对应）。
+- 参考示例：[`Docs/API/Quote/QuoteQuery.md`](../API/Quote/QuoteQuery.md)（对应 `GET /API/V1/Quote/Query`）。
+- 新增接口文档后须在 [`Docs/API/README.md`](../API/README.md) 端点索引中登记链接。
