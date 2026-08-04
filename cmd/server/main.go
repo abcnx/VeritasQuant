@@ -70,10 +70,11 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	// 16002：前端静态资源（内嵌）
+	// 16002：前端静态资源（内嵌）+ /API 反向代理到 16001
+	apiBase := "http://" + cfg.ListenAddr()
 	webServer := &http.Server{
 		Addr:              cfg.WebListenAddr(),
-		Handler:           static.Handler(),
+		Handler:           static.Handler(apiBase),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
