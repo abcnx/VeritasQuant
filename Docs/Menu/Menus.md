@@ -28,4 +28,5 @@
 ## 相关文档
 
 - [Docs/DevSpec/MenuSpec.md](../DevSpec/MenuSpec.md) — 前端菜单开发规范
-- [Docs/API/README.md](../API/README.md) — 服务端 API 端点索引
+- [Docs/API/README.md](../API/README.md) — 服务端 API 文档入口
+- [Docs/API/APIs.md](../API/APIs.md) — 服务端 API 总览（接口清单索引）
