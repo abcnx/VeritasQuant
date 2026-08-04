@@ -1,7 +1,7 @@
 # FinvFutuMappingMarketCode — 富途市场代码映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvFutuMappingMarketCode.md`
-> 数据表：`finv_futu_mapping_market_code`（表结构：[`Deploy/Migrations/V8__finv_futu_mapping_market_code.sql`](../../Deploy/Migrations/V8__finv_futu_mapping_market_code.sql)；新增列：[`Deploy/Migrations/V15__finv_futu_mapping_market_code_add_columns.sql`](../../Deploy/Migrations/V15__finv_futu_mapping_market_code_add_columns.sql)；初始数据：[`Deploy/Migrations/V100007__finv_futu_mapping_market_code_seed.sql`](../../Deploy/Migrations/V100007__finv_futu_mapping_market_code_seed.sql)）
+> 数据表：`finv_futu_mapping_market_code`（表结构：[`Deploy/Migrations/V8__finv_futu_mapping_market_code.sql`](../../Deploy/Migrations/V8__finv_futu_mapping_market_code.sql)；重建列序：[`Deploy/Migrations/V15__finv_futu_mapping_market_code_reorder.sql`](../../Deploy/Migrations/V15__finv_futu_mapping_market_code_reorder.sql)；初始数据：[`Deploy/Migrations/V100007__finv_futu_mapping_market_code_seed.sql`](../../Deploy/Migrations/V100007__finv_futu_mapping_market_code_seed.sql)）
 > 用途：FT（富途/moomoo）行情源市场代码与交易市场代码（finv_market.market_code）的字段映射表。
 
 ## 1. 表结构
@@ -9,9 +9,9 @@
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
 | `futu_market_code` | INTEGER | PK | 富途行情源市场代码（如 `1` / `10` / `30` / `70` / `120` / `360`） |
+| `market_name` | TEXT | 可空 | 市场名称（如 `港股主板` / `美股指数` / `上交所 A 股`） |
+| `exchange` | TEXT | 可空 | 对应交易所（富途 exchange 代码，如 `SEHK` / `US` / `SSE`；无交易所用 `N/A`） |
 | `finv_market_code` | INTEGER | NOT NULL，1~999999 | 交易市场代码（关联 [FinvMarket](FinvMarket.md) `market_code`；暂与 futu 同值，待字典对齐） |
-| `market_name` | TEXT | 可空 | 市场名称（如 `港股主板` / `美股指数` / `上交所 A 股`，V15 新增） |
-| `exchange` | TEXT | 可空 | 对应交易所（富途 exchange 代码，如 `SEHK` / `US` / `SSE`；无交易所用 `N/A`，V15 新增） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
 
@@ -81,7 +81,8 @@
 ## 3. 说明
 
 - **映射方向**：`futu_market_code`（富途行情源市场代码）→ `finv_market_code`（交易市场代码）；富途侧代码值域由行情源决定，主键不设 CHECK 限制。
+- **列顺序**：V15 重建表，列顺序为 `futu_market_code, market_name, exchange, finv_market_code`（V8 原为 futu_market_code/finv_market_code，V15 重建对齐，数据完整迁移，索引/触发器重建）。
 - **finv_market_code 当前取值**：暂与 `futu_market_code` 同值（待 [FinvMarket.md](FinvMarket.md) 字典定版后对齐，届时可 UPDATE 归一化）。
-- **market_name / exchange**：V15 新增列，描述市场名称与对应交易所（`—` 用 `N/A`）。
+- **market_name / exchange**：V15 重建表引入，描述市场名称与对应交易所（`—` 用 `N/A`）。
 - **关联字典**：`exchange` → [FinvFutuMappingExchange.md](FinvFutuMappingExchange.md)（富途交易所）；`finv_market_code` → [FinvMarket.md](FinvMarket.md)（交易市场）；关联不建物理外键，由程序层控制（项目惯例）。
 - **审计字段**：`gmt_create` / `gmt_update` 与既有表规范一致，`gmt_update` 由 `vq_set_gmt_update()` 触发器自动维护。
