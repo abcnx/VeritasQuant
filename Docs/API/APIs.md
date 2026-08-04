@@ -12,7 +12,7 @@
 | 1 | GET | `/API/V1/health/live` | 存活探针：进程存活即 200，返回 `status` / `server` | — | 仪表盘（`DashboardView.vue`） |
 | 2 | GET | `/API/V1/health/ready` | 就绪探针：PG 与 Redis 均可达才 200，否则 503 | — | — |
 | 3 | GET | `/API/V1/version` | 服务端版本信息：`name` / `version` / `go_version` / `commit` | — | — |
-| 4 | POST | `/API/V1/Quote/Import/Upload` | 上传 MVSV 历史行情文件并导入 PG（字段级/整行覆盖） | [ImportsUpload.md](ImportsUpload.md) | 历史行情数据导入（`QuoteImportView.vue`） |
+| 4 | POST | `/API/V1/Quote/Import/Upload` | 上传 MVSV 历史行情文件并导入 PG（字段级/整行覆盖） | [HistoryQuote/ImportsUpload.md](HistoryQuote/ImportsUpload.md) | 历史行情数据导入（`QuoteImportView.vue`） |
 | 5 | GET | `/API/V1/Quote/Query` | 按证券代码+日期查询分钟级 K 线（周期 Min，1日/5日回溯，分页） | [HistoryQuote/HistoryQuote.md](HistoryQuote/HistoryQuote.md) | 历史行情查询（[Menus.md](../Menu/Menus.md#2) 之历史行情查询菜单，文档见 [HistoryQuote/HistoryQuoteQuery.md](../Menu/HistoryQuote/HistoryQuoteQuery.md)） |
 
 ## 说明
