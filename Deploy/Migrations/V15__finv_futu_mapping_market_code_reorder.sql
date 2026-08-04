@@ -28,11 +28,12 @@ CREATE TABLE finv_futu_mapping_market_code_new (
 );
 
 -- ---------------------------------------------------------------------
--- 2. 迁移数据（V8 表数据保留，含审计字段原值）
+-- 2. 迁移数据（旧表 V8 无 market_name / exchange 列，占位 NULL；
+--    该两列数据由 V100007 种子填充）
 -- ---------------------------------------------------------------------
 INSERT INTO finv_futu_mapping_market_code_new
     (futu_market_code, market_name, exchange, finv_market_code, gmt_create, gmt_update)
-SELECT futu_market_code, market_name, exchange, finv_market_code, gmt_create, gmt_update
+SELECT futu_market_code, NULL, NULL, finv_market_code, gmt_create, gmt_update
 FROM finv_futu_mapping_market_code;
 
 -- ---------------------------------------------------------------------
