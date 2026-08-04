@@ -35,5 +35,5 @@
 
 - **接口总览（方法 / 路径 / 说明 / 详细文档 / 已使用位置）**：见 [APIs.md](APIs.md)。
 - **详细接口文档**：
-  - [`ImportsUpload.md`](ImportsUpload.md) — `POST /API/V1/Quote/Import/Upload`（MVSV 历史行情导入）
+  - [`HistoryQuote/ImportsUpload.md`](HistoryQuote/ImportsUpload.md) — `POST /API/V1/Quote/Import/Upload`（MVSV 历史行情导入）
   - [`HistoryQuote/HistoryQuote.md`](HistoryQuote/HistoryQuote.md) — `GET /API/V1/Quote/Query`（历史行情查询）

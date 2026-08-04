@@ -96,3 +96,9 @@ const body = await response.json()
 - 导入按主键 `(ts, market_code, secu_code)` 覆盖同键数据；`FIELD` 模式只覆盖新数据有值的字段（NULL 保留旧值）。
 - 每次导入自动登记批次（`finv_quote_ingest_batches`）；发生覆盖时写入修正审计（`finv_quote_revision_log`），可追溯"改了哪些行、为什么"。
 - 支持分批上传多个文件：每文件一次上传即一个批次，重复上传同键数据按覆盖模式更新。
+
+## 已使用位置登记
+
+| 使用方 | 位置 | 说明 |
+|--------|------|------|
+| 历史行情数据导入菜单 | [`Docs/Menu/Menus.md`](../../Menu/Menus.md)（菜单文档待补充） | 前端 `QuoteImportView.vue` 调用本接口上传 MVSV 文件并导入 PG（字段级/整行覆盖） |
