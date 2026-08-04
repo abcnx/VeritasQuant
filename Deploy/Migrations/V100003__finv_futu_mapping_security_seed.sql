@@ -12,9 +12,10 @@
 -- 初始数据转换规则（ACANX 2026-08-05，对 finv_usc 字段应用）：
 --   R1 去点前缀：finv_usc 若以 "." 开头，去掉 "."（如 .GVX → GVX、.IXIC → IXIC）；
 --   R2 港股补零：港股（SEHK）证券代码不足 5 位时左侧补零至 5 位（如 0123 → 00123）；
---   R3 期货主连命名：所有以 main 结尾的期货主连代码统一为 xxMain 驼峰
---      （如 GCmain → GCMain、ESmain → ESMain、NQmain → NQMain、BZmain → BZMain）；
---      current / next 合约代码保持原样（如 GCcurrent、GDRnext）；
+--   R3 期货合约命名：期货合约代码统一驼峰化——
+--      main 主连 → xxMain（如 GCmain → GCMain、ESmain → ESMain）；
+--      current 当期 → xxCurrent（如 GCcurrent → GCCurrent）；
+--      next 下期 → xxNext（如 GDRnext → GDRNext）；
 --   R4 沪市指数加前缀：上海市场（SSE）指数，若 futu_stock_id 为 "1" + futu_symbol 的
 --      7 位值，则 finv_usc 使用 SH + 6 位指数代码（如 000039 → SH000039），
 --      避免与深圳市场同名证券代码冲突（深市 000001 平安银行保持 000001）。
@@ -445,21 +446,21 @@ VALUES
 ('70001915', 'BZmain', 'BZMain'),
 ('70000263', 'CLmain', 'CLMain'),
 ('70001057', 'QMmain', 'QMMain'),
-('70005442', 'GCcurrent', 'GCcurrent'),
+('70005442', 'GCcurrent', 'GCCurrent'),
 ('70000294', 'GCmain', 'GCMain'),
 ('70000307', 'MGCmain', 'MGCMain'),
-('70005500', 'QOcurrent', 'QOcurrent'),
+('70005500', 'QOcurrent', 'QOCurrent'),
 ('70000935', 'QOmain', 'QOMain'),
-('70005514', 'SIcurrent', 'SIcurrent'),
+('70005514', 'SIcurrent', 'SICurrent'),
 ('70000360', 'SImain', 'SIMain'),
 ('70000098', 'YMmain', 'YMMain'),
 ('70000963', 'ESmain', 'ESMain'),
 ('70000944', 'NQmain', 'NQMain'),
 ('70002097', 'SGUmain', 'SGUMain'),
 ('70000973', 'VXmain', 'VXMain'),
-('71009921', 'GDRcurrent', 'GDRcurrent'),
+('71009921', 'GDRcurrent', 'GDRCurrent'),
 ('71000024', 'GDRmain', 'GDRMain'),
-('71009930', 'GDRnext', 'GDRnext'),
+('71009930', 'GDRnext', 'GDRNext'),
 ('71000478', 'GDUmain', 'GDUMain'),
 ('71000344', 'CNCmain', 'CNCMain'),
 ('71000712', 'METmain', 'METMain'),
