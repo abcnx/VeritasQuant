@@ -4,7 +4,7 @@
 # 触发：push 到 dev/main/FinvQuant、tag v*、PR、手动
 # tag 规则：latest（dev/main/FinvQuant 推送）+ 版本 tag（v* 推送时使用 git tag）
 
-name: FinvQuant CI/CD
+name: FinvQuantCICD
 
 on:
   push:
@@ -22,42 +22,42 @@ jobs:
   # 1. Go 服务端构建与测试
   # ------------------------------------------------------------------
   build-server:
-    name: Build Go server
+    name: BuildGoServer
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
           go-version: "1.25.3"
           cache-dependency-path: go.sum
 
-      - name: Prepare embedded web assets
+      - name: PrepareEmbeddedWebAssets
         run: |
           # 构建前端产物供 embed（无 node 环境时用最小占位，测试不受影响）
           mkdir -p internal/webui/dist
           echo "{}" > internal/webui/dist/placeholder.txt || true
 
-      - name: Go vet
+      - name: GoVet
         run: go vet ./...
 
-      - name: Go build
+      - name: GoBuild
         run: go build -o /tmp/finvquant ./cmd/server
 
-      - name: Go test
+      - name: GoTest
         run: go test ./... -count=1
 
   # ------------------------------------------------------------------
   # 2. 前端构建
   # ------------------------------------------------------------------
   build-web:
-    name: Build Vue web
+    name: BuildVueWeb
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: Web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
@@ -75,7 +75,7 @@ jobs:
   # 3. 构建并推送 All-in-One 镜像到 GHCR
   # ------------------------------------------------------------------
   docker:
-    name: Build & push finvquant image (GHCR)
+    name: BuildAndPushFinvQuantImage (GHCR)
     needs: [build-server, build-web]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Resolve image tags
+      - name: ResolveImageTags
         id: tags
         run: |
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
@@ -94,17 +94,17 @@ jobs:
             echo "tags=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Login to GHCR
+      - name: LoginToGHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: SetupDockerBuildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & push finvquant image
+      - name: BuildAndPushFinvQuantImage
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -119,17 +119,17 @@ jobs:
   # 4. PR 验证：仅构建镜像不推送
   # ------------------------------------------------------------------
   docker-pr:
-    name: Build finvquant image (PR validation)
+    name: BuildFinvQuantImage(PRValidation)
     needs: [build-server, build-web]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: SetupDockerBuildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build finvquant image (no push)
+      - name: BuildFinvQuantImage(no push)
         uses: docker/build-push-action@v6
         with:
           context: .
