@@ -16,6 +16,7 @@
 - 文档位置通常在 `Docs/Menu/xxx/XXXX.md`（按业务模块建目录，文档名与菜单/视图名对应）。
 - 参考示例：[`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`](../Menu/HistoryQuote/HistoryQuoteQuery.md)（对应视图 `Web/src/views/QuoteQueryView.vue`）。
 - 菜单文档随视图代码在同一变更中提交，保持「代码 + 文档」同步交付。
+- 新增菜单后须在 [`Menus.md`](../Menu/Menus.md) 菜单总索引中登记（菜单名称 / key / 图标 / 视图组件 / 使用的后端接口 / 菜单文档）。
 
 ## 3. 文档内容要求
 
