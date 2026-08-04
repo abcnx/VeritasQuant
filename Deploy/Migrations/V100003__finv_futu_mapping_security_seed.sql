@@ -12,8 +12,9 @@
 -- 初始数据转换规则（ACANX 2026-08-05，对 finv_usc 字段应用）：
 --   R1 去点前缀：finv_usc 若以 "." 开头，去掉 "."（如 .GVX → GVX、.IXIC → IXIC）；
 --   R2 港股补零：港股（SEHK）证券代码不足 5 位时左侧补零至 5 位（如 0123 → 00123）；
---   R3 期货主连命名：code 为 ESmain / NQmain 的期货，finv_usc 统一为 xxMain 驼峰
---      （ESmain → ESMain、NQmain → NQMain）；
+--   R3 期货主连命名：所有以 main 结尾的期货主连代码统一为 xxMain 驼峰
+--      （如 GCmain → GCMain、ESmain → ESMain、NQmain → NQMain、BZmain → BZMain）；
+--      current / next 合约代码保持原样（如 GCcurrent、GDRnext）；
 --   R4 沪市指数加前缀：上海市场（SSE）指数，若 futu_stock_id 为 "1" + futu_symbol 的
 --      7 位值，则 finv_usc 使用 SH + 6 位指数代码（如 000039 → SH000039），
 --      避免与深圳市场同名证券代码冲突（深市 000001 平安银行保持 000001）。
@@ -441,30 +442,30 @@ VALUES
 ('86809894907551', '920799', '920799'),
 ('87449845034664', '920808', '920808'),
 ('87449845034838', '920982', '920982'),
-('70001915', 'BZmain', 'BZmain'),
-('70000263', 'CLmain', 'CLmain'),
-('70001057', 'QMmain', 'QMmain'),
+('70001915', 'BZmain', 'BZMain'),
+('70000263', 'CLmain', 'CLMain'),
+('70001057', 'QMmain', 'QMMain'),
 ('70005442', 'GCcurrent', 'GCcurrent'),
-('70000294', 'GCmain', 'GCmain'),
-('70000307', 'MGCmain', 'MGCmain'),
+('70000294', 'GCmain', 'GCMain'),
+('70000307', 'MGCmain', 'MGCMain'),
 ('70005500', 'QOcurrent', 'QOcurrent'),
-('70000935', 'QOmain', 'QOmain'),
+('70000935', 'QOmain', 'QOMain'),
 ('70005514', 'SIcurrent', 'SIcurrent'),
-('70000360', 'SImain', 'SImain'),
-('70000098', 'YMmain', 'YMmain'),
+('70000360', 'SImain', 'SIMain'),
+('70000098', 'YMmain', 'YMMain'),
 ('70000963', 'ESmain', 'ESMain'),
 ('70000944', 'NQmain', 'NQMain'),
-('70002097', 'SGUmain', 'SGUmain'),
-('70000973', 'VXmain', 'VXmain'),
+('70002097', 'SGUmain', 'SGUMain'),
+('70000973', 'VXmain', 'VXMain'),
 ('71009921', 'GDRcurrent', 'GDRcurrent'),
-('71000024', 'GDRmain', 'GDRmain'),
+('71000024', 'GDRmain', 'GDRMain'),
 ('71009930', 'GDRnext', 'GDRnext'),
-('71000478', 'GDUmain', 'GDUmain'),
-('71000344', 'CNCmain', 'CNCmain'),
-('71000712', 'METmain', 'METmain'),
-('71000800', 'MIUmain', 'MIUmain'),
-('71000662', 'HSImain', 'HSImain'),
-('71002804', 'HTImain', 'HTImain'),
+('71000478', 'GDUmain', 'GDUMain'),
+('71000344', 'CNCmain', 'CNCMain'),
+('71000712', 'METmain', 'METMain'),
+('71000800', 'MIUmain', 'MIUMain'),
+('71000662', 'HSImain', 'HSIMain'),
+('71002804', 'HTImain', 'HTIMain'),
 ('72000157', 'CADUSD', 'CADUSD'),
 ('72000144', 'CNHCAD', 'CNHCAD'),
 ('72000002', 'CNHCNY', 'CNHCNY'),
@@ -496,7 +497,7 @@ VALUES
 ('79937935313963', 'S68', 'S68'),
 ('83803405882123', 'SQQ', 'SQQ'),
 ('80075374267516', '.STI', 'STI'),
-('74000293', 'GLDmain', 'GLDmain'),
+('74000293', 'GLDmain', 'GLDMain'),
 ('10102879', 'BK22881', 'LIST22881'),
 ('3500011', '.KOSPI', 'KOSPI'),
 ('3500045', '.SENSEX', 'SENSEX'),
