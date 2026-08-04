@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue'
+import { markRaw, ref, type Component } from 'vue'
 
 import DashboardView from './views/DashboardView.vue'
 import QuoteImportView from './views/QuoteImportView.vue'
@@ -8,9 +8,10 @@ type ViewName = 'dashboard' | 'quote-import'
 
 const currentView = ref<ViewName>('dashboard')
 
-const views: Record<ViewName, unknown> = {
-  'dashboard': shallowRef(DashboardView),
-  'quote-import': shallowRef(QuoteImportView),
+// 直接存组件对象（markRaw 避免响应式代理）；:is 需要组件而非 Ref
+const views: Record<ViewName, Component> = {
+  'dashboard': markRaw(DashboardView),
+  'quote-import': markRaw(QuoteImportView),
 }
 
 const menuItems = [
