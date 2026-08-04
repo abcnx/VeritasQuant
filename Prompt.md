@@ -50,8 +50,8 @@ FinvQuant 是一个**量化策略交易平台**，采用**前后端分离**架�
 ### 4.1 端口与启动
 - 默认监听端口：**16001**
 - 配置方式：环境变量（`FINV_*` 前缀），见 `internal/config/config.go`
-- 健康检查：`GET /api/v1/health/live`、`GET /api/v1/health/ready`
-- 版本信息：`GET /api/v1/version`
+- 健康检查：`GET /API/V1/health/live`、`GET /API/V1/health/ready`
+- 版本信息：`GET /API/V1/version`
 
 ### 4.2 模块划分（internal）
 - `api`：Gin 路由注册、HTTP 处理器

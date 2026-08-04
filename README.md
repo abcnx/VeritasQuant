@@ -19,7 +19,7 @@ docker compose --env-file Deploy/.env up -d
 ```
 
 - 前端控制台：http://localhost:16002
-- 服务端 API：http://localhost:16001/api/v1/health/live
+- 服务端 API：http://localhost:16001/API/V1/health/live
 
 或直接使用 All-in-One 镜像：
 

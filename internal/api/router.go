@@ -36,7 +36,7 @@ func NewRouter(deps *Deps) *gin.Engine {
 		Commit:    deps.Commit,
 	}
 
-	apiGroup := router.Group("/api/v1")
+	apiGroup := router.Group("/API/V1")
 	{
 		apiGroup.GET("/health/live", health.Live)
 		apiGroup.GET("/health/ready", health.Ready)

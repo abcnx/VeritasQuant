@@ -2,7 +2,7 @@
 //
 // 技术栈：Go 1.25.3 + Gin v1.12 + PostgreSQL 18（pgx/v5）+ Redis 8（go-redis/v9）。
 // 单进程双端口：
-//   - 16001：API 服务（/api/v1/*，Gin）
+//   - 16001：API 服务（/API/V1/*，Gin）
 //   - 16002：前端静态资源（内嵌 Web/dist，SPA fallback）
 package main
 
