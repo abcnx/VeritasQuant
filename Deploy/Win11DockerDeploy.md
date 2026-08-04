@@ -83,16 +83,18 @@ Copy-Item Deploy\.env.example Deploy\.env
 
 ## 6. 启动与验证
 
-在仓库根目录（`docker-compose.yml` 所在位置）执行：
+> 以下命令均在**仓库根目录**（含 `Deploy/` 的目录）执行；compose 文件位于 `Deploy/` 子目录，需用 `-f Deploy/docker-compose.yml` 显式指定（否则报 `no configuration file provided`）。
+>
+> 便捷方式：先 `cd Deploy` 再执行 `docker compose --env-file .env <命令>` 可省略 `-f`（此时 compose 项目目录为 `Deploy/`，未显式设置的相对路径卷 `./pgdata` 将落在 `Deploy/pgdata`）。
 
 ```powershell
-docker compose --env-file Deploy/.env up -d
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d
 ```
 
 查看状态：
 
 ```powershell
-docker compose ps
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps
 ```
 
 **验证清单：**
@@ -103,7 +105,7 @@ docker compose ps
 | 服务端存活 | http://localhost:16001/API/V1/health/live | 返回 200 |
 | 服务端就绪 | http://localhost:16001/API/V1/health/ready | 返回 200（含 PG/Redis 连通检查） |
 | 服务端版本 | http://localhost:16001/API/V1/version | 返回版本号 |
-| 容器健康 | `docker compose ps` | 三个服务 `healthy` |
+| 容器健康 | `docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps` | 三个服务 `healthy` |
 
 > 首次启动 `finvquant` 会执行数据库迁移（创建 `schema_version` 表及业务表），约数秒；迁移完成前 `/health/ready` 可能不通过，稍等重试即可。
 
@@ -122,18 +124,18 @@ docker cp fq-postgres:/tmp/finvquant_backup.dump D:/backup/finvquant_20260805.du
 ## 8. 常用运维命令
 
 ```powershell
-docker compose --env-file Deploy/.env ps        # 查看状态
-docker compose --env-file Deploy/.env logs -f finvquant   # 跟踪服务端日志
-docker compose --env-file Deploy/.env restart finvquant    # 重启服务端
-docker compose --env-file Deploy/.env down      # 停止并删除容器（数据卷/宿主数据目录保留）
-docker compose --env-file Deploy/.env down -v   # 停止并删除容器+命名卷（⚠️ 慎用，Redis 数据会丢失）
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps        # 查看状态
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs -f finvquant   # 跟踪服务端日志
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env restart finvquant    # 重启服务端
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env down      # 停止并删除容器（数据卷/宿主数据目录保留）
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env down -v   # 停止并删除容器+命名卷（⚠️ 慎用，Redis 数据会丢失）
 ```
 
 ## 9. 常见问题
 
 - **端口被占用**：改 `.env` 中 `FINV_PG_EXPOSE_PORT` / `FINV_REDIS_EXPOSE_PORT`；`16001`/`16002` 被占需改 `docker-compose.yml` 中 `finvquant.ports` 左侧映射（如 `"26001:16001"`）。
 - **PG 18 报 unused mount / 拒绝启动**：确认挂载的是 `/var/lib/postgresql` 而非 `/var/lib/postgresql/data`（当前编排已按 PG18 修正，勿回退）。
-- **`finvquant` 容器反复重启**：先看日志 `docker compose logs finvquant`；常见原因：PG/Redis 未就绪（`depends_on` 已含健康检查）、数据库迁移失败、`FINV_PG_PASSWORD` 与 postgres 服务不一致。
+- **`finvquant` 容器反复重启**：先看日志 `docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs finvquant`；常见原因：PG/Redis 未就绪（`depends_on` 已含健康检查）、数据库迁移失败、`FINV_PG_PASSWORD` 与 postgres 服务不一致。
 - **防火墙拦截访问**：Windows Defender 防火墙需放行 16001/16002 入站规则（仅本机访问可忽略）。
 - **路径不识别**：确认 `.env` 使用正斜杠 `D:/...` 且父目录存在。
 

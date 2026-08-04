@@ -28,7 +28,7 @@ docker exec fq-postgres pg_dump -U finvquant -d finvquant -F c -f /tmp/finvquant
 docker cp fq-postgres:/tmp/finvquant_backup.dump D:/backup/finvquant_20260805.dump
 
 # 如需物理备份：停库后复制宿主目录（含 18/ 子目录，见部署文档第 7 节）
-# docker compose --env-file Deploy/.env stop postgres
+# docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env stop postgres
 # 复制 %FINV_PG_DATA_DIR%\18 到备份位置后重启
 ```
 
@@ -50,28 +50,30 @@ git pull   # 或 git fetch + 切换到目标版本 tag
 
 **3.2 拉取新镜像**
 
+> 以下命令在**仓库根目录**执行；compose 文件位于 `Deploy/` 子目录，需用 `-f Deploy/docker-compose.yml` 显式指定（否则报 `no configuration file provided`）。
+
 ```powershell
 # 升级到最新版
-docker compose --env-file Deploy/.env pull finvquant
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant
 
 # 或升级到指定版本：先修改 Deploy\.env 中 FINV_IMAGE_TAG= v1.2.0
-docker compose --env-file Deploy/.env pull finvquant
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant
 ```
 
 **3.3 重建服务端容器**
 
 ```powershell
-docker compose --env-file Deploy/.env up -d finvquant
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d finvquant
 ```
 
 - `finvquant` 镜像变化时重建；`postgres` / `redis` 无变化则保持运行，**数据不丢失**。
-- 若同时更新了 `docker-compose.yml` / `.env` 中 PG/Redis 配置，可整体执行 `docker compose --env-file Deploy/.env up -d`（仍只会重建配置发生变化的服务）。
+- 若同时更新了 `docker-compose.yml` / `.env` 中 PG/Redis 配置，可整体执行 `docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d`（仍只会重建配置发生变化的服务）。
 
 **3.4 验证升级结果**
 
 ```powershell
-docker compose ps                                   # 三个服务 healthy
-docker compose logs --tail=50 finvquant             # 确认迁移日志（Apply migrations ...）与启动成功
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps     # 三个服务 healthy
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs --tail=50 finvquant   # 确认迁移日志（Apply migrations ...）与启动成功
 ```
 
 | 验证项 | 地址/命令 | 预期 |
@@ -95,8 +97,8 @@ docker compose logs --tail=50 finvquant             # 确认迁移日志（Apply
 ```powershell
 # 1. 修改 Deploy\.env 的 FINV_IMAGE_TAG 回旧版本（或 docker-compose.yml 指定旧镜像）
 # 2. 拉取旧镜像并重建
-docker compose --env-file Deploy/.env pull finvquant
-docker compose --env-file Deploy/.env up -d finvquant
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant
+docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d finvquant
 ```
 
 ⚠️ **数据库迁移不可自动回滚**：升级时已执行的迁移（`schema_version` 已记录）在回滚到旧版后不会撤销。若回滚原因是迁移失败导致服务不可用，应先修复迁移脚本（发布修复版）而非直接回滚；若必须回滚且涉及破坏性变更，需从第 2 节的备份恢复数据库。
@@ -104,7 +106,7 @@ docker compose --env-file Deploy/.env up -d finvquant
 ## 6. 常见问题
 
 - **`finvquant` 启动失败，日志含 `迁移 V<n> 失败`**：迁移脚本在单事务中执行，失败已回滚；联系维护者修复脚本后发布新镜像，重新执行升级步骤即可（`schema_version` 未记录失败版本，可安全重试）。
-- **`up -d` 后容器未更新**：确认 `.env` 的 `FINV_IMAGE_TAG` 与期望版本一致，且 `docker compose pull finvquant` 已拉到新镜像（`docker images ghcr.io/acanx/finvquant` 核对 IMAGE ID）。
+- **`up -d` 后容器未更新**：确认 `.env` 的 `FINV_IMAGE_TAG` 与期望版本一致，且 `docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant` 已拉到新镜像（`docker images ghcr.io/acanx/finvquant` 核对 IMAGE ID）。
 - **升级后前端异常但 API 正常**：前端资源已内嵌进镜像，属版本不匹配所致，确认浏览器强刷（Ctrl+F5）且服务端版本确为新版。
 - **升级中断**：`up -d` 可重复执行，操作幂等；数据持久化不受影响。
 
