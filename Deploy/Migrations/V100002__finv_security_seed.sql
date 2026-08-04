@@ -13,7 +13,7 @@
 BEGIN;
 
 INSERT INTO finv_security
-    (usc, exchange_code, security_type, security_code, security_name, security_name_cn, security_name_full, currency_type, init_date, time_zone, tz)
+    (usc, exchange_code, security_type, security_code, security_name, security_name_cn, security_name_full, currency_type, init_date, timezone, tz)
 VALUES
     ('GCMain', 33, 'Futures',    'GCMain', 'GCMain2512',       '黄金期货主连',     '黄金期货主连',     'USD', 19710101, '-04:00',      'America/New_York'),
     ('HSTI',   21, 'StockIndex', '800700', '恒生科技指数',      '恒生科技指数',      '恒生科技指数',      'HKD', 20000000, '+08:00',      'Asia/Shanghai'),

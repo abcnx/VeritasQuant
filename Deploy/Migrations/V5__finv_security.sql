@@ -7,7 +7,7 @@
 --   - exchange_code 对齐 finv_exchange 字典（INTEGER），currency_type 对齐
 --     finv_currency 字典（TEXT），便于关联换算；均不建物理外键（项目惯例：程序层控制）；
 --   - MySQL 字段 `currency` / `timezone` 与 JSON 键 `currency_type` / `time_zone`
---     不一致，PG 统一采用 JSON 键名（currency_type / time_zone）；
+--     不一致，PG 保留 MySQL 字段命名（currency_type / timezone）；
 --   - init_date 默认 20000000（yyyyMMdd，未上市/未知时占位）；
 --   - 初始数据见 V100002__finv_security_seed.sql（数据种子段）。
 -- 迁移策略：与既有迁移一致，单事务、失败回滚。
@@ -30,7 +30,7 @@ CREATE TABLE finv_security (
     currency_type     TEXT        NOT NULL,                -- 交易计价基础货币（对齐 finv_currency.currency_type）
     init_date         INTEGER     NOT NULL DEFAULT 20000000
                       CHECK (init_date BETWEEN 19500101 AND 21001231),  -- 首次上市交易日期 yyyymmdd
-    time_zone         TEXT,                                -- 时区（如 -04:00 / +08:00）
+    timezone         TEXT,                                -- 时区（如 -04:00 / +08:00）
     tz                TEXT,                                -- 时区标识（如 America/New_York / Asia/Shanghai）
     gmt_create        TIMESTAMPTZ NOT NULL DEFAULT now(),  -- 首次插入时间
     gmt_update        TIMESTAMPTZ NOT NULL DEFAULT now(),  -- 最后更新时间（触发器维护）

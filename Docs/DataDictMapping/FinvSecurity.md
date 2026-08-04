@@ -17,7 +17,7 @@
 | `security_name_full` | TEXT | 可空 | 证券名称（全称） |
 | `currency_type` | TEXT | NOT NULL | 交易计价基础货币（关联 [FinvCurrency](FinvCurrency.md) `currency_type`） |
 | `init_date` | INTEGER | NOT NULL DEFAULT 20000000 | 首次上市交易日期（yyyyMMdd） |
-| `time_zone` | TEXT | 可空 | 时区（如 `-04:00` / `+08:00`） |
+| `timezone` | TEXT | 可空 | 时区（如 `-04:00` / `+08:00`） |
 | `tz` | TEXT | 可空 | 时区标识（如 `America/New_York` / `Asia/Shanghai`） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
@@ -29,11 +29,11 @@
 - `idx_finv_security_type`：`(security_type, usc)`
 - `idx_finv_security_currency`：`(currency_type, usc)`
 
-> 说明：MySQL 字段 `currency` / `timezone` 与 JSON 键 `currency_type` / `time_zone` 不一致，PG 统一采用 JSON 键名（`currency_type` / `time_zone`）；`exchange_code` 对齐字典为 INTEGER。
+> 说明：MySQL 字段 `currency` / `timezone` 与 JSON 键 `currency_type` / `time_zone` 不一致；`currency_type` 采用 JSON 键名，`timezone` 保持 MySQL 字段命名；`exchange_code` 对齐字典为 INTEGER。
 
 ## 2. 数据清单（15 条）
 
-| usc | exchange_code | security_type | security_code | security_name | security_name_cn | security_name_full | currency_type | init_date | time_zone | tz |
+| usc | exchange_code | security_type | security_code | security_name | security_name_cn | security_name_full | currency_type | init_date | timezone | tz |
 |-----|--------------:|---------------|---------------|---------------|------------------|--------------------|---------------|-----------|-----------|-----|
 | GCMain | 33 | Futures | GCMain | GCMain2512 | 黄金期货主连 | 黄金期货主连 | USD | 19710101 | -04:00 | America/New_York |
 | HSTI | 21 | StockIndex | 800700 | 恒生科技指数 | 恒生科技指数 | 恒生科技指数 | HKD | 20000000 | +08:00 | Asia/Shanghai |
