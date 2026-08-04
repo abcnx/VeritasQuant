@@ -18,8 +18,8 @@ const views: Record<ViewName, Component> = {
 
 const menuItems = [
   { key: 'dashboard' as ViewName, title: '仪表盘', icon: 'mdi-view-dashboard' },
-  { key: 'quote-import' as ViewName, title: '历史行情数据导入', icon: 'mdi-database-import' },
   { key: 'quote-query' as ViewName, title: '历史行情查询', icon: 'mdi-chart-candlestick' },
+  { key: 'quote-import' as ViewName, title: '历史行情数据导入', icon: 'mdi-database-import' },
 ]
 
 const drawer = ref(true)
@@ -48,7 +48,7 @@ const drawer = ref(true)
     </v-navigation-drawer>
 
     <v-main>
-      <v-container class="mt-4">
+      <v-container fluid class="mt-4">
         <component :is="views[currentView]" />
       </v-container>
     </v-main>

@@ -47,6 +47,7 @@ func NewService(pool *pgxpool.Pool) *Service {
 
 // Bar 查询返回的分钟级 K 线（涨跌额/涨跌幅由 close 与 prev_close 计算）。
 type Bar struct {
+	Date      int      `json:"date"`       // 交易日期 yyyymmdd（多日查询时用于区分）
 	Time      int      `json:"time"`       // 交易时间 hhmmss
 	Open      *string  `json:"open"`       // 开盘价
 	High      *string  `json:"high"`       // 最高价
@@ -59,26 +60,63 @@ type Bar struct {
 	Remark    *string  `json:"remark"`     // 备注
 }
 
-// QueryBars 按证券代码 + 交易日期查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
-func (s *Service) QueryBars(ctx context.Context, secuCode string, date int, period string) ([]Bar, error) {
+// QueryBars 按证券代码 + 交易日（可多日回溯）分页查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
+// days 表示回溯最近 N 个交易日：取该证券代码 date 当天及之前最近 N 个有数据的交易日，days=1 仅查当天。
+// page 从 1 开始；pageSize 默认为 240（全天 4 小时交易时段约 240 根分钟线）。
+// 返回当前页 bars（按日期、时间升序）与满足条件的总条数 total。
+func (s *Service) QueryBars(ctx context.Context, secuCode string, date int, period string, days, page, pageSize int) ([]Bar, int, error) {
 	if secuCode == "" {
-		return nil, fmt.Errorf("secu_code 不能为空")
+		return nil, 0, fmt.Errorf("secu_code 不能为空")
 	}
 	if date <= 0 {
-		return nil, fmt.Errorf("date 必须为有效的交易日期（yyyymmdd）")
+		return nil, 0, fmt.Errorf("date 必须为有效的交易日期（yyyymmdd）")
 	}
 	// 周期目前仅支持 1 分钟（Min），其他周期暂不支持
 	if period != "" && period != "Min" {
-		return nil, fmt.Errorf("周期 %s 暂不支持，目前仅支持 Min（1 分钟）", period)
+		return nil, 0, fmt.Errorf("周期 %s 暂不支持，目前仅支持 Min（1 分钟）", period)
+	}
+	if days < 1 {
+		days = 1
+	}
+	if days > 10 {
+		days = 10
+	}
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 240
+	}
+	if pageSize > 1000 {
+		pageSize = 1000
 	}
 
-	rows, err := s.pool.Query(ctx, `
-SELECT "time", open, high, low, close, volume, turnover, prev_close, remark
+	// 多日查询：date 当天及之前最近 days 个有数据的交易日（按 date 倒序去重取前 N）
+	dayFilter := `
+date IN (
+  SELECT DISTINCT date FROM finv_quote_secu_kline_min
+  WHERE secu_code = $2 AND date <= $3
+  ORDER BY date DESC
+  LIMIT $4
+)`
+
+	var total int
+	if err := s.pool.QueryRow(ctx, `
+SELECT COUNT(*)
 FROM finv_quote_secu_kline_min
-WHERE secu_code = $1 AND date = $2
-ORDER BY ts ASC`, secuCode, date)
+WHERE secu_code = $1 AND `+dayFilter, secuCode, secuCode, date, days).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	rows, err := s.pool.Query(ctx, `
+SELECT date, "time", open, high, low, close, volume, turnover, prev_close, remark
+FROM finv_quote_secu_kline_min
+WHERE secu_code = $1 AND `+dayFilter+`
+ORDER BY date ASC, ts ASC
+LIMIT $5 OFFSET $6`, secuCode, secuCode, date, days, pageSize, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -86,14 +124,14 @@ ORDER BY ts ASC`, secuCode, date)
 	for rows.Next() {
 		var bar Bar
 		var prevClose *string
-		if err := rows.Scan(&bar.Time, &bar.Open, &bar.High, &bar.Low, &bar.Close,
+		if err := rows.Scan(&bar.Date, &bar.Time, &bar.Open, &bar.High, &bar.Low, &bar.Close,
 			&bar.Volume, &bar.Turnover, &prevClose, &bar.Remark); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		bar.Change, bar.ChangePct = computeChange(bar.Close, prevClose)
 		bars = append(bars, bar)
 	}
-	return bars, rows.Err()
+	return bars, total, rows.Err()
 }
 
 // computeChange 计算涨跌额与涨跌幅（close - prev_close）。
