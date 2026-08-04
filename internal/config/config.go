@@ -54,9 +54,9 @@ func (c *Config) WebListenAddr() string {
 	return c.Host + ":" + envOr("FINV_WEB_PORT", "16002")
 }
 
-// MigrationsDir 返回数据库迁移目录（默认 Deploy/migrations）。
+// MigrationsDir 返回数据库迁移目录（默认 Deploy/Migrations）。
 func (c *Config) MigrationsDir() string {
-	return envOr("FINV_MIGRATIONS_DIR", "Deploy/migrations")
+	return envOr("FINV_MIGRATIONS_DIR", "Deploy/Migrations")
 }
 
 func envOr(key, fallback string) string {

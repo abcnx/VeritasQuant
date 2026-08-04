@@ -1,5 +1,5 @@
 -- =====================================================================
--- VeritasQuant PostgreSQL V4：历史分钟 K 线行情（字段级覆盖式更新）
+-- VeritasQuant PostgreSQL V1：历史分钟 K 线行情（FinvQuant 首版迁移）（字段级覆盖式更新）
 --
 -- 决策（ACANX 2026-08-04）：
 --   - 历史行情存储到 PostgreSQL，主键 (ts, market_code, secu_code)；
@@ -60,7 +60,7 @@ CREATE TRIGGER trg_finv_quote_secu_kline_min_gmt_update
 -- ---------------------------------------------------------------------
 -- 2. 导入批次登记表（程序层审计：谁、何时、导入/修正了什么）
 -- ---------------------------------------------------------------------
-CREATE TABLE quote_ingest_batches (
+CREATE TABLE finv_quote_ingest_batches (
     ingest_batch_id     TEXT        PRIMARY KEY,
     source              TEXT        NOT NULL,                 -- 数据源（如 FT）
     market_code         INTEGER     NOT NULL CHECK (market_code BETWEEN 0 AND 99999999),
@@ -75,13 +75,13 @@ CREATE TABLE quote_ingest_batches (
     imported_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
     notes               TEXT
 );
-CREATE INDEX idx_quote_ingest_batches_secu
-    ON quote_ingest_batches (market_code, secu_code, imported_at);
+CREATE INDEX idx_finv_quote_ingest_batches_secu
+    ON finv_quote_ingest_batches (market_code, secu_code, imported_at);
 
 -- ---------------------------------------------------------------------
 -- 3. 修正审计日志（每次覆盖修正留痕：改了哪些行、为什么、前后摘要）
 -- ---------------------------------------------------------------------
-CREATE TABLE quote_revision_log (
+CREATE TABLE finv_quote_revision_log (
     revision_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     ingest_batch_id  TEXT        NOT NULL,
     market_code      INTEGER     NOT NULL CHECK (market_code BETWEEN 0 AND 99999999),
@@ -93,9 +93,9 @@ CREATE TABLE quote_revision_log (
     previous_summary JSONB,      -- 修正前摘要（时间范围/行数等）
     new_summary      JSONB       -- 修正后摘要
 );
-CREATE INDEX idx_quote_revision_log_secu
-    ON quote_revision_log (market_code, secu_code, revised_at);
-CREATE INDEX idx_quote_revision_log_batch
-    ON quote_revision_log (ingest_batch_id);
+CREATE INDEX idx_finv_quote_revision_log_secu
+    ON finv_quote_revision_log (market_code, secu_code, revised_at);
+CREATE INDEX idx_finv_quote_revision_log_batch
+    ON finv_quote_revision_log (ingest_batch_id);
 
 COMMIT;

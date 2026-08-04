@@ -193,7 +193,7 @@ func (s *Service) logRevision(
 	importedBy string,
 ) error {
 	_, err := tx.Exec(ctx, `
-INSERT INTO quote_revision_log
+INSERT INTO finv_quote_revision_log
     (ingest_batch_id, market_code, secu_code, affected_rows, reason, revised_by, previous_summary, new_summary)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		batchID, row.MarketCode, row.SecuCode, affected,
@@ -214,7 +214,7 @@ func (s *Service) registerBatch(
 	importedBy, source string,
 ) error {
 	_, err := tx.Exec(ctx, `
-INSERT INTO quote_ingest_batches
+INSERT INTO finv_quote_ingest_batches
     (ingest_batch_id, source, market_code, secu_code, data_version_id, file_count,
      record_count, upsert_mode, ts_precision, config_hash, imported_by, notes)
 VALUES ($1, $2, $3, $4, $5, 1, $6, $7, 'Second', $8, $9, $10)`,
