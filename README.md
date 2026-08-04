@@ -54,6 +54,8 @@ cd Web && npm install && npm run dev
 ## 文档
 
 - [Prompt.md](Prompt.md) — 项目需求与技术基线（结构化，持续更新）
+- [Deploy/Win11DockerDeploy.md](Deploy/Win11DockerDeploy.md) — Windows 11 Docker 部署文档
+- [Deploy/Win11DockerUpgrade.md](Deploy/Win11DockerUpgrade.md) — Windows 11 Docker 增量升级文档
 - [VeritasQuant/README.md](VeritasQuant/README.md) — 既有 Python 子项目说明
 
 ## 许可
