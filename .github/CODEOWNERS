@@ -2,7 +2,9 @@
 # 本文件由 VeritasQuant/.github/CODEOWNERS 复制并适配：子项目路径增加 VeritasQuant/ 前缀。
 * @ACANX @abcnx
 
-# 核心交易与数据契约（VeritasQuant 子项目）
+# ============================================================
+# VeritasQuant 子项目：核心交易与数据契约
+# ============================================================
 /VeritasQuant/src/veritasquant/core/ @ACANX @abcnx
 /VeritasQuant/src/veritasquant/accounts/ @ACANX @abcnx
 /VeritasQuant/src/veritasquant/execution/ @ACANX @abcnx
@@ -11,19 +13,39 @@
 /VeritasQuant/src/veritasquant/strategy/ @ACANX @abcnx
 /VeritasQuant/src/veritasquant/application/ @ACANX @abcnx
 /VeritasQuant/src/veritasquant/infrastructure/ @ACANX @abcnx
+/VeritasQuant/src/veritasquant/resources/ @ACANX @abcnx
+/VeritasQuant/tests/ @ACANX @abcnx
 
-# 工程治理、配置与版本化契约（VeritasQuant 子项目）
+# VeritasQuant 子项目：工程治理、配置、迁移与版本化契约
 /VeritasQuant/.github/ @ACANX @abcnx
 /VeritasQuant/Configs/ @ACANX @abcnx
-/VeritasQuant/Docs/VeritasQuantTechSpec.md @ACANX @abcnx
-/VeritasQuant/Docs/DevelopmentWorkflow/ @ACANX @abcnx
-/VeritasQuant/src/veritasquant/resources/Schemas/ @ACANX @abcnx
+/VeritasQuant/Docs/ @ACANX @abcnx
+/VeritasQuant/Migrations/ @ACANX @abcnx
+/VeritasQuant/Docker/ @ACANX @abcnx
+/VeritasQuant/Jobs/ @ACANX @abcnx
+/VeritasQuant/scripts/ @ACANX @abcnx
+/VeritasQuant/Requirements/ @ACANX @abcnx
+/VeritasQuant/Archive/ @ACANX @abcnx
+/VeritasQuant/pyproject.toml @ACANX @abcnx
 
-# 根目录工程文件（FinvQuant Go 服务端 + 前端 + 部署）
-/.github/ @ACANX @abcnx
+# ============================================================
+# 根目录：FinvQuant Go 服务端
+# ============================================================
 /cmd/ @ACANX @abcnx
 /internal/ @ACANX @abcnx
-/Web/ @ACANX @abcnx
-/Deploy/ @ACANX @abcnx
+/go.mod @ACANX @abcnx
+/go.sum @ACANX @abcnx
 /Dockerfile @ACANX @abcnx
+
+# 根目录：前端
+/Web/ @ACANX @abcnx
+
+# 根目录：部署与工程
+/Deploy/ @ACANX @abcnx
+/.github/ @ACANX @abcnx
+/Docs/ @ACANX @abcnx
+/AGENTS.md @ACANX @abcnx
+/README.md @ACANX @abcnx
+/LICENSE @ACANX @abcnx
+/.gitignore @ACANX @abcnx
 /Prompt.md @ACANX @abcnx
