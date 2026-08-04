@@ -98,3 +98,9 @@ curl "http://localhost:16001/API/V1/Quote/Query?secu_code=NVDA&date=20260803&per
 - 多日查询时按 `date ASC, ts ASC` 排序返回，`total` 为回溯 N 个交易日内的总分钟线条数，前端据此分页。
 - 涨跌额/涨跌幅由 `close` 与 `prev_close` 计算得出（`change = close - prev_close`）。
 - 前端 K 线展示约定：红涨绿跌（参考富途牛牛样式，含 MA5/MA10/MA20/MA30 均线）；悬停显示时间点 OHLC 及有值的成交量/成交额/涨跌额/涨跌幅。
+
+## 已使用位置登记
+
+| 使用方 | 位置 | 说明 |
+|--------|------|------|
+| 历史行情查询菜单 | [`Docs/Menu/Quote/QuoteQuery.md`](../../Menu/Quote/QuoteQuery.md) | 前端 `QuoteQueryView.vue` 调用本接口获取分钟级 K 线（1 日 / 5 日、分页） |

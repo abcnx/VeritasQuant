@@ -146,7 +146,7 @@ GET /API/V1/Quote/Query
 |------|------|
 | 前端视图 | `Web/src/views/QuoteQueryView.vue` |
 | 菜单定义 | `Web/src/App.vue` |
-| API 契约 | `Docs/API/Quote/QuoteQuery.md` |
+| 使用的后端接口 | `GET /API/V1/Quote/Query`（[API 文档 `Docs/API/Quote/QuoteQuery.md`](../../API/Quote/QuoteQuery.md)） |
 | 后端处理器 | `internal/api/handler/query.go` |
 | 查询服务 | `internal/quote/service.go` |
 | 接口规范 | `Docs/DevSpec/ApiSpec.md` |

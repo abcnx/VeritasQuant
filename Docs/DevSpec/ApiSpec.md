@@ -40,3 +40,4 @@ API 契约测试必须覆盖：
 - 文档位置通常在 `Docs/API/xxx/XXXX.md`（按业务模块建目录，文档名与端点资源对应）。
 - 参考示例：[`Docs/API/Quote/QuoteQuery.md`](../API/Quote/QuoteQuery.md)（对应 `GET /API/V1/Quote/Query`）。
 - 新增接口文档后须在 [`Docs/API/README.md`](../API/README.md) 端点索引中登记链接。
+- **API 接口被哪些地方（业务菜单）使用了，须在 API 接口文档中添加对应的已使用位置登记**：列出使用该接口的业务菜单及其文档引用（如 `Docs/Menu/xxx/XXXX.md`），与菜单文档中的接口引用形成双向索引；新增使用方或接口下线时须同步更新登记。
