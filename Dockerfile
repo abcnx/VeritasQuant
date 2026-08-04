@@ -35,6 +35,10 @@ RUN apk add --no-cache ca-certificates tzdata \
     && addgroup -S finvquant && adduser -S finvquant -G finvquant
 
 COPY --from=builder /finvquant /usr/local/bin/finvquant
+# 数据库迁移脚本（启动时自动建表，如 finv_quote_secu_kline_min）
+COPY --from=builder /app/Deploy/migrations /etc/finvquant/migrations
+
+ENV FINV_MIGRATIONS_DIR=/etc/finvquant/migrations
 
 USER finvquant
 EXPOSE 16001 16002

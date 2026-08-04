@@ -1,0 +1,228 @@
+// Package quote 提供历史分钟行情导入服务（MVSV → PostgreSQL 字段级覆盖）。
+package quote
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/acanx/finvquant/internal/mvsv"
+)
+
+// UpsertMode 覆盖模式。
+type UpsertMode string
+
+const (
+	// UpsertModeField 字段级覆盖：非 NULL 覆盖，NULL 保留旧值（COALESCE）。
+	UpsertModeField UpsertMode = "FIELD"
+	// UpsertModeRow 整行覆盖：NULL 也覆盖。
+	UpsertModeRow UpsertMode = "ROW"
+)
+
+// UpsertResult 导入结果统计。
+type UpsertResult struct {
+	BatchID     string `json:"batch_id"`
+	SecuCode    string `json:"secu_code"`
+	MarketCode  int    `json:"market_code"`
+	RecordCount int    `json:"record_count"`
+	Inserted    int64  `json:"inserted"`
+	Updated     int64  `json:"updated"`
+	Mode        string `json:"mode"`
+}
+
+// Service 历史行情导入服务。
+type Service struct {
+	pool *pgxpool.Pool
+}
+
+// NewService 创建导入服务。
+func NewService(pool *pgxpool.Pool) *Service {
+	return &Service{pool: pool}
+}
+
+// ImportRows 将解析后的行情行批量 upsert 到 finv_quote_secu_kline_min。
+// 字段级覆盖（FIELD）或整行覆盖（ROW）；发生覆盖时写入修正审计日志。
+func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMode, importedBy, source string) (*UpsertResult, error) {
+	if len(rows) == 0 {
+		return nil, fmt.Errorf("无可导入的行情记录")
+	}
+	if mode == "" {
+		mode = UpsertModeField
+	}
+	batchID := fmt.Sprintf("import_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	sql := buildUpsertSQL(mode)
+	inserted, updated, err := s.upsertBatch(ctx, tx, sql, rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if updated > 0 {
+		if err := s.logRevision(ctx, tx, batchID, rows[0], updated, mode, importedBy); err != nil {
+			return nil, err
+		}
+	}
+	if err := s.registerBatch(ctx, tx, batchID, rows[0], len(rows), mode, importedBy, source); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return &UpsertResult{
+		BatchID:     batchID,
+		SecuCode:    rows[0].SecuCode,
+		MarketCode:  rows[0].MarketCode,
+		RecordCount: len(rows),
+		Inserted:    inserted,
+		Updated:     updated,
+		Mode:        string(mode),
+	}, nil
+}
+
+// buildUpsertSQL 生成字段级覆盖（COALESCE）或整行覆盖的 upsert SQL。
+// 使用 RETURNING (xmax = 0) 区分新增与覆盖行。
+func buildUpsertSQL(mode UpsertMode) string {
+	updatable := []string{
+		"date", `"time"`, "prev_close", "open", "high", "low", "close",
+		"paocd", "volume", "turnover", "ext_field", "remark",
+	}
+	base := `
+INSERT INTO finv_quote_secu_kline_min
+    (market_code, secu_code, ts, date, "time", prev_close, open, high, low, close,
+     paocd, volume, turnover, ext_field, remark)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+ON CONFLICT (ts, market_code, secu_code) DO UPDATE SET
+`
+	var assignments []string
+	for _, column := range updatable {
+		if mode == UpsertModeRow {
+			assignments = append(assignments, fmt.Sprintf("    %s = EXCLUDED.%s", column, column))
+		} else {
+			assignments = append(assignments,
+				fmt.Sprintf("    %s = COALESCE(EXCLUDED.%s, finv_quote_secu_kline_min.%s)", column, column, column))
+		}
+	}
+	return base + strings.Join(assignments, ",\n") + "\nRETURNING (xmax = 0) AS is_insert"
+}
+
+// upsertBatch 分批执行 upsert 并统计新增/覆盖行数（RETURNING (xmax=0)）。
+func (s *Service) upsertBatch(
+	ctx context.Context,
+	tx pgx.Tx,
+	sql string,
+	rows []mvsv.Row,
+) (int64, int64, error) {
+	const batchSize = 2000
+	var inserted, updated int64
+	for offset := 0; offset < len(rows); offset += batchSize {
+		end := offset + batchSize
+		if end > len(rows) {
+			end = len(rows)
+		}
+		batch := &pgx.Batch{}
+		for _, row := range rows[offset:end] {
+			batch.Queue(sql, rowParams(row)...)
+		}
+		results := tx.SendBatch(ctx, batch)
+		for i := 0; i < end-offset; i++ {
+			queryRows, err := results.Query()
+			if err != nil {
+				_ = results.Close()
+				return 0, 0, fmt.Errorf("upsert 执行失败: %w", err)
+			}
+			for queryRows.Next() {
+				var isInsert bool
+				if scanErr := queryRows.Scan(&isInsert); scanErr != nil {
+					queryRows.Close()
+					_ = results.Close()
+					return 0, 0, scanErr
+				}
+				if isInsert {
+					inserted++
+				} else {
+					updated++
+				}
+			}
+			queryRows.Close()
+		}
+		if err := results.Close(); err != nil {
+			return 0, 0, err
+		}
+	}
+	return inserted, updated, nil
+}
+
+func rowParams(row mvsv.Row) []any {
+	return []any{
+		row.MarketCode,
+		row.SecuCode,
+		row.Ts,
+		row.Date,
+		row.Time,
+		row.PrevClose,
+		row.Open,
+		row.High,
+		row.Low,
+		row.Close,
+		row.Paocd,
+		row.Volume,
+		row.Turnover,
+		row.ExtField,
+		row.Remark,
+	}
+}
+
+func (s *Service) logRevision(
+	ctx context.Context,
+	tx pgx.Tx,
+	batchID string,
+	row mvsv.Row,
+	affected int64,
+	mode UpsertMode,
+	importedBy string,
+) error {
+	_, err := tx.Exec(ctx, `
+INSERT INTO quote_revision_log
+    (ingest_batch_id, market_code, secu_code, affected_rows, reason, revised_by, previous_summary, new_summary)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		batchID, row.MarketCode, row.SecuCode, affected,
+		"MVSV-1 导入（同键覆盖）", importedBy,
+		fmt.Sprintf(`{"mode":%q,"rows":%d}`, mode, affected),
+		fmt.Sprintf(`{"mode":%q}`, mode),
+	)
+	return err
+}
+
+func (s *Service) registerBatch(
+	ctx context.Context,
+	tx pgx.Tx,
+	batchID string,
+	row mvsv.Row,
+	recordCount int,
+	mode UpsertMode,
+	importedBy, source string,
+) error {
+	_, err := tx.Exec(ctx, `
+INSERT INTO quote_ingest_batches
+    (ingest_batch_id, source, market_code, secu_code, data_version_id, file_count,
+     record_count, upsert_mode, ts_precision, config_hash, imported_by, notes)
+VALUES ($1, $2, $3, $4, $5, 1, $6, $7, 'Second', $8, $9, $10)`,
+		batchID, source, row.MarketCode, row.SecuCode,
+		fmt.Sprintf("mvsv-%d-%s", time.Now().Unix(), row.SecuCode),
+		recordCount, mode,
+		fmt.Sprintf("mvsv-upload-%d", time.Now().Unix()),
+		importedBy, "MVSV-1 上传导入",
+	)
+	return err
+}

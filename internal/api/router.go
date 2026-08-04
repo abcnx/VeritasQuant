@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/acanx/finvquant/internal/api/handler"
+	"github.com/acanx/finvquant/internal/quote"
 )
 
 // Deps 路由依赖。
@@ -35,12 +36,14 @@ func NewRouter(deps *Deps) *gin.Engine {
 		GoVersion: runtime.Version(),
 		Commit:    deps.Commit,
 	}
+	quoteImport := handler.NewQuoteImport(quote.NewService(deps.Pool))
 
 	apiGroup := router.Group("/API/V1")
 	{
 		apiGroup.GET("/health/live", health.Live)
 		apiGroup.GET("/health/ready", health.Ready)
 		apiGroup.GET("/version", version.Info)
+		apiGroup.POST("/imports/upload", quoteImport.Upload)
 	}
 
 	return router
