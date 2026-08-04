@@ -131,6 +131,12 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
   3. `docker`（非 PR）：构建并推送 **All-in-One 镜像** `ghcr.io/acanx/finvquant`（latest + 版本 tag）
   4. `docker-pr`（PR）：仅构建不推送，验证镜像可构建
 
+## 7.5 数据库建表规范
+
+- 所有业务表名必须以 **`finv_` 作为前缀**。
+- 行情模块表名统一为 **`finv_quote_xxx`**（例如 `finv_quote_secu_kline_min`、`finv_quote_ingest_batches`、`finv_quote_revision_log`）。
+- 迁移文件存放于 `Deploy/Migrations/`，命名 `V<number>__<name>.sql`，服务端启动时自动应用。
+
 ## 8. 端口约定（汇总）
 
 | 服务 | 端口 |
@@ -142,6 +148,7 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 
 ## 9. 待办 / 规划（Roadmap）
 
+- [x] 历史行情导入：PG 建表（V4 迁移启动自动执行）、`POST /API/V1/Quote/Import/Upload` 上传导入、前端「历史行情数据导入」菜单页
 - [ ] 服务端业务模块：行情、账户、策略、订单、风控 API
 - [ ] 前端业务页面：策略管理、行情看板、交易面板
 - [ ] 数据库迁移与 Schema 管理（golang-migrate / goose）
@@ -156,3 +163,6 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 | 2026-08-04 | 初始版本 | 初始化 Go 服务端（Gin 最新 / PG18 / Redis8 / Go 1.25.3）+ Vue3+Vite8+Vuetify4 前端；端口 16001/16002；GHCR 镜像构建与 Docker Compose 部署；.gitignore 改 Go 版 |
 | 2026-08-04 | All-in-One 镜像 | 合并 server/web 双镜像为单镜像 `ghcr.io/acanx/finvquant`：前端经 `go:embed` 内嵌进 Go 二进制，单进程双端口（16001 API + 16002 前端），拉取一个镜像即可完整部署 |
 | 2026-08-04 | 目录与持久化 | `deploy/` 重命名为 `Deploy/`；PG 数据目录支持映射到 Docker 宿主机文件系统（`FINV_PG_DATA_DIR`，Windows 示例 `D:\Dev\Docker\HostFileSystem\FinvQuant\PostgreSQL`） |
+| 2026-08-04 | API 路径大写 | API 路径统一 `/API/V1/` 前缀（写入 ApiSpec 规范） |
+| 2026-08-04 | 历史行情导入 | PG 建表（`Deploy/Migrations/V1__finv_quote_secu_kline_min.sql` 启动自动迁移）；Go MVSV-1 解析器 + 字段级覆盖 upsert 导入服务；`POST /API/V1/Quote/Import/Upload`；前端新增「历史行情数据导入」菜单页（批量上传 MVSV 分钟行情） |
+| 2026-08-04 | 规范与文档 | 建表规范：`finv_` 前缀、行情表 `finv_quote_xxx`；迁移重命名 `Deploy/Migrations/V1__finv_quote_secu_kline_min.sql`（表名修正 `finv_quote_ingest_batches`/`finv_quote_revision_log`）；新增 `Docs/API/` 服务端接口文档（含 /Quote/Import/Upload 端点） |

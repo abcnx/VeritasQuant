@@ -48,6 +48,14 @@ func main() {
 	}
 	defer pool.Close()
 
+	// 应用数据库迁移（启动时幂等；finv_quote_secu_kline_min 建表）
+	migrateCtx, migrateCancel := context.WithTimeout(ctx, 30*time.Second)
+	if err := database.Migrate(migrateCtx, pool, cfg.MigrationsDir()); err != nil {
+		migrateCancel()
+		log.Fatalf("[finvquant] 数据库迁移失败: %v", err)
+	}
+	migrateCancel()
+
 	// Redis 8 客户端
 	rdb, err := redisclient.NewClient(ctx, cfg)
 	if err != nil {
