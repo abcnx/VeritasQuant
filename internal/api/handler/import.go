@@ -37,6 +37,9 @@ func (h *QuoteImport) Upload(c *gin.Context) {
 	source := c.PostForm("source")
 	upsertMode := c.PostForm("upsert_mode")
 	importedBy := c.PostForm("imported_by")
+	// 登记字段（可选）：市场代码 / 证券代码，用于与文件头部一致性校验
+	formMarketCode := c.PostForm("market_code")
+	formSecuCode := c.PostForm("secu_code")
 	if source == "" {
 		source = "upload"
 	}
@@ -75,6 +78,22 @@ func (h *QuoteImport) Upload(c *gin.Context) {
 	parsed, err := mvsv.Parse(content, file.Filename)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 4001, "message": "MVSV 解析失败: " + err.Error()})
+		return
+	}
+
+	// 登记字段一致性校验：表单填写了市场/证券代码时，必须与文件头部一致
+	if formMarketCode != "" && formMarketCode != parsed.Header.Values["MarketCode"] {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"code": 4001, "message": "表单市场代码与文件头部不一致（表单=" + formMarketCode +
+				"，文件=" + parsed.Header.Values["MarketCode"] + "）",
+		})
+		return
+	}
+	if formSecuCode != "" && formSecuCode != parsed.Header.Values["Code"] {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"code": 4001, "message": "表单证券代码与文件头部不一致（表单=" + formSecuCode +
+				"，文件=" + parsed.Header.Values["Code"] + "）",
+		})
 		return
 	}
 

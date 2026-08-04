@@ -14,6 +14,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `file` | file | ✅ | MVSV-1 行情文件（如 `US_NVDA_Min_V4_2026_2026072907_15000.mvsv`） |
+| `market_code` | string | 可选 | 市场数字代码（登记字段；填写后与文件头部 `MarketCode` 校验一致性） |
+| `secu_code` | string | 可选 | 证券代码（登记字段；填写后与文件头部 `Code` 校验一致性） |
 | `source` | string | 可选 | 数据源名称（默认 `upload`） |
 | `upsert_mode` | string | 可选 | 覆盖模式：`FIELD`（字段级，默认）/ `ROW`（整行覆盖） |
 | `imported_by` | string | 可选 | 导入人标识（默认 `gui`） |

@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 
 const file = ref<File | null>(null)
+const marketCode = ref('')
+const secuCode = ref('')
 const source = ref('')
 const upsertMode = ref('FIELD')
 const confirmChecked = ref(false)
@@ -21,6 +23,10 @@ async function submitImport() {
     error.value = '请选择要上传的 MVSV 文件'
     return
   }
+  if (marketCode.value.trim() && !/^\d+$/.test(marketCode.value.trim())) {
+    error.value = '市场代码必须为数字'
+    return
+  }
   if (!source.value.trim()) {
     error.value = '数据源不能为空'
     return
@@ -32,6 +38,8 @@ async function submitImport() {
 
   const form = new FormData()
   form.append('file', file.value)
+  if (marketCode.value.trim()) form.append('market_code', marketCode.value.trim())
+  if (secuCode.value.trim()) form.append('secu_code', secuCode.value.trim())
   form.append('source', source.value.trim())
   form.append('upsert_mode', upsertMode.value)
   form.append('imported_by', 'gui')
@@ -68,6 +76,24 @@ async function submitImport() {
     </v-card-subtitle>
     <v-card-text>
       <v-form @submit.prevent="submitImport">
+        <v-row>
+          <v-col cols="6">
+            <v-text-field
+              v-model="marketCode"
+              label="市场代码（数字）"
+              placeholder="如: 11（美股）/ 1（上交所）"
+              hint="以文件头部 MarketCode 为准；填写后将校验一致性"
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              v-model="secuCode"
+              label="证券代码"
+              placeholder="如: NVDA / 518880"
+              hint="以文件头部 Code 为准；填写后将校验一致性"
+            />
+          </v-col>
+        </v-row>
         <v-file-input
           label="选择 MVSV 行情文件"
           accept=".mvsv,.txt"
