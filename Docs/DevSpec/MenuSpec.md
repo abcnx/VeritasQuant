@@ -14,7 +14,7 @@
 
 - **新添加的前端视图菜单，必须补充对应的业务菜单介绍文档**，介绍该菜单的业务功能、处理逻辑、使用方法、注意事项等。
 - 文档位置通常在 `Docs/Menu/xxx/XXXX.md`（按业务模块建目录，文档名与菜单/视图名对应）。
-- 参考示例：[`Docs/Menu/Quote/QuoteQuery.md`](../Menu/Quote/QuoteQuery.md)（对应视图 `Web/src/views/QuoteQueryView.vue`）。
+- 参考示例：[`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`](../Menu/HistoryQuote/HistoryQuoteQuery.md)（对应视图 `Web/src/views/QuoteQueryView.vue`）。
 - 菜单文档随视图代码在同一变更中提交，保持「代码 + 文档」同步交付。
 
 ## 3. 文档内容要求

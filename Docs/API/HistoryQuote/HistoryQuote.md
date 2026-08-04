@@ -103,4 +103,4 @@ curl "http://localhost:16001/API/V1/Quote/Query?secu_code=NVDA&date=20260803&per
 
 | 使用方 | 位置 | 说明 |
 |--------|------|------|
-| 历史行情查询菜单 | [`Docs/Menu/Quote/QuoteQuery.md`](../../Menu/Quote/QuoteQuery.md) | 前端 `QuoteQueryView.vue` 调用本接口获取分钟级 K 线（1 日 / 5 日、分页） |
+| 历史行情查询菜单 | [`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`](../../Menu/HistoryQuote/HistoryQuoteQuery.md) | 前端 `QuoteQueryView.vue` 调用本接口获取分钟级 K 线（1 日 / 5 日、分页） |

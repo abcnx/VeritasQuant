@@ -1,8 +1,8 @@
 # 历史行情查询（QuoteQuery）— 菜单业务文档
 
-> 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/Quote/QuoteQuery.md`
+> 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`
 > 对应视图：`Web/src/views/QuoteQueryView.vue`
-> 接口契约：见 [Docs/API/Quote/QuoteQuery.md](../../API/Quote/QuoteQuery.md)
+> 接口契约：见 [Docs/API/HistoryQuote/HistoryQuote.md](../../API/HistoryQuote/HistoryQuote.md)
 
 ## 1. 菜单入口
 
@@ -100,7 +100,7 @@
 
 ## 5. 后端处理逻辑
 
-> 完整接口契约见 [Docs/API/Quote/QuoteQuery.md](../../API/Quote/QuoteQuery.md)，本节为与菜单强相关的处理链路。
+> 完整接口契约见 [Docs/API/HistoryQuote/HistoryQuote.md](../../API/HistoryQuote/HistoryQuote.md)，本节为与菜单强相关的处理链路。
 
 ```
 GET /API/V1/Quote/Query
@@ -146,7 +146,7 @@ GET /API/V1/Quote/Query
 |------|------|
 | 前端视图 | `Web/src/views/QuoteQueryView.vue` |
 | 菜单定义 | `Web/src/App.vue` |
-| 使用的后端接口 | `GET /API/V1/Quote/Query`（[API 文档 `Docs/API/Quote/QuoteQuery.md`](../../API/Quote/QuoteQuery.md)） |
+| 使用的后端接口 | `GET /API/V1/Quote/Query`（[API 文档 `Docs/API/HistoryQuote/HistoryQuote.md`](../../API/HistoryQuote/HistoryQuote.md)） |
 | 后端处理器 | `internal/api/handler/query.go` |
 | 查询服务 | `internal/quote/service.go` |
 | 接口规范 | `Docs/DevSpec/ApiSpec.md` |
