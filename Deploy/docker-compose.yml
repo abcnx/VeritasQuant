@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:16001/api/v1/health/live >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:16001/API/V1/health/live >/dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5

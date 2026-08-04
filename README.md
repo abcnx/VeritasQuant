@@ -9,12 +9,17 @@
 ## 快速开始（Docker）
 
 ```bash
+# 1. 克隆代码（FinvQuant 分支）
+git clone -b FinvQuant https://github.com/ACANX/VeritasQuant.git
+cd VeritasQuant
+
+# 2. 准备环境变量并启动
 cp Deploy/.env.example Deploy/.env   # 按需修改
 docker compose --env-file Deploy/.env up -d
 ```
 
 - 前端控制台：http://localhost:16002
-- 服务端 API：http://localhost:16001/api/v1/health/live
+- 服务端 API：http://localhost:16001/API/V1/health/live
 
 或直接使用 All-in-One 镜像：
 
