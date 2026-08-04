@@ -3,8 +3,9 @@ import { markRaw, ref, type Component } from 'vue'
 
 import DashboardView from './views/DashboardView.vue'
 import QuoteImportView from './views/QuoteImportView.vue'
+import QuoteQueryView from './views/QuoteQueryView.vue'
 
-type ViewName = 'dashboard' | 'quote-import'
+type ViewName = 'dashboard' | 'quote-import' | 'quote-query'
 
 const currentView = ref<ViewName>('dashboard')
 
@@ -12,11 +13,13 @@ const currentView = ref<ViewName>('dashboard')
 const views: Record<ViewName, Component> = {
   'dashboard': markRaw(DashboardView),
   'quote-import': markRaw(QuoteImportView),
+  'quote-query': markRaw(QuoteQueryView),
 }
 
 const menuItems = [
   { key: 'dashboard' as ViewName, title: '仪表盘', icon: 'mdi-view-dashboard' },
   { key: 'quote-import' as ViewName, title: '历史行情数据导入', icon: 'mdi-database-import' },
+  { key: 'quote-query' as ViewName, title: '历史行情查询', icon: 'mdi-chart-candlestick' },
 ]
 
 const drawer = ref(true)

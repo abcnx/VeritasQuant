@@ -37,6 +37,7 @@ func NewRouter(deps *Deps) *gin.Engine {
 		Commit:    deps.Commit,
 	}
 	quoteImport := handler.NewQuoteImport(quote.NewService(deps.Pool))
+	quoteQuery := handler.NewQuoteQuery(quote.NewService(deps.Pool))
 
 	apiGroup := router.Group("/API/V1")
 	{
@@ -44,6 +45,7 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.GET("/health/ready", health.Ready)
 		apiGroup.GET("/version", version.Info)
 		apiGroup.POST("/Quote/Import/Upload", quoteImport.Upload)
+		apiGroup.GET("/Quote/Query", quoteQuery.Query)
 	}
 
 	return router

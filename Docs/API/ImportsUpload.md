@@ -18,6 +18,7 @@
 | `secu_code` | string | 可选 | 证券代码（登记字段；填写后与文件头部 `Code` 校验一致性） |
 | `source` | string | 可选 | 数据源名称（默认 `upload`） |
 | `upsert_mode` | string | 可选 | 覆盖模式：`FIELD`（字段级，默认）/ `ROW`（整行覆盖） |
+| `remark` | string | 可选 | 导入备注（非空时写入每行 `remark` 列） |
 | `imported_by` | string | 可选 | 导入人标识（默认 `gui`） |
 
 ## 响应

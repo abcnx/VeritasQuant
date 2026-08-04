@@ -6,6 +6,7 @@ const marketCode = ref('')
 const secuCode = ref('')
 const source = ref('')
 const upsertMode = ref('FIELD')
+const remark = ref('')
 const confirmChecked = ref(false)
 const importing = ref(false)
 const result = ref<string>('')
@@ -43,6 +44,7 @@ async function submitImport() {
   form.append('source', source.value.trim())
   form.append('upsert_mode', upsertMode.value)
   form.append('imported_by', 'gui')
+  if (remark.value.trim()) form.append('remark', remark.value.trim())
 
   importing.value = true
   try {
@@ -101,6 +103,11 @@ async function submitImport() {
           @change="onFileChange"
         />
         <v-text-field v-model="source" label="数据源" placeholder="如: cn-feed" />
+        <v-text-field
+          v-model="remark"
+          label="备注"
+          placeholder="导入备注（可选，写入行情行 remark 列）"
+        />
         <v-select
           v-model="upsertMode"
           label="覆盖模式"
