@@ -1,7 +1,7 @@
 # FinvExchange — 交易所/市场字典映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvExchange.md`
-> 数据表：`finv_exchange`（迁移文件：[`Deploy/Migrations/V2__finv_exchange.sql`](../../Deploy/Migrations/V2__finv_exchange.sql)）
+> 数据表：`finv_exchange`（表结构：[`Deploy/Migrations/V2__finv_exchange.sql`](../../Deploy/Migrations/V2__finv_exchange.sql)；初始数据：[`Deploy/Migrations/V100__finv_exchange_seed.sql`](../../Deploy/Migrations/V100__finv_exchange_seed.sql)）
 > 用途：交易所/市场编码字典（单一事实来源），覆盖证券 / 期货 / 黄金及贵金属 / 场外 / 期权 / 外汇市场。
 
 ## 1. 表结构
@@ -56,6 +56,7 @@
 
 ## 3. 说明
 
+- **迁移拆分**：表结构（`V2__finv_exchange.sql`）与初始数据（`V100__finv_exchange_seed.sql`）分文件存放；数据种子统一使用 **V100+ 段位**，确保在所有表结构脚本（V1~V99）之后执行，后续新增表结构/变更脚本不受影响。
 - **数据来源**：FT 交易所清单；原始数据中 `exchange_code=19` 存在 `OTC` / `CNOTC` 两条冲突记录，经 ACANX 确认**仅保留 `19 CNOTC 中国场外交易`**，共 22 条。
 - **映射预留**：`ft_list_exchange_code` 字段已建列、当前留空，待 FT 行情源列表编码映射确定后补充（`UPDATE finv_exchange SET ft_list_exchange_code = ... WHERE exchange_code = ...`）。
 - **幂等插入**：初始数据使用 `INSERT ... ON CONFLICT (exchange_code) DO NOTHING`，重复执行不产生重复记录。
