@@ -34,8 +34,9 @@ jobs:
 
       - name: PrepareEmbeddedWebAssets
         run: |
-          # 构建前端产物供 embed（无 node 环境时用最小占位，测试不受影响）
+          # 前端构建产物供 embed（无 node 环境时用最小占位，保证 SPA fallback 测试可运行）
           mkdir -p internal/webui/dist
+          printf '<!doctype html><html><body><div id="app">placeholder</div></body></html>' > internal/webui/dist/index.html
           echo "{}" > internal/webui/dist/placeholder.txt || true
 
       - name: GoVet
