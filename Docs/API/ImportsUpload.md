@@ -1,11 +1,11 @@
-# POST /API/V1/imports/upload — 历史行情文件导入
+# POST /API/V1/Quote/Import/Upload — 历史行情文件导入
 
 上传 MVSV-1 分钟级历史行情文件，服务端解析后**字段级覆盖**导入 PostgreSQL `finv_quote_secu_kline_min` 表（主键 `ts + market_code + secu_code`）。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/imports/upload`
+- **路径**：`/API/V1/Quote/Import/Upload`
 - **内容类型**：`multipart/form-data`
 - **文件大小上限**：50 MiB
 
@@ -71,7 +71,7 @@
 ### cURL
 
 ```bash
-curl -X POST http://localhost:16001/API/V1/imports/upload \
+curl -X POST http://localhost:16001/API/V1/Quote/Import/Upload \
   -F "file=@VeritasQuant/Data/US_NSDQ_NVDA/US_NVDA_Min_V4_2026_2026072907_15000.mvsv" \
   -F "source=cn-feed" \
   -F "upsert_mode=FIELD"
@@ -84,7 +84,7 @@ const form = new FormData()
 form.append('file', file)
 form.append('source', 'cn-feed')
 form.append('upsert_mode', 'FIELD')
-const response = await fetch('/API/V1/imports/upload', { method: 'POST', body: form })
+const response = await fetch('/API/V1/Quote/Import/Upload', { method: 'POST', body: form })
 const body = await response.json()
 ```
 

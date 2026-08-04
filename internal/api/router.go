@@ -43,7 +43,7 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.GET("/health/live", health.Live)
 		apiGroup.GET("/health/ready", health.Ready)
 		apiGroup.GET("/version", version.Info)
-		apiGroup.POST("/imports/upload", quoteImport.Upload)
+		apiGroup.POST("/Quote/Import/Upload", quoteImport.Upload)
 	}
 
 	return router

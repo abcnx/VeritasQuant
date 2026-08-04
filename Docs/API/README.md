@@ -38,4 +38,4 @@
 | GET | `/API/V1/health/live` | 存活探针 |
 | GET | `/API/V1/health/ready` | 就绪探针（PG + Redis） |
 | GET | `/API/V1/version` | 服务端版本信息 |
-| POST | `/API/V1/imports/upload` | 上传 MVSV 历史行情文件并导入 PG（[详细文档](ImportsUpload.md)） |
+| POST | `/API/V1/Quote/Import/Upload` | 上传 MVSV 历史行情文件并导入 PG（[详细文档](ImportsUpload.md)） |

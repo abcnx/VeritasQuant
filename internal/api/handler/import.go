@@ -26,7 +26,7 @@ func NewQuoteImport(service *quote.Service) *QuoteImport {
 	return &QuoteImport{service: service}
 }
 
-// Upload 处理 POST /API/V1/imports/upload：
+// Upload 处理 POST /API/V1/Quote/Import/Upload：
 // multipart 上传 MVSV-1 文件 → 解析 → 字段级覆盖 upsert。
 func (h *QuoteImport) Upload(c *gin.Context) {
 	file, err := c.FormFile("file")
