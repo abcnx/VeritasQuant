@@ -49,7 +49,9 @@ services:
       POSTGRES_DB: ${FINV_PG_DATABASE:-finvquant}
       TZ: ${TZ:-Asia/Shanghai}
     ports:
-      - "127.0.0.1:${FINV_PG_EXPOSE_PORT:-5433}:5432"
+      # PG 端口暴露到宿主机（默认 5432，PG 客户端直接连 localhost:5432；
+      # 如本地已占 5432，可用 FINV_PG_EXPOSE_PORT 改为其他端口）
+      - "127.0.0.1:${FINV_PG_EXPOSE_PORT:-5432}:5432"
     volumes:
       # PG 数据目录映射到 Docker 宿主机文件系统（容器重建/删除不丢数据）
       # 默认：Deploy/pgdata（项目相对目录）；Windows 示例：
