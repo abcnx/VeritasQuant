@@ -10,8 +10,11 @@
 --   - security_type：Stock/ETF/Fund/Futures/StockIndex/Forex/Crypto/Bond/Sector/Structured/Indicator；
 --   - security_name 取富途英文名（eng_name），security_name_cn/full 取中文名（sc_name）；
 --   - currency_type / timezone / tz 按市场推断；init_date 未知统一 20000000 占位；
---   - 与既有 15 条重叠的 usc（GCMain/HXC/NDX）由 ON CONFLICT 幂等跳过；
---   - 幂等插入（ON CONFLICT (usc) DO NOTHING）。
+--   - 与既有数据冲突的行由 ON CONFLICT DO NOTHING 幂等跳过：
+--     usc 冲突（GCMain/HXC/NDX）；(exchange_code, security_code) 唯一约束冲突
+--     （000688↔KC50、899050↔BSE50I、000510↔A500、800000↔HSI、800700↔HSTI，
+--      同一证券在 finv 体系与富途 code 体系下的双记录）；
+--   - 幂等插入（ON CONFLICT DO NOTHING，捕获全部唯一约束冲突）。
 -- 迁移策略：与既有迁移一致，整个 V100009 在一个事务内执行；失败自动回滚。
 -- =====================================================================
 
@@ -524,6 +527,6 @@ VALUES
 ('0828EA', 100, 'Bond', '0828EA', 'GOLDETF', 'GOLDETF', 'GOLDETF', 'USD', 20000000, '+00:00', 'Europe/London'),
 ('USPRL', 100, 'Indicator', 'USPRL', 'FOMC FedWatch Probability of Rate Cut', '美联储FedWatch降息概率', '美联储FedWatch降息概率', 'USD', 20000000, NULL, NULL)
 
-ON CONFLICT (usc) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 COMMIT;
