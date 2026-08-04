@@ -1,7 +1,7 @@
 # FinvSecurity — 证券代码字典映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvSecurity.md`
-> 数据表：`finv_security`（表结构：[`Deploy/Migrations/V5__finv_security.sql`](../../Deploy/Migrations/V5__finv_security.sql)；初始数据：[`Deploy/Migrations/V100002__finv_security_seed.sql`](../../Deploy/Migrations/V100002__finv_security_seed.sql)）
+> 数据表：`finv_security`（表结构：[`Deploy/Migrations/V5__finv_security.sql`](../../Deploy/Migrations/V5__finv_security.sql)；初始数据：[`Deploy/Migrations/V100002__finv_security_seed.sql`](../../Deploy/Migrations/V100002__finv_security_seed.sql)；增量数据：[`Deploy/Migrations/V100009__finv_security_seed_increment.sql`](../../Deploy/Migrations/V100009__finv_security_seed_increment.sql)）
 > 用途：统一证券代码表，将各交易所/市场的源证券代码映射到统一证券代码（usc），关联交易所与计价货币字典。
 
 ## 1. 表结构
@@ -31,7 +31,9 @@
 
 > 说明：MySQL 字段 `currency` / `timezone` 与 JSON 键 `currency_type` / `time_zone` 不一致；`currency_type` 采用 JSON 键名，`timezone` 保持 MySQL 字段命名；`exchange_code` 对齐字典为 INTEGER。
 
-## 2. 数据清单（15 条）
+## 2. 数据清单
+
+> 基础初始数据 15 条（V100002，见下表）；**增量补充 500 条**（V100009，基于 `finv_futu_mapping_security` 的 finv_usc，覆盖港股/美股/A股/期货/外汇/加密货币/债券/基金/板块等，清单见种子脚本）。
 
 | usc | exchange_code | security_type | security_code | security_name | security_name_cn | security_name_full | currency_type | init_date | timezone | tz |
 |-----|--------------:|---------------|---------------|---------------|------------------|--------------------|---------------|-----------|-----------|-----|
@@ -54,6 +56,7 @@
 ## 3. 说明
 
 - **统一证券代码（usc）**：全局唯一标识，跨交易所/市场稳定不变；源证券代码（`security_code`）可能因交易所规则变化，usc 不随其变化。
+- **增量数据（V100009）**：`usc` / `security_code` 取自 `finv_futu_mapping_security.finv_usc`（富途 code 经转换规则）；`exchange_code` 按 [FinvExchange.md](FinvExchange.md) 映射（SEHK→21、US→30、SSE→11、SZSE→12、BSE→13、COMEX/NYMEX/CME/CBOT→33、CBOE→34、OSE→51、JP→52、SGX→53、FX→100）；无对应交易所（加密货币/债券/基金/板块等）暂以 `100` 兜底，待 finv_exchange 扩展后修正；`security_type` 扩展至 Stock/ETF/Fund/Futures/StockIndex/Forex/Crypto/Bond/Sector/Structured/Indicator；`init_date` 未知统一 `20000000` 占位；与既有 15 条重叠的 usc（GCMain/HXC/NDX）由 `ON CONFLICT (usc) DO NOTHING` 幂等跳过。
 - **关联字典**：`exchange_code` → [FinvExchange.md](FinvExchange.md)（交易所/市场）；`currency_type` → [FinvCurrency.md](FinvCurrency.md)（货币/汇率）。关联不建物理外键，由程序层控制（项目惯例）。
 - **init_date 占位**：`20000000` 表示未上市或未知（MySQL 默认值，PG 侧保留）。
 - **审计字段**：`gmt_create` / `gmt_update` 与既有表规范一致，`gmt_update` 由 `vq_set_gmt_update()` 触发器自动维护。
