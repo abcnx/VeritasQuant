@@ -2,7 +2,7 @@
 
 > 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/Quote/QuoteQuery.md`
 > 对应视图：`Web/src/views/QuoteQueryView.vue`
-> 接口契约：见 [Docs/API/QuoteQuery.md](../../API/QuoteQuery.md)
+> 接口契约：见 [Docs/API/Quote/QuoteQuery.md](../../API/Quote/QuoteQuery.md)
 
 ## 1. 菜单入口
 
@@ -100,7 +100,7 @@
 
 ## 5. 后端处理逻辑
 
-> 完整接口契约见 [Docs/API/QuoteQuery.md](../../API/QuoteQuery.md)，本节为与菜单强相关的处理链路。
+> 完整接口契约见 [Docs/API/Quote/QuoteQuery.md](../../API/Quote/QuoteQuery.md)，本节为与菜单强相关的处理链路。
 
 ```
 GET /API/V1/Quote/Query
@@ -146,7 +146,7 @@ GET /API/V1/Quote/Query
 |------|------|
 | 前端视图 | `Web/src/views/QuoteQueryView.vue` |
 | 菜单定义 | `Web/src/App.vue` |
-| API 契约 | `Docs/API/QuoteQuery.md` |
+| API 契约 | `Docs/API/Quote/QuoteQuery.md` |
 | 后端处理器 | `internal/api/handler/query.go` |
 | 查询服务 | `internal/quote/service.go` |
 | 接口规范 | `Docs/DevSpec/ApiSpec.md` |
