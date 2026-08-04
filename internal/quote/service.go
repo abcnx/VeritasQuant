@@ -4,6 +4,7 @@ package quote
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,24 +35,99 @@ type UpsertResult struct {
 	Mode        string `json:"mode"`
 }
 
-// Service 历史行情导入服务。
+// Service 历史行情导入与查询服务。
 type Service struct {
 	pool *pgxpool.Pool
 }
 
-// NewService 创建导入服务。
+// NewService 创建服务。
 func NewService(pool *pgxpool.Pool) *Service {
 	return &Service{pool: pool}
 }
 
+// Bar 查询返回的分钟级 K 线（涨跌额/涨跌幅由 close 与 prev_close 计算）。
+type Bar struct {
+	Time      int      `json:"time"`       // 交易时间 hhmmss
+	Open      *string  `json:"open"`       // 开盘价
+	High      *string  `json:"high"`       // 最高价
+	Low       *string  `json:"low"`        // 最低价
+	Close     *string  `json:"close"`      // 收盘价
+	Volume    *int64   `json:"volume"`     // 成交量（有值才展示）
+	Turnover  *string  `json:"turnover"`   // 成交额（有值才展示）
+	Change    *string  `json:"change"`     // 涨跌额（close - prev_close）
+	ChangePct *string  `json:"change_pct"` // 涨跌幅 %
+	Remark    *string  `json:"remark"`     // 备注
+}
+
+// QueryBars 按证券代码 + 交易日期查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
+func (s *Service) QueryBars(ctx context.Context, secuCode string, date int, period string) ([]Bar, error) {
+	if secuCode == "" {
+		return nil, fmt.Errorf("secu_code 不能为空")
+	}
+	if date <= 0 {
+		return nil, fmt.Errorf("date 必须为有效的交易日期（yyyymmdd）")
+	}
+	// 周期目前仅支持 1 分钟（Min），其他周期暂不支持
+	if period != "" && period != "Min" {
+		return nil, fmt.Errorf("周期 %s 暂不支持，目前仅支持 Min（1 分钟）", period)
+	}
+
+	rows, err := s.pool.Query(ctx, `
+SELECT "time", open, high, low, close, volume, turnover, prev_close, remark
+FROM finv_quote_secu_kline_min
+WHERE secu_code = $1 AND date = $2
+ORDER BY ts ASC`, secuCode, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var bars []Bar
+	for rows.Next() {
+		var bar Bar
+		var prevClose *string
+		if err := rows.Scan(&bar.Time, &bar.Open, &bar.High, &bar.Low, &bar.Close,
+			&bar.Volume, &bar.Turnover, &prevClose, &bar.Remark); err != nil {
+			return nil, err
+		}
+		bar.Change, bar.ChangePct = computeChange(bar.Close, prevClose)
+		bars = append(bars, bar)
+	}
+	return bars, rows.Err()
+}
+
+// computeChange 计算涨跌额与涨跌幅（close - prev_close）。
+func computeChange(closeVal, prevClose *string) (*string, *string) {
+	if closeVal == nil || prevClose == nil {
+		return nil, nil
+	}
+	closeNum, err1 := strconv.ParseFloat(*closeVal, 64)
+	prevNum, err2 := strconv.ParseFloat(*prevClose, 64)
+	if err1 != nil || err2 != nil || prevNum == 0 {
+		return nil, nil
+	}
+	change := closeNum - prevNum
+	changePct := change / prevNum * 100
+	changeStr := fmt.Sprintf("%.4f", change)
+	pctStr := fmt.Sprintf("%.4f", changePct)
+	return &changeStr, &pctStr
+}
+
 // ImportRows 将解析后的行情行批量 upsert 到 finv_quote_secu_kline_min。
 // 字段级覆盖（FIELD）或整行覆盖（ROW）；发生覆盖时写入修正审计日志。
-func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMode, importedBy, source string) (*UpsertResult, error) {
+// remark 为表单备注：非空时写入每行的 remark 列。
+func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMode, importedBy, source, remark string) (*UpsertResult, error) {
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("无可导入的行情记录")
 	}
 	if mode == "" {
 		mode = UpsertModeField
+	}
+	if remark != "" {
+		for index := range rows {
+			value := remark
+			rows[index].Remark = &value
+		}
 	}
 	batchID := fmt.Sprintf("import_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
 

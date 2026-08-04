@@ -37,6 +37,7 @@ func (h *QuoteImport) Upload(c *gin.Context) {
 	source := c.PostForm("source")
 	upsertMode := c.PostForm("upsert_mode")
 	importedBy := c.PostForm("imported_by")
+	remark := c.PostForm("remark")
 	// 登记字段（可选）：市场代码 / 证券代码，用于与文件头部一致性校验
 	formMarketCode := c.PostForm("market_code")
 	formSecuCode := c.PostForm("secu_code")
@@ -100,7 +101,7 @@ func (h *QuoteImport) Upload(c *gin.Context) {
 	ctx, cancel := contextWithTimeout(c, 120*time.Second)
 	defer cancel()
 
-	result, err := h.service.ImportRows(ctx, parsed.Rows, quote.UpsertMode(upsertMode), importedBy, source)
+	result, err := h.service.ImportRows(ctx, parsed.Rows, quote.UpsertMode(upsertMode), importedBy, source, remark)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 2006, "message": "导入失败: " + err.Error()})
 		return
