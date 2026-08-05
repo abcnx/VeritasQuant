@@ -44,7 +44,7 @@ VALUES
     (31,    'NSDQ',   'NSDQ',   '纳斯达克证券交易所',              '纳斯达克',               '证券',       'USA',    'USD'),
     (32,    'NYSE',   'NYSE',   '纽约证券交易所',                  '纽交所',                 '证券',       'USA',    'USD'),
     (33,    'COMEX',  'COMEX',  '芝加哥商品期货交易所',            '芝商所',                 '期货',       'USA',    'USD'),
-    (34,    'COBE',   'COBE',   '芝加哥期权交易所',                '芝加哥期权交易所',       '期权',       'USA',    'USD'),
+    (34,    'CBOE',   'CBOE',   '芝加哥期权交易所',                '芝加哥期权交易所',       '期权',       'USA',    'USD'),
     (35,    'PINK',   'PINK',   '粉红单交易市场',                  '粉单市场',               '场外',       'USA',    'USD'),
     (36,    'NYMEX',  'NYMEX',  'New York Mercantile Exchange',   '纽约商品交易所',         '期货',       'USA',    'USD'),
     (37,    'CME',    'CME',    'Chicago Mercantile Exchange',    '芝加哥商业交易所',       '期货',       'USA',    'USD'),
