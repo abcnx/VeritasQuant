@@ -17,6 +17,19 @@ interface SecurityOption {
   security_name_cn: string
 }
 
+// finv_exchange 交易所字典（用于数字后展示中文名称，如 31 [纳斯达克]）
+interface ExchangeDict {
+  exchange_code: number
+  exchange_name: string
+  exchange_abbr_cn: string
+}
+
+// finv_market 市场字典（用于数字后展示中文名称，如 1315 [债券市场]）
+interface MarketDict {
+  market_code: number
+  market_name: string
+}
+
 interface SecurityDetail {
   usc: string
   exchange_code: number
@@ -55,6 +68,24 @@ const strategy = ref<'first' | 'file'>('first')
 
 // 证券下拉字典
 const securityOptions = ref<SecurityOption[]>([])
+// 交易所/市场字典映射（code → 中文名称，加载自 List 接口）
+const exchangeDict = ref<Map<number, ExchangeDict>>(new Map())
+const marketDict = ref<Map<number, MarketDict>>(new Map())
+
+/** 交易所数字 → “31 [纳斯达克]”；未命中时仅返回数字 */
+function fmtExchange(code: number): string {
+  const hit = exchangeDict.value.get(code)
+  if (!hit) return String(code)
+  const name = hit.exchange_abbr_cn || hit.exchange_name
+  return name ? `${code} [${name}]` : String(code)
+}
+
+/** 市场数字 → “1315 [债券市场]”；未命中时仅返回数字 */
+function fmtMarket(code: number): string {
+  const hit = marketDict.value.get(code)
+  if (!hit) return String(code)
+  return hit.market_name ? `${code} [${hit.market_name}]` : String(code)
+}
 const secuItems = computed(() =>
   securityOptions.value.map((o) => ({
     title: `${o.usc}:${o.security_name_cn}`,
@@ -87,6 +118,17 @@ onMounted(async () => {
     securityOptions.value = data.list ?? []
   } catch {
     securityOptions.value = []
+  }
+  // 加载交易所/市场字典（含禁用，供数字后中文名称展示）
+  try {
+    const [ex, mk] = await Promise.all([
+      apiGet<{ list: ExchangeDict[] }>('/Meta/FinvQuant/Metadata/Exchange/List?page=1&page_size=500'),
+      apiGet<{ list: MarketDict[] }>('/Meta/FinvQuant/Metadata/Market/List?page=1&page_size=500'),
+    ])
+    exchangeDict.value = new Map((ex.list ?? []).map((e) => [e.exchange_code, e]))
+    marketDict.value = new Map((mk.list ?? []).map((m) => [m.market_code, m]))
+  } catch {
+    // 字典加载失败不影响主流程，名称展示降级为仅数字
   }
 })
 
@@ -372,8 +414,8 @@ async function submitImport() {
                 <v-col cols="6" md="3"><strong>名称：</strong>{{ pickedSec.security_name_cn }}</v-col>
                 <v-col cols="6" md="3"><strong>源代码：</strong>{{ pickedSec.security_code }}</v-col>
                 <v-col cols="6" md="3"><strong>类型：</strong>{{ pickedSec.security_type }}</v-col>
-                <v-col cols="6" md="3"><strong>交易所：</strong>{{ pickedSec.exchange_code }}</v-col>
-                <v-col cols="6" md="3"><strong>市场：</strong>{{ pickedSec.market_code || '未维护' }}</v-col>
+                <v-col cols="6" md="3"><strong>交易所：</strong>{{ fmtExchange(pickedSec.exchange_code) }}</v-col>
+                <v-col cols="6" md="3"><strong>市场：</strong>{{ pickedSec.market_code ? fmtMarket(pickedSec.market_code) : '未维护' }}</v-col>
                 <v-col cols="6" md="3"><strong>币种：</strong>{{ pickedSec.currency_type }}</v-col>
                 <v-col cols="6" md="3"><strong>状态：</strong>
                   <v-chip :color="pickedSec.flag_enable === '1' ? 'success' : 'error'" size="small">
@@ -433,8 +475,8 @@ async function submitImport() {
                 <v-col cols="6" md="3"><strong>名称：</strong>{{ matchedSec.security_name_cn }}</v-col>
                 <v-col cols="6" md="3"><strong>源代码：</strong>{{ matchedSec.security_code }}</v-col>
                 <v-col cols="6" md="3"><strong>类型：</strong>{{ matchedSec.security_type }}</v-col>
-                <v-col cols="6" md="3"><strong>交易所：</strong>{{ matchedSec.exchange_code }}</v-col>
-                <v-col cols="6" md="3"><strong>市场：</strong>{{ matchedSec.market_code || '未维护' }}</v-col>
+                <v-col cols="6" md="3"><strong>交易所：</strong>{{ fmtExchange(matchedSec.exchange_code) }}</v-col>
+                <v-col cols="6" md="3"><strong>市场：</strong>{{ matchedSec.market_code ? fmtMarket(matchedSec.market_code) : '未维护' }}</v-col>
                 <v-col cols="6" md="3"><strong>币种：</strong>{{ matchedSec.currency_type }}</v-col>
               </v-row>
             </v-card-text>
