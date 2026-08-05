@@ -268,6 +268,7 @@ type CreateRunRequest struct {
 	Period          string     `json:"period"`           // Min/Hour/Day（缺省取策略 data.period）
 	ReportPrecision string     `json:"report_precision"` // Min/Hour/Day（缺省 Day）
 	Options         RunOptions `json:"options"`
+	CreatedBy       string     `json:"created_by"` // 创建人（可选，缺省 console，接入认证后为登录账号）
 }
 
 // Environment 回测环境表行（回测/模拟盘/仿真/实盘环境 × 地区/市场）。
@@ -360,6 +361,7 @@ type Trade struct {
 	PositionAfter float64 `json:"position_after"`
 	CashAfter     float64 `json:"cash_after"`
 	Signal        string  `json:"signal"`
+	Remark        string  `json:"remark"` // 备注（与触发原因一致，V26 remark 列落值）
 }
 
 // Cashflow 资金流水明细（需求⑨-1）。
@@ -399,7 +401,10 @@ type PositionLog struct {
 	Remark         string  `json:"remark"`
 }
 
-// EventTrace 交易事件追踪（需求⑨-3）：触发原因/成交结果/委托耗时/未成交原因。
+// EventTrace 交易事件追踪（需求⑨-3 / FR-10）：触发原因/成交结果/委托下单时间/委托耗时/事件存活时间/未成交原因。
+// 八项登记信息：①触发原因（trigger_reason）②触发时间（trigger_ts）③成交结果与否（exec_status）
+// ④结束时间（exec_ts）⑤委托下单时间（order_ts）⑥成交耗时（latency_bars/latency_sec）
+// ⑦事件存活时间（alive_sec=结束时间-触发时间）⑧未能成交的原因（reject_reason）。
 type EventTrace struct {
 	EventID       int64   `json:"event_id"`
 	RunID         string  `json:"run_id"`
@@ -409,12 +414,16 @@ type EventTrace struct {
 	TriggerTS     int64   `json:"trigger_ts"`
 	TriggerDate   int     `json:"trigger_date"`
 	TriggerTime   int     `json:"trigger_time"`
+	OrderTS       int64   `json:"order_ts"` // ⑤委托下单时间（信号确认后立即下单，= 触发时点）
+	OrderDate     int     `json:"order_date"`
+	OrderTime     int     `json:"order_time"`
 	ExecStatus    string  `json:"exec_status"`
 	ExecTS        int64   `json:"exec_ts"`
 	ExecDate      int     `json:"exec_date"`
 	ExecTime      int     `json:"exec_time"`
 	LatencyBars   int     `json:"latency_bars"`
 	LatencySec    int64   `json:"latency_sec"`
+	AliveSec      int64   `json:"alive_sec"` // ⑦事件存活时间（结束时间-触发时间，秒）
 	RejectReason  string  `json:"reject_reason"`
 	Price         float64 `json:"price"`
 	Qty           float64 `json:"qty"`

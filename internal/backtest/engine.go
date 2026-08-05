@@ -95,33 +95,14 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		initialCapital = *e.cfg.Options.InitialCapital
 	}
 
-	commission := acc.CommissionRate
-	slippage := acc.SlippagePct
-	// 环境成本基准（覆盖链：环境 > 任务 > 策略 > 账户）
-	if e.cfg.Environment != nil && e.cfg.Environment.Config.Cost != nil {
-		if e.cfg.Environment.Config.Cost.CommissionRate > 0 {
-			commission = e.cfg.Environment.Config.Cost.CommissionRate
-		}
-		if e.cfg.Environment.Config.Cost.SlippagePct > 0 {
-			slippage = e.cfg.Environment.Config.Cost.SlippagePct
-		}
-	}
-	if def.Cost != nil {
-		if def.Cost.CommissionRate > 0 {
-			commission = def.Cost.CommissionRate
-		}
-		if def.Cost.SlippagePct > 0 {
-			slippage = def.Cost.SlippagePct
-		}
-	}
-	if e.cfg.Options.CommissionRate != nil {
-		commission = *e.cfg.Options.CommissionRate
-	}
-	if e.cfg.Options.SlippagePct != nil {
-		slippage = *e.cfg.Options.SlippagePct
-	}
+	// 成本覆盖链（环境 > 任务 > 策略 > 账户）：环境（市场/交易所成本基准）优先级最高。
+	// 抽取为独立函数，见 resolveCosts 及其单元测试。
+	commission, slippage := resolveCosts(e.cfg)
 
-	// 环境交易时段（hhmmss 列表，自适应不同市场交易时段）
+	// 环境交易规则（FR-14 引擎自适应）：T+N 交收 / 涨跌停 / 合约乘数 / 撮合模式 / 币种
+	envRules := e.environmentRules() // 见 engine_rules.go
+
+	// 环境交易时段（hhmmss 列表，自适应不同市场交易时段；支持跨午夜时段如 210000-023000）
 	envSessions := [][2]string{}
 	if e.cfg.Environment != nil {
 		for _, s := range e.cfg.Environment.Config.TradingSessions {
@@ -136,11 +117,38 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		for _, se := range envSessions {
 			start, _ := strconv.Atoi(se[0])
 			end, _ := strconv.Atoi(se[1])
-			if timeInt >= start && timeInt <= end {
-				return true
+			if start <= end {
+				if timeInt >= start && timeInt <= end {
+					return true
+				}
+			} else {
+				// 跨午夜时段（如夜盘 210000-023000）
+				if timeInt >= start || timeInt <= end {
+					return true
+				}
 			}
 		}
 		return false
+	}
+
+	// 涨跌停参考价（前一交易日收盘）与限价预计算：limitPrices[i].up/down=0 表示无限制
+	limitPrices := make([]barLimit, len(bars))
+	prevDayClose := 0.0
+	for i, b := range bars {
+		if i > 0 && bars[i-1].Date != b.Date {
+			prevDayClose = bars[i-1].Close
+		}
+		if prevDayClose <= 0 && i > 0 {
+			prevDayClose = bars[i-1].Close
+		}
+		if prevDayClose > 0 {
+			if envRules.limitUpPct > 0 {
+				limitPrices[i].up = prevDayClose * (1 + envRules.limitUpPct/100)
+			}
+			if envRules.limitDownPct > 0 {
+				limitPrices[i].down = prevDayClose * (1 - envRules.limitDownPct/100)
+			}
+		}
 	}
 
 	maxTradesPerDay := def.Risk.MaxTradesPerDay
@@ -189,6 +197,10 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	evalCtx := &EvalContext{Fields: fields, Indicators: indicators}
 
 	fillMode := def.Data.FillMode
+	// 撮合模式覆盖链：环境 config.fill_mode > 策略 data.fill_mode（缺省 NEXT_BAR_OPEN）
+	if envRules.fillMode != "" {
+		fillMode = envRules.fillMode
+	}
 	if fillMode == "" {
 		fillMode = FillNextBarOpen
 	}
@@ -275,13 +287,15 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		// ---------- 1. 执行上一 bar 收盘产生的挂单（当前 bar 开盘价成交，事件追踪更新） ----------
 		if pendingOrder != nil {
 			execPrice := b.Open * (1 + pendingOrder.slippageSign*slippage/100)
-			tradeSeq, executed := e.fill(pendingOrder.action, execPrice, b, i, state, dc, &trades,
+			tradeSeq, executed, rejectReason := e.fill(pendingOrder.action, execPrice, b, i, state, dc, &trades,
 				&cashflows, &positionLogs, commission, &totalFee, signalDetail,
-				&grossProfit, &grossLoss, &winCount, &lossCount, pendingOrder.signal, maxTradesPerDay)
+				&grossProfit, &grossLoss, &winCount, &lossCount, pendingOrder.signal,
+				maxTradesPerDay, limitPrices)
 			ev := &eventTraces[pendingOrder.eventIdx]
 			ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
 			ev.LatencyBars = i - pendingOrder.triggerBar
 			ev.LatencySec = b.TS - ev.TriggerTS
+			ev.AliveSec = b.TS - ev.TriggerTS
 			ev.Price = round6(execPrice)
 			if executed {
 				dc.lastTradeBar = i
@@ -290,38 +304,51 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 				ev.TradeSeq = int(tradeSeq)
 			} else {
 				ev.ExecStatus = "REJECTED"
-				ev.RejectReason = "资金不足（可用资金无法覆盖委托金额）"
+				ev.RejectReason = rejectReason
 			}
 			pendingOrder = nil
 		}
 
 		// ---------- 2. 风控（止损/止盈，基于当前 bar 高低价内触达，intrabar 直接成交） ----------
 		if state.position > 0 && (def.Risk.StopLossPct > 0 || def.Risk.TakeProfitPct > 0) {
-			stopPrice := state.avgCost * (1 - def.Risk.StopLossPct/100)
-			tpPrice := state.avgCost * (1 + def.Risk.TakeProfitPct/100)
-			exitPrice := 0.0
-			reason := ""
-			if def.Risk.StopLossPct > 0 && b.Low <= stopPrice {
-				exitPrice = stopPrice
-				reason = "止损"
-			} else if def.Risk.TakeProfitPct > 0 && b.High >= tpPrice {
-				exitPrice = tpPrice
-				reason = "止盈"
-			}
-			if exitPrice > 0 {
-				tradeSeq, executed := e.fill(ActionSell, exitPrice, b, i, state, dc, &trades,
-					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
-					&grossProfit, &grossLoss, &winCount, &lossCount, reason, maxTradesPerDay)
-				if executed {
-					dc.lastTradeBar = i
-					// 风控事件：触发即成交（latency=0）
+			// T+N 交收限制：当日买入的持仓在 T+N 内不可卖出（含风控平仓）
+			if envRules.tPlus > 0 && state.entryDate == b.Date {
+				if def.Risk.StopLossPct > 0 && b.Low <= state.avgCost*(1-def.Risk.StopLossPct/100) ||
+					def.Risk.TakeProfitPct > 0 && b.High >= state.avgCost*(1+def.Risk.TakeProfitPct/100) {
+					e.recordReject(&eventTraces, ActionSell, "止损/止盈", b, fmt.Sprintf("T+%d 交收限制（当日买入不可卖出）", envRules.tPlus))
+				}
+			} else {
+				stopPrice := state.avgCost * (1 - def.Risk.StopLossPct/100)
+				tpPrice := state.avgCost * (1 + def.Risk.TakeProfitPct/100)
+				exitPrice := 0.0
+				reason := ""
+				if def.Risk.StopLossPct > 0 && b.Low <= stopPrice {
+					exitPrice = stopPrice
+					reason = "止损"
+				} else if def.Risk.TakeProfitPct > 0 && b.High >= tpPrice {
+					exitPrice = tpPrice
+					reason = "止盈"
+				}
+				if exitPrice > 0 {
+					tradeSeq, executed, rejectReason := e.fill(ActionSell, exitPrice, b, i, state, dc, &trades,
+						&cashflows, &positionLogs, commission, &totalFee, signalDetail,
+						&grossProfit, &grossLoss, &winCount, &lossCount, reason,
+						maxTradesPerDay, limitPrices)
+					// 风控事件：触发即成交（latency=0，intrabar 限价单语义）
 					evIdx := e.newEvent(&eventTraces, ActionSell, reason, b)
 					ev := &eventTraces[evIdx]
-					ev.ExecStatus = "FILLED"
 					ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
+					ev.AliveSec = 0
 					ev.Price = round6(exitPrice)
-					ev.Qty = trades[len(trades)-1].Qty
-					ev.TradeSeq = int(tradeSeq)
+					if executed {
+						dc.lastTradeBar = i
+						ev.ExecStatus = "FILLED"
+						ev.Qty = trades[len(trades)-1].Qty
+						ev.TradeSeq = int(tradeSeq)
+					} else {
+						ev.ExecStatus = "REJECTED"
+						ev.RejectReason = rejectReason
+					}
 				}
 			}
 		}
@@ -355,6 +382,29 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在环境交易时段内")
 			} else if reason := dc.ruleRejectReason(def.Rules.Buy, "buy", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, reason)
+			} else if fillMode == FillCurrentClose {
+				// CURRENT_CLOSE 撮合：当前 bar 收盘价立即成交（近似撮合，非默认）
+				dc.ruleTrades["buy"]++
+				dc.ruleRunTrades["buy"]++
+				fillPrice := b.Close * (1 + slippage/100)
+				tradeSeq, executed, rejectReason := e.fill(ActionBuy, fillPrice, b, i, state, dc, &trades,
+					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
+					&grossProfit, &grossLoss, &winCount, &lossCount, "买入信号",
+					maxTradesPerDay, limitPrices)
+				evIdx := e.newEvent(&eventTraces, ActionBuy, "买入信号", b)
+				ev := &eventTraces[evIdx]
+				ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
+				ev.LatencyBars, ev.LatencySec, ev.AliveSec = 0, 0, 0
+				ev.Price = round6(fillPrice)
+				if executed {
+					dc.lastTradeBar = i
+					ev.ExecStatus = "FILLED"
+					ev.Qty = trades[len(trades)-1].Qty
+					ev.TradeSeq = int(tradeSeq)
+				} else {
+					ev.ExecStatus = "REJECTED"
+					ev.RejectReason = rejectReason
+				}
 			} else {
 				dc.ruleTrades["buy"]++
 				dc.ruleRunTrades["buy"]++
@@ -369,8 +419,33 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在允许交易时间点内")
 			} else if !inSession {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在环境交易时段内")
+			} else if envRules.tPlus > 0 && state.entryDate == b.Date {
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, fmt.Sprintf("T+%d 交收限制（当日买入不可卖出）", envRules.tPlus))
 			} else if reason := dc.ruleRejectReason(def.Rules.Sell, "sell", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, reason)
+			} else if fillMode == FillCurrentClose {
+				// CURRENT_CLOSE 撮合：当前 bar 收盘价立即成交
+				dc.ruleTrades["sell"]++
+				dc.ruleRunTrades["sell"]++
+				fillPrice := b.Close * (1 - slippage/100)
+				tradeSeq, executed, rejectReason := e.fill(ActionSell, fillPrice, b, i, state, dc, &trades,
+					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
+					&grossProfit, &grossLoss, &winCount, &lossCount, "卖出信号",
+					maxTradesPerDay, limitPrices)
+				evIdx := e.newEvent(&eventTraces, ActionSell, "卖出信号", b)
+				ev := &eventTraces[evIdx]
+				ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
+				ev.LatencyBars, ev.LatencySec, ev.AliveSec = 0, 0, 0
+				ev.Price = round6(fillPrice)
+				if executed {
+					dc.lastTradeBar = i
+					ev.ExecStatus = "FILLED"
+					ev.Qty = trades[len(trades)-1].Qty
+					ev.TradeSeq = int(tradeSeq)
+				} else {
+					ev.ExecStatus = "REJECTED"
+					ev.RejectReason = rejectReason
+				}
 			} else {
 				dc.ruleTrades["sell"]++
 				dc.ruleRunTrades["sell"]++
@@ -379,8 +454,8 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 			}
 		}
 
-		// ---------- 5. 账户市值快照（持仓换算现金） ----------
-		positionValue := state.position * b.Close
+		// ---------- 5. 账户市值快照（持仓换算现金，合约乘数自适应） ----------
+		positionValue := state.position * b.Close * envRules.multiplier
 		equity := state.cash + positionValue
 		if state.position > 0 {
 			if positionValue > maxInvested {
@@ -410,12 +485,12 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 			curBucket = key
 		} else if key != curBucket {
 			last := bars[i-1]
-			curEquity := equityAt(last, state)
+			curEquity := equityAt(last, state, envRules.multiplier)
 			dd := 0.0
 			if peakEquity > 0 {
 				dd = (peakEquity - curEquity) / peakEquity * 100
 			}
-			equityPoints = append(equityPoints, buildPoint(len(equityPoints)+1, last, state, initialCapital, curEquity, dd))
+			equityPoints = append(equityPoints, buildPoint(len(equityPoints)+1, last, state, initialCapital, curEquity, dd, envRules.multiplier))
 			periodReturns = append(periodReturns, pctChange(prevBucketEquity, curEquity))
 			prevBucketEquity = curEquity
 			curBucket = key
@@ -430,12 +505,12 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	// 最后一个桶收尾
 	if len(bars) > 0 {
 		last := bars[len(bars)-1]
-		curEquity := equityAt(last, state)
+		curEquity := equityAt(last, state, envRules.multiplier)
 		dd := 0.0
 		if peakEquity > 0 {
 			dd = (peakEquity - curEquity) / peakEquity * 100
 		}
-		equityPoints = append(equityPoints, buildPoint(len(equityPoints)+1, last, state, initialCapital, curEquity, dd))
+		equityPoints = append(equityPoints, buildPoint(len(equityPoints)+1, last, state, initialCapital, curEquity, dd, envRules.multiplier))
 		periodReturns = append(periodReturns, pctChange(prevBucketEquity, curEquity))
 	}
 
@@ -444,11 +519,16 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		ev := &eventTraces[pendingOrder.eventIdx]
 		ev.ExecStatus = "EXPIRED"
 		ev.RejectReason = "回测结束，委托未执行（后续无 K 线可成交）"
+		ev.ExecTS = bars[len(bars)-1].TS
+		ev.AliveSec = bars[len(bars)-1].TS - ev.TriggerTS
 		pendingOrder = nil
 	}
 
 	// 期末总资产（持仓按最后收盘价换算现金）
-	finalEquity := equityAt(bars[len(bars)-1], state)
+	finalEquity := equityAt(bars[len(bars)-1], state, envRules.multiplier)
+
+	// Min 精度 + 全量区间的曲线数据量保护：报告点超上限时均匀降采样（汇总指标不受影响）
+	equityPoints = downsampleEquity(equityPoints, maxEquityPoints)
 
 	// 汇总报告
 	report := buildReport(e.cfg, bars, initialCapital, finalEquity, trades,
@@ -487,7 +567,7 @@ func (dc *dayCounters) ruleRejectReason(rule RuleDef, key string, maxTradesPerDa
 	return ""
 }
 
-// newEvent 登记一个交易事件（初始 PENDING），返回事件索引。
+// newEvent 登记一个交易事件（初始 PENDING，含委托下单时间）。返回事件索引。
 func (e *Engine) newEvent(eventTraces *[]EventTrace, action, reason string, b Bar) int {
 	ev := EventTrace{
 		Seq:           len(*eventTraces) + 1,
@@ -496,13 +576,19 @@ func (e *Engine) newEvent(eventTraces *[]EventTrace, action, reason string, b Ba
 		TriggerTS:     b.TS,
 		TriggerDate:   b.Date,
 		TriggerTime:   b.Time,
-		ExecStatus:    "PENDING",
+		// ⑤委托下单时间：信号确认后立即下单（NEXT_BAR_OPEN 下挂单至下一 bar 开盘执行）
+		OrderTS:     b.TS,
+		OrderDate:   b.Date,
+		OrderTime:   b.Time,
+		ExecStatus:  "PENDING",
+		AliveSec:    0,
+		RejectReason: "",
 	}
 	*eventTraces = append(*eventTraces, ev)
 	return len(*eventTraces) - 1
 }
 
-// recordReject 登记一个被拒绝的交易事件（触发但未成交，登记原因）。
+// recordReject 登记一个被拒绝的交易事件（触发但未成交，登记原因；含下单时间与存活时间）。
 func (e *Engine) recordReject(eventTraces *[]EventTrace, action, reason string, b Bar, rejectReason string) {
 	ev := EventTrace{
 		Seq:           len(*eventTraces) + 1,
@@ -511,23 +597,33 @@ func (e *Engine) recordReject(eventTraces *[]EventTrace, action, reason string, 
 		TriggerTS:     b.TS,
 		TriggerDate:   b.Date,
 		TriggerTime:   b.Time,
+		OrderTS:       b.TS,
+		OrderDate:     b.Date,
+		OrderTime:     b.Time,
 		ExecStatus:    "REJECTED",
 		ExecTS:        b.TS,
 		ExecDate:      b.Date,
 		ExecTime:      b.Time,
+		AliveSec:      0, // 触发即拒绝，存活时间 0
 		RejectReason:  rejectReason,
 	}
 	*eventTraces = append(*eventTraces, ev)
 }
 
-// equityAt 计算 bar 收盘口径总资产。
-func equityAt(b Bar, state *accountState) float64 {
-	return state.cash + state.position*b.Close
+// equityAt 计算 bar 收盘口径总资产（合约乘数自适应：持仓市值 = 数量 × 收盘价 × 乘数）。
+func equityAt(b Bar, state *accountState, multiplier float64) float64 {
+	if multiplier <= 0 {
+		multiplier = 1
+	}
+	return state.cash + state.position*b.Close*multiplier
 }
 
 // buildPoint 构造报告点。
-func buildPoint(seq int, b Bar, state *accountState, initialCapital float64, equity, dd float64) EquityPoint {
-	positionValue := state.position * b.Close
+func buildPoint(seq int, b Bar, state *accountState, initialCapital float64, equity, dd, multiplier float64) EquityPoint {
+	if multiplier <= 0 {
+		multiplier = 1
+	}
+	positionValue := state.position * b.Close * multiplier
 	profit := equity - initialCapital
 	roi := 0.0
 	if initialCapital > 0 {
@@ -558,11 +654,12 @@ type pendingOrderT struct {
 }
 
 // fill 执行一笔成交（买入/卖出），更新账户、成交记录、资金流水与持仓明细。
-// 返回引擎内成交序号（tradeSeq，明细表 trade_id 关联用）与是否成交。
+// 返回引擎内成交序号（tradeSeq，明细表 trade_id 关联用）、是否成交与未成交原因（供事件追踪登记）。
 func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *accountState, dc *dayCounters,
 	trades *[]Trade, cashflows *[]Cashflow, positionLogs *[]PositionLog,
 	commission float64, totalFee *float64, signalDetail map[string]int,
-	grossProfit, grossLoss *float64, winCount, lossCount *int, signal string, maxTradesPerDay int) (int64, bool) {
+	grossProfit, grossLoss *float64, winCount, lossCount *int, signal string,
+	maxTradesPerDay int, limitPrices []barLimit) (int64, bool, string) {
 
 	def := e.cfg.Definition
 	acc := e.cfg.Account
@@ -574,6 +671,16 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		}
 	}
 
+	// 涨跌停限制（基于前一交易日收盘价，环境 trading_rules.limit_up_pct/limit_down_pct）
+	if barIdx >= 0 && barIdx < len(limitPrices) {
+		if action == ActionBuy && limitPrices[barIdx].up > 0 && price >= limitPrices[barIdx].up {
+			return 0, false, "涨停限制（价格触及涨停价，无法买入）"
+		}
+		if action == ActionSell && limitPrices[barIdx].down > 0 && price <= limitPrices[barIdx].down {
+			return 0, false, "跌停限制（价格触及跌停价，无法卖出）"
+		}
+	}
+
 	// 跨日重置每日计数
 	if dc.curDate != b.Date {
 		dc.curDate = b.Date
@@ -582,17 +689,20 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 	}
 	// 全局每日笔数限制
 	if maxTradesPerDay > 0 && dc.trades >= maxTradesPerDay {
-		return 0, false
+		return 0, false, fmt.Sprintf("超过每日最大成交笔数（%d 笔）", maxTradesPerDay)
 	}
 	// 相邻交易最小间隔
 	if def.Risk.MinIntervalBars > 0 && dc.lastTradeBar >= 0 && barIdx-dc.lastTradeBar < def.Risk.MinIntervalBars {
-		return 0, false
+		return 0, false, fmt.Sprintf("未满足最小交易间隔（%d bar）", def.Risk.MinIntervalBars)
 	}
 
 	marginRate := acc.MarginRate
 	if marginRate <= 0 {
 		marginRate = 1
 	}
+	// 合约乘数（环境 trading_rules.contract_multiplier，股票/ETF 默认 1；期货如 COMEX 黄金=100）
+	multiplier := e.environmentRules().multiplier
+
 	qty := 0.0
 	profit := 0.0
 	fee := 0.0
@@ -603,11 +713,11 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 
 	switch action {
 	case ActionBuy:
-		qty = e.buyQuantity(b, state, price, def.Rules.Buy, commission, marginRate)
+		qty = e.buyQuantity(b, state, price, def.Rules.Buy, commission, marginRate, multiplier)
 		if qty <= 0 {
-			return 0, false
+			return 0, false, "资金不足（可用资金无法覆盖委托金额）"
 		}
-		amount = qty * price
+		amount = qty * price * multiplier
 		fee = amount * commission
 		// 资金流水：扣款 + 手续费（FUTURES 模式为保证金占用）
 		cashBeforePay := state.cash
@@ -626,11 +736,11 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		state.position = newPos
 		state.entryDate = b.Date
 	case ActionSell:
-		qty = state.position
+		qty = e.sellQuantity(b, state, price, def.Rules.Sell, multiplier)
 		if qty <= 0 {
-			return 0, false
+			return 0, false, "无持仓可卖"
 		}
-		amount = qty * price
+		amount = qty * price * multiplier
 		fee = amount * commission
 		cashBeforeRecv := state.cash
 		if acc.MarginMode == "FUTURES" {
@@ -643,7 +753,7 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 			appendCashflow(cashflows, b, "SELL_RECEIVE", amount, cashBeforeRecv, state.cash+fee, seq, signal)
 			appendCashflow(cashflows, b, "FEE", -fee, state.cash+fee, state.cash, seq, signal)
 		}
-		profit = (price - state.avgCost) * qty
+		profit = (price - state.avgCost) * qty * multiplier
 		if profit > 0 {
 			*grossProfit += profit
 			*winCount++
@@ -672,6 +782,7 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		PositionAfter: round6(state.position),
 		CashAfter:     round6(state.cash),
 		Signal:        signal,
+		Remark:        signal, // 备注列与触发原因一致（评审：V26 remark 列需有值）
 		Seq:           int(seq),
 	}
 	*trades = append(*trades, trade)
@@ -705,7 +816,7 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		TradeSeq:       int(seq),
 		Remark:         signal,
 	})
-	return seq, true
+	return seq, true, ""
 }
 
 // appendCashflow 追加资金流水（需求⑨-1）。
@@ -724,10 +835,14 @@ func appendCashflow(cashflows *[]Cashflow, b Bar, flowType string, amount, cashB
 	})
 }
 
-// buyQuantity 计算买入数量。
-func (e *Engine) buyQuantity(b Bar, state *accountState, price float64, rule RuleDef, commission, marginRate float64) float64 {
+// buyQuantity 计算买入数量（合约乘数自适应：可用资金 / (价格 × 乘数 × 保证金率)）。
+func (e *Engine) buyQuantity(b Bar, state *accountState, price float64, rule RuleDef, commission, marginRate, multiplier float64) float64 {
+	if multiplier <= 0 {
+		multiplier = 1
+	}
 	ruleType := rule.QuantityType
-	if ruleType == "" {
+	if ruleType == "" || ruleType == "ALL" {
+		// ALL 为清仓语义（仅卖出方向）；买入侧缺省/误用均按全额买入处理
 		ruleType = "ALL_IN"
 	}
 	available := state.cash
@@ -740,7 +855,7 @@ func (e *Engine) buyQuantity(b Bar, state *accountState, price float64, rule Rul
 		if pct <= 0 || pct > 100 {
 			pct = 100
 		}
-		return floorQty(available * pct / 100 / (price * marginRate))
+		return floorQty(available * pct / 100 / (price * multiplier * marginRate))
 	case "AMOUNT":
 		amt := rule.Quantity
 		if amt <= 0 {
@@ -749,18 +864,66 @@ func (e *Engine) buyQuantity(b Bar, state *accountState, price float64, rule Rul
 		if amt > available {
 			amt = available
 		}
-		return floorQty(amt / (price * marginRate))
+		return floorQty(amt / (price * multiplier * marginRate))
 	case "FIXED":
 		qty := rule.Quantity
 		if qty <= 0 {
 			return 0
 		}
-		if qty*price*marginRate > state.cash {
-			qty = floorQty(available / (price * marginRate))
+		if qty*price*multiplier*marginRate > state.cash {
+			qty = floorQty(available / (price * multiplier * marginRate))
 		}
 		return floorQty(qty)
 	default: // ALL_IN
-		return floorQty(available / (price * marginRate))
+		return floorQty(available / (price * multiplier * marginRate))
+	}
+}
+
+// sellQuantity 计算卖出数量（FR-4 数量模式在卖出方向同样生效，缺省清仓 ALL）。
+func (e *Engine) sellQuantity(b Bar, state *accountState, price float64, rule RuleDef, multiplier float64) float64 {
+	if multiplier <= 0 {
+		multiplier = 1
+	}
+	ruleType := rule.QuantityType
+	if ruleType == "" || ruleType == "ALL_IN" {
+		// ALL_IN 为全额买入语义；卖出侧缺省/误用均按清仓处理
+		ruleType = "ALL"
+	}
+	pos := state.position
+	if pos <= 0 {
+		return 0
+	}
+	switch ruleType {
+	case "FIXED":
+		qty := rule.Quantity
+		if qty <= 0 {
+			return 0
+		}
+		if qty > pos {
+			qty = pos
+		}
+		return floorQty(qty)
+	case "PERCENT":
+		pct := rule.Quantity
+		if pct <= 0 || pct > 100 {
+			pct = 100
+		}
+		return floorQty(pos * pct / 100)
+	case "AMOUNT":
+		amt := rule.Quantity
+		if amt <= 0 {
+			amt = pos * price * multiplier
+		}
+		qty := amt / (price * multiplier)
+		if qty > pos {
+			qty = pos
+		}
+		if qty <= 0 {
+			return 0
+		}
+		return floorQty(qty)
+	default: // ALL 清仓
+		return pos
 	}
 }
 
@@ -768,6 +931,9 @@ func (e *Engine) buyQuantity(b Bar, state *accountState, price float64, rule Rul
 func floorQty(q float64) float64 {
 	return math.Floor(q*1e6) / 1e6
 }
+
+// profitFactorInfSentinel 全盈利无亏损时盈亏比的大数哨兵（round6 会把 +Inf 归零，前端失真）。
+const profitFactorInfSentinel = 999999
 
 // round6 保留 6 位小数。
 func round6(v float64) float64 {
@@ -829,8 +995,9 @@ func AggregateBars(bars []Bar, period string) ([]Bar, error) {
 					last.Low = b.Low
 				}
 				last.Close = b.Close
-				last.TS = b.TS
-				last.Time = b.Time
+				last.TS = b.TS // 时间轴取周期结束（净值曲线时间点）
+				// last.Time 保持周期首根 bar 时间：交易时段判定用周期起点，
+				// 避免 Hour/Day 聚合 bar 因取最后一根分钟 bar 时间而误判非交易时段
 				last.Volume += b.Volume
 				last.Turnover += b.Turnover
 			} else {
@@ -900,7 +1067,9 @@ func buildReport(cfg EngineConfig, bars []Bar, initialCapital, finalEquity float
 	if grossLoss > 0 {
 		profitFactor = grossProfit / grossLoss
 	} else if grossProfit > 0 {
-		profitFactor = math.Inf(1)
+		// 全盈利无亏损：盈亏比 = +Inf。round6 会将 +Inf 归零导致前端显示失真，
+		// 改用大数哨兵（999999）表示“无穷”，前端可显示为 ∞。
+		profitFactor = profitFactorInfSentinel
 	}
 
 	avgInvested := 0.0
@@ -982,9 +1151,13 @@ func buildEventStats(eventTraces []EventTrace) *EventStats {
 		switch ev.ExecStatus {
 		case "FILLED":
 			es.FilledCount++
-			filled++
-			latencyBarsSum += ev.LatencyBars
-			latencySecSum += int(ev.LatencySec)
+			// 平均委托耗时只统计信号驱动订单（买入/卖出信号）：止损/止盈为 intrabar
+			// 限价单语义（latency=0），计入会拉低均值造成失真（评审意见）。
+			if ev.TriggerReason == "买入信号" || ev.TriggerReason == "卖出信号" {
+				filled++
+				latencyBarsSum += ev.LatencyBars
+				latencySecSum += int(ev.LatencySec)
+			}
 		case "REJECTED":
 			es.RejectedCount++
 			es.RejectReasons[ev.RejectReason]++

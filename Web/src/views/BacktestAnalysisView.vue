@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import * as echarts from 'echarts'
-import { apiGet } from '../api'
+import { apiGet, apiPost } from '../api'
+import { fmtDate, fmtNum, fmtPct, fmtTime, statusColor } from '../utils'
 
 const route = useRoute()
 
@@ -98,6 +99,7 @@ interface TradeRow {
   position_after: number
   cash_after: number
   signal: string
+  remark?: string
 }
 
 interface CashflowRow {
@@ -136,11 +138,14 @@ interface EventTraceRow {
   trigger_reason: string
   trigger_date: number
   trigger_time: number
+  order_date?: number
+  order_time?: number
   exec_status: string
   exec_date: number
   exec_time: number
   latency_bars: number
   latency_sec: number
+  alive_sec?: number
   reject_reason: string
   price: number
   qty: number
@@ -156,6 +161,8 @@ const secuFilter = ref('')
 const keyword = ref('')
 const loading = ref(false)
 const error = ref('')
+const cancelling = ref('')
+let pollTimer: ReturnType<typeof setInterval> | null = null
 
 const currentRun = ref<RunRow | null>(null)
 const report = ref<Report | null>(null)
@@ -176,24 +183,9 @@ const roiChartEl = ref<HTMLDivElement | null>(null)
 const profitChartEl = ref<HTMLDivElement | null>(null)
 const positionChartEl = ref<HTMLDivElement | null>(null)
 
-function fmtDate(d: number): string {
+function fmtDateTimeLocal(d: number | undefined, t: number | undefined): string {
   if (!d) return '-'
-  const s = String(d)
-  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
-}
-
-function fmtNum(v: number | undefined | null, digits = 2): string {
-  if (v === undefined || v === null || Number.isNaN(v)) return '-'
-  return Number(v).toLocaleString('en-US', { maximumFractionDigits: digits })
-}
-
-function fmtPct(v: number | undefined | null): string {
-  if (v === undefined || v === null || Number.isNaN(v)) return '-'
-  return `${Number(v).toFixed(2)}%`
-}
-
-function statusColor(s: string): string {
-  return { PENDING: 'grey', RUNNING: 'primary', SUCCEEDED: 'success', FAILED: 'error', CANCELLED: 'warning' }[s] ?? 'grey'
+  return `${fmtDate(d)} ${fmtTime(t)}`
 }
 
 // ⑨ 链路追踪展示辅助
@@ -243,6 +235,44 @@ async function loadRuns() {
   } finally {
     loading.value = false
   }
+  syncPolling()
+}
+
+// 轮询：存在执行中/待执行任务时每 5s 自动刷新列表与进度（评审：原实现仅手动刷新）
+function syncPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+  if (runs.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')) {
+    pollTimer = setInterval(async () => {
+      try {
+        const params = new URLSearchParams({ page: String(page.value), page_size: String(pageSize.value) })
+        if (statusFilter.value) params.set('status', statusFilter.value)
+        if (secuFilter.value) params.set('secu_code', secuFilter.value)
+        if (keyword.value) params.set('keyword', keyword.value)
+        const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
+        runs.value = data.list ?? []
+        runTotal.value = data.total ?? 0
+        if (!runs.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')) syncPolling()
+      } catch {
+        // 轮询失败静默，等待下一次
+      }
+    }, 5000)
+  }
+}
+
+async function cancelRun(run: RunRow) {
+  if (!confirm(`确认取消回测任务 #${run.run_no}？`)) return
+  cancelling.value = run.run_id
+  try {
+    await apiPost('/Meta/FinvQuant/Backtest/Run/Cancel', { run_id: run.run_id })
+    await loadRuns()
+  } catch (e) {
+    error.value = (e as Error).message
+  } finally {
+    cancelling.value = ''
+  }
 }
 
 async function openRun(run: RunRow) {
@@ -286,8 +316,12 @@ function xLabels(): string[] {
   const precision = report.value?.report_precision ?? 'Day'
   return equity.value.map((p) => {
     if (precision === 'Min') {
-      const t = String(p.time).padStart(6, '0')
-      return `${fmtDate(p.date)} ${t.slice(0, 2)}:${t.slice(2, 4)}`
+      return `${fmtDate(p.date)} ${fmtTime(p.time)}`
+    }
+    if (precision === 'Hour') {
+      // 小时精度显示 日期 + 小时（评审：原实现只显示日期）
+      const h = Math.floor((p.time || 0) / 10000)
+      return `${fmtDate(p.date)} ${String(h).padStart(2, '0')}时`
     }
     return fmtDate(p.date)
   })
@@ -371,18 +405,25 @@ async function loadTradesPage() {
   }
 }
 
-watch(tradePage, loadTradesPage)
-watch(tradePageSize, loadTradesPage)
+// 成交表翻页只由 v-data-table-server 的 @update:options 触发一次（评审：原实现 watch 与
+// update:options 双触发导致重复请求），此处不再挂 watch。
 
 onMounted(async () => {
   await loadRuns()
   const q = route.query.run_id as string | undefined
   if (q) {
-    const target = runs.value.find((r) => r.run_id === q)
-    if (target) await openRun(target)
-    else {
-      // 翻页查找（简化：仅当第一页找到；否则提示从列表选择）
-      error.value = '目标任务不在当前列表，请从列表中选择（可按状态/标的筛选）'
+    // 深链：优先用 Run/Get 直接加载任务（评审：原实现只查第一页，深链经常失败）
+    try {
+      const target = await apiGet<RunRow>(`/Meta/FinvQuant/Backtest/Run/Get?run_id=${encodeURIComponent(q)}`)
+      if (target?.status === 'SUCCEEDED') {
+        await openRun(target)
+      } else {
+        error.value = `任务当前状态为 ${target?.status ?? '未知'}，仅 SUCCEEDED 任务可查看报告`
+      }
+    } catch (e) {
+      const listTarget = runs.value.find((r) => r.run_id === q)
+      if (listTarget) await openRun(listTarget)
+      else error.value = '目标任务不在当前列表，请从列表中选择（可按状态/标的/关键字过滤）'
     }
   }
   window.addEventListener('resize', resizeCharts)
@@ -391,6 +432,10 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeCharts)
   disposeCharts()
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
 })
 </script>
 
@@ -416,6 +461,8 @@ onBeforeUnmount(() => {
             ]" density="compact" hide-details class="mb-2" @update:model-value="loadRuns" />
             <v-text-field v-model="secuFilter" label="标的过滤" density="compact" hide-details class="mb-2"
               @keyup.enter="loadRuns" @blur="loadRuns" />
+            <v-text-field v-model="keyword" label="关键字过滤（策略/账户/任务号）" density="compact" hide-details
+              class="mb-2" clearable @keyup.enter="loadRuns" @blur="loadRuns" />
           </v-card-text>
           <v-list v-if="runs.length" max-height="70vh" class="overflow-y-auto">
             <v-list-item v-for="r in runs" :key="r.run_id" :active="currentRun?.run_id === r.run_id"
@@ -433,6 +480,9 @@ onBeforeUnmount(() => {
               </v-list-item-subtitle>
               <template #append>
                 <v-chip size="x-small" :color="statusColor(r.status)">{{ r.status }}</v-chip>
+                <v-btn v-if="r.status === 'PENDING' || r.status === 'RUNNING'" size="x-small" variant="text"
+                  color="warning" icon="mdi-stop-circle-outline" :loading="cancelling === r.run_id"
+                  title="取消任务" @click.stop="cancelRun(r)" />
               </template>
             </v-list-item>
           </v-list>
@@ -658,6 +708,7 @@ onBeforeUnmount(() => {
                     { title: '盈亏', key: 'profit', width: 110 },
                     { title: '持仓后', key: 'position_after', width: 100 },
                     { title: '信号', key: 'signal' },
+                    { title: '备注', key: 'remark', width: 110 },
                   ]" :items="trades" :items-length="tradeTotal" item-value="trade_id"
                   @update:options="loadTradesPage">
                   <template #item.timeText="{ item }">
@@ -672,6 +723,9 @@ onBeforeUnmount(() => {
                     <span :class="item.profit > 0 ? 'text-success' : item.profit < 0 ? 'text-error' : ''">
                       {{ fmtNum(item.profit) }}
                     </span>
+                  </template>
+                  <template #item.remark="{ item }">
+                    <span class="text-caption">{{ item.remark || '-' }}</span>
                   </template>
                 </v-data-table-server>
               </v-window-item>
@@ -731,7 +785,7 @@ onBeforeUnmount(() => {
               <v-window-item value="eventTraces">
                 <v-table density="compact">
                   <thead>
-                    <tr><th>序号</th><th>方向</th><th>触发原因</th><th>触发时间</th><th>结果</th><th>成交时间</th><th>委托耗时</th><th>未成交原因</th><th>关联成交</th></tr>
+                    <tr><th>序号</th><th>方向</th><th>触发原因</th><th>触发时间</th><th>委托下单时间</th><th>结果</th><th>成交时间</th><th>委托耗时</th><th>存活时间</th><th>未成交原因</th><th>关联成交</th></tr>
                   </thead>
                   <tbody>
                     <tr v-for="ev in eventTraces" :key="ev.event_id">
@@ -740,16 +794,18 @@ onBeforeUnmount(() => {
                         <v-chip size="x-small" :color="ev.action === 'BUY' ? 'red' : 'green'">{{ ev.action === 'BUY' ? '买入' : '卖出' }}</v-chip>
                       </td>
                       <td>{{ ev.trigger_reason }}</td>
-                      <td>{{ fmtDate(ev.trigger_date) }} {{ String(ev.trigger_time).padStart(6, '0').slice(0, 2) }}:{{ String(ev.trigger_time).padStart(6, '0').slice(2, 4) }}</td>
+                      <td>{{ fmtDateTimeLocal(ev.trigger_date, ev.trigger_time) }}</td>
+                      <td>{{ fmtDateTimeLocal(ev.order_date, ev.order_time) }}</td>
                       <td>
                         <v-chip size="x-small" :color="execStatusColor(ev.exec_status)">{{ execStatusName(ev.exec_status) }}</v-chip>
                       </td>
-                      <td>{{ ev.exec_status === 'FILLED' ? fmtDate(ev.exec_date) + ' ' + String(ev.exec_time).padStart(6, '0').slice(0, 2) + ':' + String(ev.exec_time).padStart(6, '0').slice(2, 4) : '-' }}</td>
+                      <td>{{ ev.exec_status === 'FILLED' ? fmtDateTimeLocal(ev.exec_date, ev.exec_time) : '-' }}</td>
                       <td>{{ ev.exec_status === 'FILLED' ? ev.latency_bars + ' bar / ' + ev.latency_sec + 's' : '-' }}</td>
+                      <td>{{ ev.exec_status !== 'PENDING' ? ev.alive_sec + 's' : '-' }}</td>
                       <td class="text-error text-caption">{{ ev.reject_reason || '-' }}</td>
                       <td>{{ ev.trade_id ? '#' + ev.trade_id : '-' }}</td>
                     </tr>
-                    <tr v-if="!eventTraces.length"><td colspan="9" class="text-center text-medium-emphasis py-4">暂无事件追踪记录</td></tr>
+                    <tr v-if="!eventTraces.length"><td colspan="11" class="text-center text-medium-emphasis py-4">暂无事件追踪记录</td></tr>
                   </tbody>
                 </v-table>
               </v-window-item>

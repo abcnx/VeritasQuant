@@ -21,14 +21,22 @@ import (
 //   - 内置函数：
 //       cross_up(a, b)     a 上穿 b（a[i]>b[i] 且 a[i-1]<=b[i-1]）
 //       cross_down(a, b)   a 下穿 b
-//       ref(id, n)         n 根 bar 前的值（n>=0）
+//       ref(id, n)         n 根 bar 前的值（n>=0，编译期要求 n 为非负常量，运行期 n<0 返回 NaN）
 //       highest(id, n)     最近 n 根（含当前）最大值
 //       lowest(id, n)      最近 n 根（含当前）最小值
 //       abs(x)             绝对值
 //   - 括号
 //
 // 顶层表达式必须求值为布尔（供买卖信号使用）。
+//
+// 安全约束（无未来函数承诺）：
+//   - ref/highest/lowest 的偏移参数 n 必须 >= 0（词法不支持负数字面量，但算术可构造负数，
+//     如 ref(close, 0-5)）；编译期对常量参数做下界校验，运行期对动态值再做 n<0 防御（返回 NaN）；
+//   - 表达式嵌套深度受限（maxExprDepth=64），防止深递归导致栈溢出。
 // ---------------------------------------------------------------------
+
+// maxExprDepth 表达式 AST 最大嵌套深度（防递归栈溢出）。
+const maxExprDepth = 64
 
 // exprNode AST 节点。
 type exprNode interface{}
@@ -183,7 +191,7 @@ func parseExpr(src string) (exprNode, error) {
 		return nil, err
 	}
 	p := &parser{toks: toks}
-	node, err := p.parseOr()
+	node, err := p.parseOrDepth(0)
 	if err != nil {
 		return nil, err
 	}
@@ -193,17 +201,18 @@ func parseExpr(src string) (exprNode, error) {
 	return node, nil
 }
 
-func (p *parser) peek() token { return p.toks[p.pos] }
-func (p *parser) next() token { t := p.toks[p.pos]; p.pos++; return t }
-
-func (p *parser) parseOr() (exprNode, error) {
-	left, err := p.parseAnd()
+// parseOrDepth 带深度限制的 parseOr。所有递归下降入口统一走深度计数。
+func (p *parser) parseOrDepth(depth int) (exprNode, error) {
+	if depth > maxExprDepth {
+		return nil, fmt.Errorf("表达式嵌套深度超过上限 %d（防栈溢出）", maxExprDepth)
+	}
+	left, err := p.parseAndDepth(depth)
 	if err != nil {
 		return nil, err
 	}
 	for p.peek().kind == tokOr {
 		op := p.next()
-		right, err := p.parseAnd()
+		right, err := p.parseAndDepth(depth)
 		if err != nil {
 			return nil, err
 		}
@@ -212,14 +221,17 @@ func (p *parser) parseOr() (exprNode, error) {
 	return left, nil
 }
 
-func (p *parser) parseAnd() (exprNode, error) {
-	left, err := p.parseNot()
+func (p *parser) parseAndDepth(depth int) (exprNode, error) {
+	if depth > maxExprDepth {
+		return nil, fmt.Errorf("表达式嵌套深度超过上限 %d（防栈溢出）", maxExprDepth)
+	}
+	left, err := p.parseNotDepth(depth)
 	if err != nil {
 		return nil, err
 	}
 	for p.peek().kind == tokAnd {
 		op := p.next()
-		right, err := p.parseNot()
+		right, err := p.parseNotDepth(depth)
 		if err != nil {
 			return nil, err
 		}
@@ -228,20 +240,23 @@ func (p *parser) parseAnd() (exprNode, error) {
 	return left, nil
 }
 
-func (p *parser) parseNot() (exprNode, error) {
+func (p *parser) parseNotDepth(depth int) (exprNode, error) {
+	if depth > maxExprDepth {
+		return nil, fmt.Errorf("表达式嵌套深度超过上限 %d（防栈溢出）", maxExprDepth)
+	}
 	if p.peek().kind == tokNot {
 		p.next()
-		node, err := p.parseNot()
+		node, err := p.parseNotDepth(depth)
 		if err != nil {
 			return nil, err
 		}
 		return &unaryNode{op: "NOT", node: node}, nil
 	}
-	return p.parseComparison()
+	return p.parseComparisonDepth(depth)
 }
 
-func (p *parser) parseComparison() (exprNode, error) {
-	left, err := p.parseAdditive()
+func (p *parser) parseComparisonDepth(depth int) (exprNode, error) {
+	left, err := p.parseAdditiveDepth(depth)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +264,7 @@ func (p *parser) parseComparison() (exprNode, error) {
 		op := p.peek().text
 		if op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=" {
 			p.next()
-			right, err := p.parseAdditive()
+			right, err := p.parseAdditiveDepth(depth)
 			if err != nil {
 				return nil, err
 			}
@@ -259,14 +274,14 @@ func (p *parser) parseComparison() (exprNode, error) {
 	return left, nil
 }
 
-func (p *parser) parseAdditive() (exprNode, error) {
-	left, err := p.parseMultiplicative()
+func (p *parser) parseAdditiveDepth(depth int) (exprNode, error) {
+	left, err := p.parseMultiplicativeDepth(depth)
 	if err != nil {
 		return nil, err
 	}
 	for p.peek().kind == tokOp && (p.peek().text == "+" || p.peek().text == "-") {
 		op := p.next()
-		right, err := p.parseMultiplicative()
+		right, err := p.parseMultiplicativeDepth(depth)
 		if err != nil {
 			return nil, err
 		}
@@ -275,14 +290,14 @@ func (p *parser) parseAdditive() (exprNode, error) {
 	return left, nil
 }
 
-func (p *parser) parseMultiplicative() (exprNode, error) {
-	left, err := p.parsePrimary()
+func (p *parser) parseMultiplicativeDepth(depth int) (exprNode, error) {
+	left, err := p.parsePrimaryDepth(depth)
 	if err != nil {
 		return nil, err
 	}
 	for p.peek().kind == tokOp && (p.peek().text == "*" || p.peek().text == "/") {
 		op := p.next()
-		right, err := p.parsePrimary()
+		right, err := p.parsePrimaryDepth(depth)
 		if err != nil {
 			return nil, err
 		}
@@ -291,7 +306,10 @@ func (p *parser) parseMultiplicative() (exprNode, error) {
 	return left, nil
 }
 
-func (p *parser) parsePrimary() (exprNode, error) {
+func (p *parser) parsePrimaryDepth(depth int) (exprNode, error) {
+	if depth > maxExprDepth {
+		return nil, fmt.Errorf("表达式嵌套深度超过上限 %d（防栈溢出）", maxExprDepth)
+	}
 	t := p.next()
 	switch t.kind {
 	case tokNumber:
@@ -302,7 +320,7 @@ func (p *parser) parsePrimary() (exprNode, error) {
 			call := &callNode{name: t.text}
 			if p.peek().kind != tokRParen {
 				for {
-					arg, err := p.parseOr()
+					arg, err := p.parseOrDepth(depth + 1)
 					if err != nil {
 						return nil, err
 					}
@@ -322,7 +340,7 @@ func (p *parser) parsePrimary() (exprNode, error) {
 		}
 		return &identNode{name: t.text}, nil
 	case tokLParen:
-		node, err := p.parseOr()
+		node, err := p.parseOrDepth(depth + 1)
 		if err != nil {
 			return nil, err
 		}
@@ -334,6 +352,9 @@ func (p *parser) parsePrimary() (exprNode, error) {
 	}
 	return nil, fmt.Errorf("意外的 token %q", t.text)
 }
+
+func (p *parser) peek() token { return p.toks[p.pos] }
+func (p *parser) next() token { t := p.toks[p.pos]; p.pos++; return t }
 
 // ---------------------------------------------------------------------
 // 求值
@@ -437,6 +458,10 @@ func evalCallNum(call *callNode, ctx *EvalContext) (float64, error) {
 		if err != nil {
 			return 0, err
 		}
+		// 无未来函数硬约束：n<0（含算术构造的负数，如 0-5）时视为非法，返回 NaN
+		if n < 0 {
+			return math.NaN(), nil
+		}
 		s, ok := ctx.series(id)
 		if !ok {
 			return 0, fmt.Errorf("ref: 未知标识符 %q", id)
@@ -457,6 +482,10 @@ func evalCallNum(call *callNode, ctx *EvalContext) (float64, error) {
 		n, err := evalIntArg(call.args[1], ctx)
 		if err != nil {
 			return 0, err
+		}
+		// 无未来函数硬约束：n<1 视为非法（含算术构造的负数），返回 NaN
+		if n < 1 {
+			return math.NaN(), nil
 		}
 		s, ok := ctx.series(id)
 		if !ok {
@@ -633,7 +662,32 @@ var knownFunctions = map[string][2]int{
 	"abs":        {1, 1},
 }
 
-// validateAST 校验 AST：函数名与参数个数合法性（编译期拦截，避免运行期才报错）。
+// constIntValue 若节点为数值常量（含一元负号与括号包裹）则返回其整数值。
+func constIntValue(node exprNode) (int, bool) {
+	switch n := node.(type) {
+	case *numNode:
+		return int(n.value), true
+	case *unaryNode:
+		if n.op == "-" {
+			v, ok := constIntValue(n.node)
+			return -v, ok
+		}
+	case *binaryNode:
+		if n.op == "-" {
+			l, ok1 := constIntValue(n.left)
+			r, ok2 := constIntValue(n.right)
+			if ok1 && ok2 {
+				return l - r, true
+			}
+		}
+	}
+	return 0, false
+}
+
+// validateAST 校验 AST：
+//  1. 函数名与参数个数合法性（编译期拦截，避免运行期才报错）；
+//  2. ref/highest/lowest 第二参数若为常量则必须 >= 0（防前视：算术可构造负数，如 ref(close, 0-5)）；
+//  3. 收集全部标识符引用（供信号表达式标识符交叉校验，见 collectIdentifiers）。
 func validateAST(node exprNode) error {
 	switch n := node.(type) {
 	case *binaryNode:
@@ -644,12 +698,19 @@ func validateAST(node exprNode) error {
 	case *unaryNode:
 		return validateAST(n.node)
 	case *callNode:
-		bounds, ok := knownFunctions[strings.ToLower(n.name)]
+		name := strings.ToLower(n.name)
+		bounds, ok := knownFunctions[name]
 		if !ok {
 			return fmt.Errorf("未知函数 %q（支持: cross_up/cross_down/ref/highest/lowest/abs）", n.name)
 		}
 		if len(n.args) < bounds[0] || len(n.args) > bounds[1] {
 			return fmt.Errorf("函数 %s 需要 %d 个参数，实际 %d", n.name, bounds[0], len(n.args))
+		}
+		// 前视漏洞防护：偏移类函数第二参数若为编译期常量，必须 >= 0
+		if name == "ref" || name == "highest" || name == "lowest" {
+			if v, isConst := constIntValue(n.args[1]); isConst && v < 0 {
+				return fmt.Errorf("函数 %s 的偏移参数 n 必须 >= 0（无未来函数约束），当前为 %d", n.name, v)
+			}
 		}
 		for _, arg := range n.args {
 			if err := validateAST(arg); err != nil {
@@ -660,8 +721,26 @@ func validateAST(node exprNode) error {
 	return nil
 }
 
-// CompileExpr 编译表达式（校验语法与函数），返回可直接求值的闭包。
-func CompileExpr(src string) (func(ctx *EvalContext) (bool, error), error) {
+// collectIdentifiers 收集表达式中引用的全部标识符（指标 id / 字段名）。
+// 供保存策略时与 indicators 声明 + 字段白名单交叉校验（拦“指标名写错”）。
+func collectIdentifiers(node exprNode, out map[string]bool) {
+	switch n := node.(type) {
+	case *identNode:
+		out[n.name] = true
+	case *binaryNode:
+		collectIdentifiers(n.left, out)
+		collectIdentifiers(n.right, out)
+	case *unaryNode:
+		collectIdentifiers(n.node, out)
+	case *callNode:
+		for _, arg := range n.args {
+			collectIdentifiers(arg, out)
+		}
+	}
+}
+
+// compileExprAST 编译表达式：语法校验 + AST 静态校验（函数/参数/偏移常量/深度）。
+func compileExprAST(src string) (exprNode, error) {
 	node, err := parseExpr(src)
 	if err != nil {
 		return nil, fmt.Errorf("信号表达式语法错误: %w", err)
@@ -669,7 +748,27 @@ func CompileExpr(src string) (func(ctx *EvalContext) (bool, error), error) {
 	if err := validateAST(node); err != nil {
 		return nil, fmt.Errorf("信号表达式错误: %w", err)
 	}
+	return node, nil
+}
+
+// CompileExpr 编译表达式（校验语法、函数、偏移常量与深度），返回可直接求值的闭包。
+func CompileExpr(src string) (func(ctx *EvalContext) (bool, error), error) {
+	node, err := compileExprAST(src)
+	if err != nil {
+		return nil, err
+	}
 	return func(ctx *EvalContext) (bool, error) {
 		return evalBool(node, ctx)
 	}, nil
+}
+
+// CompileExprIdentifiers 编译表达式并返回引用的标识符集合（供保存期交叉校验）。
+func CompileExprIdentifiers(src string) (map[string]bool, error) {
+	node, err := compileExprAST(src)
+	if err != nil {
+		return nil, err
+	}
+	ids := map[string]bool{}
+	collectIdentifiers(node, ids)
+	return ids, nil
 }

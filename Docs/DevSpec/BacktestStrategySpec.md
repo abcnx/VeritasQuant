@@ -105,23 +105,26 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 - **内置函数**：
   - `cross_up(a, b)`：a 上穿 b（`a[i]>b[i]` 且 `a[i-1]<=b[i-1]`）；
   - `cross_down(a, b)`：a 下穿 b；
-  - `ref(id, n)`：n 根 bar 前的值（n≥0）；
-  - `highest(id, n)` / `lowest(id, n)`：最近 n 根（含当前）最大/最小值；
+  - `ref(id, n)`：n 根 bar 前的值（**n≥0 硬约束，无未来函数**：词法不支持负数字面量，但算术可构造负数（如 `ref(close, 0-5)`）——编译期对常量负偏移直接报错，运行期对动态负偏移返回 NaN，比较恒 false）；
+  - `highest(id, n)` / `lowest(id, n)`：最近 n 根（含当前）最大/最小值（n≥1，约束同 ref）；
   - `abs(x)`：绝对值；
 - **运算符**：算术 `+ - * /`、比较 `== != > >= < <=`、逻辑 `AND OR NOT`（大小写不敏感）；
-- 表达式在**保存策略时编译校验**，语法/函数错误立即返回。
+- 表达式在**保存策略时编译校验**：语法/函数/参数个数/偏移常量/嵌套深度（≤64，防栈溢出）错误立即返回；
+- **标识符交叉校验**：保存时收集信号表达式引用的全部标识符，与 `indicators` 声明 + 字段白名单（open/high/low/close/volume/turnover）比对，未声明标识符（如“指标名写错”）立即报错，不再等到运行期才 FAILED；
+- `signals.buy` / `signals.sell` **至少一个非空**（全空 = 无交易逻辑，拒绝保存）。
 
 ## 5. 成交与撮合
 
 - 信号在当前 bar **收盘价**确认，默认 **下一根 bar 开盘价**成交（`NEXT_BAR_OPEN`，无未来函数）；
 - 成交价含滑点：`price * (1 ± slippage_pct/100)`（买入加价、卖出减价）；
 - 手续费：`amount * commission_rate`，买卖双边收取；
-- 数量模式：
-  - `ALL_IN`：可用资金（扣除手续费）全额买入，数量向下取整 6 位小数；
-  - `FIXED`：固定数量（资金不足时按可用资金折算）；
-  - `PERCENT`：可用资金 × 百分比；
-  - `AMOUNT`：固定金额；
+- 数量模式（买入 / 卖出方向均生效）：
+  - `ALL_IN`：可用资金（扣除手续费）全额买入（买入方向）；
   - `ALL`：清仓（卖出方向）；
+  - `FIXED`：固定数量（资金不足时按可用资金折算；卖出侧超过持仓时按持仓折算）；
+  - `PERCENT`：可用资金 × 百分比（卖出侧为持仓 × 百分比）；
+  - `AMOUNT`：固定金额（卖出侧金额折算为数量，不超过持仓）；
+  - 方向语义约束：买入禁 `ALL`、卖出禁 `ALL_IN`（保存校验拒绝）；
 - 保证金模式：账户 `margin_mode=FULL`（默认）全额占用现金；`FUTURES`（预留）按 `margin_rate` 占用保证金，支持期货杠杆回测；
 - 止损/止盈：基于持仓成本价，当 bar 最低价触及止损价（或最高价触及止盈价）时，以触发价成交（intrabar 限价单语义）。
 
@@ -178,12 +181,13 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 - 动作：`OPEN`（开仓）/ `ADD`（加仓）/ `REDUCE`（减仓）/ `CLOSE`（平仓）；
 - 记录变动前后持仓数量与加权成本（avg_cost_before/after），关联成交记录与触发信号。
 
-**③ 交易事件追踪**（`finv_quant_backtest_event_trace`）：
-- 触发原因：买入信号 / 卖出信号 / 止损 / 止盈；
-- 事件结果：`PENDING`（挂单）/ `FILLED`（成交）/ `REJECTED`（拒绝）/ `EXPIRED`（过期，回测结束未成交）；
-- 委托耗时：触发 → 成交的 bar 数（latency_bars）与秒数（latency_sec）；
-- 未成交原因：资金不足 / 超过规则每日最大触发次数 / 超过规则回测总触发次数 / 超过每日最大成交笔数 / 未满足最小交易间隔 / 不在允许交易时间点内 / 已达最大持仓 / 无持仓可卖 / 回测结束委托未执行；
-- 报告 `event_stats` 汇总：触发/成交/拒绝/过期计数、平均委托耗时、未成交原因分布、触发原因分布。
+**③ 交易事件追踪**（`finv_quant_backtest_event_trace`，覆盖 FR-10 八项登记信息）：
+- ① 触发原因（`trigger_reason`）：买入信号 / 卖出信号 / 止损 / 止盈；② 触发时间（`trigger_ts/date/time`）；
+- ③ 事件结果（`exec_status`）：`PENDING`（挂单）/ `FILLED`（成交）/ `REJECTED`（拒绝）/ `EXPIRED`（过期，回测结束未成交）；④ 结束时间（`exec_ts/date/time`）；
+- ⑤ 委托下单时间（`order_ts/date/time`，信号确认后立即下单，= 触发时点）；
+- ⑥ 委托耗时：触发 → 成交的 bar 数（latency_bars）与秒数（latency_sec）；⑦ 事件存活时间（`alive_sec` = 结束时间 − 触发时间）；
+- ⑧ 未成交原因（`reject_reason`）：资金不足 / 超过规则每日最大触发次数 / 超过规则回测总触发次数 / 超过每日最大成交笔数 / 未满足最小交易间隔 / 不在允许交易时间点内 / 不在环境交易时段内 / T+N 交收限制 / 涨停无法买入 / 跌停无法卖出 / 已达最大持仓 / 无持仓可卖 / 回测结束委托未执行；
+- 报告 `event_stats` 汇总：触发/成交/拒绝/过期计数、平均委托耗时（仅统计信号驱动订单，止损/止盈 intrabar 成交 latency=0 不计入，避免拉低均值）、未成交原因分布、触发原因分布。
 
 ## 9. 扩展路线
 
@@ -204,10 +208,10 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 | `env_type` | BACKTEST 回测 / PAPER 模拟盘 / SIMULATION 仿真 / LIVE 实盘 |
 | `region` / `market_code` | 地区与市场（CN/US/HK...） |
 | `config.trading_sessions` | 交易时段（hhmmss 数组，如 COMEX `082000-133000`、沪深 `093000-113000 + 130000-150000`），非时段信号 → 拒绝事件「不在环境交易时段内」 |
-| `config.trading_rules` | T+N 交收、涨跌停幅度、合约乘数、`tick_size` 最小变动单位（成交价自动对齐） |
+| `config.trading_rules` | T+N 交收、涨跌停幅度、合约乘数、`tick_size` 最小变动单位（成交价自动对齐）——**全部在引擎中生效**：T+N 当日买入持仓不可卖出（卖出信号/止损止盈均拒绝并登记事件）；涨跌停基于前一交易日收盘价，买入触及涨停/卖出触及跌停拒绝成交；合约乘数用于成交金额/持仓市值/数量折算（股票 ETF=1，期货如 COMEX 黄金=100）；tick_size 成交价自动对齐 |
 | `config.cost` | 成本基准（手续费/滑点） |
-| `config.fill_mode` | 撮合模式（NEXT_BAR_OPEN / CURRENT_CLOSE） |
-| `config.currency` | 计价币种 |
+| `config.fill_mode` | 撮合模式（NEXT_BAR_OPEN 默认 / CURRENT_CLOSE 当前 bar 收盘立即成交），覆盖策略 data.fill_mode |
+| `config.currency` | 计价币种（创建任务时与环境币种不一致的账户将被拒绝启动） |
 | `config.preferences` | 地区习惯偏好（自定义扩展，如日期格式、涨跌配色） |
 
 **成本覆盖链**：环境 > 任务（options）> 策略（definition.cost）> 账户。
@@ -216,19 +220,19 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 
 策略模板 / 账户模板 / 环境模板三类（`template_type`），相同部分（环境、约束、规则、限制、策略）复用，差异部分自定义：
 
-- 内置模板（`is_builtin=1`，`user_id='system'` 全局可见）：双均线/RSI 策略模板、COMEX 黄金环境模板；
-- 自定义模板：用户按需保存，策略创建时可选关联 `template_id`；
+- 内置模板（`is_builtin=1`，`user_id='system'` 全局可见，**禁止修改/删除**）：双均线/RSI/布林带/MACD 四个策略模板 + COMEX 黄金/沪深 ETF 两个环境模板（种子 V100020）；
+- 自定义模板：用户按需保存（服务端强制 `is_builtin='0'`，防伪造内置标识），策略创建时可选关联 `template_id`；
 - 环境模板内容可直接复制为环境（env_code/env_name/config）。
 
 ### 10.3 动态切换与自适应
 
-- 回测任务创建时指定 `env_id`（缺省取账户默认环境 → 系统默认回测环境），任务保存**环境快照**（`env_snapshot`）保证可复现；
-- 引擎自适应：交易时段过滤、tick_size 价格对齐、成本覆盖链；
+- 回测任务创建时指定 `env_id`（缺省取账户默认环境 → 系统默认回测环境），任务保存**环境快照**（API 响应字段 `environment_snapshot`，DB 列 `env_snapshot`）保证可复现；
+- 引擎自适应：交易时段过滤（含跨午夜时段，如夜盘 210000-023000）、tick_size 价格对齐、T+N/涨跌停/合约乘数/撮合模式/币种、成本覆盖链；
 - 前端「环境与模板管理」维护环境与模板，黄金期货回测验证页支持环境下拉切换。
 
 ## 11. 多用户 / 多子账户 / 组合回测预留
 
-- **多用户**：策略/账户/任务均带 `user_id`（默认 `default`，内置环境/模板为 `system` 全局可见）；列表/任务查询按用户隔离；接入 JWT/RBAC 后与登录态绑定；
+- **多用户**：策略/账户/任务均带 `user_id`（默认 `default`，内置环境/模板为 `system` 全局可见）；**列表查询按用户隔离、Get/Toggle/Delete/创建任务均做归属校验**（他人数据不可读、不可改、不可删）；接入 JWT/RBAC 后与登录态绑定；
 - **单用户多子账户**：账户支持 `group_id` 分组（主账户 = 分组根，子账户通过 group_id 关联），一个用户可拥有多个主/子账户；
 - **组合回测预留**：当前阶段单标的回放；策略定义 `universe.securities` 已支持多标的声明，组合净值与多标的撮合在后续版本实现。
 
@@ -236,3 +240,8 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 
 - 后端：`/API/V1/Meta/FinvQuant/Backtest/**`（策略/账户/任务/报告/曲线/成交/链路追踪/环境/模板）；
 - 前端：菜单与路由统一加 `Meta/FinvQuant/` 前缀（如 `/meta/finvquant/backtest/gold-futures`）。
+
+## 13. 部署注记
+
+- **迁移 V22~V28 + 种子 V100019/V100020 需在全新库一次性应用**（本 PR 未发布过中间态：V22~V26 在 PR 内完成改名与加列、V27/V28 为新增表，自研迁移 runner 无 checksum 校验，若部署过中间态需重建或人工核对）；
+- 服务启动时自动把历史遗留的 RUNNING/PENDING 任务标记为 FAILED（重启恢复机制，避免悬挂）。

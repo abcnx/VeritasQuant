@@ -2,6 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as echarts from 'echarts'
 import { apiGet } from '../api'
+import { fmtDate } from '../utils'
 
 interface RunRow {
   run_id: string
@@ -35,11 +36,6 @@ const error = ref('')
 let chart: echarts.ECharts | null = null
 const chartEl = ref<HTMLDivElement | null>(null)
 
-function fmtDate(d: number): string {
-  if (!d) return '-'
-  const s = String(d)
-  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
-}
 
 async function loadRuns() {
   try {

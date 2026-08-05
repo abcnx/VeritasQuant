@@ -31,11 +31,11 @@ func buildIndicator(def IndicatorDef, fieldValues map[string][]float64) (Indicat
 	}
 	switch def.Type {
 	case "MA":
-		return &maIndicator{id: def.ID, values: movingAverage(values, window)}, nil
+		return &maIndicator{id: def.ID, typ: "MA", values: movingAverage(values, window)}, nil
 	case "EMA":
-		return &maIndicator{id: def.ID, values: exponentialMovingAverage(values, window)}, nil
+		return &maIndicator{id: def.ID, typ: "EMA", values: exponentialMovingAverage(values, window)}, nil
 	case "RSI":
-		return &maIndicator{id: def.ID, values: rsi(values, window)}, nil
+		return &maIndicator{id: def.ID, typ: "RSI", values: rsi(values, window)}, nil
 	case "MACD":
 		fast := paramInt(def.Params, "fast", 12)
 		slow := paramInt(def.Params, "slow", 26)
@@ -56,7 +56,7 @@ func buildIndicator(def IndicatorDef, fieldValues map[string][]float64) (Indicat
 		default:
 			return nil, fmt.Errorf("指标 %s MACD output 仅支持 dif/dea/hist", def.ID)
 		}
-		return &maIndicator{id: def.ID, values: out}, nil
+		return &maIndicator{id: def.ID, typ: "MACD", values: out}, nil
 	case "BOLL":
 		k := paramFloat(def.Params, "k", 2)
 		mid, upper, lower := bollinger(values, window, k)
@@ -72,35 +72,50 @@ func buildIndicator(def IndicatorDef, fieldValues map[string][]float64) (Indicat
 		default:
 			return nil, fmt.Errorf("指标 %s BOLL output 仅支持 mid/upper/lower", def.ID)
 		}
-		return &maIndicator{id: def.ID, values: out}, nil
+		return &maIndicator{id: def.ID, typ: "BOLL", values: out}, nil
 	case "ATR":
 		high := fieldValues["high"]
 		low := fieldValues["low"]
 		closeV := fieldValues["close"]
-		return &maIndicator{id: def.ID, values: atr(high, low, closeV, window)}, nil
+		return &maIndicator{id: def.ID, typ: "ATR", values: atr(high, low, closeV, window)}, nil
 	case "STDDEV":
-		return &maIndicator{id: def.ID, values: rollingStddev(values, window)}, nil
-	case "HHV":
-		field2 := paramString(def.Params, "source", "high")
-		src := fieldValues[field2]
-		return &maIndicator{id: def.ID, values: rollingMax(src, window)}, nil
-	case "LLV":
-		field2 := paramString(def.Params, "source", "low")
-		src := fieldValues[field2]
-		return &maIndicator{id: def.ID, values: rollingMin(src, window)}, nil
+		return &maIndicator{id: def.ID, typ: "STDDEV", values: rollingStddev(values, window)}, nil
+	case "HHV", "LLV":
+		// 参数键统一为 field（评审：原实现校验取 field、计算读 source，键不一致静默算错路径），
+		// 兼容历史 source 键。
+		srcField := paramString(def.Params, "field", "")
+		if srcField == "" {
+			srcField = paramString(def.Params, "source", "")
+		}
+		if srcField == "" {
+			if def.Type == "HHV" {
+				srcField = "high"
+			} else {
+				srcField = "low"
+			}
+		}
+		src, ok := fieldValues[srcField]
+		if !ok {
+			return nil, fmt.Errorf("指标 %s 引用未知字段 %q（可用: open/high/low/close/volume/turnover）", def.ID, srcField)
+		}
+		if def.Type == "HHV" {
+			return &maIndicator{id: def.ID, typ: "HHV", values: rollingMax(src, window)}, nil
+		}
+		return &maIndicator{id: def.ID, typ: "LLV", values: rollingMin(src, window)}, nil
 	default:
 		return nil, fmt.Errorf("不支持的指标类型 %q（支持: MA/EMA/RSI/MACD/BOLL/ATR/STDDEV/HHV/LLV）", def.Type)
 	}
 }
 
-// maIndicator 通用结果容器（values 已就绪）。
+// maIndicator 通用结果容器（values 已就绪，typ 记录真实指标类型）。
 type maIndicator struct {
 	id     string
+	typ    string
 	values []float64
 }
 
 func (m *maIndicator) ID() string        { return m.id }
-func (m *maIndicator) Type() string      { return "MA" }
+func (m *maIndicator) Type() string      { return m.typ }
 func (m *maIndicator) Values() []float64 { return m.values }
 
 // ---------------------------------------------------------------------
@@ -141,10 +156,30 @@ func exponentialMovingAverage(values []float64, window int) []float64 {
 }
 
 func rsi(values []float64, window int) []float64 {
+	// Wilder RSI：首个有效值位于索引 window（前 window 根变化量简单平均，与主流实现对齐）。
+	// 评审意见：原实现首个有效值差 1 bar（window+1 才出值），已修正。
 	out := make([]float64, len(values))
+	for i := range out {
+		out[i] = math.NaN() // 未就绪位置恒为 NaN
+	}
+	if len(values) <= window {
+		return out
+	}
 	avgGain, avgLoss := 0.0, 0.0
-	first := true
-	for i := 1; i < len(values); i++ {
+	for i := 1; i <= window; i++ {
+		change := values[i] - values[i-1]
+		if change > 0 {
+			avgGain += change / float64(window)
+		} else {
+			avgLoss += -change / float64(window)
+		}
+	}
+	if avgLoss == 0 {
+		out[window] = 100
+	} else {
+		out[window] = 100 - 100/(1+avgGain/avgLoss)
+	}
+	for i := window + 1; i < len(values); i++ {
 		change := values[i] - values[i-1]
 		gain, loss := 0.0, 0.0
 		if change > 0 {
@@ -152,26 +187,12 @@ func rsi(values []float64, window int) []float64 {
 		} else {
 			loss = -change
 		}
-		if i <= window {
-			avgGain += gain / float64(window)
-			avgLoss += loss / float64(window)
-			out[i] = math.NaN()
-			if i == window {
-				first = false
-			}
-			continue
-		}
-		if first {
-			// i == window 已在上一分支处理，此分支 i > window
-			first = false
-		}
 		avgGain = (avgGain*float64(window-1) + gain) / float64(window)
 		avgLoss = (avgLoss*float64(window-1) + loss) / float64(window)
 		if avgLoss == 0 {
 			out[i] = 100
 		} else {
-			rs := avgGain / avgLoss
-			out[i] = 100 - 100/(1+rs)
+			out[i] = 100 - 100/(1+avgGain/avgLoss)
 		}
 	}
 	return out

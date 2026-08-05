@@ -82,6 +82,11 @@ CREATE INDEX idx_finv_quant_template_user
 CREATE INDEX idx_finv_quant_template_type
     ON finv_quant_template (template_type, is_builtin);
 
+-- 环境默认唯一：同用户 + 同环境类型仅允许一个默认（评审落实，配合 SaveEnvironment 事务清理）
+CREATE UNIQUE INDEX uq_finv_quant_environment_default
+    ON finv_quant_environment (user_id, env_type)
+    WHERE is_default = '1';
+
 CREATE TRIGGER trg_finv_quant_template_gmt_update
     BEFORE UPDATE ON finv_quant_template
     FOR EACH ROW EXECUTE FUNCTION vq_set_gmt_update();

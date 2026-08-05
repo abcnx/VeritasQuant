@@ -49,15 +49,22 @@ func validateStrategy(st *Strategy) error {
 		}
 	}
 
-	// 信号表达式语法校验
-	if strings.TrimSpace(def.Signals.Buy) != "" {
-		if _, err := CompileExpr(def.Signals.Buy); err != nil {
-			return fmt.Errorf("买入信号表达式错误: %w", err)
-		}
+	// 信号：至少一个方向非空（buy/sell 全空 = 无任何交易逻辑，拒绝保存）
+	if strings.TrimSpace(def.Signals.Buy) == "" && strings.TrimSpace(def.Signals.Sell) == "" {
+		return fmt.Errorf("signals.buy / signals.sell 至少需要一个非空信号表达式（否则策略无交易逻辑）")
 	}
-	if strings.TrimSpace(def.Signals.Sell) != "" {
-		if _, err := CompileExpr(def.Signals.Sell); err != nil {
-			return fmt.Errorf("卖出信号表达式错误: %w", err)
+
+	// 信号表达式：语法 + 函数/参数/偏移常量/深度校验 + 标识符交叉校验（拦“指标名写错”）
+	for name, expr := range map[string]string{"买入": def.Signals.Buy, "卖出": def.Signals.Sell} {
+		if strings.TrimSpace(expr) == "" {
+			continue
+		}
+		ids, err := CompileExprIdentifiers(expr)
+		if err != nil {
+			return fmt.Errorf("%s信号表达式错误: %w", name, err)
+		}
+		if err := validateSignalIdentifiers(name, ids, seen); err != nil {
+			return err
 		}
 	}
 
@@ -70,6 +77,13 @@ func validateStrategy(st *Strategy) error {
 				return fmt.Errorf("rules.%s.quantity_type 不支持 %q", name, rule.QuantityType)
 			}
 		}
+		// 数量模式方向语义：买入不能用 ALL（清仓），卖出不能用 ALL_IN（全额买入语义）
+		if name == "buy" && rule.QuantityType == "ALL" {
+			return fmt.Errorf("rules.buy.quantity_type 不能为 ALL（ALL 为清仓语义，仅卖出方向可用）；全额买入请用 ALL_IN")
+		}
+		if name == "sell" && rule.QuantityType == "ALL_IN" {
+			return fmt.Errorf("rules.sell.quantity_type 不能为 ALL_IN（全额买入语义，仅买入方向可用）；清仓请用 ALL")
+		}
 		if (rule.QuantityType == "FIXED" || rule.QuantityType == "AMOUNT" || rule.QuantityType == "PERCENT") && rule.Quantity <= 0 {
 			return fmt.Errorf("rules.%s.quantity_type=%s 时 quantity 必须大于 0", name, rule.QuantityType)
 		}
@@ -79,6 +93,21 @@ func validateStrategy(st *Strategy) error {
 	}
 	if def.Risk.MaxPositionPct < 0 || def.Risk.MaxPositionPct > 100 {
 		return fmt.Errorf("risk.max_position_pct 必须在 0~100 之间")
+	}
+	return nil
+}
+
+// validateSignalIdentifiers 校验信号表达式引用的标识符均已在 indicators 声明或属于字段白名单。
+func validateSignalIdentifiers(signalName string, ids map[string]bool, indicatorIDs map[string]bool) error {
+	for id := range ids {
+		if indicatorIDs[id] {
+			continue
+		}
+		switch id {
+		case "open", "high", "low", "close", "volume", "turnover":
+			continue
+		}
+		return fmt.Errorf("%s信号表达式引用了未声明的标识符 %q（须为 indicators 中声明的指标 id，或字段 open/high/low/close/volume/turnover）", signalName, id)
 	}
 	return nil
 }

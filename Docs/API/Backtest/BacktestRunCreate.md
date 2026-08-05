@@ -10,6 +10,7 @@
 | `strategy_id` | string | ✅ | 策略 ID（策略 allow_backtest 必须为 `1`） |
 | `account_id` | string | ✅ | 账户 ID（账户 allow_backtest 必须为 `1`） |
 | `env_id` | string | 可选 | 环境 ID（缺省取账户 env_id → 系统默认回测环境；环境 allow_backtest 必须为 `1`） |
+| `created_by` | string | 可选 | 创建人（默认 `console`，接入认证后为登录账号） |
 | `user_id` | string | 可选 | 所属用户（默认 `default`，多用户隔离） |
 | `secu_code` | string | 可选 | 回测标的（缺省取策略 universe.securities[0]，如 GCMain） |
 | `start_date` | int | 可选 | 起始交易日 yyyymmdd（缺省用行情最早日期） |
@@ -67,13 +68,14 @@
 
 ## 错误码 / 失败原因（message）
 
-| 场景 | 说明 |
-|------|------|
-| `回测开关未启用...` | 策略 / 账户 / 环境 allow_backtest 为 `0`，或 options.enable_backtest=false |
-| `策略不存在 / 账户不存在 / 环境不存在` | 引用对象缺失 |
-| `标的 xxx 无任何行情数据` | finv_quote_secu_kline_min 无该标的行情 |
-| `开始日期不能晚于结束日期` | 日期区间非法 |
-| `不支持的周期 / 报告精度` | 枚举越界 |
+| 场景 | HTTP / code | 说明 |
+|------|------|------|
+| `回测开关未启用...` | 400 / 4001 | 策略 / 账户 / 环境 allow_backtest 为 `0`，或 options.enable_backtest=false |
+| `策略不存在 / 账户不存在 / 环境不存在` | 404 / 4004 | 引用对象缺失（或不属于当前用户） |
+| `环境...币种...不一致` | 409 / 4009 | 环境计价币种与账户币种不一致 |
+| `标的 xxx 无任何行情数据` | 400 / 4001 | finv_quote_secu_kline_min 无该标的行情 |
+| `开始日期不能晚于结束日期` | 400 / 4001 | 日期区间非法 |
+| `不支持的周期 / 报告精度` | 400 / 4001 | 枚举越界 |
 
 ## 执行链路
 

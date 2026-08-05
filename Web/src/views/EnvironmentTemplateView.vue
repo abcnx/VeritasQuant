@@ -121,9 +121,16 @@ function openEnvCreate() {
   envDialog.value = true
 }
 
-function openEnvEdit(row: EnvRow) {
+async function openEnvEdit(row: EnvRow) {
   envEditing.value = true
-  envForm.value = { ...row, config: JSON.parse(JSON.stringify(row.config ?? {})) }
+  // 通过 Environment/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
+  try {
+    const detail = await apiGet<EnvRow>(`/Meta/FinvQuant/Backtest/Environment/Get?env_id=${row.env_id}`)
+    envForm.value = { ...(detail ?? row), config: JSON.parse(JSON.stringify((detail ?? row).config ?? {})) }
+  } catch (e) {
+    error.value = (e as Error).message
+    envForm.value = { ...row, config: JSON.parse(JSON.stringify(row.config ?? {})) }
+  }
   envConfigText.value = JSON.stringify(envForm.value.config, null, 2)
   envDialog.value = true
 }
@@ -172,10 +179,17 @@ function openTmplCreate() {
   tmplDialog.value = true
 }
 
-function openTmplEdit(row: TemplateRow) {
+async function openTmplEdit(row: TemplateRow) {
   tmplEditing.value = true
-  tmplForm.value = { ...row, content: JSON.parse(JSON.stringify(row.content ?? {})) }
-  tmplContentText.value = JSON.stringify(row.content ?? {}, null, 2)
+  // 通过 Template/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
+  try {
+    const detail = await apiGet<TemplateRow>(`/Meta/FinvQuant/Backtest/Template/Get?template_id=${row.template_id}`)
+    tmplForm.value = { ...(detail ?? row), content: JSON.parse(JSON.stringify((detail ?? row).content ?? {})) }
+  } catch (e) {
+    error.value = (e as Error).message
+    tmplForm.value = { ...row, content: JSON.parse(JSON.stringify(row.content ?? {})) }
+  }
+  tmplContentText.value = JSON.stringify(tmplForm.value.content ?? {}, null, 2)
   tmplDialog.value = true
 }
 

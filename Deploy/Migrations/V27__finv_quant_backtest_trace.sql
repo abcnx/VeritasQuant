@@ -75,14 +75,18 @@ CREATE TABLE finv_quant_backtest_event_trace (
     trigger_ts     BIGINT       NOT NULL CHECK (trigger_ts >= 0),  -- 触发时点（UTC 秒）
     trigger_date   INTEGER      DEFAULT 0,                  -- 触发日期 yyyymmdd
     trigger_time   INTEGER      DEFAULT 0,                  -- 触发时间 hhmmss
+    order_ts       BIGINT       DEFAULT 0,                  -- ⑤ 委托下单时间（信号确认后立即下单，= 触发时点）
+    order_date     INTEGER      DEFAULT 0,                  -- 委托下单日期 yyyymmdd
+    order_time     INTEGER      DEFAULT 0,                  -- 委托下单时间 hhmmss
     exec_status    TEXT         NOT NULL DEFAULT 'PENDING'
                    CHECK (exec_status IN ('PENDING','FILLED','REJECTED','EXPIRED')), -- 事件结果：挂单/成交/拒绝/过期
     exec_ts        BIGINT       DEFAULT 0,                  -- 成交/处理时点（0=未处理）
     exec_date      INTEGER      DEFAULT 0,
     exec_time      INTEGER      DEFAULT 0,
-    latency_bars   INTEGER      DEFAULT 0,                  -- 委托耗时（bar 数：触发→成交）
-    latency_sec    BIGINT       DEFAULT 0,                  -- 委托耗时（秒）
-    reject_reason  TEXT         DEFAULT '',                 -- 未能成交的原因（REJECTED/EXPIRED 时）
+    latency_bars   INTEGER      DEFAULT 0,                  -- ⑥ 委托耗时（bar 数：触发→成交）
+    latency_sec    BIGINT       DEFAULT 0,                  -- ⑥ 委托耗时（秒）
+    alive_sec      BIGINT       DEFAULT 0,                  -- ⑦ 事件存活时间（结束时间-触发时间，秒）
+    reject_reason  TEXT         DEFAULT '',                 -- ⑧ 未能成交的原因（REJECTED/EXPIRED 时）
     price          NUMERIC(20,6) DEFAULT 0,                 -- 拟成交价/成交价
     qty            NUMERIC(20,6) DEFAULT 0,                 -- 拟成交数量/成交数量
     trade_id       BIGINT       DEFAULT 0                   -- 关联成交记录（FILLED 时）

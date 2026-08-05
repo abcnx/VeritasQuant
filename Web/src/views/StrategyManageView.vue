@@ -12,6 +12,7 @@ interface StrategyRow {
   definition_version: number
   data_period: string
   secu_code: string
+  template_id?: string | null
   allow_backtest: string
   status: string
   created_by: string
@@ -39,6 +40,7 @@ interface StrategyForm {
   definition_version: number
   data_period: string
   secu_code: string
+  template_id: string | null
   allow_backtest: string
   status: string
   created_by: string
@@ -53,16 +55,19 @@ const form = ref<StrategyForm>({
   definition_version: 1,
   data_period: 'Min',
   secu_code: '',
+  template_id: null,
   allow_backtest: '1',
   status: 'ENABLED',
   created_by: '',
 })
 const defText = ref('')
 const defError = ref('')
-const templateKey = ref('dual-ma')
+const templateKey = ref('')
+const apiTemplates = ref<{ template_id: string; template_code: string; template_name: string; content: Record<string, unknown> }[]>([])
 
-// 内置策略模板（演示通用结构化策略定义模型）
-const templates: Record<string, { name: string; json: string }> = {
+// 内置策略模板（本地兜底，与种子模板 TPL-STRAT-* 内容一致；
+// 评审：原实现 4 个模板全部前端硬编码且从不调用 Template/List，现改为优先从 API 加载）
+const localTemplates: Record<string, { name: string; json: string }> = {
   'dual-ma': {
     name: '双均线交叉（GCMain 示例）',
     json: JSON.stringify({
@@ -146,7 +151,23 @@ const templates: Record<string, { name: string; json: string }> = {
   },
 }
 
-const templateOptions = computed(() => Object.entries(templates).map(([k, v]) => ({ title: v.name, value: k })))
+const templateOptions = computed(() => {
+  const apiOpts = apiTemplates.value.map((t) => ({ title: `[模板] ${t.template_name}`, value: t.template_id }))
+  const localOpts = Object.entries(localTemplates).map(([k, v]) => ({ title: `[内置] ${v.name}`, value: `local:${k}` }))
+  return [...apiOpts, ...localOpts]
+})
+
+async function loadTemplates() {
+  try {
+    const data = await apiGet<{ list: { template_id: string; template_code: string; template_name: string; content: Record<string, unknown> }[] }>(
+      '/Meta/FinvQuant/Backtest/Template/List?page=1&page_size=100&template_type=STRATEGY',
+    )
+    apiTemplates.value = data.list ?? []
+  } catch {
+    // 模板接口不可用时回退本地内置模板
+    apiTemplates.value = []
+  }
+}
 
 async function load() {
   loading.value = true
@@ -165,8 +186,19 @@ async function load() {
 }
 
 function applyTemplate() {
-  defText.value = templates[templateKey.value]?.json ?? ''
   defError.value = ''
+  const key = templateKey.value
+  if (!key) return
+  if (key.startsWith('local:')) {
+    defText.value = localTemplates[key.slice(6)]?.json ?? ''
+    form.value.template_id = null
+    return
+  }
+  const t = apiTemplates.value.find((x) => x.template_id === key)
+  if (t) {
+    defText.value = JSON.stringify(t.content ?? {}, null, 2)
+    form.value.template_id = t.template_id
+  }
 }
 
 function openCreate() {
@@ -174,17 +206,22 @@ function openCreate() {
   form.value = {
     strategy_id: '', strategy_code: '', strategy_name: '', strategy_type: 'RULE_BASED',
     description: '', definition_version: 1, data_period: 'Min', secu_code: '',
-    allow_backtest: '1', status: 'ENABLED', created_by: '',
+    template_id: null, allow_backtest: '1', status: 'ENABLED', created_by: '',
   }
+  templateKey.value = ''
   applyTemplate()
   dialog.value = true
 }
 
 function openEdit(row: StrategyRow) {
   editing.value = true
-  form.value = { ...row }
+  form.value = {
+    ...row,
+    template_id: (row as unknown as { template_id?: string | null }).template_id ?? null,
+  }
   defText.value = JSON.stringify(row.definition ?? {}, null, 2)
   defError.value = ''
+  templateKey.value = ''
   dialog.value = true
 }
 
@@ -232,7 +269,9 @@ async function remove(row: StrategyRow) {
   }
 }
 
-onMounted(load)
+onMounted(async () => {
+  await Promise.all([load(), loadTemplates()])
+})
 </script>
 
 <template>
@@ -313,8 +352,9 @@ onMounted(load)
               <strong>结构化策略定义（JSON）</strong>
             </v-col>
             <v-spacer />
-            <v-select v-model="templateKey" :items="templateOptions" label="内置模板" density="compact"
-              hide-details style="max-width: 280px" class="mr-2" @update:model-value="applyTemplate" />
+            <v-select v-model="templateKey" :items="templateOptions" label="策略模板（内置/自定义）"
+              density="compact" hide-details style="max-width: 320px" class="mr-2"
+              clearable @update:model-value="applyTemplate" />
             <v-btn size="small" variant="tonal" @click="applyTemplate">载入模板</v-btn>
           </v-row>
           <v-textarea v-model="defText" :error="!!defError" :error-messages="defError"

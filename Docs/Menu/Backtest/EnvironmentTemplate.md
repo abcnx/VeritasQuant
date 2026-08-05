@@ -39,7 +39,7 @@
 - **成本覆盖链**：环境 cost > 任务 options > 策略 cost > 账户（引擎按此优先级解析）；
 - **交易时段**：`trading_sessions` 为 hhmmss 数组，引擎逐 bar 校验，非时段信号登记拒绝事件「不在环境交易时段内」；
 - **tick_size**：`trading_rules.tick_size > 0` 时成交价自动对齐到最小变动单位；
-- **动态切换**：黄金期货回测验证页环境下拉（BACKTEST 类型）选择，任务保存环境快照（env_snapshot）保证可复现；
+- **动态切换**：黄金期货回测验证页环境下拉（BACKTEST 类型）选择，任务保存环境快照（API 响应 `environment_snapshot`，DB 列 `env_snapshot`）保证可复现；
 - 默认环境（is_default='1'）：任务未指定环境时自动回退到账户 env_id → 系统默认回测环境；
 - 内置环境 user_id='system' 全局可见，列表返回 system + 当前用户环境。
 

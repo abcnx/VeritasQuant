@@ -23,7 +23,7 @@
 | 限制条件覆盖 | 初始资金覆盖、每日最大成交笔数、限定交易时间点（hhmmss，逗号分隔） |
 | 回测开关 | 开启/关闭（关闭时拒绝启动）；策略/账户/环境三层开关任一关闭同样拒绝 |
 | 启动回测 | 点击「启动回测」创建任务（异步执行，返回任务号与状态） |
-| 任务跟踪 | 按标的查看最近回测任务列表（状态 / 进度条 / 失败原因），成功后跳转回测分析查看报告 |
+| 任务跟踪 | 按标的查看最近回测任务列表（状态 / 进度条 / 失败原因），RUNNING/PENDING 任务自动轮询进度且可一键取消，成功后跳转回测分析查看报告 |
 
 ## 3. 使用方法（操作流程）
 
@@ -50,7 +50,8 @@
 |------|------|
 | 加载下拉选项 | `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List`、`.../Account/List`、`.../Environment/List` |
 | 启动回测 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create`（含 strategy_id/account_id/env_id/secu_code/区间/周期/精度/options） |
-| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?secu_code=GCMain` |
+| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?secu_code=GCMain`（RUNNING/PENDING 时每 5s 轮询） |
+| 取消任务 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel`（RUNNING/PENDING 可取消） |
 
 ### 4.3 后端处理（Run/Create）
 

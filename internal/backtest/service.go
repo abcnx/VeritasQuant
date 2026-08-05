@@ -24,12 +24,29 @@ type Service struct {
 	sem   chan struct{}                 // 并发执行信号量
 }
 
-// NewService 创建回测服务。
+// NewService 创建回测服务，并在启动时执行悬挂任务恢复（进程重启后
+// RUNNING/PENDING 任务无法继续执行，统一标记 FAILED 并登记原因，避免永久卡住）。
 func NewService(pool *pgxpool.Pool) *Service {
-	return &Service{
+	s := &Service{
 		pool:  pool,
 		tasks: map[string]context.CancelFunc{},
 		sem:   make(chan struct{}, maxConcurrentRuns),
+	}
+	s.recoverHangingRuns()
+	return s
+}
+
+// recoverHangingRuns 启动时把 RUNNING/PENDING 任务标记为 FAILED（进程重启恢复机制）。
+func (s *Service) recoverHangingRuns() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, err := s.pool.Exec(ctx, `
+UPDATE finv_quant_backtest_run
+SET status = 'FAILED', error_message = '进程重启，任务中断（启动时自动标记失败，请重新发起回测）', finished_at = now()
+WHERE status IN ('PENDING','RUNNING')`)
+	if err != nil {
+		// 启动期恢复失败不阻塞服务（记录日志由上层处理）
+		fmt.Printf("[backtest] 悬挂任务恢复失败: %v\n", err)
 	}
 }
 
@@ -105,11 +122,14 @@ ON CONFLICT (strategy_id) DO UPDATE SET
 	return st.StrategyID, nil
 }
 
-// ListStrategies 分页查询策略。
-func (s *Service) ListStrategies(ctx context.Context, pager Pager, keyword, allowBacktest string) ([]Strategy, int, error) {
+// ListStrategies 分页查询策略（按 user_id 隔离）。
+func (s *Service) ListStrategies(ctx context.Context, pager Pager, keyword, allowBacktest, userID string) ([]Strategy, int, error) {
 	pager.Normalize()
-	where := []string{"1=1"}
-	args := []any{}
+	if userID == "" {
+		userID = "default"
+	}
+	where := []string{"user_id = $1"}
+	args := []any{userID}
 	if keyword = strings.TrimSpace(keyword); keyword != "" {
 		args = append(args, "%"+keyword+"%")
 		where = append(where, fmt.Sprintf(`(
@@ -151,12 +171,15 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	return list, total, rows.Err()
 }
 
-// GetStrategy 查询单个策略。
-func (s *Service) GetStrategy(ctx context.Context, strategyID string) (*Strategy, error) {
+// GetStrategy 查询单个策略（多用户归属校验）。
+func (s *Service) GetStrategy(ctx context.Context, strategyID, userID string) (*Strategy, error) {
+	if userID == "" {
+		userID = "default"
+	}
 	row := s.pool.QueryRow(ctx, `
 SELECT strategy_id, strategy_code, strategy_name, strategy_type, description,
        definition, definition_version, data_period, secu_code, user_id, template_id, allow_backtest, status, created_by, gmt_update
-FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
+FROM finv_quant_backtest_strategy WHERE strategy_id = $1 AND user_id = $2`, strategyID, userID)
 	st, err := scanStrategy(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -167,12 +190,15 @@ FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
 	return &st, nil
 }
 
-// ToggleStrategy 切换策略回测开关。
-func (s *Service) ToggleStrategy(ctx context.Context, strategyID, allowBacktest string) error {
+// ToggleStrategy 切换策略回测开关（多用户归属校验）。
+func (s *Service) ToggleStrategy(ctx context.Context, strategyID, allowBacktest, userID string) error {
 	if allowBacktest != FlagOn && allowBacktest != FlagOff {
 		return fmt.Errorf("allow_backtest 仅支持 0/1")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_strategy SET allow_backtest=$2 WHERE strategy_id=$1`, strategyID, allowBacktest)
+	if userID == "" {
+		userID = "default"
+	}
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_strategy SET allow_backtest=$2 WHERE strategy_id=$1 AND user_id=$3`, strategyID, allowBacktest, userID)
 	if err != nil {
 		return err
 	}
@@ -182,8 +208,11 @@ func (s *Service) ToggleStrategy(ctx context.Context, strategyID, allowBacktest 
 	return nil
 }
 
-// DeleteStrategy 删除策略（存在关联回测任务时拒绝）。
-func (s *Service) DeleteStrategy(ctx context.Context, strategyID string) error {
+// DeleteStrategy 删除策略（存在关联回测任务时拒绝；多用户归属校验）。
+func (s *Service) DeleteStrategy(ctx context.Context, strategyID, userID string) error {
+	if userID == "" {
+		userID = "default"
+	}
 	var runCount int
 	if err := s.pool.QueryRow(ctx,
 		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE strategy_id = $1`, strategyID).Scan(&runCount); err != nil {
@@ -192,7 +221,7 @@ func (s *Service) DeleteStrategy(ctx context.Context, strategyID string) error {
 	if runCount > 0 {
 		return fmt.Errorf("策略已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_strategy WHERE strategy_id = $1 AND user_id = $2`, strategyID, userID)
 	if err != nil {
 		return err
 	}
@@ -263,11 +292,14 @@ ON CONFLICT (account_id) DO UPDATE SET
 	return acc.AccountID, nil
 }
 
-// ListAccounts 分页查询账户。
-func (s *Service) ListAccounts(ctx context.Context, pager Pager, keyword, allowBacktest string) ([]Account, int, error) {
+// ListAccounts 分页查询账户（按 user_id 隔离）。
+func (s *Service) ListAccounts(ctx context.Context, pager Pager, keyword, allowBacktest, userID string) ([]Account, int, error) {
 	pager.Normalize()
-	where := []string{"1=1"}
-	args := []any{}
+	if userID == "" {
+		userID = "default"
+	}
+	where := []string{"user_id = $1"}
+	args := []any{userID}
 	if keyword = strings.TrimSpace(keyword); keyword != "" {
 		args = append(args, "%"+keyword+"%")
 		where = append(where, fmt.Sprintf(`(
@@ -311,12 +343,15 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	return list, total, rows.Err()
 }
 
-// GetAccount 查询单个账户。
-func (s *Service) GetAccount(ctx context.Context, accountID string) (*Account, error) {
+// GetAccount 查询单个账户（多用户归属校验）。
+func (s *Service) GetAccount(ctx context.Context, accountID, userID string) (*Account, error) {
+	if userID == "" {
+		userID = "default"
+	}
 	row := s.pool.QueryRow(ctx, `
 SELECT account_id, account_code, account_name, user_id, group_id, env_id, initial_capital, currency_type,
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
-FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
+FROM finv_quant_backtest_account WHERE account_id = $1 AND user_id = $2`, accountID, userID)
 	var a Account
 	if err := row.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.UserID, &a.GroupID, &a.EnvID,
 		&a.InitialCapital, &a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
@@ -329,12 +364,15 @@ FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
 	return &a, nil
 }
 
-// ToggleAccount 切换账户回测开关。
-func (s *Service) ToggleAccount(ctx context.Context, accountID, allowBacktest string) error {
+// ToggleAccount 切换账户回测开关（多用户归属校验）。
+func (s *Service) ToggleAccount(ctx context.Context, accountID, allowBacktest, userID string) error {
 	if allowBacktest != FlagOn && allowBacktest != FlagOff {
 		return fmt.Errorf("allow_backtest 仅支持 0/1")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_account SET allow_backtest=$2 WHERE account_id=$1`, accountID, allowBacktest)
+	if userID == "" {
+		userID = "default"
+	}
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_account SET allow_backtest=$2 WHERE account_id=$1 AND user_id=$3`, accountID, allowBacktest, userID)
 	if err != nil {
 		return err
 	}
@@ -344,8 +382,11 @@ func (s *Service) ToggleAccount(ctx context.Context, accountID, allowBacktest st
 	return nil
 }
 
-// DeleteAccount 删除账户（存在关联回测任务时拒绝）。
-func (s *Service) DeleteAccount(ctx context.Context, accountID string) error {
+// DeleteAccount 删除账户（存在关联回测任务时拒绝；多用户归属校验）。
+func (s *Service) DeleteAccount(ctx context.Context, accountID, userID string) error {
+	if userID == "" {
+		userID = "default"
+	}
 	var runCount int
 	if err := s.pool.QueryRow(ctx,
 		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE account_id = $1`, accountID).Scan(&runCount); err != nil {
@@ -354,7 +395,7 @@ func (s *Service) DeleteAccount(ctx context.Context, accountID string) error {
 	if runCount > 0 {
 		return fmt.Errorf("账户已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_account WHERE account_id = $1 AND user_id = $2`, accountID, userID)
 	if err != nil {
 		return err
 	}
@@ -368,19 +409,23 @@ func (s *Service) DeleteAccount(ctx context.Context, accountID string) error {
 // 回测任务
 // ---------------------------------------------------------------------
 
-// CreateRun 创建并启动回测任务。
+// CreateRun 创建并启动回测任务（多用户归属校验：策略/账户必须属于当前用户）。
 func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, error) {
 	if req.StrategyID == "" || req.AccountID == "" {
 		return nil, fmt.Errorf("strategy_id 与 account_id 必填")
 	}
-	st, err := s.GetStrategy(ctx, req.StrategyID)
+	userID := req.UserID
+	if userID == "" {
+		userID = "default"
+	}
+	st, err := s.GetStrategy(ctx, req.StrategyID, userID)
 	if err != nil {
 		return nil, err
 	}
 	if st.AllowBacktest != FlagOn {
 		return nil, fmt.Errorf("策略「%s」回测开关已关闭，请先在策略管理启用", st.StrategyName)
 	}
-	acc, err := s.GetAccount(ctx, req.AccountID)
+	acc, err := s.GetAccount(ctx, req.AccountID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -446,20 +491,25 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 	optsJSON, _ := json.Marshal(req.Options)
 
 	// 环境解析：请求 env_id > 账户 env_id > 默认环境（BACKTEST）
-	env, err := s.resolveEnvironment(ctx, req.EnvID, acc.EnvID)
+	env, err := s.resolveEnvironment(ctx, req.EnvID, acc.EnvID, userID)
 	if err != nil {
 		return nil, err
 	}
 	envJSON := []byte("null")
 	envID := ""
 	if env != nil {
+		// 币种一致性校验（FR-14 环境 currency 生效）：环境币种与账户币种不一致时拒绝启动
+		if envCur := env.Config.Currency; envCur != "" && envCur != acc.CurrencyType {
+			return nil, fmt.Errorf("环境「%s」计价币种 %s 与账户「%s」币种 %s 不一致，请选择匹配的环境或调整账户币种",
+				env.EnvName, envCur, acc.AccountName, acc.CurrencyType)
+		}
 		envJSON, _ = json.Marshal(env)
 		envID = env.EnvID
 	}
 
-	userID := req.UserID
-	if userID == "" {
-		userID = "default"
+	createdBy := req.CreatedBy
+	if createdBy == "" {
+		createdBy = "console"
 	}
 
 	marketCode := 0
@@ -479,7 +529,7 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$
 		acc.AccountID, acc.AccountCode, acc.AccountName, accJSON,
 		envID, envJSON,
 		secuCode, marketCode, period, precision,
-		startTS, endTS, startDate, endDate, optsJSON, req.StrCreatedBy())
+		startTS, endTS, startDate, endDate, optsJSON, createdBy)
 	if err != nil {
 		return nil, err
 	}
@@ -491,15 +541,25 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$
 	s.mu.Unlock()
 	go s.executeRun(runCtx, runID)
 
-	run, err := s.GetRun(ctx, runID)
+	run, err := s.GetRun(ctx, runID, userID)
 	if err != nil {
 		return nil, err
 	}
 	return run, nil
 }
 
-// CancelRun 取消运行中的回测任务。
-func (s *Service) CancelRun(ctx context.Context, runID string) error {
+// CancelRun 取消运行中的回测任务（多用户归属校验）。
+func (s *Service) CancelRun(ctx context.Context, runID, userID string) error {
+	if userID == "" {
+		userID = "default"
+	}
+	var owner string
+	if err := s.pool.QueryRow(ctx, `SELECT user_id FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(&owner); err != nil {
+		return fmt.Errorf("任务不存在: %s", runID)
+	}
+	if owner != userID {
+		return fmt.Errorf("无权操作其他用户的任务: %s", runID)
+	}
 	s.mu.Lock()
 	cancel, ok := s.tasks[runID]
 	s.mu.Unlock()
@@ -518,11 +578,14 @@ func (s *Service) CancelRun(ctx context.Context, runID string) error {
 	return nil
 }
 
-// ListRuns 分页查询回测任务。
-func (s *Service) ListRuns(ctx context.Context, q RunListQuery) ([]Run, int, error) {
+// ListRuns 分页查询回测任务（按 user_id 隔离）。
+func (s *Service) ListRuns(ctx context.Context, q RunListQuery, userID string) ([]Run, int, error) {
 	q.Pager.Normalize()
-	where := []string{"1=1"}
-	args := []any{}
+	if userID == "" {
+		userID = "default"
+	}
+	where := []string{"user_id = $1"}
+	args := []any{userID}
 	if q.Status != "" {
 		args = append(args, q.Status)
 		where = append(where, fmt.Sprintf("status = $%d", len(args)))
@@ -576,8 +639,11 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	return list, total, rows.Err()
 }
 
-// GetRun 查询单个回测任务（含报告）。
-func (s *Service) GetRun(ctx context.Context, runID string) (*Run, error) {
+// GetRun 查询单个回测任务（含报告；多用户归属校验）。
+func (s *Service) GetRun(ctx context.Context, runID, userID string) (*Run, error) {
+	if userID == "" {
+		userID = "default"
+	}
 	row := s.pool.QueryRow(ctx, `
 SELECT run_id, run_no, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
        account_id, account_code, account_name, account_snapshot,
@@ -585,7 +651,7 @@ SELECT run_id, run_no, user_id, strategy_id, strategy_code, strategy_name, strat
        secu_code, market_code, period, report_precision,
        start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
        started_at, finished_at, created_by, gmt_update
-FROM finv_quant_backtest_run WHERE run_id = $1`, runID)
+FROM finv_quant_backtest_run WHERE run_id = $1 AND user_id = $2`, runID, userID)
 	r, err := scanRun(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -596,8 +662,14 @@ FROM finv_quant_backtest_run WHERE run_id = $1`, runID)
 	return &r, nil
 }
 
-// GetReport 查询回测报告（汇总指标）。
-func (s *Service) GetReport(ctx context.Context, runID string) (*RunReport, error) {
+// GetReport 查询回测报告（汇总指标；多用户归属校验）。
+func (s *Service) GetReport(ctx context.Context, runID, userID string) (*RunReport, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, err
+	}
 	var reportJSON []byte
 	var status string
 	err := s.pool.QueryRow(ctx,
@@ -618,8 +690,50 @@ func (s *Service) GetReport(ctx context.Context, runID string) (*RunReport, erro
 	return &report, nil
 }
 
-// ListEquity 分页查询净值曲线（按报告精度）。
-func (s *Service) ListEquity(ctx context.Context, runID string, pager Pager) ([]EquityPoint, int, error) {
+// checkRunOwner 校验任务归属（多用户隔离：他人任务不可读明细/报告）。
+func (s *Service) checkRunOwner(ctx context.Context, runID, userID string) error {
+	var owner string
+	err := s.pool.QueryRow(ctx, `SELECT user_id FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(&owner)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf("回测任务不存在: %s", runID)
+		}
+		return err
+	}
+	if owner != userID {
+		return fmt.Errorf("无权访问其他用户的任务: %s", runID)
+	}
+	return nil
+}
+
+// loadRunForExecution 任务执行时加载（内部方法，绕过用户隔离——执行器仅限本进程任务）。
+func (s *Service) loadRunForExecution(ctx context.Context, runID string) (*Run, error) {
+	row := s.pool.QueryRow(ctx, `
+SELECT run_id, run_no, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
+       account_id, account_code, account_name, account_snapshot,
+       env_id, env_snapshot,
+       secu_code, market_code, period, report_precision,
+       start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
+       started_at, finished_at, created_by, gmt_update
+FROM finv_quant_backtest_run WHERE run_id = $1`, runID)
+	r, err := scanRun(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("回测任务不存在: %s", runID)
+		}
+		return nil, err
+	}
+	return &r, nil
+}
+
+// ListEquity 分页查询净值曲线（按报告精度；多用户归属校验）。
+func (s *Service) ListEquity(ctx context.Context, runID, userID string, pager Pager) ([]EquityPoint, int, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, 0, err
+	}
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
@@ -648,8 +762,14 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	return list, total, rows.Err()
 }
 
-// ListTrades 分页查询成交记录。
-func (s *Service) ListTrades(ctx context.Context, runID string, pager Pager) ([]Trade, int, error) {
+// ListTrades 分页查询成交记录（多用户归属校验）。
+func (s *Service) ListTrades(ctx context.Context, runID, userID string, pager Pager) ([]Trade, int, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, 0, err
+	}
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
@@ -657,7 +777,7 @@ func (s *Service) ListTrades(ctx context.Context, runID string, pager Pager) ([]
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT trade_id, run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal
+SELECT trade_id, run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal, remark
 FROM finv_quant_backtest_trade WHERE run_id=$1
 ORDER BY ts ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -670,7 +790,7 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	for rows.Next() {
 		var t Trade
 		if err := rows.Scan(&t.TradeID, &t.RunID, &t.Seq, &t.TS, &t.Date, &t.Time, &t.Action, &t.Price,
-			&t.Qty, &t.Amount, &t.Fee, &t.Profit, &t.PositionAfter, &t.CashAfter, &t.Signal); err != nil {
+			&t.Qty, &t.Amount, &t.Fee, &t.Profit, &t.PositionAfter, &t.CashAfter, &t.Signal, &t.Remark); err != nil {
 			return nil, 0, err
 		}
 		list = append(list, t)
@@ -678,8 +798,14 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	return list, total, rows.Err()
 }
 
-// ListCashflows 分页查询资金流水明细（需求⑨-1）。
-func (s *Service) ListCashflows(ctx context.Context, runID string, pager Pager) ([]Cashflow, int, error) {
+// ListCashflows 分页查询资金流水明细（需求⑨-1；多用户归属校验）。
+func (s *Service) ListCashflows(ctx context.Context, runID, userID string, pager Pager) ([]Cashflow, int, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, 0, err
+	}
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
@@ -708,8 +834,14 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	return list, total, rows.Err()
 }
 
-// ListPositionLogs 分页查询持仓变化明细（需求⑨-2）。
-func (s *Service) ListPositionLogs(ctx context.Context, runID string, pager Pager) ([]PositionLog, int, error) {
+// ListPositionLogs 分页查询持仓变化明细（需求⑨-2；多用户归属校验）。
+func (s *Service) ListPositionLogs(ctx context.Context, runID, userID string, pager Pager) ([]PositionLog, int, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, 0, err
+	}
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
@@ -740,8 +872,14 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	return list, total, rows.Err()
 }
 
-// ListEventTraces 分页查询交易事件追踪（需求⑨-3）。
-func (s *Service) ListEventTraces(ctx context.Context, runID string, pager Pager) ([]EventTrace, int, error) {
+// ListEventTraces 分页查询交易事件追踪（需求⑨-3；多用户归属校验）。
+func (s *Service) ListEventTraces(ctx context.Context, runID, userID string, pager Pager) ([]EventTrace, int, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	if err := s.checkRunOwner(ctx, runID, userID); err != nil {
+		return nil, 0, err
+	}
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
@@ -750,7 +888,8 @@ func (s *Service) ListEventTraces(ctx context.Context, runID string, pager Pager
 	}
 	rows, err := s.pool.Query(ctx, `
 SELECT event_id, run_id, seq, action, trigger_reason, trigger_ts, trigger_date, trigger_time,
-       exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec,
+       order_ts, order_date, order_time,
+       exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec, alive_sec,
        reject_reason, price, qty, trade_id
 FROM finv_quant_backtest_event_trace WHERE run_id=$1
 ORDER BY seq ASC
@@ -764,9 +903,10 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	for rows.Next() {
 		var ev EventTrace
 		if err := rows.Scan(&ev.EventID, &ev.RunID, &ev.Seq, &ev.Action, &ev.TriggerReason,
-			&ev.TriggerTS, &ev.TriggerDate, &ev.TriggerTime, &ev.ExecStatus, &ev.ExecTS,
-			&ev.ExecDate, &ev.ExecTime, &ev.LatencyBars, &ev.LatencySec, &ev.RejectReason,
-			&ev.Price, &ev.Qty, &ev.TradeID); err != nil {
+			&ev.TriggerTS, &ev.TriggerDate, &ev.TriggerTime,
+			&ev.OrderTS, &ev.OrderDate, &ev.OrderTime,
+			&ev.ExecStatus, &ev.ExecTS, &ev.ExecDate, &ev.ExecTime, &ev.LatencyBars, &ev.LatencySec, &ev.AliveSec,
+			&ev.RejectReason, &ev.Price, &ev.Qty, &ev.TradeID); err != nil {
 			return nil, 0, err
 		}
 		list = append(list, ev)
@@ -795,7 +935,7 @@ func (s *Service) executeRun(ctx context.Context, runID string) {
 		return
 	}
 
-	run, err := s.GetRun(ctx, runID)
+	run, err := s.loadRunForExecution(ctx, runID)
 	if err != nil {
 		s.markRun(context.Background(), runID, RunFailed, 0, "加载任务失败: "+err.Error(), nil)
 		return
@@ -888,11 +1028,11 @@ func (s *Service) persistResult(ctx context.Context, runID string, result *Engin
 	for _, t := range result.Trades {
 		tradeBatch.Queue(`
 INSERT INTO finv_quant_backtest_trade
-    (run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    (run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal, remark)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
 RETURNING trade_id, seq`,
 			runID, t.Seq, t.TS, t.Date, t.Time, t.Action, t.Price, t.Qty, t.Amount,
-			t.Fee, t.Profit, t.PositionAfter, t.CashAfter, t.Signal)
+			t.Fee, t.Profit, t.PositionAfter, t.CashAfter, t.Signal, t.Remark)
 	}
 	tradeIDBySeq := map[int]int64{}
 	if tradeBatch.Len() > 0 {
@@ -953,11 +1093,13 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
 		batch.Queue(`
 INSERT INTO finv_quant_backtest_event_trace
     (run_id, seq, action, trigger_reason, trigger_ts, trigger_date, trigger_time,
-     exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec,
+     order_ts, order_date, order_time,
+     exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec, alive_sec,
      reject_reason, price, qty, trade_id)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
 			runID, ev.Seq, ev.Action, ev.TriggerReason, ev.TriggerTS, ev.TriggerDate, ev.TriggerTime,
-			ev.ExecStatus, ev.ExecTS, ev.ExecDate, ev.ExecTime, ev.LatencyBars, ev.LatencySec,
+			ev.OrderTS, ev.OrderDate, ev.OrderTime,
+			ev.ExecStatus, ev.ExecTS, ev.ExecDate, ev.ExecTime, ev.LatencyBars, ev.LatencySec, ev.AliveSec,
 			ev.RejectReason, ev.Price, ev.Qty, tradeIDBySeq[ev.TradeSeq])
 	}
 	reportJSON, _ := json.Marshal(result.Report)
@@ -989,13 +1131,13 @@ func normalizeLargePager(p Pager) Pager {
 
 // resolveEnvironment 解析回测环境：请求 env_id > 账户 env_id > 默认环境（BACKTEST）。
 // 返回 nil 表示不启用环境（引擎按策略/账户配置运行）。
-func (s *Service) resolveEnvironment(ctx context.Context, reqEnvID string, accEnvID *string) (*Environment, error) {
+func (s *Service) resolveEnvironment(ctx context.Context, reqEnvID string, accEnvID *string, userID string) (*Environment, error) {
 	envID := reqEnvID
 	if envID == "" && accEnvID != nil {
 		envID = *accEnvID
 	}
 	if envID != "" {
-		env, err := s.GetEnvironment(ctx, envID)
+		env, err := s.GetEnvironment(ctx, envID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("加载环境失败: %w", err)
 		}
@@ -1053,7 +1195,20 @@ func (s *Service) SaveEnvironment(ctx context.Context, env *Environment) (string
 	if err != nil {
 		return "", fmt.Errorf("环境配置序列化失败: %w", err)
 	}
-	_, err = s.pool.Exec(ctx, `
+	// 设为默认环境时，同用户 + 同类型仅保留一个默认（配合 V28 部分唯一索引）
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+	if env.IsDefault == FlagOn {
+		if _, err := tx.Exec(ctx,
+			`UPDATE finv_quant_environment SET is_default='0' WHERE user_id=$1 AND env_type=$2 AND env_id <> $3 AND is_default='1'`,
+			env.UserID, env.EnvType, env.EnvID); err != nil {
+			return "", err
+		}
+	}
+	_, err = tx.Exec(ctx, `
 INSERT INTO finv_quant_environment
     (env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
@@ -1065,6 +1220,9 @@ ON CONFLICT (env_id) DO UPDATE SET
 		env.EnvID, env.EnvCode, env.EnvName, env.EnvType, env.Region, env.MarketCode, configJSON,
 		env.UserID, env.IsDefault, env.AllowBacktest, env.Status, env.Description, env.CreatedBy)
 	if err != nil {
+		return "", err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return "", err
 	}
 	return env.EnvID, nil
@@ -1118,11 +1276,14 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	return list, total, rows.Err()
 }
 
-// GetEnvironment 查询单个环境。
-func (s *Service) GetEnvironment(ctx context.Context, envID string) (*Environment, error) {
+// GetEnvironment 查询单个环境（多用户归属校验：system 全局可见）。
+func (s *Service) GetEnvironment(ctx context.Context, envID, userID string) (*Environment, error) {
+	if userID == "" {
+		userID = "default"
+	}
 	row := s.pool.QueryRow(ctx, `
 SELECT env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by, gmt_update
-FROM finv_quant_environment WHERE env_id = $1`, envID)
+FROM finv_quant_environment WHERE env_id = $1 AND (user_id = 'system' OR user_id = $2)`, envID, userID)
 	env, err := scanEnvironment(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -1133,12 +1294,15 @@ FROM finv_quant_environment WHERE env_id = $1`, envID)
 	return env, nil
 }
 
-// ToggleEnvironment 切换环境回测开关。
-func (s *Service) ToggleEnvironment(ctx context.Context, envID, allowBacktest string) error {
+// ToggleEnvironment 切换环境回测开关（多用户归属校验）。
+func (s *Service) ToggleEnvironment(ctx context.Context, envID, allowBacktest, userID string) error {
 	if allowBacktest != FlagOn && allowBacktest != FlagOff {
 		return fmt.Errorf("allow_backtest 仅支持 0/1")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_environment SET allow_backtest=$2 WHERE env_id=$1`, envID, allowBacktest)
+	if userID == "" {
+		userID = "default"
+	}
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_environment SET allow_backtest=$2 WHERE env_id=$1 AND (user_id='system' OR user_id=$3)`, envID, allowBacktest, userID)
 	if err != nil {
 		return err
 	}
@@ -1148,8 +1312,11 @@ func (s *Service) ToggleEnvironment(ctx context.Context, envID, allowBacktest st
 	return nil
 }
 
-// DeleteEnvironment 删除环境（存在关联回测任务时拒绝）。
-func (s *Service) DeleteEnvironment(ctx context.Context, envID string) error {
+// DeleteEnvironment 删除环境（存在关联回测任务时拒绝；多用户归属校验）。
+func (s *Service) DeleteEnvironment(ctx context.Context, envID, userID string) error {
+	if userID == "" {
+		userID = "default"
+	}
 	var runCount int
 	if err := s.pool.QueryRow(ctx,
 		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE env_id = $1`, envID).Scan(&runCount); err != nil {
@@ -1158,7 +1325,7 @@ func (s *Service) DeleteEnvironment(ctx context.Context, envID string) error {
 	if runCount > 0 {
 		return fmt.Errorf("环境已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_environment WHERE env_id = $1`, envID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_environment WHERE env_id = $1 AND user_id = $2`, envID, userID)
 	if err != nil {
 		return err
 	}
@@ -1190,7 +1357,7 @@ func scanEnvironment(row rowScanner) (*Environment, error) {
 // 模板 CRUD
 // ---------------------------------------------------------------------
 
-// SaveTemplate 新增或更新模板。
+// SaveTemplate 新增或更新模板（内置模板禁止修改；用户保存强制 is_builtin='0'）。
 func (s *Service) SaveTemplate(ctx context.Context, tmpl *Template) (string, error) {
 	if err := validateTemplate(tmpl); err != nil {
 		return "", err
@@ -1204,6 +1371,16 @@ func (s *Service) SaveTemplate(ctx context.Context, tmpl *Template) (string, err
 	if tmpl.Status == "" {
 		tmpl.Status = StatusEnabled
 	}
+	// 内置模板保护：已存在且 is_builtin='1' 时拒绝更新（防篡改内置模板）
+	if tmpl.TemplateID != "" {
+		var builtin string
+		err := s.pool.QueryRow(ctx, `SELECT is_builtin FROM finv_quant_template WHERE template_id=$1`, tmpl.TemplateID).Scan(&builtin)
+		if err == nil && builtin == FlagOn {
+			return "", fmt.Errorf("内置模板禁止修改（请复制为新模板后自定义）")
+		}
+	}
+	// 用户保存的模板不允许伪造内置标识
+	tmpl.IsBuiltin = FlagOff
 	contentJSON, err := json.Marshal(tmpl.Content)
 	if err != nil {
 		return "", fmt.Errorf("模板内容序列化失败: %w", err)
@@ -1215,7 +1392,7 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 ON CONFLICT (template_id) DO UPDATE SET
     template_code = EXCLUDED.template_code, template_name = EXCLUDED.template_name,
     template_type = EXCLUDED.template_type, content = EXCLUDED.content,
-    user_id = EXCLUDED.user_id, status = EXCLUDED.status,
+    user_id = EXCLUDED.user_id, is_builtin = EXCLUDED.is_builtin, status = EXCLUDED.status,
     description = EXCLUDED.description, created_by = EXCLUDED.created_by`,
 		tmpl.TemplateID, tmpl.TemplateCode, tmpl.TemplateName, tmpl.TemplateType, contentJSON,
 		tmpl.UserID, tmpl.IsBuiltin, tmpl.Status, tmpl.Description, tmpl.CreatedBy)
@@ -1278,13 +1455,16 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	return list, total, rows.Err()
 }
 
-// GetTemplate 查询单个模板。
-func (s *Service) GetTemplate(ctx context.Context, templateID string) (*Template, error) {
+// GetTemplate 查询单个模板（多用户归属校验：system 全局可见）。
+func (s *Service) GetTemplate(ctx context.Context, templateID, userID string) (*Template, error) {
+	if userID == "" {
+		userID = "default"
+	}
 	var tmpl Template
 	var contentJSON []byte
 	err := s.pool.QueryRow(ctx, `
 SELECT template_id, template_code, template_name, template_type, content, user_id, is_builtin, status, description, created_by, gmt_update
-FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(
+FROM finv_quant_template WHERE template_id = $1 AND (user_id = 'system' OR user_id = $2)`, templateID, userID).Scan(
 		&tmpl.TemplateID, &tmpl.TemplateCode, &tmpl.TemplateName, &tmpl.TemplateType,
 		&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &tmpl.Description, &tmpl.CreatedBy, &tmpl.GMTUpdate)
 	if err != nil {
@@ -1299,17 +1479,23 @@ FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(
 	return &tmpl, nil
 }
 
-// DeleteTemplate 删除模板（内置模板禁止删除）。
-func (s *Service) DeleteTemplate(ctx context.Context, templateID string) error {
-	var isBuiltin string
+// DeleteTemplate 删除模板（内置模板禁止删除；多用户归属校验）。
+func (s *Service) DeleteTemplate(ctx context.Context, templateID, userID string) error {
+	if userID == "" {
+		userID = "default"
+	}
+	var isBuiltin, owner string
 	if err := s.pool.QueryRow(ctx,
-		`SELECT is_builtin FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(&isBuiltin); err != nil {
+		`SELECT is_builtin, user_id FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(&isBuiltin, &owner); err != nil {
 		return fmt.Errorf("模板不存在: %s", templateID)
 	}
 	if isBuiltin == FlagOn {
 		return fmt.Errorf("内置模板禁止删除")
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_template WHERE template_id = $1`, templateID)
+	if owner != userID {
+		return fmt.Errorf("无权删除其他用户的模板")
+	}
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_template WHERE template_id = $1 AND user_id = $2`, templateID, userID)
 	if err != nil {
 		return err
 	}
@@ -1459,6 +1645,3 @@ func (r *Run) RunOptions() RunOptions {
 	_ = json.Unmarshal(raw, &opts)
 	return opts
 }
-
-// StrCreatedBy 返回创建人（请求体可能不含，兼容）。
-func (req CreateRunRequest) StrCreatedBy() string { return "console" }

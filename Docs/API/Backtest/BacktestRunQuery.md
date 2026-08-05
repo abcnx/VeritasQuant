@@ -85,16 +85,19 @@
 
 ## 错误码
 
-| code | 说明 |
-|------|------|
-| 0 | 成功 |
-| 2006 | 查询失败 / 任务不存在 / 任务未完成时查报告等 |
+| code | HTTP | 说明 |
+|------|------|------|
+| 0 | 200 | 成功 |
+| 4001 | 400 | 参数/校验错误（缺少必填参数、表达式错误、不支持的取值等） |
+| 4004 | 404 | 资源不存在（任务/报告不存在） |
+| 4009 | 409 | 状态冲突/禁止操作（任务已结束无需取消、无权访问他人数据等） |
+| 2006 | 500 | 其他服务端错误 |
 
 ## 已使用位置（业务菜单）
 
 | 业务菜单 | 菜单文档 | 使用接口 |
 |----------|----------|----------|
-| 回测分析 | [Docs/Menu/Backtest/BacktestAnalysis.md](../../Menu/Backtest/BacktestAnalysis.md) | List / Get / Report / Equity / Trades / Cashflows / PositionLogs / EventTraces |
-| 黄金期货合约回测验证 | [Docs/Menu/Backtest/BacktestGoldFutures.md](../../Menu/Backtest/BacktestGoldFutures.md) | List / Get |
-| 资金管理 | [Docs/Menu/Backtest/FundManage.md](../../Menu/Backtest/FundManage.md) | List / Equity |
-| 持仓管理 | [Docs/Menu/Backtest/PositionManage.md](../../Menu/Backtest/PositionManage.md) | List / Equity / Trades |
+| 回测分析 | [Docs/Menu/Backtest/BacktestAnalysis.md](../../Menu/Backtest/BacktestAnalysis.md) | List / **Get**（深链加载）/ Report / Equity / Trades / Cashflows / PositionLogs / EventTraces / **Cancel** |
+| 黄金期货合约回测验证 | [Docs/Menu/Backtest/BacktestGoldFutures.md](../../Menu/Backtest/BacktestGoldFutures.md) | List / **Get**（轮询）/ **Cancel** |
+| 资金管理 | [Docs/Menu/Backtest/FundPositionManage.md](../../Menu/Backtest/FundPositionManage.md) | List / Equity |
+| 持仓管理 | [Docs/Menu/Backtest/FundPositionManage.md](../../Menu/Backtest/FundPositionManage.md) | List / Equity / Trades |

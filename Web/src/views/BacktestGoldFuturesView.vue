@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiGet, apiPost } from '../api'
+import { fmtDate, statusColor } from '../utils'
 
 const router = useRouter()
 
@@ -72,15 +73,22 @@ const allowedTimes = ref('')
 
 const loading = ref(false)
 const submitting = ref(false)
+const cancelling = ref('')
 const error = ref('')
 const message = ref('')
+
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
+function hasActiveRuns(): boolean {
+  return runs.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')
+}
 
 async function loadOptions() {
   try {
     const [s, a, e] = await Promise.all([
       apiGet<{ list: StrategyOption[] }>('/Meta/FinvQuant/Backtest/Strategy/List?page=1&page_size=100&allow_backtest=1'),
       apiGet<{ list: AccountOption[] }>('/Meta/FinvQuant/Backtest/Account/List?page=1&page_size=100&allow_backtest=1'),
-      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&page_size=100&env_type=BACKTEST&allow_backtest=1'),
+      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&page_size=100&env_type=BACKTEST'),
     ])
     strategies.value = s.list ?? []
     accounts.value = a.list ?? []
@@ -101,6 +109,7 @@ async function loadOptions() {
 }
 
 async function loadRuns() {
+  loading.value = true
   try {
     const data = await apiGet<{ total: number; list: RunRow[] }>(
       `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
@@ -109,13 +118,31 @@ async function loadRuns() {
     runTotal.value = data.total ?? 0
   } catch (e) {
     error.value = (e as Error).message
+  } finally {
+    loading.value = false
   }
+  syncPolling()
 }
 
-function fmtDate(d: number): string {
-  if (!d) return '-'
-  const s = String(d)
-  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
+// 轮询：存在 PENDING/RUNNING 任务时每 5s 自动刷新（评审：原实现仅手动刷新）
+function syncPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+  if (hasActiveRuns()) {
+    pollTimer = setInterval(async () => {
+      try {
+        const data = await apiGet<{ list: RunRow[] }>(
+          `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
+        )
+        runs.value = data.list ?? []
+        if (!hasActiveRuns()) syncPolling() // 全部结束后停止轮询
+      } catch {
+        // 轮询失败静默，等待下一次
+      }
+    }, 5000)
+  }
 }
 
 function toDateInt(v: string): number {
@@ -161,8 +188,18 @@ async function startBacktest() {
   }
 }
 
-function statusColor(s: string): string {
-  return { PENDING: 'grey', RUNNING: 'primary', SUCCEEDED: 'success', FAILED: 'error', CANCELLED: 'warning' }[s] ?? 'grey'
+async function cancelRun(run: RunRow) {
+  if (!confirm(`确认取消回测任务 #${run.run_no}？`)) return
+  cancelling.value = run.run_id
+  try {
+    await apiPost('/Meta/FinvQuant/Backtest/Run/Cancel', { run_id: run.run_id })
+    message.value = `任务 #${run.run_no} 取消请求已受理`
+    await loadRuns()
+  } catch (e) {
+    error.value = (e as Error).message
+  } finally {
+    cancelling.value = ''
+  }
 }
 
 function viewReport(run: RunRow) {
@@ -172,6 +209,13 @@ function viewReport(run: RunRow) {
 onMounted(async () => {
   await loadOptions()
   await loadRuns()
+})
+
+onBeforeUnmount(() => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
 })
 </script>
 
@@ -308,6 +352,8 @@ onMounted(async () => {
               <span v-else class="text-body-2">{{ item.progress }}%</span>
             </template>
             <template #item.actions="{ item }">
+              <v-btn v-if="item.status === 'RUNNING' || item.status === 'PENDING'" size="small" variant="text"
+                color="warning" :loading="cancelling === item.run_id" @click="cancelRun(item)">取消</v-btn>
               <v-btn size="small" variant="text" color="primary" :disabled="item.status !== 'SUCCEEDED'"
                 @click="viewReport(item)">查看报告</v-btn>
             </template>
