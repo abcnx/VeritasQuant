@@ -156,12 +156,39 @@ func TestParseLayoutB(t *testing.T) {
 }
 
 func TestParseUnsupportedLayout(t *testing.T) {
+	// 核心列名不同（第 2 列应为 d 或 dt，此处为 xx）→ 不匹配任何核心布局
 	content := strings.Replace(sampleMvsvLayoutB,
 		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p\"",
-		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|x\"", 1)
+		"# Field : \"ts|xx|t|o|c|l|h|v|a|cp|cr|p\"", 1)
 	_, err := Parse([]byte(content), "bad.mvsv")
 	if err == nil || !strings.Contains(err.Error(), "Field 布局不支持") {
 		t.Fatalf("期望 Field 布局不支持错误，实际: %v", err)
+	}
+}
+
+// 多余列容忍：布局 B 核心后追加已过时的 pc 列（13 列）也应解析成功
+// （用户约定 2026-08-06：只要核心字段存在，多余字段允许解析）
+func TestParseLayoutBWithExtraPcColumn(t *testing.T) {
+	content := strings.Replace(sampleMvsvLayoutB,
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p\"",
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc\"", 1)
+	result, err := Parse([]byte(content), "layoutb_pc.mvsv")
+	if err != nil {
+		t.Fatalf("含 pc 多余列的布局 B 解析失败: %v", err)
+	}
+	if len(result.Rows) != 3 {
+		t.Fatalf("行数=%d，期望 3", len(result.Rows))
+	}
+	// 数据行也带 pc 值（非空）时仍应正常解析
+	contentWithValue := strings.Replace(sampleMvsvLayoutB,
+		"1767337200|20260102|020000|4340|4907.5|4319.7|5626.8|5926343|0|575.4|13.282242|4332.1|",
+		"1767337200|20260102|020000|4340|4907.5|4319.7|5626.8|5926343|0|575.4|13.282242|4332.1|999", 1)
+	result2, err := Parse([]byte(contentWithValue), "layoutb_pc_val.mvsv")
+	if err != nil {
+		t.Fatalf("含 pc 值的解析失败: %v", err)
+	}
+	if result2.Rows[0].Close == nil || *result2.Rows[0].Close != "4907.5" {
+		t.Fatalf("close=%v", result2.Rows[0].Close)
 	}
 }
 
