@@ -142,18 +142,31 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
 
       # 为每个平台单独打 tag（如 v0.1.0-202608051934-linux-amd64 / -linux-arm64），
-      # 便于按平台拉取/区分构建产物
+      # 便于按平台拉取/区分构建产物。
+      # ⚠️ 不用 docker buildx imagetools create：它在 CI 中复制 manifest 时会以匿名方式
+      # 请求 GHCR token（不继承 docker login 凭据），私有包返回 403 Forbidden；
+      # 改用 crane 官方镜像（gcr.io/go-containerregistry/crane）：
+      #   crane auth login 显式认证 + crane copy --platform（凭据经 $HOME 挂载传递）。
       - name: TagPerPlatformManifests
         run: |
+          set -euo pipefail
           BASE="${{ steps.tags.outputs.base }}"
+          # 显式登录 GHCR（crane 使用独立凭据存储 ~/.docker/config.json，不读 docker login 凭据）
+          docker run --rm \
+            -v "${HOME}/.docker:/root/.docker" \
+            gcr.io/go-containerregistry/crane:latest auth login ghcr.io \
+            -u "${{ github.actor }}" \
+            -p "${{ secrets.GITHUB_TOKEN }}"
           # PLATFORMS 以空格分隔（env 已定义）；逗号会导致整串被当作单个值
           for PLAT in ${{ env.PLATFORMS }}; do
             SUFFIX=${PLAT//\//-}
             echo "打平台 tag: ${BASE}-${SUFFIX} (${PLAT})"
-            docker buildx imagetools create \
+            docker run --rm \
+              -v "${HOME}/.docker:/root/.docker" \
+              gcr.io/go-containerregistry/crane:latest copy \
               --platform "$PLAT" \
-              --tag "${{ env.IMAGE }}:${BASE}-${SUFFIX}" \
-              "${{ env.IMAGE }}:${BASE}"
+              "${{ env.IMAGE }}:${BASE}" \
+              "${{ env.IMAGE }}:${BASE}-${SUFFIX}"
           done
 
   # ------------------------------------------------------------------
