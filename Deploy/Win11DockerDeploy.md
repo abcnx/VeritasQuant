@@ -12,7 +12,7 @@
 |------|------|--------------|------|
 | `finvquant` | `ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}` | 16001 / 16002 | All-in-One：Go 服务端（16001 API）+ 内嵌前端（16002 Web） |
 | `postgres` | `postgres:18-alpine` | 127.0.0.1:5432（默认，可改 `FINV_PG_EXPOSE_PORT`） | PostgreSQL 18，数据绑定挂载到宿主机目录 |
-| `redis` | `redis:8-alpine` | 127.0.0.1:6380（默认，可改 `FINV_REDIS_EXPOSE_PORT`） | Redis 8，AOF 持久化，数据在命名卷 `finvquant-redisdata` |
+| `redis` | `redis:8-alpine` | 127.0.0.1:6380（默认，可改 `FINV_REDIS_EXPOSE_PORT`） | Redis 8，AOF 持久化，数据在命名卷 `finvquant_finvquant-redisdata` |
 
 - `finvquant` 通过 Compose 内网（服务名 `postgres` / `redis`）访问数据库，**不需要** `host.docker.internal`。
 - 服务端启动时**自动应用数据库迁移**（`Deploy/Migrations/`，幂等，见 [升级文档](Win11DockerUpgrade.md) 第 4 节）。
@@ -90,9 +90,7 @@ Copy-Item Deploy\.env.example Deploy\.env
 >
 > 便捷方式：先 `cd Deploy` 再执行 `docker compose --env-file .env <命令>` 可省略 `-f`（此时 compose 项目目录为 `Deploy/`，未显式设置的相对路径卷 `./pgdata` 将落在 `Deploy/pgdata`）。
 >
-> **⚠️ 容器名说明**：compose 已通过 `container_name` 显式固定容器名（主服务默认 `finvquant`，见 .env 的 `FINV_CONTAINER_NAME`）。
->
-> **⚠️ 项目名说明**：`-f Deploy/docker-compose.yml` 时 compose **项目名默认取 compose 文件所在目录名**，即 `deploy`。项目名影响命名卷前缀：Redis 卷实际名为 **`deploy_finvquant-redisdata`**（非文档简写的 `finvquant-redisdata`）；若改用 `-p finvquant`（`docker compose -p finvquant -f Deploy/docker-compose.yml ...`），容器名仍由 `container_name` 固定（`finvquant`），但 Redis 卷会变为 `finvquant_finvquant-redisdata`——**切换项目名会导致 Redis 数据卷不连续，需手动迁移旧卷数据**。建议固定使用同一命令部署，不要混用 `-p`。
+> **⚠️ 项目名/容器名说明**：compose 顶层 `name` 已固定项目名为 `finvquant`（默认，可用 `.env` 的 `FINV_PROJECT_NAME` 自定义），命名卷前缀为 `finvquant_`（如 `finvquant_finvquant-redisdata`），**不再带 `deploy` 前缀**；容器名由 `container_name` 固定（主服务默认 `finvquant`，见 `.env` 的 `FINV_CONTAINER_NAME`）。切换 `FINV_PROJECT_NAME` 会导致 Redis 命名卷不连续（旧数据在旧项目名前缀的卷中），需手动迁移，建议保持默认。
 
 ```powershell
 docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d
@@ -119,7 +117,7 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps
 ## 7. 数据持久化与备份
 
 - **PostgreSQL**：数据绑定挂载到宿主目录 `${FINV_PG_DATA_DIR}`。⚠️ **PG 18 镜像挂载点为 `/var/lib/postgresql`（单一挂载）**，实际数据位于宿主目录下的 **`18/` 子目录**（`D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL/18/`）。备份/迁移该目录时请包含 `18/` 层级。
-- **Redis**：数据在命名卷 `deploy_finvquant-redisdata`（项目名 `deploy` + 卷名 `finvquant-redisdata`，AOF），容器重建不丢；卷整体备份方式：`docker run --rm -v deploy_finvquant-redisdata:/data -v D:/backup:/backup alpine tar czf /backup/redisdata.tar.gz -C /data .`
+- **Redis**：数据在命名卷 `finvquant_finvquant-redisdata`（项目名 `finvquant` + 卷名 `finvquant-redisdata`，AOF），容器重建不丢；卷整体备份方式：`docker run --rm -v finvquant_finvquant-redisdata:/data -v D:/backup:/backup alpine tar czf /backup/redisdata.tar.gz -C /data .`
 
 **PG 逻辑备份（推荐，最可靠）：**
 

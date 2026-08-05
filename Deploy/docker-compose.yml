@@ -6,11 +6,13 @@
 # 使用：cp Deploy/.env.example Deploy/.env && docker compose --env-file Deploy/.env up -d
 # 镜像：ghcr.io/acanx/finvquant（docker pull 后直接部署）
 #
-# ⚠️ 项目名：-f Deploy/docker-compose.yml 时项目名默认 = compose 文件所在目录名（deploy），
-#    影响命名卷前缀（deploy_finvquant-redisdata）。容器名由 container_name 显式固定
-#    （${FINV_CONTAINER_NAME:-finvquant}），不受项目名影响。如需统一项目名：
-#    docker compose -p finvquant -f Deploy/docker-compose.yml --env-file Deploy/.env up -d
-#    （切换项目名会导致 Redis 命名卷不连续，注意数据迁移）
+# 项目名：顶层 name 固定为 finvquant（可用 FINV_PROJECT_NAME 自定义），
+#    命名卷前缀随之变为 finvquant_（如 finvquant_finvquant-redisdata），不带 deploy 前缀。
+#    切换项目名会导致命名卷不连续（Redis 数据在旧卷），注意数据迁移。
+
+# 项目名（默认 finvquant；影响命名卷前缀，如 finvquant_finvquant-redisdata）
+name: ${FINV_PROJECT_NAME:-finvquant}
+
 
 services:
   finvquant:
