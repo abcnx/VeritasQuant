@@ -80,10 +80,11 @@ func TestParseTsTimezoneMismatch(t *testing.T) {
 	}
 }
 
-// 布局 B：ts|d|t|o|c|l|h|v|a|cp|cr|p|pc（13 列，d=8 位日期 + t=6 位时间，a=成交额）
+// 布局 B（12 列，pc 已过时）：ts|d|t|o|c|l|h|v|a|cp|cr|p
+// d=8 位日期 + t=6 位时间，a=成交额；数据行末尾允许残留空段（旧 pc 位，如 "...|4332.1|"）
 // ts=1767337200 → 2026-01-02 07:00 UTC → America/New_York（UTC-5）2026-01-02 02:00:00（20260102020000）
 const sampleMvsvLayoutB = `# Format : "MVSV-1"
-# Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p|pc"
+# Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p"
 # Count : 3
 # EffectiveTimeZone : "America/New_York"
 # Code : "GCMain"
@@ -134,10 +135,29 @@ func TestParseLayoutB(t *testing.T) {
 
 func TestParseUnsupportedLayout(t *testing.T) {
 	content := strings.Replace(sampleMvsvLayoutB,
-		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc\"",
-		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc|x\"", 1)
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p\"",
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|x\"", 1)
 	_, err := Parse([]byte(content), "bad.mvsv")
 	if err == nil || !strings.Contains(err.Error(), "Field 布局不支持") {
 		t.Fatalf("期望 Field 布局不支持错误，实际: %v", err)
+	}
+}
+
+// 行尾空段容忍：数据行末尾允许残留旧 pc 空段（"...|4332.1|"），解析器应截断后按 12 列处理
+func TestParseLayoutBTrailingEmptySegment(t *testing.T) {
+	// 第三行末尾多一个空段（旧 pc 位残留），其余行正常
+	content := strings.Replace(sampleMvsvLayoutB,
+		"1767337320|20260102|020200|4342.7|4344|4342|4346.3|81|0|0.1|0.002302|4343.9|",
+		"1767337320|20260102|020200|4342.7|4344|4342|4346.3|81|0|0.1|0.002302|4343.9||", 1)
+	result, err := Parse([]byte(content), "trailing.mvsv")
+	if err != nil {
+		t.Fatalf("容忍行尾空段解析失败: %v", err)
+	}
+	if len(result.Rows) != 3 {
+		t.Fatalf("行数=%d，期望 3", len(result.Rows))
+	}
+	last := result.Rows[2]
+	if last.Close == nil || *last.Close != "4344" {
+		t.Fatalf("末行 close=%v", last.Close)
 	}
 }

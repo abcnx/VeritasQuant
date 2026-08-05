@@ -10,6 +10,7 @@ package mvsv
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -55,11 +56,11 @@ var supportedLayouts = map[string]fieldLayout{
 			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
 		},
 	},
-	"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc": {
-		Field: "ts|d|t|o|c|l|h|v|a|cp|cr|p|pc",
+	"ts|d|t|o|c|l|h|v|a|cp|cr|p": {
+		Field: "ts|d|t|o|c|l|h|v|a|cp|cr|p",
 		Kinds: []columnKind{
 			colTS, colDate, colTime, colOpen, colClose, colLow, colHigh,
-			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose, colIgnore,
+			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
 		},
 	},
 }
@@ -178,8 +179,13 @@ func buildHeader(values map[string]string) (*Header, error) {
 	}
 	layout, ok := supportedLayouts[values["Field"]]
 	if !ok {
-		return nil, fmt.Errorf("Field 布局不支持: %s（支持: %s / %s）",
-			values["Field"], "ts|dt|o|c|l|h|v|t|cp|cr|p", "ts|d|t|o|c|l|h|v|a|cp|cr|p|pc")
+		var supported []string
+		for _, l := range supportedLayouts {
+			supported = append(supported, l.Field)
+		}
+		sort.Strings(supported)
+		return nil, fmt.Errorf("Field 布局不支持: %s（支持: %s）",
+			values["Field"], strings.Join(supported, " / "))
 	}
 	count, err := strconv.Atoi(values["Count"])
 	if err != nil || count < 0 {
@@ -198,6 +204,11 @@ func buildHeader(values map[string]string) (*Header, error) {
 
 func parseRow(line string, header *Header, lineNumber int) (Row, error) {
 	fields := strings.Split(line, "|")
+	// 容忍行尾多余空段：旧格式（含已过时的 pc 列）可能在末尾残留一个空段，
+	// 如 "...|4332.1|"（split 后末段为空字符串）。仅当末段为空时截断。
+	for len(fields) > len(header.Layout.Kinds) && strings.TrimSpace(fields[len(fields)-1]) == "" {
+		fields = fields[:len(fields)-1]
+	}
 	if len(fields) != len(header.Layout.Kinds) {
 		return Row{}, fmt.Errorf("列数=%d，期望 %d（Field: %s）",
 			len(fields), len(header.Layout.Kinds), header.Layout.Field)
