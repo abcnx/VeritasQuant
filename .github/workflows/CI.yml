@@ -2,7 +2,8 @@
 #   - ghcr.io/acanx/finvquant（Go 服务端 16001 + 内嵌前端 16002，单镜像单进程）
 #
 # 触发：push 到 dev/main/FinvQuant、tag v*、PR、手动
-# tag 规则：latest（dev/main/FinvQuant 推送）+ 版本 tag（v* 推送时使用 git tag）
+# tag 规则：latest + 时间戳（dev/main/FinvQuant 推送）或 latest + 时间戳 + 版本 tag（v* 推送时使用 git tag）
+# 时间戳格式：finvquant-YYYYMMDDHHMM（Asia/Shanghai 时区，如 finvquant-202608051901）
 
 name: FinvQuantCICD
 
@@ -89,11 +90,13 @@ jobs:
       - name: ResolveImageTags
         id: tags
         run: |
+          TS=$(TZ=Asia/Shanghai date +%Y%m%d%H%M)
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            echo "tags=latest,${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "tags=latest,finvquant-${TS},${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           else
-            echo "tags=latest" >> "$GITHUB_OUTPUT"
+            echo "tags=latest,finvquant-${TS}" >> "$GITHUB_OUTPUT"
           fi
+          echo "resolved-tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:finvquant-${TS}" >> "$GITHUB_OUTPUT"
 
       - name: LoginToGHCR
         uses: docker/login-action@v3

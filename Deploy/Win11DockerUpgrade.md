@@ -5,7 +5,7 @@
 
 ## 1. 升级原理
 
-- 镜像发布：CI（`.github/workflows/CI.yml`）在 push `dev`/`main`/`FinvQuant` 分支时构建并推送 `ghcr.io/acanx/finvquant:latest`；push `v*` tag 时额外推送对应版本 tag（如 `v1.2.0`）。
+- 镜像发布：CI（`.github/workflows/CI.yml`）在 push `dev`/`main`/`FinvQuant` 分支时构建并推送 `ghcr.io/acanx/finvquant:latest` 与时间戳 tag `finvquant-YYYYMMDDHHMM`（如 `finvquant-202608051901`）；push `v*` tag 时额外推送对应版本 tag（如 `v1.2.0`）。
 - 升级方式：拉取新镜像 → 重建 `finvquant` 容器；`postgres` / `redis` 配置未变则**不重建、数据不丢**。
 - 数据库迁移：新版服务端启动时**自动应用** `Deploy/Migrations/` 中未执行的迁移（幂等，按 `V<number>__<name>.sql` 版本号升序，已应用版本记录在 `schema_version` 表），**无需手动执行 SQL**。
 
@@ -56,9 +56,12 @@ git pull   # 或 git fetch + 切换到目标版本 tag
 # 升级到最新版
 docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant
 
-# 或升级到指定版本：先修改 Deploy\.env 中 FINV_IMAGE_TAG= v1.2.0
+# 或升级到指定版本：先修改 Deploy\.env 中 FINV_IMAGE_TAG（版本 tag v1.2.0，
+#   或时间戳 tag finvquant-YYYYMMDDHHMM，如 finvquant-202608051901）
 docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquant
 ```
+
+> **镜像 tag 规则**（CI 自动打）：每次推送 dev/main 构建时同时打 `latest` 与时间戳 tag `finvquant-YYYYMMDDHHMM`（Asia/Shanghai 时区，如 `finvquant-202608051901`）；推送 `v*` git tag 时额外打版本 tag。部署指定版本时把 `FINV_IMAGE_TAG` 改为对应 tag 即可（`docker images ghcr.io/acanx/finvquant` 可查看已拉取 tag）。
 
 **3.3 重建服务端容器**
 
