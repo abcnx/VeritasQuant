@@ -58,7 +58,7 @@ function fmtTime(t: number): string {
 async function loadRuns() {
   try {
     const data = await apiGet<{ list: RunRow[] }>(
-      '/Backtest/Run/List?page=1&page_size=100&status=SUCCEEDED',
+      '/Meta/FinvQuant/Backtest/Run/List?page=1&page_size=100&status=SUCCEEDED',
     )
     runs.value = data.list ?? []
   } catch (e) {
@@ -74,8 +74,8 @@ async function loadPosition() {
   chart = null
   try {
     const [eq, tr] = await Promise.all([
-      apiGet<{ list: EquityPoint[] }>(`/Backtest/Run/Equity?run_id=${runId.value}&page=1&page_size=5000`),
-      apiGet<{ list: TradeRow[] }>(`/Backtest/Run/Trades?run_id=${runId.value}&page=1&page_size=500`),
+      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?run_id=${runId.value}&page=1&page_size=5000`),
+      apiGet<{ list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?run_id=${runId.value}&page=1&page_size=500`),
     ])
     points.value = eq.list ?? []
     trades.value = tr.list ?? []

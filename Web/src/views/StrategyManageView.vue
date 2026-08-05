@@ -153,7 +153,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: StrategyRow[] }>(
-      `/Backtest/Strategy/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/FinvQuant/Backtest/Strategy/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -200,7 +200,7 @@ async function save() {
   }
   defError.value = ''
   try {
-    await apiPost('/Backtest/Strategy/Save', { ...form.value, definition })
+    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Save', { ...form.value, definition })
     message.value = '保存成功'
     dialog.value = false
     await load()
@@ -211,7 +211,7 @@ async function save() {
 
 async function toggle(row: StrategyRow) {
   try {
-    await apiPost('/Backtest/Strategy/Toggle', {
+    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Toggle', {
       strategy_id: row.strategy_id,
       allow_backtest: row.allow_backtest === '1' ? '0' : '1',
     })
@@ -224,7 +224,7 @@ async function toggle(row: StrategyRow) {
 async function remove(row: StrategyRow) {
   if (!confirm(`确认删除策略「${row.strategy_name}」？`)) return
   try {
-    await apiPost('/Backtest/Strategy/Delete', { strategy_id: row.strategy_id })
+    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Delete', { strategy_id: row.strategy_id })
     message.value = '删除成功'
     await load()
   } catch (e) {

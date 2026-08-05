@@ -102,3 +102,43 @@ func validateAccount(acc *Account) error {
 	}
 	return nil
 }
+
+// validateEnvironment 校验环境必填项与配置。
+func validateEnvironment(env *Environment) error {
+	if strings.TrimSpace(env.EnvCode) == "" {
+		return fmt.Errorf("env_code（环境编码）必填")
+	}
+	if strings.TrimSpace(env.EnvName) == "" {
+		return fmt.Errorf("env_name（环境名称）必填")
+	}
+	switch env.EnvType {
+	case "", "BACKTEST", "PAPER", "SIMULATION", "LIVE":
+	default:
+		return fmt.Errorf("env_type 仅支持 BACKTEST/PAPER/SIMULATION/LIVE")
+	}
+	for _, s := range env.Config.TradingSessions {
+		if len(s.Start) != 6 || len(s.End) != 6 {
+			return fmt.Errorf("trading_sessions 起止时间需为 hhmmss（如 093000）")
+		}
+	}
+	if env.Config.TradingRules != nil && env.Config.TradingRules.TickSize < 0 {
+		return fmt.Errorf("trading_rules.tick_size 不能为负数")
+	}
+	return nil
+}
+
+// validateTemplate 校验模板必填项。
+func validateTemplate(tmpl *Template) error {
+	if strings.TrimSpace(tmpl.TemplateCode) == "" {
+		return fmt.Errorf("template_code（模板编码）必填")
+	}
+	if strings.TrimSpace(tmpl.TemplateName) == "" {
+		return fmt.Errorf("template_name（模板名称）必填")
+	}
+	switch tmpl.TemplateType {
+	case "STRATEGY", "ACCOUNT", "ENVIRONMENT":
+	default:
+		return fmt.Errorf("template_type 仅支持 STRATEGY/ACCOUNT/ENVIRONMENT")
+	}
+	return nil
+}

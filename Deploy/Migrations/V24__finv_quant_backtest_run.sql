@@ -20,6 +20,7 @@ BEGIN;
 CREATE TABLE finv_quant_backtest_run (
     run_id              TEXT        PRIMARY KEY,            -- 任务 ID（UUID）
     run_no              BIGINT      GENERATED ALWAYS AS IDENTITY, -- 任务序号（展示用，单调递增）
+    user_id             TEXT        NOT NULL DEFAULT 'default', -- 所属用户（多用户隔离）
     strategy_id         TEXT        NOT NULL,               -- 引用策略（无物理外键，程序层控制）
     strategy_code       TEXT        NOT NULL,               -- 策略编码快照（冗余，便于列表展示）
     strategy_name       TEXT        NOT NULL,               -- 策略名称快照
@@ -28,6 +29,8 @@ CREATE TABLE finv_quant_backtest_run (
     account_code        TEXT        NOT NULL,               -- 账户编码快照
     account_name        TEXT        NOT NULL,               -- 账户名称快照
     account_snapshot    JSONB       NOT NULL,               -- 账户配置快照（初始资金/成本/保证金模式）
+    env_id              TEXT,                               -- 关联环境（finv_quant_environment.env_id，可空）
+    env_snapshot        JSONB,                              -- 环境配置快照（交易时段/规则/成本，保证任务可复现）
     secu_code           TEXT        NOT NULL,               -- 回测标的证券代码（如 GCMain）
     market_code         INTEGER     NOT NULL DEFAULT 0,     -- 市场代码（对齐 finv_security.market_code）
     period              TEXT        NOT NULL DEFAULT 'Min'
@@ -51,6 +54,10 @@ CREATE TABLE finv_quant_backtest_run (
     gmt_create          TIMESTAMPTZ NOT NULL DEFAULT now(),
     gmt_update          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- 按用户/状态查询（多用户隔离 + 回测分析页默认视图）
+CREATE INDEX idx_finv_quant_backtest_run_user
+    ON finv_quant_backtest_run (user_id, status, gmt_create DESC);
 
 -- 按状态查询（回测分析页默认按状态/时间倒序）
 CREATE INDEX idx_finv_quant_backtest_run_status

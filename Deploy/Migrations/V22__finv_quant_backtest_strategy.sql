@@ -28,6 +28,8 @@ CREATE TABLE finv_quant_backtest_strategy (
     data_period        TEXT        NOT NULL DEFAULT 'Min'
                        CHECK (data_period IN ('Min','Hour','Day')),  -- 默认数据周期
     secu_code          TEXT,                                -- 默认标的证券代码（如 GCMain，可空，以 definition.universe 为准）
+    user_id            TEXT        NOT NULL DEFAULT 'default', -- 所属用户（多用户隔离，接入认证后与登录态绑定）
+    template_id        TEXT,                                -- 来源模板（finv_quant_template.template_id，可空）
     allow_backtest     TEXT        NOT NULL DEFAULT '1'
                        CHECK (allow_backtest IN ('0','1')), -- 回测开关：'1' 允许回测，'0' 禁止
     status             TEXT        NOT NULL DEFAULT 'ENABLED'
@@ -36,6 +38,10 @@ CREATE TABLE finv_quant_backtest_strategy (
     gmt_create         TIMESTAMPTZ NOT NULL DEFAULT now(),  -- 首次插入时间
     gmt_update         TIMESTAMPTZ NOT NULL DEFAULT now()   -- 最后更新时间（触发器维护）
 );
+
+-- 按用户隔离查询
+CREATE INDEX idx_finv_quant_backtest_strategy_user
+    ON finv_quant_backtest_strategy (user_id, status, allow_backtest);
 
 -- 按类型/开关/状态检索
 CREATE INDEX idx_finv_quant_backtest_strategy_type

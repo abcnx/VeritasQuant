@@ -46,26 +46,27 @@ const menuItems: (MenuLeaf | MenuGroup)[] = [
       },
     ],
   },
-  // 量化策略验证 → 黄金期货合约回测验证
+  // 量化策略验证 → 黄金期货合约回测验证 / 环境与模板管理
   {
     key: 'quant-backtest',
     title: '量化策略验证',
     icon: 'mdi-flask-outline',
     children: [
-      { key: 'backtest-gold-futures', title: '黄金期货合约回测验证', icon: 'mdi-chart-bell-curve', path: '/backtest/gold-futures' },
+      { key: 'backtest-gold-futures', title: '黄金期货合约回测验证', icon: 'mdi-chart-bell-curve', path: '/meta/finvquant/backtest/gold-futures' },
+      { key: 'env-template', title: '环境与模板管理', icon: 'mdi-application-cog-outline', path: '/meta/finvquant/env-template' },
     ],
   },
   // 账户 / 资金 / 持仓 / 策略 / 回测分析（通用量化回测）
-  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/account' },
-  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/fund' },
-  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/position' },
-  { key: 'strategy', title: '策略管理', icon: 'mdi-sitemap-outline', path: '/strategy' },
-  { key: 'backtest-analysis', title: '回测分析', icon: 'mdi-chart-timeline-variant', path: '/backtest/analysis' },
+  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/meta/finvquant/account' },
+  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/meta/finvquant/fund' },
+  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/meta/finvquant/position' },
+  { key: 'strategy', title: '策略管理', icon: 'mdi-sitemap-outline', path: '/meta/finvquant/strategy' },
+  { key: 'backtest-analysis', title: '回测分析', icon: 'mdi-chart-timeline-variant', path: '/meta/finvquant/backtest/analysis' },
   // 仿真 / 模拟盘 / 实盘（规划中）
-  { key: 'simulation-data', title: '仿真数据验证', icon: 'mdi-database-sync-outline', path: '/simulation/data' },
-  { key: 'simulation-paper', title: '模拟盘验证', icon: 'mdi-account-cash-outline', path: '/simulation/paper' },
-  { key: 'simulation-live-sim', title: '实盘仿真验证', icon: 'mdi-robot-outline', path: '/simulation/live-sim' },
-  { key: 'live-trading', title: '实盘交易', icon: 'mdi-cash-register', path: '/live-trading' },
+  { key: 'simulation-data', title: '仿真数据验证', icon: 'mdi-database-sync-outline', path: '/meta/finvquant/simulation/data' },
+  { key: 'simulation-paper', title: '模拟盘验证', icon: 'mdi-account-cash-outline', path: '/meta/finvquant/simulation/paper' },
+  { key: 'simulation-live-sim', title: '实盘仿真验证', icon: 'mdi-robot-outline', path: '/meta/finvquant/simulation/live-sim' },
+  { key: 'live-trading', title: '实盘交易', icon: 'mdi-cash-register', path: '/meta/finvquant/live-trading' },
 ]
 
 const route = useRoute()

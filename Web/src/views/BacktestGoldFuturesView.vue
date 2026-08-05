@@ -21,6 +21,16 @@ interface AccountOption {
   currency_type: string
 }
 
+interface EnvOption {
+  env_id: string
+  env_code: string
+  env_name: string
+  env_type: string
+  region: string
+  is_default: string
+  allow_backtest: string
+}
+
 interface RunRow {
   run_id: string
   run_no: number
@@ -39,6 +49,7 @@ interface RunRow {
 
 const strategies = ref<StrategyOption[]>([])
 const accounts = ref<AccountOption[]>([])
+const environments = ref<EnvOption[]>([])
 const runs = ref<RunRow[]>([])
 const runTotal = ref(0)
 const runPage = ref(1)
@@ -46,6 +57,7 @@ const runPageSize = ref(10)
 
 const strategyId = ref('')
 const accountId = ref('')
+const envId = ref('')
 const secuCode = ref('GCMain')
 const startDate = ref('')
 const endDate = ref('')
@@ -65,19 +77,24 @@ const message = ref('')
 
 async function loadOptions() {
   try {
-    const [s, a] = await Promise.all([
-      apiGet<{ list: StrategyOption[] }>('/Backtest/Strategy/List?page=1&page_size=100&allow_backtest=1'),
-      apiGet<{ list: AccountOption[] }>('/Backtest/Account/List?page=1&page_size=100&allow_backtest=1'),
+    const [s, a, e] = await Promise.all([
+      apiGet<{ list: StrategyOption[] }>('/Meta/FinvQuant/Backtest/Strategy/List?page=1&page_size=100&allow_backtest=1'),
+      apiGet<{ list: AccountOption[] }>('/Meta/FinvQuant/Backtest/Account/List?page=1&page_size=100&allow_backtest=1'),
+      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&page_size=100&env_type=BACKTEST&allow_backtest=1'),
     ])
     strategies.value = s.list ?? []
     accounts.value = a.list ?? []
-    // 默认选中 GCMain 相关策略与首个账户
+    environments.value = (e.list ?? []).filter((x) => x.allow_backtest === '1')
+    // 默认选中 GCMain 相关策略与首个账户、默认环境
     if (!strategyId.value) {
       const gc = strategies.value.find((x) => x.secu_code === 'GCMain')
       strategyId.value = gc?.strategy_id ?? strategies.value[0]?.strategy_id ?? ''
       if (gc) period.value = gc.data_period || 'Min'
     }
     if (!accountId.value) accountId.value = accounts.value[0]?.account_id ?? ''
+    if (!envId.value) {
+      envId.value = environments.value.find((x) => x.is_default === '1')?.env_id ?? environments.value[0]?.env_id ?? ''
+    }
   } catch (e) {
     error.value = (e as Error).message
   }
@@ -86,7 +103,7 @@ async function loadOptions() {
 async function loadRuns() {
   try {
     const data = await apiGet<{ total: number; list: RunRow[] }>(
-      `/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
+      `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
     )
     runs.value = data.list ?? []
     runTotal.value = data.total ?? 0
@@ -124,9 +141,10 @@ async function startBacktest() {
     if (allowedTimes.value.trim()) {
       options.allowed_times = allowedTimes.value.split(/[,，\s]+/).filter(Boolean)
     }
-    const run = await apiPost<RunRow>('/Backtest/Run/Create', {
+    const run = await apiPost<RunRow>('/Meta/FinvQuant/Backtest/Run/Create', {
       strategy_id: strategyId.value,
       account_id: accountId.value,
+      env_id: envId.value || undefined,
       secu_code: secuCode.value || undefined,
       start_date: toDateInt(startDate.value) || undefined,
       end_date: toDateInt(endDate.value) || undefined,
@@ -148,7 +166,7 @@ function statusColor(s: string): string {
 }
 
 function viewReport(run: RunRow) {
-  router.push({ path: '/backtest/analysis', query: { run_id: run.run_id } })
+  router.push({ path: '/meta/finvquant/backtest/analysis', query: { run_id: run.run_id } })
 }
 
 onMounted(async () => {
@@ -184,6 +202,11 @@ onMounted(async () => {
               title: `${a.account_code} ${a.account_name}（${a.initial_capital.toLocaleString()} ${a.currency_type}）`,
               value: a.account_id,
             }))" label="回测账户 *" hint="初始资金/手续费/滑点在「账户管理」中维护" class="mb-2" />
+
+            <v-select v-model="envId" :items="environments.map((e) => ({
+              title: `${e.env_code} ${e.env_name}（${e.region || '通用'}）${e.is_default === '1' ? ' · 默认' : ''}`,
+              value: e.env_id,
+            }))" label="回测环境" hint="交易时段/规则/成本自适应，在「环境与模板管理」中维护" class="mb-2" />
 
             <v-text-field v-model="secuCode" label="回测标的证券代码" hint="如 GCMain（黄金期货主连）/ 518880 / NVDA" class="mb-2" />
 

@@ -187,8 +187,52 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 
 ## 9. 扩展路线
 
-- [ ] 多标的组合回测（universe 多证券、组合净值）
-- [ ] 机器学习策略类型（`MACHINE_LEARNING`，模型文件注册）
+- [ ] 多标的组合回测（universe 多证券、组合净值，模型已预留）
+- [ ] 机器学习策略类型（`MACHINE_LEARNING`）
 - [ ] 期货保证金模式实盘化（`FUTURES`）
 - [ ] 更丰富指标与信号函数（自定义函数注册表）
 - [ ] 参数寻优 / 批量回测
+
+## 10. 环境与模板（自适应）
+
+### 10.1 环境模型（`finv_quant_environment`）
+
+回测 / 模拟盘 / 仿真 / 实盘交易环境的配置差异、不同市场（COMEX 黄金 vs 沪深 ETF 等）的交易约束与交易规则差异、不同地区的习惯偏好差异，统一建模为环境：
+
+| 字段 | 说明 |
+|------|------|
+| `env_type` | BACKTEST 回测 / PAPER 模拟盘 / SIMULATION 仿真 / LIVE 实盘 |
+| `region` / `market_code` | 地区与市场（CN/US/HK...） |
+| `config.trading_sessions` | 交易时段（hhmmss 数组，如 COMEX `082000-133000`、沪深 `093000-113000 + 130000-150000`），非时段信号 → 拒绝事件「不在环境交易时段内」 |
+| `config.trading_rules` | T+N 交收、涨跌停幅度、合约乘数、`tick_size` 最小变动单位（成交价自动对齐） |
+| `config.cost` | 成本基准（手续费/滑点） |
+| `config.fill_mode` | 撮合模式（NEXT_BAR_OPEN / CURRENT_CLOSE） |
+| `config.currency` | 计价币种 |
+| `config.preferences` | 地区习惯偏好（自定义扩展，如日期格式、涨跌配色） |
+
+**成本覆盖链**：环境 > 任务（options）> 策略（definition.cost）> 账户。
+
+### 10.2 模板模型（`finv_quant_template`）
+
+策略模板 / 账户模板 / 环境模板三类（`template_type`），相同部分（环境、约束、规则、限制、策略）复用，差异部分自定义：
+
+- 内置模板（`is_builtin=1`，`user_id='system'` 全局可见）：双均线/RSI 策略模板、COMEX 黄金环境模板；
+- 自定义模板：用户按需保存，策略创建时可选关联 `template_id`；
+- 环境模板内容可直接复制为环境（env_code/env_name/config）。
+
+### 10.3 动态切换与自适应
+
+- 回测任务创建时指定 `env_id`（缺省取账户默认环境 → 系统默认回测环境），任务保存**环境快照**（`env_snapshot`）保证可复现；
+- 引擎自适应：交易时段过滤、tick_size 价格对齐、成本覆盖链；
+- 前端「环境与模板管理」维护环境与模板，黄金期货回测验证页支持环境下拉切换。
+
+## 11. 多用户 / 多子账户 / 组合回测预留
+
+- **多用户**：策略/账户/任务均带 `user_id`（默认 `default`，内置环境/模板为 `system` 全局可见）；列表/任务查询按用户隔离；接入 JWT/RBAC 后与登录态绑定；
+- **单用户多子账户**：账户支持 `group_id` 分组（主账户 = 分组根，子账户通过 group_id 关联），一个用户可拥有多个主/子账户；
+- **组合回测预留**：当前阶段单标的回放；策略定义 `universe.securities` 已支持多标的声明，组合净值与多标的撮合在后续版本实现。
+
+## 12. API 路径规范
+
+- 后端：`/API/V1/Meta/FinvQuant/Backtest/**`（策略/账户/任务/报告/曲线/成交/链路追踪/环境/模板）；
+- 前端：菜单与路由统一加 `Meta/FinvQuant/` 前缀（如 `/meta/finvquant/backtest/gold-futures`）。

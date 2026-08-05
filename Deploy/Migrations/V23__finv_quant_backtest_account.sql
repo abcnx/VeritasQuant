@@ -19,6 +19,9 @@ CREATE TABLE finv_quant_backtest_account (
     account_id        TEXT         PRIMARY KEY,             -- 账户 ID（UUID）
     account_code      TEXT         NOT NULL UNIQUE,         -- 账户编码（用户可读，全局唯一）
     account_name      TEXT         NOT NULL,                -- 账户名称
+    user_id           TEXT         NOT NULL DEFAULT 'default', -- 所属用户（多用户隔离）
+    group_id          TEXT,                                 -- 子账户分组/主账户归属（单用户多子账户，NULL=主账户）
+    env_id            TEXT,                                 -- 默认关联环境（finv_quant_environment.env_id，可空）
     initial_capital   NUMERIC(20,6) NOT NULL
                       CHECK (initial_capital > 0),          -- 初始启动资金
     currency_type     TEXT         NOT NULL DEFAULT 'USD',  -- 计价货币（对齐 finv_currency.currency_type）
@@ -39,6 +42,12 @@ CREATE TABLE finv_quant_backtest_account (
     gmt_create        TIMESTAMPTZ NOT NULL DEFAULT now(),
     gmt_update        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- 按用户/分组查询（多用户多子账户）
+CREATE INDEX idx_finv_quant_backtest_account_user
+    ON finv_quant_backtest_account (user_id, status, allow_backtest);
+CREATE INDEX idx_finv_quant_backtest_account_group
+    ON finv_quant_backtest_account (group_id);
 
 CREATE INDEX idx_finv_quant_backtest_account_status
     ON finv_quant_backtest_account (status, allow_backtest);

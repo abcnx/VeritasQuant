@@ -73,12 +73,15 @@ func (s *Service) SaveStrategy(ctx context.Context, st *Strategy) (string, error
 	if err != nil {
 		return "", fmt.Errorf("策略定义序列化失败: %w", err)
 	}
+	if st.UserID == "" {
+		st.UserID = "default"
+	}
 
 	_, err = s.pool.Exec(ctx, `
 INSERT INTO finv_quant_backtest_strategy
     (strategy_id, strategy_code, strategy_name, strategy_type, description,
-     definition, definition_version, data_period, secu_code, allow_backtest, status, created_by)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+     definition, definition_version, data_period, secu_code, user_id, template_id, allow_backtest, status, created_by)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
 ON CONFLICT (strategy_id) DO UPDATE SET
     strategy_code = EXCLUDED.strategy_code,
     strategy_name = EXCLUDED.strategy_name,
@@ -88,11 +91,14 @@ ON CONFLICT (strategy_id) DO UPDATE SET
     definition_version = EXCLUDED.definition_version,
     data_period = EXCLUDED.data_period,
     secu_code = EXCLUDED.secu_code,
+    user_id = EXCLUDED.user_id,
+    template_id = EXCLUDED.template_id,
     allow_backtest = EXCLUDED.allow_backtest,
     status = EXCLUDED.status,
     created_by = EXCLUDED.created_by`,
 		st.StrategyID, st.StrategyCode, st.StrategyName, st.StrategyType, st.Description,
-		defJSON, st.DefinitionVersion, st.DataPeriod, st.SecuCode, st.AllowBacktest, st.Status, st.CreatedBy)
+		defJSON, st.DefinitionVersion, st.DataPeriod, st.SecuCode, st.UserID, st.TemplateID,
+		st.AllowBacktest, st.Status, st.CreatedBy)
 	if err != nil {
 		return "", err
 	}
@@ -123,7 +129,7 @@ func (s *Service) ListStrategies(ctx context.Context, pager Pager, keyword, allo
 
 	rows, err := s.pool.Query(ctx, `
 SELECT strategy_id, strategy_code, strategy_name, strategy_type, description,
-       definition, definition_version, data_period, secu_code, allow_backtest, status, created_by, gmt_update
+       definition, definition_version, data_period, secu_code, user_id, template_id, allow_backtest, status, created_by, gmt_update
 FROM finv_quant_backtest_strategy
 WHERE `+cond+`
 ORDER BY gmt_update DESC
@@ -149,7 +155,7 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 func (s *Service) GetStrategy(ctx context.Context, strategyID string) (*Strategy, error) {
 	row := s.pool.QueryRow(ctx, `
 SELECT strategy_id, strategy_code, strategy_name, strategy_type, description,
-       definition, definition_version, data_period, secu_code, allow_backtest, status, created_by, gmt_update
+       definition, definition_version, data_period, secu_code, user_id, template_id, allow_backtest, status, created_by, gmt_update
 FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
 	st, err := scanStrategy(row)
 	if err != nil {
@@ -217,6 +223,9 @@ func (s *Service) SaveAccount(ctx context.Context, acc *Account) (string, error)
 	if acc.MarginRate <= 0 || acc.MarginRate > 1 {
 		acc.MarginRate = 1
 	}
+	if acc.UserID == "" {
+		acc.UserID = "default"
+	}
 	if acc.AllowBacktest == "" {
 		acc.AllowBacktest = FlagOn
 	}
@@ -226,12 +235,15 @@ func (s *Service) SaveAccount(ctx context.Context, acc *Account) (string, error)
 
 	_, err := s.pool.Exec(ctx, `
 INSERT INTO finv_quant_backtest_account
-    (account_id, account_code, account_name, initial_capital, currency_type,
+    (account_id, account_code, account_name, user_id, group_id, env_id, initial_capital, currency_type,
      commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 ON CONFLICT (account_id) DO UPDATE SET
     account_code = EXCLUDED.account_code,
     account_name = EXCLUDED.account_name,
+    user_id = EXCLUDED.user_id,
+    group_id = EXCLUDED.group_id,
+    env_id = EXCLUDED.env_id,
     initial_capital = EXCLUDED.initial_capital,
     currency_type = EXCLUDED.currency_type,
     commission_rate = EXCLUDED.commission_rate,
@@ -242,9 +254,9 @@ ON CONFLICT (account_id) DO UPDATE SET
     status = EXCLUDED.status,
     remark = EXCLUDED.remark,
     created_by = EXCLUDED.created_by`,
-		acc.AccountID, acc.AccountCode, acc.AccountName, acc.InitialCapital, acc.CurrencyType,
-		acc.CommissionRate, acc.SlippagePct, acc.MarginMode, acc.MarginRate,
-		acc.AllowBacktest, acc.Status, acc.Remark, acc.CreatedBy)
+		acc.AccountID, acc.AccountCode, acc.AccountName, acc.UserID, acc.GroupID, acc.EnvID,
+		acc.InitialCapital, acc.CurrencyType, acc.CommissionRate, acc.SlippagePct, acc.MarginMode,
+		acc.MarginRate, acc.AllowBacktest, acc.Status, acc.Remark, acc.CreatedBy)
 	if err != nil {
 		return "", err
 	}
@@ -274,7 +286,7 @@ func (s *Service) ListAccounts(ctx context.Context, pager Pager, keyword, allowB
 	}
 
 	rows, err := s.pool.Query(ctx, `
-SELECT account_id, account_code, account_name, initial_capital, currency_type,
+SELECT account_id, account_code, account_name, user_id, group_id, env_id, initial_capital, currency_type,
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
 FROM finv_quant_backtest_account
 WHERE `+cond+`
@@ -289,8 +301,8 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	list := []Account{}
 	for rows.Next() {
 		var a Account
-		if err := rows.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.InitialCapital,
-			&a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
+		if err := rows.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.UserID, &a.GroupID, &a.EnvID,
+			&a.InitialCapital, &a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
 			&a.AllowBacktest, &a.Status, &a.Remark, &a.CreatedBy, &a.GMTUpdate); err != nil {
 			return nil, 0, err
 		}
@@ -302,12 +314,12 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 // GetAccount 查询单个账户。
 func (s *Service) GetAccount(ctx context.Context, accountID string) (*Account, error) {
 	row := s.pool.QueryRow(ctx, `
-SELECT account_id, account_code, account_name, initial_capital, currency_type,
+SELECT account_id, account_code, account_name, user_id, group_id, env_id, initial_capital, currency_type,
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
 FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
 	var a Account
-	if err := row.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.InitialCapital,
-		&a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
+	if err := row.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.UserID, &a.GroupID, &a.EnvID,
+		&a.InitialCapital, &a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
 		&a.AllowBacktest, &a.Status, &a.Remark, &a.CreatedBy, &a.GMTUpdate); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("账户不存在: %s", accountID)
@@ -421,6 +433,8 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 		AccountID:      acc.AccountID,
 		AccountCode:    acc.AccountCode,
 		AccountName:    acc.AccountName,
+		UserID:         acc.UserID,
+		GroupID:        acc.GroupID,
 		InitialCapital: acc.InitialCapital,
 		CurrencyType:   acc.CurrencyType,
 		CommissionRate: acc.CommissionRate,
@@ -431,6 +445,23 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 	accJSON, _ := json.Marshal(accSnapshot)
 	optsJSON, _ := json.Marshal(req.Options)
 
+	// 环境解析：请求 env_id > 账户 env_id > 默认环境（BACKTEST）
+	env, err := s.resolveEnvironment(ctx, req.EnvID, acc.EnvID)
+	if err != nil {
+		return nil, err
+	}
+	envJSON := []byte("null")
+	envID := ""
+	if env != nil {
+		envJSON, _ = json.Marshal(env)
+		envID = env.EnvID
+	}
+
+	userID := req.UserID
+	if userID == "" {
+		userID = "default"
+	}
+
 	marketCode := 0
 	_ = s.pool.QueryRow(ctx,
 		`SELECT COALESCE(market_code, 0) FROM finv_security WHERE usc = $1 OR security_code = $1 LIMIT 1`, secuCode).Scan(&marketCode)
@@ -438,13 +469,15 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 	runID := uuid.NewString()
 	_, err = s.pool.Exec(ctx, `
 INSERT INTO finv_quant_backtest_run
-    (run_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
+    (run_id, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
      account_id, account_code, account_name, account_snapshot,
+     env_id, env_snapshot,
      secu_code, market_code, period, report_precision,
      start_ts, end_ts, start_date, end_date, options, status, progress, created_by)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,'PENDING',0,$19)`,
-		runID, st.StrategyID, st.StrategyCode, st.StrategyName, defJSON,
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,'PENDING',0,$22)`,
+		runID, userID, st.StrategyID, st.StrategyCode, st.StrategyName, defJSON,
 		acc.AccountID, acc.AccountCode, acc.AccountName, accJSON,
+		envID, envJSON,
 		secuCode, marketCode, period, precision,
 		startTS, endTS, startDate, endDate, optsJSON, req.StrCreatedBy())
 	if err != nil {
@@ -516,8 +549,9 @@ func (s *Service) ListRuns(ctx context.Context, q RunListQuery) ([]Run, int, err
 	}
 
 	rows, err := s.pool.Query(ctx, `
-SELECT run_id, run_no, strategy_id, strategy_code, strategy_name, strategy_snapshot,
+SELECT run_id, run_no, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
        account_id, account_code, account_name, account_snapshot,
+       env_id, env_snapshot,
        secu_code, market_code, period, report_precision,
        start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
        started_at, finished_at, created_by, gmt_update
@@ -545,8 +579,9 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 // GetRun 查询单个回测任务（含报告）。
 func (s *Service) GetRun(ctx context.Context, runID string) (*Run, error) {
 	row := s.pool.QueryRow(ctx, `
-SELECT run_id, run_no, strategy_id, strategy_code, strategy_name, strategy_snapshot,
+SELECT run_id, run_no, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
        account_id, account_code, account_name, account_snapshot,
+       env_id, env_snapshot,
        secu_code, market_code, period, report_precision,
        start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
        started_at, finished_at, created_by, gmt_update
@@ -785,6 +820,7 @@ func (s *Service) executeRun(ctx context.Context, runID string) {
 	cfg := EngineConfig{
 		Definition:      run.Definition(),
 		Account:         run.AccountSnapshot,
+		Environment:     run.EnvironmentSnapshot,
 		SecuCode:        run.SecuCode,
 		Period:          run.Period,
 		StartTS:         run.StartTS,
@@ -951,6 +987,338 @@ func normalizeLargePager(p Pager) Pager {
 	return p
 }
 
+// resolveEnvironment 解析回测环境：请求 env_id > 账户 env_id > 默认环境（BACKTEST）。
+// 返回 nil 表示不启用环境（引擎按策略/账户配置运行）。
+func (s *Service) resolveEnvironment(ctx context.Context, reqEnvID string, accEnvID *string) (*Environment, error) {
+	envID := reqEnvID
+	if envID == "" && accEnvID != nil {
+		envID = *accEnvID
+	}
+	if envID != "" {
+		env, err := s.GetEnvironment(ctx, envID)
+		if err != nil {
+			return nil, fmt.Errorf("加载环境失败: %w", err)
+		}
+		if env.AllowBacktest != FlagOn {
+			return nil, fmt.Errorf("环境「%s」回测开关已关闭", env.EnvName)
+		}
+		return env, nil
+	}
+	// 回退：用户默认环境（BACKTEST 类型 is_default='1'）
+	env, err := s.defaultEnvironment(ctx)
+	if err != nil && err != pgx.ErrNoRows {
+		return nil, err
+	}
+	return env, nil
+}
+
+// defaultEnvironment 查询默认回测环境。
+func (s *Service) defaultEnvironment(ctx context.Context) (*Environment, error) {
+	row := s.pool.QueryRow(ctx, `
+SELECT env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by, gmt_update
+FROM finv_quant_environment
+WHERE env_type='BACKTEST' AND is_default='1' AND allow_backtest='1' AND status='ENABLED'
+ORDER BY gmt_update DESC LIMIT 1`)
+	return scanEnvironment(row)
+}
+
+// ---------------------------------------------------------------------
+// 环境 CRUD
+// ---------------------------------------------------------------------
+
+// SaveEnvironment 新增或更新环境。
+func (s *Service) SaveEnvironment(ctx context.Context, env *Environment) (string, error) {
+	if err := validateEnvironment(env); err != nil {
+		return "", err
+	}
+	if env.EnvID == "" {
+		env.EnvID = uuid.NewString()
+	}
+	if env.EnvType == "" {
+		env.EnvType = "BACKTEST"
+	}
+	if env.UserID == "" {
+		env.UserID = "default"
+	}
+	if env.IsDefault == "" {
+		env.IsDefault = FlagOff
+	}
+	if env.AllowBacktest == "" {
+		env.AllowBacktest = FlagOn
+	}
+	if env.Status == "" {
+		env.Status = StatusEnabled
+	}
+	configJSON, err := json.Marshal(env.Config)
+	if err != nil {
+		return "", fmt.Errorf("环境配置序列化失败: %w", err)
+	}
+	_, err = s.pool.Exec(ctx, `
+INSERT INTO finv_quant_environment
+    (env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+ON CONFLICT (env_id) DO UPDATE SET
+    env_code = EXCLUDED.env_code, env_name = EXCLUDED.env_name, env_type = EXCLUDED.env_type,
+    region = EXCLUDED.region, market_code = EXCLUDED.market_code, config = EXCLUDED.config,
+    user_id = EXCLUDED.user_id, is_default = EXCLUDED.is_default, allow_backtest = EXCLUDED.allow_backtest,
+    status = EXCLUDED.status, description = EXCLUDED.description, created_by = EXCLUDED.created_by`,
+		env.EnvID, env.EnvCode, env.EnvName, env.EnvType, env.Region, env.MarketCode, configJSON,
+		env.UserID, env.IsDefault, env.AllowBacktest, env.Status, env.Description, env.CreatedBy)
+	if err != nil {
+		return "", err
+	}
+	return env.EnvID, nil
+}
+
+// ListEnvironments 分页查询环境（user_id 隔离：system + 指定用户）。
+func (s *Service) ListEnvironments(ctx context.Context, pager Pager, userID, envType, keyword string) ([]Environment, int, error) {
+	pager.Normalize()
+	where := []string{"(user_id = 'system' OR user_id = $1)"}
+	args := []any{}
+	if userID == "" {
+		userID = "default"
+	}
+	args = append(args, userID)
+	if envType != "" {
+		args = append(args, envType)
+		where = append(where, fmt.Sprintf("env_type = $%d", len(args)))
+	}
+	if keyword = strings.TrimSpace(keyword); keyword != "" {
+		args = append(args, "%"+keyword+"%")
+		where = append(where, fmt.Sprintf(`(
+			env_code ILIKE $%d OR env_name ILIKE $%d OR description ILIKE $%d OR region ILIKE $%d
+		)`, len(args), len(args), len(args), len(args)))
+	}
+	cond := strings.Join(where, " AND ")
+
+	var total int
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_environment WHERE `+cond, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by, gmt_update
+FROM finv_quant_environment
+WHERE `+cond+`
+ORDER BY is_default DESC, gmt_update DESC
+LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
+		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []Environment{}
+	for rows.Next() {
+		env, err := scanEnvironment(rows)
+		if err != nil {
+			return nil, 0, err
+		}
+		list = append(list, *env)
+	}
+	return list, total, rows.Err()
+}
+
+// GetEnvironment 查询单个环境。
+func (s *Service) GetEnvironment(ctx context.Context, envID string) (*Environment, error) {
+	row := s.pool.QueryRow(ctx, `
+SELECT env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by, gmt_update
+FROM finv_quant_environment WHERE env_id = $1`, envID)
+	env, err := scanEnvironment(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("环境不存在: %s", envID)
+		}
+		return nil, err
+	}
+	return env, nil
+}
+
+// ToggleEnvironment 切换环境回测开关。
+func (s *Service) ToggleEnvironment(ctx context.Context, envID, allowBacktest string) error {
+	if allowBacktest != FlagOn && allowBacktest != FlagOff {
+		return fmt.Errorf("allow_backtest 仅支持 0/1")
+	}
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_environment SET allow_backtest=$2 WHERE env_id=$1`, envID, allowBacktest)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("环境不存在: %s", envID)
+	}
+	return nil
+}
+
+// DeleteEnvironment 删除环境（存在关联回测任务时拒绝）。
+func (s *Service) DeleteEnvironment(ctx context.Context, envID string) error {
+	var runCount int
+	if err := s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE env_id = $1`, envID).Scan(&runCount); err != nil {
+		return err
+	}
+	if runCount > 0 {
+		return fmt.Errorf("环境已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
+	}
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_environment WHERE env_id = $1`, envID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("环境不存在: %s", envID)
+	}
+	return nil
+}
+
+// scanEnvironment 扫描环境行。
+func scanEnvironment(row rowScanner) (*Environment, error) {
+	var env Environment
+	var configJSON []byte
+	err := row.Scan(&env.EnvID, &env.EnvCode, &env.EnvName, &env.EnvType, &env.Region, &env.MarketCode,
+		&configJSON, &env.UserID, &env.IsDefault, &env.AllowBacktest, &env.Status,
+		&env.Description, &env.CreatedBy, &env.GMTUpdate)
+	if err != nil {
+		return nil, err
+	}
+	if len(configJSON) > 0 {
+		if err := json.Unmarshal(configJSON, &env.Config); err != nil {
+			return nil, fmt.Errorf("环境配置解析失败: %w", err)
+		}
+	}
+	return &env, nil
+}
+
+// ---------------------------------------------------------------------
+// 模板 CRUD
+// ---------------------------------------------------------------------
+
+// SaveTemplate 新增或更新模板。
+func (s *Service) SaveTemplate(ctx context.Context, tmpl *Template) (string, error) {
+	if err := validateTemplate(tmpl); err != nil {
+		return "", err
+	}
+	if tmpl.TemplateID == "" {
+		tmpl.TemplateID = uuid.NewString()
+	}
+	if tmpl.UserID == "" {
+		tmpl.UserID = "default"
+	}
+	if tmpl.Status == "" {
+		tmpl.Status = StatusEnabled
+	}
+	contentJSON, err := json.Marshal(tmpl.Content)
+	if err != nil {
+		return "", fmt.Errorf("模板内容序列化失败: %w", err)
+	}
+	_, err = s.pool.Exec(ctx, `
+INSERT INTO finv_quant_template
+    (template_id, template_code, template_name, template_type, content, user_id, is_builtin, status, description, created_by)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+ON CONFLICT (template_id) DO UPDATE SET
+    template_code = EXCLUDED.template_code, template_name = EXCLUDED.template_name,
+    template_type = EXCLUDED.template_type, content = EXCLUDED.content,
+    user_id = EXCLUDED.user_id, status = EXCLUDED.status,
+    description = EXCLUDED.description, created_by = EXCLUDED.created_by`,
+		tmpl.TemplateID, tmpl.TemplateCode, tmpl.TemplateName, tmpl.TemplateType, contentJSON,
+		tmpl.UserID, tmpl.IsBuiltin, tmpl.Status, tmpl.Description, tmpl.CreatedBy)
+	if err != nil {
+		return "", err
+	}
+	return tmpl.TemplateID, nil
+}
+
+// ListTemplates 分页查询模板（user_id 隔离：system + 指定用户）。
+func (s *Service) ListTemplates(ctx context.Context, pager Pager, userID, templateType, keyword string) ([]Template, int, error) {
+	pager.Normalize()
+	where := []string{"(user_id = 'system' OR user_id = $1)"}
+	args := []any{}
+	if userID == "" {
+		userID = "default"
+	}
+	args = append(args, userID)
+	if templateType != "" {
+		args = append(args, templateType)
+		where = append(where, fmt.Sprintf("template_type = $%d", len(args)))
+	}
+	if keyword = strings.TrimSpace(keyword); keyword != "" {
+		args = append(args, "%"+keyword+"%")
+		where = append(where, fmt.Sprintf(`(
+			template_code ILIKE $%d OR template_name ILIKE $%d OR description ILIKE $%d
+		)`, len(args), len(args), len(args)))
+	}
+	cond := strings.Join(where, " AND ")
+
+	var total int
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_template WHERE `+cond, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT template_id, template_code, template_name, template_type, content, user_id, is_builtin, status, description, created_by, gmt_update
+FROM finv_quant_template
+WHERE `+cond+`
+ORDER BY is_builtin DESC, gmt_update DESC
+LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
+		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []Template{}
+	for rows.Next() {
+		var tmpl Template
+		var contentJSON []byte
+		if err := rows.Scan(&tmpl.TemplateID, &tmpl.TemplateCode, &tmpl.TemplateName, &tmpl.TemplateType,
+			&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &tmpl.Description, &tmpl.CreatedBy, &tmpl.GMTUpdate); err != nil {
+			return nil, 0, err
+		}
+		if len(contentJSON) > 0 {
+			_ = json.Unmarshal(contentJSON, &tmpl.Content)
+		}
+		list = append(list, tmpl)
+	}
+	return list, total, rows.Err()
+}
+
+// GetTemplate 查询单个模板。
+func (s *Service) GetTemplate(ctx context.Context, templateID string) (*Template, error) {
+	var tmpl Template
+	var contentJSON []byte
+	err := s.pool.QueryRow(ctx, `
+SELECT template_id, template_code, template_name, template_type, content, user_id, is_builtin, status, description, created_by, gmt_update
+FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(
+		&tmpl.TemplateID, &tmpl.TemplateCode, &tmpl.TemplateName, &tmpl.TemplateType,
+		&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &tmpl.Description, &tmpl.CreatedBy, &tmpl.GMTUpdate)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("模板不存在: %s", templateID)
+		}
+		return nil, err
+	}
+	if len(contentJSON) > 0 {
+		_ = json.Unmarshal(contentJSON, &tmpl.Content)
+	}
+	return &tmpl, nil
+}
+
+// DeleteTemplate 删除模板（内置模板禁止删除）。
+func (s *Service) DeleteTemplate(ctx context.Context, templateID string) error {
+	var isBuiltin string
+	if err := s.pool.QueryRow(ctx,
+		`SELECT is_builtin FROM finv_quant_template WHERE template_id = $1`, templateID).Scan(&isBuiltin); err != nil {
+		return fmt.Errorf("模板不存在: %s", templateID)
+	}
+	if isBuiltin == FlagOn {
+		return fmt.Errorf("内置模板禁止删除")
+	}
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_template WHERE template_id = $1`, templateID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("模板不存在: %s", templateID)
+	}
+	return nil
+}
+
 // markRun 更新任务状态/进度/错误/报告。
 func (s *Service) markRun(ctx context.Context, runID, status string, progress int, errMsg string, report *RunReport) {
 	var reportJSON any
@@ -1020,7 +1388,7 @@ func scanStrategy(row rowScanner) (Strategy, error) {
 	var defJSON []byte
 	err := row.Scan(&st.StrategyID, &st.StrategyCode, &st.StrategyName, &st.StrategyType,
 		&st.Description, &defJSON, &st.DefinitionVersion, &st.DataPeriod, &st.SecuCode,
-		&st.AllowBacktest, &st.Status, &st.CreatedBy, &st.GMTUpdate)
+		&st.UserID, &st.TemplateID, &st.AllowBacktest, &st.Status, &st.CreatedBy, &st.GMTUpdate)
 	if err != nil {
 		return st, err
 	}
@@ -1032,10 +1400,11 @@ func scanStrategy(row rowScanner) (Strategy, error) {
 
 func scanRun(row rowScanner) (Run, error) {
 	var r Run
-	var defJSON, accJSON, optsJSON, reportJSON []byte
+	var defJSON, accJSON, envJSON, optsJSON, reportJSON []byte
 	var startedAt, finishedAt *time.Time
-	err := row.Scan(&r.RunID, &r.RunNo, &r.StrategyID, &r.StrategyCode, &r.StrategyName, &defJSON,
+	err := row.Scan(&r.RunID, &r.RunNo, &r.UserID, &r.StrategyID, &r.StrategyCode, &r.StrategyName, &defJSON,
 		&r.AccountID, &r.AccountCode, &r.AccountName, &accJSON,
+		&r.EnvID, &envJSON,
 		&r.SecuCode, &r.MarketCode, &r.Period, &r.ReportPrecision,
 		&r.StartTS, &r.EndTS, &r.StartDate, &r.EndDate, &optsJSON,
 		&r.Status, &r.Progress, &r.ErrorMessage, &reportJSON,
@@ -1051,6 +1420,12 @@ func scanRun(row rowScanner) (Run, error) {
 	if len(accJSON) > 0 {
 		if err := json.Unmarshal(accJSON, &r.AccountSnapshot); err != nil {
 			return r, fmt.Errorf("账户快照解析失败: %w", err)
+		}
+	}
+	if len(envJSON) > 0 && string(envJSON) != "null" {
+		var env Environment
+		if err := json.Unmarshal(envJSON, &env); err == nil {
+			r.EnvironmentSnapshot = &env
 		}
 	}
 	if len(optsJSON) > 0 {

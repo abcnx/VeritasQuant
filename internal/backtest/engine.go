@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,10 +27,11 @@ type Bar struct {
 	Turnover float64
 }
 
-// EngineConfig 引擎配置（服务层从策略定义+账户快照+任务参数组装）。
+// EngineConfig 引擎配置（服务层从策略定义+账户快照+环境快照+任务参数组装）。
 type EngineConfig struct {
 	Definition      StrategyDefinition
 	Account         AccountSnapshot
+	Environment     *Environment // 环境快照（可空，自适应交易时段/规则/成本）
 	SecuCode        string
 	Period          string
 	StartTS         int64
@@ -95,6 +97,15 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 
 	commission := acc.CommissionRate
 	slippage := acc.SlippagePct
+	// 环境成本基准（覆盖链：环境 > 任务 > 策略 > 账户）
+	if e.cfg.Environment != nil && e.cfg.Environment.Config.Cost != nil {
+		if e.cfg.Environment.Config.Cost.CommissionRate > 0 {
+			commission = e.cfg.Environment.Config.Cost.CommissionRate
+		}
+		if e.cfg.Environment.Config.Cost.SlippagePct > 0 {
+			slippage = e.cfg.Environment.Config.Cost.SlippagePct
+		}
+	}
 	if def.Cost != nil {
 		if def.Cost.CommissionRate > 0 {
 			commission = def.Cost.CommissionRate
@@ -108,6 +119,28 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	}
 	if e.cfg.Options.SlippagePct != nil {
 		slippage = *e.cfg.Options.SlippagePct
+	}
+
+	// 环境交易时段（hhmmss 列表，自适应不同市场交易时段）
+	envSessions := [][2]string{}
+	if e.cfg.Environment != nil {
+		for _, s := range e.cfg.Environment.Config.TradingSessions {
+			envSessions = append(envSessions, [2]string{s.Start, s.End})
+		}
+	}
+	envInSession := func(b Bar) bool {
+		if len(envSessions) == 0 {
+			return true
+		}
+		timeInt := b.Time
+		for _, se := range envSessions {
+			start, _ := strconv.Atoi(se[0])
+			end, _ := strconv.Atoi(se[1])
+			if timeInt >= start && timeInt <= end {
+				return true
+			}
+		}
+		return false
 	}
 
 	maxTradesPerDay := def.Risk.MaxTradesPerDay
@@ -311,12 +344,15 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		}
 		barTime := fmt.Sprintf("%02d%02d%02d", b.Time/10000, (b.Time/100)%100, b.Time%100)
 
-		// ---------- 4. 下单（限制判定：仓位/时间点/频率/次数，事件追踪登记拒绝原因） ----------
+		// ---------- 4. 下单（限制判定：仓位/时间点/环境时段/频率/次数，事件追踪登记拒绝原因） ----------
+		inSession := envInSession(b)
 		if buyHit {
 			if state.position > 0 {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "已达最大持仓（当前版本单标的同时仅允许 1 个持仓）")
 			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在允许交易时间点内")
+			} else if !inSession {
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在环境交易时段内")
 			} else if reason := dc.ruleRejectReason(def.Rules.Buy, "buy", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, reason)
 			} else {
@@ -331,6 +367,8 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "无持仓可卖")
 			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在允许交易时间点内")
+			} else if !inSession {
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在环境交易时段内")
 			} else if reason := dc.ruleRejectReason(def.Rules.Sell, "sell", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, reason)
 			} else {
@@ -528,6 +566,13 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 
 	def := e.cfg.Definition
 	acc := e.cfg.Account
+
+	// 环境 tick_size 价格对齐（最小变动单位，自适应不同产品）
+	if e.cfg.Environment != nil && e.cfg.Environment.Config.TradingRules != nil {
+		if ts := e.cfg.Environment.Config.TradingRules.TickSize; ts > 0 {
+			price = math.Round(price/ts) * ts
+		}
+	}
 
 	// 跨日重置每日计数
 	if dc.curDate != b.Date {

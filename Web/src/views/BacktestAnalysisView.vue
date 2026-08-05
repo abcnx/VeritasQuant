@@ -235,7 +235,7 @@ async function loadRuns() {
     if (statusFilter.value) params.set('status', statusFilter.value)
     if (secuFilter.value) params.set('secu_code', secuFilter.value)
     if (keyword.value) params.set('keyword', keyword.value)
-    const data = await apiGet<{ total: number; list: RunRow[] }>(`/Backtest/Run/List?${params.toString()}`)
+    const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
     runs.value = data.list ?? []
     runTotal.value = data.total ?? 0
   } catch (e) {
@@ -259,12 +259,12 @@ async function openRun(run: RunRow) {
   eventTraces.value = []
   try {
     const [rep, eq, tr, cf, pl, ev] = await Promise.all([
-      apiGet<Report>(`/Backtest/Run/Report?run_id=${run.run_id}`),
-      apiGet<{ list: EquityPoint[] }>(`/Backtest/Run/Equity?run_id=${run.run_id}&page=1&page_size=5000`),
-      apiGet<{ total: number; list: TradeRow[] }>(`/Backtest/Run/Trades?run_id=${run.run_id}&page=1&page_size=${tradePageSize.value}`),
-      apiGet<{ list: CashflowRow[] }>(`/Backtest/Run/Cashflows?run_id=${run.run_id}&page=1&page_size=1000`),
-      apiGet<{ list: PositionLogRow[] }>(`/Backtest/Run/PositionLogs?run_id=${run.run_id}&page=1&page_size=1000`),
-      apiGet<{ list: EventTraceRow[] }>(`/Backtest/Run/EventTraces?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<Report>(`/Meta/FinvQuant/Backtest/Run/Report?run_id=${run.run_id}`),
+      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?run_id=${run.run_id}&page=1&page_size=5000`),
+      apiGet<{ total: number; list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?run_id=${run.run_id}&page=1&page_size=${tradePageSize.value}`),
+      apiGet<{ list: CashflowRow[] }>(`/Meta/FinvQuant/Backtest/Run/Cashflows?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<{ list: PositionLogRow[] }>(`/Meta/FinvQuant/Backtest/Run/PositionLogs?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<{ list: EventTraceRow[] }>(`/Meta/FinvQuant/Backtest/Run/EventTraces?run_id=${run.run_id}&page=1&page_size=1000`),
     ])
     report.value = rep
     equity.value = eq.list ?? []
@@ -362,7 +362,7 @@ async function loadTradesPage() {
   if (!currentRun.value) return
   try {
     const tr = await apiGet<{ total: number; list: TradeRow[] }>(
-      `/Backtest/Run/Trades?run_id=${currentRun.value.run_id}&page=${tradePage.value}&page_size=${tradePageSize.value}`,
+      `/Meta/FinvQuant/Backtest/Run/Trades?run_id=${currentRun.value.run_id}&page=${tradePage.value}&page_size=${tradePageSize.value}`,
     )
     trades.value = tr.list ?? []
     tradeTotal.value = tr.total ?? 0

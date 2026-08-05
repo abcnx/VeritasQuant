@@ -77,6 +77,8 @@ type Strategy struct {
 	DefinitionVersion int                `json:"definition_version"`
 	DataPeriod        string             `json:"data_period"`
 	SecuCode          string             `json:"secu_code"`
+	UserID            string             `json:"user_id"`     // 所属用户（多用户隔离）
+	TemplateID        *string            `json:"template_id"` // 来源模板
 	AllowBacktest     string             `json:"allow_backtest"`
 	Status            string             `json:"status"`
 	CreatedBy         string             `json:"created_by"`
@@ -174,6 +176,9 @@ type Account struct {
 	AccountID      string    `json:"account_id"`
 	AccountCode    string    `json:"account_code"`
 	AccountName    string    `json:"account_name"`
+	UserID         string    `json:"user_id"`  // 所属用户（多用户隔离）
+	GroupID        *string   `json:"group_id"` // 子账户分组/主账户归属（单用户多子账户）
+	EnvID          *string   `json:"env_id"`   // 默认关联环境
 	InitialCapital float64   `json:"initial_capital"`
 	CurrencyType   string    `json:"currency_type"`
 	CommissionRate float64   `json:"commission_rate"`
@@ -192,6 +197,8 @@ type AccountSnapshot struct {
 	AccountID      string  `json:"account_id"`
 	AccountCode    string  `json:"account_code"`
 	AccountName    string  `json:"account_name"`
+	UserID         string  `json:"user_id"`
+	GroupID        *string `json:"group_id"`
 	InitialCapital float64 `json:"initial_capital"`
 	CurrencyType   string  `json:"currency_type"`
 	CommissionRate float64 `json:"commission_rate"`
@@ -206,33 +213,36 @@ type AccountSnapshot struct {
 
 // Run 回测任务表行。
 type Run struct {
-	RunID            string          `json:"run_id"`
-	RunNo            int64           `json:"run_no"`
-	StrategyID       string          `json:"strategy_id"`
-	StrategyCode     string          `json:"strategy_code"`
-	StrategyName     string          `json:"strategy_name"`
-	StrategySnapshot map[string]any  `json:"strategy_snapshot"`
-	AccountID        string          `json:"account_id"`
-	AccountCode      string          `json:"account_code"`
-	AccountName      string          `json:"account_name"`
-	AccountSnapshot  AccountSnapshot `json:"account_snapshot"`
-	SecuCode         string          `json:"secu_code"`
-	MarketCode       int             `json:"market_code"`
-	Period           string          `json:"period"`
-	ReportPrecision  string          `json:"report_precision"`
-	StartTS          int64           `json:"start_ts"`
-	EndTS            int64           `json:"end_ts"`
-	StartDate        int             `json:"start_date"`
-	EndDate          int             `json:"end_date"`
-	Options          map[string]any  `json:"options"`
-	Status           string          `json:"status"`
-	Progress         int             `json:"progress"`
-	ErrorMessage     string          `json:"error_message"`
-	Report           *RunReport      `json:"report,omitempty"`
-	StartedAt        *time.Time      `json:"started_at"`
-	FinishedAt       *time.Time      `json:"finished_at"`
-	CreatedBy        string          `json:"created_by"`
-	GMTUpdate        time.Time       `json:"gmt_update"`
+	RunID               string          `json:"run_id"`
+	RunNo               int64           `json:"run_no"`
+	UserID              string          `json:"user_id"` // 所属用户（多用户隔离）
+	StrategyID          string          `json:"strategy_id"`
+	StrategyCode        string          `json:"strategy_code"`
+	StrategyName        string          `json:"strategy_name"`
+	StrategySnapshot    map[string]any  `json:"strategy_snapshot"`
+	AccountID           string          `json:"account_id"`
+	AccountCode         string          `json:"account_code"`
+	AccountName         string          `json:"account_name"`
+	AccountSnapshot     AccountSnapshot `json:"account_snapshot"`
+	EnvID               string          `json:"env_id"`                         // 关联环境
+	EnvironmentSnapshot *Environment    `json:"environment_snapshot,omitempty"` // 环境配置快照（保证任务可复现）
+	SecuCode            string          `json:"secu_code"`
+	MarketCode          int             `json:"market_code"`
+	Period              string          `json:"period"`
+	ReportPrecision     string          `json:"report_precision"`
+	StartTS             int64           `json:"start_ts"`
+	EndTS               int64           `json:"end_ts"`
+	StartDate           int             `json:"start_date"`
+	EndDate             int             `json:"end_date"`
+	Options             map[string]any  `json:"options"`
+	Status              string          `json:"status"`
+	Progress            int             `json:"progress"`
+	ErrorMessage        string          `json:"error_message"`
+	Report              *RunReport      `json:"report,omitempty"`
+	StartedAt           *time.Time      `json:"started_at"`
+	FinishedAt          *time.Time      `json:"finished_at"`
+	CreatedBy           string          `json:"created_by"`
+	GMTUpdate           time.Time       `json:"gmt_update"`
 }
 
 // RunOptions 回测运行配置（options JSONB）。
@@ -250,12 +260,72 @@ type RunOptions struct {
 type CreateRunRequest struct {
 	StrategyID      string     `json:"strategy_id"`
 	AccountID       string     `json:"account_id"`
+	EnvID           string     `json:"env_id"`  // 环境（可选，缺省取账户 env_id / 默认环境）
+	UserID          string     `json:"user_id"` // 所属用户（可选，缺省 default）
 	SecuCode        string     `json:"secu_code"`
 	StartDate       int        `json:"start_date"`       // yyyymmdd（可选，缺省用行情最早）
 	EndDate         int        `json:"end_date"`         // yyyymmdd
 	Period          string     `json:"period"`           // Min/Hour/Day（缺省取策略 data.period）
 	ReportPrecision string     `json:"report_precision"` // Min/Hour/Day（缺省 Day）
 	Options         RunOptions `json:"options"`
+}
+
+// Environment 回测环境表行（回测/模拟盘/仿真/实盘环境 × 地区/市场）。
+type Environment struct {
+	EnvID         string            `json:"env_id"`
+	EnvCode       string            `json:"env_code"`
+	EnvName       string            `json:"env_name"`
+	EnvType       string            `json:"env_type"`    // BACKTEST/PAPER/SIMULATION/LIVE
+	Region        string            `json:"region"`      // 地区（CN/US/HK...）
+	MarketCode    int               `json:"market_code"` // 关联市场
+	Config        EnvironmentConfig `json:"config"`      // 环境配置（交易时段/规则/成本/撮合/偏好）
+	UserID        string            `json:"user_id"`
+	IsDefault     string            `json:"is_default"`
+	AllowBacktest string            `json:"allow_backtest"`
+	Status        string            `json:"status"`
+	Description   string            `json:"description"`
+	CreatedBy     string            `json:"created_by"`
+	GMTUpdate     time.Time         `json:"gmt_update"`
+}
+
+// EnvironmentConfig 环境配置（config JSONB，自适应不同市场/环境）。
+type EnvironmentConfig struct {
+	TradingSessions []SessionDef     `json:"trading_sessions,omitempty"` // 交易时段（hhmmss，空=不限制）
+	TradingRules    *TradingRulesDef `json:"trading_rules,omitempty"`    // 交易规则（T+N/涨跌停/合约乘数/tick_size）
+	Cost            *CostDef         `json:"cost,omitempty"`             // 成本基准（覆盖链：环境>任务>策略>账户）
+	FillMode        string           `json:"fill_mode,omitempty"`        // 撮合模式
+	Currency        string           `json:"currency,omitempty"`         // 计价币种
+	Preferences     map[string]any   `json:"preferences,omitempty"`      // 地区习惯偏好（自定义扩展）
+}
+
+// SessionDef 交易时段定义。
+type SessionDef struct {
+	Start string `json:"start"` // hhmmss
+	End   string `json:"end"`   // hhmmss
+}
+
+// TradingRulesDef 交易规则定义。
+type TradingRulesDef struct {
+	TPlus              int     `json:"t_plus,omitempty"`              // T+N 交收规则（0=T+0）
+	TickSize           float64 `json:"tick_size,omitempty"`           // 最小变动单位（价格精度）
+	ContractMultiplier float64 `json:"contract_multiplier,omitempty"` // 合约乘数
+	LimitUpPct         float64 `json:"limit_up_pct,omitempty"`        // 涨停幅度 %（0=无限制）
+	LimitDownPct       float64 `json:"limit_down_pct,omitempty"`      // 跌停幅度 %（0=无限制）
+}
+
+// Template 模板表行（策略/账户/环境三类模板，相同部分复用、差异自定义）。
+type Template struct {
+	TemplateID   string         `json:"template_id"`
+	TemplateCode string         `json:"template_code"`
+	TemplateName string         `json:"template_name"`
+	TemplateType string         `json:"template_type"` // STRATEGY/ACCOUNT/ENVIRONMENT
+	Content      map[string]any `json:"content"`       // 模板内容
+	UserID       string         `json:"user_id"`
+	IsBuiltin    string         `json:"is_builtin"`
+	Status       string         `json:"status"`
+	Description  string         `json:"description"`
+	CreatedBy    string         `json:"created_by"`
+	GMTUpdate    time.Time      `json:"gmt_update"`
 }
 
 // EquityPoint 净值曲线点。

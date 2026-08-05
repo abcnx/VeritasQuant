@@ -51,7 +51,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: AccountRow[] }>(
-      `/Backtest/Account/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/FinvQuant/Backtest/Account/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -82,7 +82,7 @@ function openEdit(row: AccountRow) {
 async function save() {
   error.value = ''
   try {
-    await apiPost('/Backtest/Account/Save', form.value)
+    await apiPost('/Meta/FinvQuant/Backtest/Account/Save', form.value)
     message.value = '保存成功'
     dialog.value = false
     await load()
@@ -93,7 +93,7 @@ async function save() {
 
 async function toggle(row: AccountRow) {
   try {
-    await apiPost('/Backtest/Account/Toggle', {
+    await apiPost('/Meta/FinvQuant/Backtest/Account/Toggle', {
       account_id: row.account_id,
       allow_backtest: row.allow_backtest === '1' ? '0' : '1',
     })
@@ -106,7 +106,7 @@ async function toggle(row: AccountRow) {
 async function remove(row: AccountRow) {
   if (!confirm(`确认删除账户「${row.account_name}」？`)) return
   try {
-    await apiPost('/Backtest/Account/Delete', { account_id: row.account_id })
+    await apiPost('/Meta/FinvQuant/Backtest/Account/Delete', { account_id: row.account_id })
     message.value = '删除成功'
     await load()
   } catch (e) {

@@ -184,19 +184,41 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 - 回测引擎：逐 bar 回放（预热 → 挂单撮合（NEXT_BAR_OPEN）→ 止损止盈 → 信号 → 规则限制 → 账户更新 → 报告点）；
 - 报告：余额/收益率/收益额/持仓金额曲线（按报告精度）+ 最大投入/平均投入/到期收益率/最大回撤/夏普/胜率/盈亏比等技术指标；
 - **链路追踪（需求⑨）**：资金流水明细（初始注入/买入付款/卖出收款/手续费/保证金占用释放）、持仓变化明细（开仓/加仓/减仓/平仓 + 成本变化）、交易事件追踪（触发原因/成交结果 FILLED·REJECTED·EXPIRED/委托耗时 bar·秒/未成交原因分类统计）；
+- **环境/模板（自适应）**：环境模型（回测/模拟盘/仿真/实盘类型 × 地区/市场），配置含交易时段、交易规则（T+N/涨跌停/合约乘数/tick_size）、成本基准、撮合模式；模板模型（策略/账户/环境三类，内置+自定义）；回测任务保存环境快照；引擎自适应环境交易时段与成本规则；
+- **多用户/多子账户**：策略/账户/任务均带 `user_id`（多用户隔离，默认 default），账户支持 `group_id` 分组（单用户多子账户），组合回测在 universe 多证券上预留（后续版本实现组合净值）；
 - 异步任务调度：并发上限 4、进度/状态持久化、可取消；
-- 数据库：V22~V27（策略/账户/任务/净值曲线/成交记录/资金流水/持仓变化/事件追踪）+ V100019 种子数据（默认账户 + GCMain 双均线示例策略）。
-- **表名规范**：量化回测模块统一前缀 `finv_quant_`（如 `finv_quant_backtest_strategy` / `finv_quant_backtest_run`）。
+- 数据库：V22~V28（策略/账户/任务/净值曲线/成交记录/资金流水/持仓变化/事件追踪/环境/模板）+ V100019/V100020 种子数据（默认账户 + GCMain 双均线示例策略 + 默认环境与内置模板）。
+- **表名规范**：量化回测模块统一前缀 `finv_quant_`（如 `finv_quant_backtest_strategy` / `finv_quant_backtest_run` / `finv_quant_environment` / `finv_quant_template`）。
 
-### API（/API/V1/Backtest/**）
+### API（/API/V1/Meta/FinvQuant/Backtest/**）
 
 - 策略：`Strategy/List|Get|Save|Toggle|Delete`
 - 账户：`Account/List|Get|Save|Toggle|Delete`
 - 任务：`Run/Create|List|Get|Cancel`、报告 `Run/Report`、曲线 `Run/Equity`、成交 `Run/Trades`、链路追踪 `Run/Cashflows|PositionLogs|EventTraces`
+- 环境：`Environment/List|Get|Save|Toggle|Delete`
+- 模板：`Template/List|Get|Save|Delete`
 
 ### 规范文档
 
 - 策略定义模型与表达式语法：`Docs/DevSpec/BacktestStrategySpec.md`
+
+## 9.6 评审意见与新需求（2026-08-06 第二轮）
+
+### 9.6.1 评审意见落实（ACANX 评论 issuecomment-5197476192）
+
+1. **⑨ 持仓变动详细情况链路追踪分析**：资金流水明细 / 持仓变化明细 / 交易事件结果追踪（事件触发原因、成交结果与否、委托耗时、未能成交的原因）—— 已落地（见 9.5 链路追踪 + 迁移 V27）；
+2. **表名命名规则**：量化回测模块统一 `finv_quant_` 前缀（示例 `finv_quant_backtest_strategy`）—— 已落地（V22~V27 迁移与代码同步改名）。
+
+### 9.6.2 新增需求（2026-08-06 第三轮）
+
+1. **多用户回测运行**：系统设计支持多用户并发回测（策略/账户/任务均按 `user_id` 隔离与过滤；当前无认证系统，`user_id` 先以字符串字段承载，接入 JWT/RBAC 后与登录态绑定）；
+2. **单用户多子账户**：一个用户可拥有多个账户（主/子账户），账户支持 `group_id` 分组归属（主账户 = group 根，子账户通过 group_id 关联），回测任务绑定具体账户；
+3. **投资组合回测预留**：当前阶段不实现组合回测；策略定义 `universe.securities` 已支持多标的声明，组合净值/多标的撮合在后续版本实现（模型与字段预留，不加约束）；
+4. **环境/模板模型**：
+   - **环境（Environment）**：回测 / 模拟盘 / 仿真 / 实盘交易环境的配置差异（撮合模式、成本、交易时段、交易规则）；不同市场（如 COMEX 黄金 vs 沪深 ETF）的交易约束、交易规则、地区习惯偏好差异；
+   - **模板（Template）**：策略模板 / 账户模板 / 环境模板，相同部分（环境、约束、规则、限制、策略）复用，差异部分支持自定义配置；
+   - **自适应与动态切换**：回测任务创建时指定环境（`env_id`）并保存环境快照；引擎自适应环境配置（交易时段过滤、tick_size/价格数量精度、成本覆盖：环境 > 任务 > 策略 > 账户）；前端环境管理页 + 回测配置页支持环境选择与切换；
+5. **API 路径规范**：后端 `/API/V1/Backtest/**` → `/API/V1/Meta/FinvQuant/Backtest/**`；前端菜单/路由统一加 `Meta/FinvQuant/` 前缀；受影响代码与文档同步替换。
 
 ## 10. 变更记录
 
@@ -210,3 +232,4 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 | 2026-08-04 | 规范与文档 | 建表规范：`finv_` 前缀、行情表 `finv_quote_xxx`；迁移重命名 `Deploy/Migrations/V1__finv_quote_secu_kline_min.sql`（表名修正 `finv_quote_ingest_batches`/`finv_quote_revision_log`）；新增 `Docs/API/` 服务端接口文档（含 /Quote/Import/Upload 端点） |
 | 2026-08-06 | 通用量化回测 | 前端新增顶级菜单「量化策略验证/账户管理/资金管理/持仓管理/策略管理/回测分析/仿真数据验证/模拟盘验证/实盘仿真验证/实盘交易」；「量化策略验证 → 黄金期货合约回测验证」支持配置初始资金/策略/限制/回测开关并启动回测、查看报告。服务端新增 `internal/backtest`（结构化策略定义模型+指标+信号表达式引擎+回测引擎+报告生成+异步任务调度），迁移 V22~V26 + V100019 种子（默认账户 + GCMain 双均线示例策略）；API `/API/V1/Backtest/**`（策略/账户/任务/报告/曲线/成交）；规范文档 `Docs/DevSpec/BacktestStrategySpec.md` |
 | 2026-08-06 | 回测链路追踪+命名规范 | 按评审意见：① 表名统一 `finv_quant_` 前缀（V22~V26 迁移与代码同步改名）；② 新增需求⑨链路追踪——迁移 V27（资金流水 `finv_quant_backtest_cashflow`/持仓变化 `finv_quant_backtest_position_log`/事件追踪 `finv_quant_backtest_event_trace`），引擎登记触发原因/成交结果/委托耗时/未成交原因，报告新增 `event_stats` 统计，前端回测分析页新增 ⑨ 链路追踪统计与三张明细表；API 新增 `Run/Cashflows|PositionLogs|EventTraces` |
+| 2026-08-06 | 多用户/环境模板/API路径 | 按新增需求：① 多用户回测（策略/账户/任务加 `user_id`）+ 单用户多子账户（账户 `group_id` 分组）+ 组合回测预留（universe 多标的）；② 环境/模板模型——迁移 V28（`finv_quant_environment` 环境表 + `finv_quant_template` 模板表）+ V100020 种子，环境配置含交易时段/交易规则/成本基准/撮合模式，引擎自适应环境（时段过滤、tick_size 精度、成本覆盖链 环境>任务>策略>账户），任务保存环境快照，前端新增环境与模板管理页；③ API 路径 `/API/V1/Backtest/**` → `/API/V1/Meta/FinvQuant/Backtest/**`，前端菜单/路由统一加 `Meta/FinvQuant/` 前缀，代码与文档同步替换 |
