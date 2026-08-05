@@ -40,3 +40,9 @@
   - [`Meta/MetaExchange.md`](Meta/MetaExchange.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Exchange/*`（交易所信息维护）
   - [`Meta/MetaMarket.md`](Meta/MetaMarket.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Market/*`（交易所下设市场信息维护）
   - [`Meta/MetaSecurity.md`](Meta/MetaSecurity.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Security/*`（规范证券信息维护，含 `Options` 下拉与 `Lookup` 详情查询）
+  - [`Backtest/BacktestStrategy.md`](Backtest/BacktestStrategy.md) — `GET/POST /API/V1/Meta/FinvQuant/Backtest/Strategy/*`（回测策略管理）
+  - [`Backtest/BacktestAccount.md`](Backtest/BacktestAccount.md) — `GET/POST /API/V1/Meta/FinvQuant/Backtest/Account/*`（回测账户管理）
+  - [`Backtest/BacktestRunCreate.md`](Backtest/BacktestRunCreate.md) — `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create`（创建并启动回测任务）
+  - [`Backtest/BacktestRunQuery.md`](Backtest/BacktestRunQuery.md) — `GET/POST /API/V1/Meta/FinvQuant/Backtest/Run/*`（任务查询/报告/曲线/成交/链路追踪）
+  - [`Backtest/BacktestEnvironment.md`](Backtest/BacktestEnvironment.md) — `GET/POST /API/V1/Meta/FinvQuant/Backtest/Environment/*`（回测环境管理）
+  - [`Backtest/BacktestTemplate.md`](Backtest/BacktestTemplate.md) — `GET/POST /API/V1/Meta/FinvQuant/Backtest/Template/*`（回测模板管理）
