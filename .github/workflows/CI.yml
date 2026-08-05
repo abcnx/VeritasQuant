@@ -144,27 +144,33 @@ jobs:
       # 为每个平台单独打 tag（如 v0.1.0-202608051934-linux-amd64 / -linux-arm64），
       # 便于按平台拉取/区分构建产物。
       # ⚠️ 不用 docker buildx imagetools create：它在 CI 中复制 manifest 时会以匿名方式
-      # 请求 GHCR token（不继承 docker login 凭据），私有包返回 403 Forbidden；
-      # 改用 crane 官方镜像（gcr.io/go-containerregistry/crane）：
-      #   crane auth login 显式认证 + crane copy --platform（凭据经 $HOME 挂载传递）。
+      # 请求 GHCR token（不继承 docker login 凭据），私有包返回 403 Forbidden。
+      # ⚠️🔴 踩坑教训（2026-08-05 dev push 验证失败）——crane 官方镜像
+      #   （gcr.io/go-containerregistry/crane）基于 distroless，无 shell，默认 nonroot 用户：
+      #   ① 挂载 ${HOME}/.docker:/root/.docker 它读不到（HOME=/home/nonroot）→ 凭据存容器内；
+      #   ② auth login 与 copy 分两次 docker run，login 容器退出后凭据丢失，
+      #      copy 容器匿名状态 → PUT manifest 401 UNAUTHORIZED；
+      #   ③ 镜像内无 sh，--entrypoint sh 不可行。
+      # ✅ 修复：不经 docker 容器，直接在 runner 上运行 crane 静态二进制（同一进程、
+      #     凭据写入 runner 的 ~/.docker/config.json，login 与 copy 天然共享）。
       - name: TagPerPlatformManifests
         run: |
           set -euo pipefail
           BASE="${{ steps.tags.outputs.base }}"
-          # 显式登录 GHCR（crane 使用独立凭据存储 ~/.docker/config.json，不读 docker login 凭据）
-          docker run --rm \
-            -v "${HOME}/.docker:/root/.docker" \
-            gcr.io/go-containerregistry/crane:latest auth login ghcr.io \
+          # 下载 crane 静态二进制（GitHub runner 为 x86_64）
+          CRANE_VER=0.21.8
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VER}/go-containerregistry_Linux_x86_64.tar.gz" -o /tmp/crane.tar.gz
+          tar -xzf /tmp/crane.tar.gz -C /tmp crane
+          test -x /tmp/crane || { echo "crane 二进制解包失败"; exit 1; }
+          # 登录 GHCR（凭据写入 runner 的 ~/.docker/config.json）
+          /tmp/crane auth login ghcr.io \
             -u "${{ github.actor }}" \
             -p "${{ secrets.GITHUB_TOKEN }}"
           # PLATFORMS 以空格分隔（env 已定义）；逗号会导致整串被当作单个值
           for PLAT in ${{ env.PLATFORMS }}; do
             SUFFIX=${PLAT//\//-}
             echo "打平台 tag: ${BASE}-${SUFFIX} (${PLAT})"
-            docker run --rm \
-              -v "${HOME}/.docker:/root/.docker" \
-              gcr.io/go-containerregistry/crane:latest copy \
-              --platform "$PLAT" \
+            /tmp/crane copy --platform "$PLAT" \
               "${{ env.IMAGE }}:${BASE}" \
               "${{ env.IMAGE }}:${BASE}-${SUFFIX}"
           done
