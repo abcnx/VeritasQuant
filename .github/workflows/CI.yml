@@ -99,11 +99,11 @@ jobs:
           VERSION=$(cat VERSION)
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
             # v* tag 推送（main 发布）：latest + v{VERSION}（git tag 名）
-            echo "tags=latest,${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           else
             # 分支推送（dev/main/FinvQuant）：latest + v{VERSION}-YYYYMMDDHHMM（Asia/Shanghai）
             TS=$(TZ=Asia/Shanghai date +%Y%m%d%H%M)
-            echo "tags=latest,v${VERSION}-${TS}" >> "$GITHUB_OUTPUT"
+            echo "tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:v${VERSION}-${TS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: LoginToGHCR
@@ -122,7 +122,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ env.IMAGE }}:${{ steps.tags.outputs.tags }}
+          tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
