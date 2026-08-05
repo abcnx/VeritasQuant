@@ -2,7 +2,10 @@
 #   - ghcr.io/acanx/finvquant（Go 服务端 16001 + 内嵌前端 16002，单镜像单进程）
 #
 # 触发：push 到 dev/main/FinvQuant、tag v*、PR、手动
-# tag 规则：latest（dev/main/FinvQuant 推送）+ 版本 tag（v* 推送时使用 git tag）
+# 全局版本：单一来源 = 项目根 VERSION 文件（同时用于后端 -ldflags、前端 package.json、镜像 tag）
+# tag 规则：
+#   - dev/main/FinvQuant 分支推送：latest + v{VERSION}-YYYYMMDDHHMM（Asia/Shanghai，如 v0.1.0-202608051901）
+#   - v* tag 推送（main 发布）：latest + v{VERSION}（即 git tag 名，如 v0.1.0）
 
 name: FinvQuantCICD
 
@@ -70,7 +73,11 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: |
+          # 全局版本号注入前端 package.json（单一来源：项目根 VERSION）
+          VERSION=$(cat ../VERSION)
+          npm pkg set version="$VERSION"
+          npm run build
 
   # ------------------------------------------------------------------
   # 3. 构建并推送 All-in-One 镜像到 GHCR
@@ -89,10 +96,14 @@ jobs:
       - name: ResolveImageTags
         id: tags
         run: |
+          VERSION=$(cat VERSION)
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # v* tag 推送（main 发布）：latest + v{VERSION}（git tag 名）
             echo "tags=latest,${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           else
-            echo "tags=latest" >> "$GITHUB_OUTPUT"
+            # 分支推送（dev/main/FinvQuant）：latest + v{VERSION}-YYYYMMDDHHMM（Asia/Shanghai）
+            TS=$(TZ=Asia/Shanghai date +%Y%m%d%H%M)
+            echo "tags=latest,v${VERSION}-${TS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: LoginToGHCR
