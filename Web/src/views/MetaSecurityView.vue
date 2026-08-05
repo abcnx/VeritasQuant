@@ -291,6 +291,15 @@ onMounted(() => {
               <v-text-field v-model="form.usc" label="usc（统一证券代码，全局唯一）" density="compact" />
             </v-col>
             <v-col cols="6">
+              <v-text-field v-model="form.security_name_cn" label="证券名称（中文）" density="compact" />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field v-model="form.security_name" label="源证券名称" density="compact" />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field v-model="form.security_name_full" label="证券名称（全称，可选）" density="compact" />
+            </v-col>
+            <v-col cols="6">
               <v-select
                 v-model="form.exchange_code"
                 label="交易所代码（基于 finv_exchange 下拉）"
@@ -315,15 +324,6 @@ onMounted(() => {
             </v-col>
             <v-col cols="6">
               <v-text-field v-model="form.security_type" label="证券类型（如 Stock / ETF / Futures）" density="compact" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="form.security_name" label="源证券名称" density="compact" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="form.security_name_cn" label="证券名称（中文）" density="compact" />
-            </v-col>
-            <v-col cols="12">
-              <v-text-field v-model="form.security_name_full" label="证券名称（全称，可选）" density="compact" />
             </v-col>
             <v-col cols="4">
               <v-text-field v-model="form.currency_type" label="计价货币（对齐 finv_currency）" density="compact" />
