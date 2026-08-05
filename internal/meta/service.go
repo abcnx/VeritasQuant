@@ -98,6 +98,7 @@ func NewService(pool *pgxpool.Pool) *Service {
 // ---------------------------------------------------------------------
 
 // ListExchanges 分页查询交易所字典；keyword 匹配 code/flag/abbr/name（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 exchange_code 升序。
 func (s *Service) ListExchanges(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Exchange, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -129,7 +130,7 @@ SELECT exchange_code, exchange_flag, exchange_abbr, exchange_name, exchange_abbr
        en_market_type, region, base_currency, ft_list_exchange_code, flag_enable
 FROM finv_exchange
 WHERE `+cond+`
-ORDER BY exchange_code ASC
+ORDER BY flag_enable DESC, exchange_code ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
@@ -203,6 +204,7 @@ func (s *Service) ToggleExchange(ctx context.Context, code int, flag string) err
 // ---------------------------------------------------------------------
 
 // ListMarkets 分页查询交易市场；keyword 匹配 code/flag/abbr/name/证券类型（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 market_code 升序。
 func (s *Service) ListMarkets(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Market, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -233,7 +235,7 @@ func (s *Service) ListMarkets(ctx context.Context, pager Pager, keyword, flagEna
 SELECT market_code, market_flag, market_abbr, market_name, en_security_type, base_currency, flag_enable
 FROM finv_market
 WHERE `+cond+`
-ORDER BY market_code ASC
+ORDER BY flag_enable DESC, market_code ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
@@ -304,6 +306,7 @@ func (s *Service) ToggleMarket(ctx context.Context, code int, flag string) error
 // ---------------------------------------------------------------------
 
 // ListSecurities 分页查询证券代码；keyword 匹配 usc/证券代码/证券名称（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 usc 升序。
 func (s *Service) ListSecurities(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Security, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -334,7 +337,7 @@ SELECT usc, exchange_code, security_type, security_code, security_name, security
        security_name_full, currency_type, init_date, timezone, tz, flag_enable
 FROM finv_security
 WHERE `+cond+`
-ORDER BY usc ASC
+ORDER BY flag_enable DESC, usc ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
