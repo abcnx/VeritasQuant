@@ -435,3 +435,29 @@ ORDER BY usc ASC`)
 	return list, rows.Err()
 }
 
+// LookupSecurity 按统一证券代码（usc）查询证券详情，供历史行情导入时
+// 「先选证券 → 自动带出信息核对」与「先选文件 → 自动匹配补全」使用。
+// 未找到时返回 (nil, nil)，由调用方决定提示方式。
+func (s *Service) LookupSecurity(ctx context.Context, usc string) (*Security, error) {
+	usc = strings.TrimSpace(usc)
+	if usc == "" {
+		return nil, fmt.Errorf("usc 不能为空")
+	}
+	var sec Security
+	err := s.pool.QueryRow(ctx, `
+SELECT usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+       security_name_full, currency_type, init_date, timezone, tz, flag_enable
+FROM finv_security
+WHERE usc = $1`, usc).Scan(
+		&sec.USC, &sec.ExchangeCode, &sec.SecurityType, &sec.SecurityCode,
+		&sec.SecurityName, &sec.SecurityNameCN, &sec.SecurityNameFull, &sec.CurrencyType,
+		&sec.InitDate, &sec.Timezone, &sec.Tz, &sec.FlagEnable)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &sec, nil
+}
+
