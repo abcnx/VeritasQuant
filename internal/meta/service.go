@@ -65,6 +65,7 @@ type Market struct {
 type Security struct {
 	USC             string  `json:"usc"`
 	ExchangeCode    int     `json:"exchange_code"`
+	MarketCode      int     `json:"market_code"` // 交易市场代码（对齐 finv_market.market_code，缺省 0）
 	SecurityType    string  `json:"security_type"`
 	SecurityCode    string  `json:"security_code"`
 	SecurityName    string  `json:"security_name"`
@@ -98,6 +99,7 @@ func NewService(pool *pgxpool.Pool) *Service {
 // ---------------------------------------------------------------------
 
 // ListExchanges 分页查询交易所字典；keyword 匹配 code/flag/abbr/name（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 exchange_code 升序。
 func (s *Service) ListExchanges(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Exchange, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -129,7 +131,7 @@ SELECT exchange_code, exchange_flag, exchange_abbr, exchange_name, exchange_abbr
        en_market_type, region, base_currency, ft_list_exchange_code, flag_enable
 FROM finv_exchange
 WHERE `+cond+`
-ORDER BY exchange_code ASC
+ORDER BY flag_enable DESC, exchange_code ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
@@ -203,6 +205,7 @@ func (s *Service) ToggleExchange(ctx context.Context, code int, flag string) err
 // ---------------------------------------------------------------------
 
 // ListMarkets 分页查询交易市场；keyword 匹配 code/flag/abbr/name/证券类型（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 market_code 升序。
 func (s *Service) ListMarkets(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Market, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -233,7 +236,7 @@ func (s *Service) ListMarkets(ctx context.Context, pager Pager, keyword, flagEna
 SELECT market_code, market_flag, market_abbr, market_name, en_security_type, base_currency, flag_enable
 FROM finv_market
 WHERE `+cond+`
-ORDER BY market_code ASC
+ORDER BY flag_enable DESC, market_code ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
@@ -304,6 +307,7 @@ func (s *Service) ToggleMarket(ctx context.Context, code int, flag string) error
 // ---------------------------------------------------------------------
 
 // ListSecurities 分页查询证券代码；keyword 匹配 usc/证券代码/证券名称（任一）。
+// 排序：启用的（flag_enable='1'）优先展示，禁用的排后面，同状态按 usc 升序。
 func (s *Service) ListSecurities(ctx context.Context, pager Pager, keyword, flagEnable string) ([]Security, int, error) {
 	pager.Normalize()
 	where := []string{"1=1"}
@@ -330,11 +334,11 @@ func (s *Service) ListSecurities(ctx context.Context, pager Pager, keyword, flag
 	}
 
 	rows, err := s.pool.Query(ctx, `
-SELECT usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+SELECT usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
        security_name_full, currency_type, init_date, timezone, tz, flag_enable
 FROM finv_security
 WHERE `+cond+`
-ORDER BY usc ASC
+ORDER BY flag_enable DESC, usc ASC
 LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
 	if err != nil {
@@ -345,7 +349,7 @@ LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 	list := []Security{}
 	for rows.Next() {
 		var sec Security
-		if err := rows.Scan(&sec.USC, &sec.ExchangeCode, &sec.SecurityType, &sec.SecurityCode,
+		if err := rows.Scan(&sec.USC, &sec.ExchangeCode, &sec.MarketCode, &sec.SecurityType, &sec.SecurityCode,
 			&sec.SecurityName, &sec.SecurityNameCN, &sec.SecurityNameFull, &sec.CurrencyType,
 			&sec.InitDate, &sec.Timezone, &sec.Tz, &sec.FlagEnable); err != nil {
 			return nil, 0, err
@@ -369,21 +373,21 @@ func (s *Service) SaveSecurity(ctx context.Context, sec Security) (string, error
 	if exists == 1 {
 		_, err := s.pool.Exec(ctx, `
 UPDATE finv_security SET
-    exchange_code = $2, security_type = $3, security_code = $4, security_name = $5,
-    security_name_cn = $6, security_name_full = $7, currency_type = $8,
-    init_date = $9, timezone = $10, tz = $11
+    exchange_code = $2, market_code = $3, security_type = $4, security_code = $5, security_name = $6,
+    security_name_cn = $7, security_name_full = $8, currency_type = $9,
+    init_date = $10, timezone = $11, tz = $12
 WHERE usc = $1`,
-			sec.USC, sec.ExchangeCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
+			sec.USC, sec.ExchangeCode, sec.MarketCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
 			sec.SecurityNameCN, sec.SecurityNameFull, sec.CurrencyType,
 			sec.InitDate, sec.Timezone, sec.Tz)
 		return sec.USC, err
 	}
 	_, err := s.pool.Exec(ctx, `
 INSERT INTO finv_security
-    (usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+    (usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
      security_name_full, currency_type, init_date, timezone, tz, flag_enable)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, '1')`,
-		sec.USC, sec.ExchangeCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, '1')`,
+		sec.USC, sec.ExchangeCode, sec.MarketCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
 		sec.SecurityNameCN, sec.SecurityNameFull, sec.CurrencyType,
 		sec.InitDate, sec.Timezone, sec.Tz)
 	return sec.USC, err
@@ -430,5 +434,34 @@ ORDER BY usc ASC`)
 		list = append(list, o)
 	}
 	return list, rows.Err()
+}
+
+// LookupSecurity 按统一证券代码（usc）或源证券代码（security_code）查询证券详情，
+// 供历史行情导入时「先选证券 → 自动带出信息核对」与「先选文件 → 自动匹配补全」使用。
+// 匹配优先级：先精确 usc，再精确 security_code（文件头 Code 可能是两者之一）。
+// 未找到时返回 (nil, nil)，由调用方决定提示方式。
+func (s *Service) LookupSecurity(ctx context.Context, code string) (*Security, error) {
+	code = strings.TrimSpace(code)
+	if code == "" {
+		return nil, fmt.Errorf("证券代码不能为空")
+	}
+	var sec Security
+	err := s.pool.QueryRow(ctx, `
+SELECT usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
+       security_name_full, currency_type, init_date, timezone, tz, flag_enable
+FROM finv_security
+WHERE usc = $1 OR security_code = $1
+ORDER BY (usc = $1) DESC
+LIMIT 1`, code).Scan(
+		&sec.USC, &sec.ExchangeCode, &sec.MarketCode, &sec.SecurityType, &sec.SecurityCode,
+		&sec.SecurityName, &sec.SecurityNameCN, &sec.SecurityNameFull, &sec.CurrencyType,
+		&sec.InitDate, &sec.Timezone, &sec.Tz, &sec.FlagEnable)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &sec, nil
 }
 

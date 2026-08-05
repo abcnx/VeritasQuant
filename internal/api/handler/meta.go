@@ -190,6 +190,29 @@ func (h *Meta) SecurityOptions(c *gin.Context) {
 	})
 }
 
+// LookupSecurity 按代码查询证券详情（GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup?code=xxx）。
+// 支持 usc 或源证券代码（security_code）精确匹配；供历史行情导入双策略使用。
+func (h *Meta) LookupSecurity(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		code = c.Query("usc") // 兼容旧参数名
+	}
+	sec, err := h.service.LookupSecurity(c.Request.Context(), code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 2006, "message": "查询证券详情失败: " + err.Error()})
+		return
+	}
+	if sec == nil {
+		c.JSON(http.StatusOK, gin.H{"code": 1, "message": "证券不存在", "data": gin.H{"found": false}})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"message": "查询完成",
+		"data":    gin.H{"found": true, "security": sec},
+	})
+}
+
 // parsePager 从 Query 参数解析分页参数（page / page_size）。
 func parsePager(c *gin.Context) meta.Pager {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))

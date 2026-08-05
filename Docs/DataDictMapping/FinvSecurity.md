@@ -10,6 +10,7 @@
 |------|------|------|------|
 | `usc` | TEXT | PK | 统一证券代码（全局唯一，如 `GCMain` / `HSI` / `000985`） |
 | `exchange_code` | INTEGER | NOT NULL，1~999999 | 交易所代码（关联 [FinvExchange](FinvExchange.md) `exchange_code`） |
+| `market_code` | INTEGER | NOT NULL DEFAULT 0 | 交易市场代码（关联 [FinvMarket](FinvMarket.md) `market_code`；缺省 0=未维护；V19 新增，供历史行情导入自动带出/匹配） |
 | `security_type` | TEXT | NOT NULL | 证券类型（如 `Futures` / `StockIndex` / `Stock` / `ETF`） |
 | `security_code` | TEXT | NOT NULL | 源证券代码（交易所原始代码） |
 | `security_name` | TEXT | NOT NULL | 源证券名称 |
@@ -36,7 +37,7 @@
 
 > 基础初始数据 15 条（V100002，见下表）；**增量补充 500 条**（V100009，基于 `finv_futu_mapping_security` 的 finv_usc，覆盖港股/美股/A股/期货/外汇/加密货币/债券/基金/板块等，清单见种子脚本）。
 
-| usc | exchange_code | security_type | security_code | security_name | security_name_cn | security_name_full | currency_type | init_date | timezone | tz |
+| usc | exchange_code | market_code | security_type | security_code | security_name | security_name_cn | security_name_full | currency_type | init_date | timezone | tz |
 |-----|--------------:|---------------|---------------|---------------|------------------|--------------------|---------------|-----------|-----------|-----|
 | GCMain | 33 | Futures | GCMain | GCMain2512 | 黄金期货主连 | 黄金期货主连 | USD | 19710101 | -04:00 | America/New_York |
 | HSTI | 21 | StockIndex | 800700 | 恒生科技指数 | 恒生科技指数 | 恒生科技指数 | HKD | 20000000 | +08:00 | Asia/Shanghai |
