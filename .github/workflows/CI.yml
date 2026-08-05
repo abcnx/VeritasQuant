@@ -22,7 +22,8 @@ on:
 env:
   IMAGE: ghcr.io/acanx/finvquant
   # 多平台构建（平台 tag 后缀据此生成，如 -linux-amd64 / -linux-arm64）
-  PLATFORMS: linux/amd64,linux/arm64
+  # ⚠️ shell 循环用空格分隔，勿用逗号
+  PLATFORMS: linux/amd64 linux/arm64
 
 jobs:
   # ------------------------------------------------------------------
@@ -131,8 +132,11 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          platforms: ${{ env.PLATFORMS }}
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.tags }}
+          # 构建缓存（GitHub Actions 缓存）：npm/go 依赖层与编译缓存跨构建复用，显著提速
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -142,8 +146,10 @@ jobs:
       - name: TagPerPlatformManifests
         run: |
           BASE="${{ steps.tags.outputs.base }}"
+          # PLATFORMS 以空格分隔（env 已定义）；逗号会导致整串被当作单个值
           for PLAT in ${{ env.PLATFORMS }}; do
             SUFFIX=${PLAT//\//-}
+            echo "打平台 tag: ${BASE}-${SUFFIX} (${PLAT})"
             docker buildx imagetools create \
               --platform "$PLAT" \
               --tag "${{ env.IMAGE }}:${BASE}-${SUFFIX}" \
