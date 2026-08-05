@@ -6,6 +6,7 @@
 ## 1. 升级原理
 
 - 镜像发布：CI（`.github/workflows/CI.yml`）在 push `dev`/`main`/`FinvQuant` 分支时构建并推送 `ghcr.io/acanx/finvquant:latest` 与 `v{VERSION}-YYYYMMDDHHMM`（如 `v0.1.0-202608051901`）；push `v*` tag 时推送 `v{VERSION}`（如 `v0.1.0`）。**全局版本单一来源：项目根 `VERSION` 文件**（后端 `-ldflags`、前端 `package.json`、镜像 tag 三处共用）。
+- 多平台构建：镜像支持 `linux/amd64` + `linux/arm64`，每个平台另打专属 tag（如 `v0.1.0-202608051901-linux-amd64` / `...-linux-arm64`）；`latest` 为多平台聚合（按运行架构自动选择）。
 - 升级方式：拉取新镜像 → 重建 `finvquant` 容器；`postgres` / `redis` 配置未变则**不重建、数据不丢**。
 - 数据库迁移：新版服务端启动时**自动应用** `Deploy/Migrations/` 中未执行的迁移（幂等，按 `V<number>__<name>.sql` 版本号升序，已应用版本记录在 `schema_version` 表），**无需手动执行 SQL**。
 
