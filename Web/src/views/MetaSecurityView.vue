@@ -291,6 +291,9 @@ onMounted(() => {
               <v-text-field v-model="form.usc" label="usc（统一证券代码，全局唯一）" density="compact" />
             </v-col>
             <v-col cols="6">
+              <v-text-field v-model="form.security_code" label="源证券代码（交易所原始代码）" density="compact" />
+            </v-col>
+            <v-col cols="6">
               <v-text-field v-model="form.security_name_cn" label="证券名称（中文）" density="compact" />
             </v-col>
             <v-col cols="12">
@@ -318,9 +321,6 @@ onMounted(() => {
                 density="compact"
                 hint="仅展示启用状态的市场"
               />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="form.security_code" label="源证券代码（交易所原始代码）" density="compact" />
             </v-col>
             <v-col cols="6">
               <v-text-field v-model="form.security_type" label="证券类型（如 Stock / ETF / Futures）" density="compact" />
