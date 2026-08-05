@@ -24,6 +24,7 @@
 | 13 | POST | `/API/V1/Meta/FinvQuant/Metadata/Security/Save` | 新增/修改证券代码字典 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
 | 14 | POST | `/API/V1/Meta/FinvQuant/Metadata/Security/Toggle` | 禁用/启用证券代码 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
 | 15 | GET | `/API/V1/Meta/FinvQuant/Metadata/Security/Options` | 证券下拉选项（usc+security_name_cn，仅启用状态） | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上）、历史行情查询（[HistoryQuote/HistoryQuoteQuery.md](../Menu/HistoryQuote/HistoryQuoteQuery.md)） |
+| 16 | GET | `/API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | 按代码（usc 或源证券代码）查询证券详情，供导入双策略带出/匹配 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 历史行情数据导入（[Menus.md](../Menu/Menus.md#9)，视图 `QuoteImportView.vue`） |
 
 ## 说明
 

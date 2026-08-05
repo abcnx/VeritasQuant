@@ -39,4 +39,4 @@
   - [`HistoryQuote/HistoryQuote.md`](HistoryQuote/HistoryQuote.md) — `GET /API/V1/Quote/Query`（历史行情查询）
   - [`Meta/MetaExchange.md`](Meta/MetaExchange.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Exchange/*`（交易所信息维护）
   - [`Meta/MetaMarket.md`](Meta/MetaMarket.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Market/*`（交易所下设市场信息维护）
-  - [`Meta/MetaSecurity.md`](Meta/MetaSecurity.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Security/*`（规范证券信息维护）
+  - [`Meta/MetaSecurity.md`](Meta/MetaSecurity.md) — `GET/POST /API/V1/Meta/FinvQuant/Metadata/Security/*`（规范证券信息维护，含 `Options` 下拉与 `Lookup` 详情查询）

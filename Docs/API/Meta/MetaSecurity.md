@@ -1,6 +1,8 @@
 # GET/POST /API/V1/Meta/FinvQuant/Metadata/Security/* — 规范证券信息维护
 
-finv_security 证券代码字典维护接口：分页查询、新增/修改、禁用/启用、下拉选项。
+finv_security 证券代码字典维护接口：分页查询、新增/修改、禁用/启用、下拉选项、按代码查询详情。
+
+> 排序约定：`List` 分页结果**启用的（flag_enable='1'）优先展示**，禁用的排后面，同状态按 usc 升序（交易所/市场 List 同理）。
 
 ## 1. 分页查询证券
 
@@ -111,6 +113,50 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 }
 ```
 
+## 5. 按代码查询证券详情（供历史行情导入双策略）
+
+- **方法**：`GET`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Security/Lookup?code=<代码>`
+- **说明**：按统一证券代码（usc）或源证券代码（security_code）精确匹配；命中 usc 优先。供历史行情导入页两种策略使用：① 选中证券后自动带出详情核对；② 按文件头代码自动匹配补全。
+
+### Query 参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `code` | string | ✅ | 证券代码（usc 或 security_code 均可）；兼容旧参数名 `usc` |
+
+### 响应（成功 HTTP 200，命中）
+
+```json
+{
+  "code": 0,
+  "message": "查询完成",
+  "data": {
+    "found": true,
+    "security": {
+      "usc": "NVDA",
+      "exchange_code": 30,
+      "security_type": "Stock",
+      "security_code": "NVDA",
+      "security_name": "NVIDIA",
+      "security_name_cn": "英伟达",
+      "security_name_full": "英伟达",
+      "currency_type": "USD",
+      "init_date": 20000000,
+      "timezone": "-04:00",
+      "tz": "America/New_York",
+      "flag_enable": "1"
+    }
+  }
+}
+```
+
+### 响应（未命中）
+
+```json
+{ "code": 1, "message": "证券不存在", "data": { "found": false } }
+```
+
 ## 失败场景
 
 | 场景 | HTTP | code |
@@ -123,3 +169,4 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 
 - 规范证券信息维护菜单（`Docs/Menu/Meta/MetaSecurity.md`，视图 `MetaSecurityView.vue`）
 - 历史行情查询菜单（`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`，视图 `QuoteQueryView.vue`）—— 仅使用 `GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` 作为证券代码下拉字典来源
+- 历史行情数据导入菜单（`Docs/Menu/HistoryQuote/HistoryQuoteImport.md`，视图 `QuoteImportView.vue`）—— 使用 `Options` 下拉 + `Lookup` 自动带出/匹配（导入双策略）

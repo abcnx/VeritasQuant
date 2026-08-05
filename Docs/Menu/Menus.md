@@ -31,13 +31,14 @@
 | 5 | 业务元数据维护 | 二级分组 | `meta-maintenance` | `mdi-database-search` | — | — | — | — |
 | 6 | 交易所信息维护 | 三级叶子 | `meta-exchange` | `mdi-office-building` | `/meta/exchange` | `Web/src/views/MetaExchangeView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle` | [Meta/MetaExchange.md](Meta/MetaExchange.md) |
 | 7 | 交易所下设市场信息维护 | 三级叶子 | `meta-market` | `mdi-chart-areaspline` | `/meta/market` | `Web/src/views/MetaMarketView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Market/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Toggle` | [Meta/MetaMarket.md](Meta/MetaMarket.md) |
-| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/MetaSecurityView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Security/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
-| 9 | 历史行情数据导入 | 三级叶子 | `meta-import` | `mdi-database-import` | `/meta/import` | `Web/src/views/QuoteImportView.vue` | `POST /API/V1/Quote/Import/Upload` | — |
+| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/MetaSecurityView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Security/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
+| 9 | 历史行情数据导入 | 三级叶子 | `meta-import` | `mdi-database-import` | `/meta/import` | `Web/src/views/QuoteImportView.vue` | `POST /API/V1/Quote/Import/Upload`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [HistoryQuote/HistoryQuoteImport.md](HistoryQuote/HistoryQuoteImport.md) |
 
 ## 说明
 
 - 菜单定义与视图组件一一对应，全部在 `Web/src/App.vue` 的 `menuItems` 中登记；新增菜单时须同步更新本索引。
 - 图标统一使用 Material Design Icons（`@mdi/font`）；**注意：`mdi-chart-candlestick` 在 @mdi/font 7.4.47 中不存在**，K 线类菜单使用 `mdi-chart-line` / `mdi-chart-box`。
+- 三个字典维护菜单（交易所/市场/证券）的 List 分页：**启用的（flag_enable='1'）优先展示，禁用的排后面**，同状态按 code 升序（见 `internal/meta/service.go`）。
 - 「菜单文档」列指向对应业务菜单介绍文档（`Docs/Menu/xxx/XXXX.md`，见 [MenuSpec.md](../DevSpec/MenuSpec.md)）；暂无文档的菜单以 `—` 标注，待补充。
 - 「使用的后端接口」列与对应 API 接口文档的「已使用位置登记」互为索引（见 [ApiSpec.md](../DevSpec/ApiSpec.md) 第 6 节）。
 - 视图组件名称与菜单 key 的对应关系：
