@@ -79,3 +79,65 @@ func TestParseTsTimezoneMismatch(t *testing.T) {
 		t.Fatalf("期望 ts 与 dt 不一致错误，实际: %v", err)
 	}
 }
+
+// 布局 B：ts|d|t|o|c|l|h|v|a|cp|cr|p|pc（13 列，d=8 位日期 + t=6 位时间，a=成交额）
+// ts=1767337200 → 2026-01-02 07:00 UTC → America/New_York（UTC-5）2026-01-02 02:00:00（20260102020000）
+const sampleMvsvLayoutB = `# Format : "MVSV-1"
+# Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p|pc"
+# Count : 3
+# EffectiveTimeZone : "America/New_York"
+# Code : "GCMain"
+# Market : "COMEX"
+# MarketCode : 1320
+# CurrencyCode : 55
+# PriceAccuracy : 1
+# LotSize : 100
+
+1767337200|20260102|020000|4340|4907.5|4319.7|5626.8|5926343|0|575.4|13.282242|4332.1|
+1767337260|20260102|020100|4340|4343.9|4338.5|4349.5|314|0|11.8|0.272385|4332.1|
+1767337320|20260102|020200|4342.7|4344|4342|4346.3|81|0|0.1|0.002302|4343.9|
+`
+
+func TestParseLayoutB(t *testing.T) {
+	result, err := Parse([]byte(sampleMvsvLayoutB), "GCmain.mvsv")
+	if err != nil {
+		t.Fatalf("解析布局 B 失败: %v", err)
+	}
+	if len(result.Rows) != 3 {
+		t.Fatalf("行数=%d，期望 3", len(result.Rows))
+	}
+	first := result.Rows[0]
+	if first.SecuCode != "GCMain" || first.MarketCode != 1320 {
+		t.Fatalf("证券标识错误: %+v", first)
+	}
+	if first.Ts != 1767337200 {
+		t.Fatalf("ts=%d", first.Ts)
+	}
+	// d+t 分开解析：date=20260102, time=020000
+	if first.Date == nil || *first.Date != 20260102 {
+		t.Fatalf("date=%v", first.Date)
+	}
+	if first.Time == nil || *first.Time != 20000 {
+		t.Fatalf("time=%v", first.Time)
+	}
+	// a 列映射成交额
+	if first.Turnover == nil || *first.Turnover != "0" {
+		t.Fatalf("turnover=%v", first.Turnover)
+	}
+	if first.Close == nil || *first.Close != "4907.5" {
+		t.Fatalf("close=%v", first.Close)
+	}
+	if first.PrevClose == nil || *first.PrevClose != "4332.1" {
+		t.Fatalf("prev_close=%v", first.PrevClose)
+	}
+}
+
+func TestParseUnsupportedLayout(t *testing.T) {
+	content := strings.Replace(sampleMvsvLayoutB,
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc\"",
+		"# Field : \"ts|d|t|o|c|l|h|v|a|cp|cr|p|pc|x\"", 1)
+	_, err := Parse([]byte(content), "bad.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "Field 布局不支持") {
+		t.Fatalf("期望 Field 布局不支持错误，实际: %v", err)
+	}
+}
