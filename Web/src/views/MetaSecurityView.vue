@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import { apiGet, apiPost } from '../api'
 
@@ -20,6 +20,23 @@ interface SecurityRow {
   flag_enable: string
 }
 
+// finv_exchange 交易所下拉选项（交易所信息维护字典）
+interface ExchangeOption {
+  exchange_code: number
+  exchange_abbr: string
+  exchange_name: string
+  exchange_abbr_cn: string
+  flag_enable: string
+}
+
+// finv_market 市场下拉选项（交易所下设市场字典）
+interface MarketOption {
+  market_code: number
+  market_flag: string
+  market_name: string
+  flag_enable: string
+}
+
 const rows = ref<SecurityRow[]>([])
 const total = ref(0)
 const page = ref(1)
@@ -28,6 +45,22 @@ const keyword = ref('')
 const loading = ref(false)
 const error = ref('')
 const message = ref('')
+
+// 下拉选项：交易所（finv_exchange）/ 市场（finv_market），仅启用记录
+const exchangeOptions = ref<ExchangeOption[]>([])
+const marketOptions = ref<MarketOption[]>([])
+const exchangeItems = computed(() =>
+  exchangeOptions.value.map((e) => ({
+    title: `${e.exchange_code} ${e.exchange_abbr}（${e.exchange_name}）`,
+    value: e.exchange_code,
+  })),
+)
+const marketItems = computed(() =>
+  marketOptions.value.map((m) => ({
+    title: `${m.market_code} ${m.market_flag}（${m.market_name}）`,
+    value: m.market_code,
+  })),
+)
 
 // 新增/编辑对话框
 const dialog = ref(false)
@@ -140,12 +173,30 @@ async function toggle(row: SecurityRow) {
   }
 }
 
+async function loadOptions() {
+  try {
+    const [exData, mkData] = await Promise.all([
+      apiGet<{ list: ExchangeOption[] }>('/Meta/FinvQuant/Metadata/Exchange/List?page=1&page_size=500'),
+      apiGet<{ list: MarketOption[] }>('/Meta/FinvQuant/Metadata/Market/List?page=1&page_size=500'),
+    ])
+    // 仅启用（flag_enable='1'）的记录入下拉；保持后端排序（启用优先）
+    exchangeOptions.value = (exData.list ?? []).filter((e) => e.flag_enable === '1')
+    marketOptions.value = (mkData.list ?? []).filter((m) => m.flag_enable === '1')
+  } catch {
+    exchangeOptions.value = []
+    marketOptions.value = []
+  }
+}
+
 function search() {
   page.value = 1
   load()
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadOptions()
+})
 </script>
 
 <template>
@@ -240,25 +291,39 @@ onMounted(load)
               <v-text-field v-model="form.usc" label="usc（统一证券代码，全局唯一）" density="compact" />
             </v-col>
             <v-col cols="6">
-              <v-text-field v-model.number="form.exchange_code" label="交易所代码（对齐 finv_exchange）" type="number" density="compact" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model.number="form.market_code" label="市场代码（对齐 finv_market，缺省 0）" type="number" density="compact" />
-            </v-col>
-            <v-col cols="6">
               <v-text-field v-model="form.security_code" label="源证券代码（交易所原始代码）" density="compact" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="form.security_type" label="证券类型（如 Stock / ETF / Futures）" density="compact" />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field v-model="form.security_name" label="源证券名称" density="compact" />
             </v-col>
             <v-col cols="6">
               <v-text-field v-model="form.security_name_cn" label="证券名称（中文）" density="compact" />
             </v-col>
             <v-col cols="12">
+              <v-text-field v-model="form.security_name" label="源证券名称" density="compact" />
+            </v-col>
+            <v-col cols="12">
               <v-text-field v-model="form.security_name_full" label="证券名称（全称，可选）" density="compact" />
+            </v-col>
+            <v-col cols="6">
+              <v-select
+                v-model="form.exchange_code"
+                label="交易所代码（基于 finv_exchange 下拉）"
+                :items="exchangeItems"
+                clearable
+                density="compact"
+                hint="仅展示启用状态的交易所"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-select
+                v-model="form.market_code"
+                label="市场代码（基于 finv_market 下拉，缺省 0）"
+                :items="marketItems"
+                clearable
+                density="compact"
+                hint="仅展示启用状态的市场"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-text-field v-model="form.security_type" label="证券类型（如 Stock / ETF / Futures）" density="compact" />
             </v-col>
             <v-col cols="4">
               <v-text-field v-model="form.currency_type" label="计价货币（对齐 finv_currency）" density="compact" />

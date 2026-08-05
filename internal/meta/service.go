@@ -57,6 +57,7 @@ type Market struct {
 	MarketAbbr      string `json:"market_abbr"`
 	MarketName      string `json:"market_name"`
 	EnSecurityType  string `json:"en_security_type"`
+	ExchangeCode    int    `json:"exchange_code"` // 所属交易所代码（对齐 finv_exchange.exchange_code，缺省 0）
 	BaseCurrency    string `json:"base_currency"`
 	FlagEnable      string `json:"flag_enable"`
 }
@@ -233,7 +234,7 @@ func (s *Service) ListMarkets(ctx context.Context, pager Pager, keyword, flagEna
 	}
 
 	rows, err := s.pool.Query(ctx, `
-SELECT market_code, market_flag, market_abbr, market_name, en_security_type, base_currency, flag_enable
+SELECT market_code, market_flag, market_abbr, market_name, en_security_type, exchange_code, base_currency, flag_enable
 FROM finv_market
 WHERE `+cond+`
 ORDER BY flag_enable DESC, market_code ASC
@@ -248,7 +249,7 @@ LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 	for rows.Next() {
 		var m Market
 		if err := rows.Scan(&m.MarketCode, &m.MarketFlag, &m.MarketAbbr, &m.MarketName,
-			&m.EnSecurityType, &m.BaseCurrency, &m.FlagEnable); err != nil {
+			&m.EnSecurityType, &m.ExchangeCode, &m.BaseCurrency, &m.FlagEnable); err != nil {
 			return nil, 0, err
 		}
 		list = append(list, m)
@@ -268,18 +269,18 @@ func (s *Service) SaveMarket(ctx context.Context, m Market) (int, error) {
 		_, err := s.pool.Exec(ctx, `
 UPDATE finv_market SET
     market_flag = $2, market_abbr = $3, market_name = $4,
-    en_security_type = $5, base_currency = $6
+    en_security_type = $5, exchange_code = $6, base_currency = $7
 WHERE market_code = $1`,
 			m.MarketCode, m.MarketFlag, m.MarketAbbr, m.MarketName,
-			m.EnSecurityType, m.BaseCurrency)
+			m.EnSecurityType, m.ExchangeCode, m.BaseCurrency)
 		return m.MarketCode, err
 	}
 	_, err := s.pool.Exec(ctx, `
 INSERT INTO finv_market
-    (market_code, market_flag, market_abbr, market_name, en_security_type, base_currency, flag_enable)
-VALUES ($1, $2, $3, $4, $5, $6, '1')`,
+    (market_code, market_flag, market_abbr, market_name, en_security_type, exchange_code, base_currency, flag_enable)
+VALUES ($1, $2, $3, $4, $5, $6, $7, '1')`,
 		m.MarketCode, m.MarketFlag, m.MarketAbbr, m.MarketName,
-		m.EnSecurityType, m.BaseCurrency)
+		m.EnSecurityType, m.ExchangeCode, m.BaseCurrency)
 	return m.MarketCode, err
 }
 

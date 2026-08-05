@@ -50,6 +50,9 @@
 - **请求**：`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`，JSON body 字段见接口文档。
 - 新增：`usc` 不存在时 INSERT，`flag_enable` 默认 `'1'`。
 - 修改：`usc` 已存在时 UPDATE（主键不可改）。
+- **对话框下拉**：
+  - 「交易所代码」为下拉选择，数据源 `GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List`（仅启用记录），展示 `code abbr（name）`；
+  - 「市场代码」为下拉选择，数据源 `GET /API/V1/Meta/FinvQuant/Metadata/Market/List`（仅启用记录），展示 `code flag（name）`；两者均保留清空（清空即 0/未选）。
 
 ### 4.3 禁用/启用
 

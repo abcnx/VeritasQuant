@@ -33,6 +33,7 @@ finv_market 交易市场字典维护接口：分页查询、新增/修改、禁�
         "market_abbr": "SSE-A",
         "market_name": "上交所 A 股",
         "en_security_type": "1110",
+        "exchange_code": 0,
         "base_currency": "",
         "flag_enable": "1"
       }
@@ -55,6 +56,7 @@ finv_market 交易市场字典维护接口：分页查询、新增/修改、禁�
 | `market_abbr` | string | ✅ | 交易所简码（如 SSE / HKEX / US） |
 | `market_name` | string | ✅ | 市场名称（如 上交所 A 股） |
 | `en_security_type` | string | ✅ | 允许证券类型编码（如 1110 / 1210 / 1310） |
+| `exchange_code` | int | 可选 | 所属交易所代码（对齐 finv_exchange，缺省 0；V20 新增） |
 | `base_currency` | string | ✅ | 基础计价货币（如 CNY / USD / HKD，可为空串） |
 
 ### 响应（成功 HTTP 200）
