@@ -5,11 +5,16 @@ import (
 	"testing"
 )
 
-const sampleMvsv = `# Format : "MVSV-1"
+const sampleMvsv = `# Title : "US_NVDA_Min_V4_2026"
+# Format : "MVSV-1"
 # Field : "ts|dt|o|c|l|h|v|t|cp|cr|p"
+# FieldType : "Int|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal"
+# FieldName : "Ts|DateTime|Open|Close|Low|High|Volume|Turnover|ChangePrice|ChangeRatio|PrevClose"
+# 字段名称 : "时间戳(UTC)|日期时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 3
 # EffectiveTimeZone : "Asia/Shanghai"
-# Code : "518880"
+# StockId : 202597
+# Code : "NVDA"
 # Market : "SSE"
 # MarketCode : 1
 # Exchange : "SSE"
@@ -17,6 +22,10 @@ const sampleMvsv = `# Format : "MVSV-1"
 # CurrencyCode : 1
 # PriceAccuracy : 3
 # LotSize : 100
+# Name : "英伟达"
+# Region : "US"
+# Period : "Min"
+# Dsv : 3
 
 1785720600|20260803093000|7.001|7.002|6.999|7.003|100000|70010000000|0.001|0.000143|7.000
 1785720660|20260803093100|7.002|7.001|7.000|7.003|80000|56010000000|0.000|-0.000143|7.002
@@ -38,7 +47,7 @@ func TestParseValid(t *testing.T) {
 		t.Fatalf("行数=%d，期望 3", len(result.Rows))
 	}
 	first := result.Rows[0]
-	if first.SecuCode != "518880" || first.MarketCode != 1 {
+	if first.SecuCode != "NVDA" || first.MarketCode != 1 {
 		t.Fatalf("证券标识错误: %+v", first)
 	}
 	if first.Ts != 1785720600 {
@@ -85,18 +94,27 @@ func TestParseTsTimezoneMismatch(t *testing.T) {
 // 布局 B（12 列，pc 已过时）：ts|d|t|o|c|l|h|v|a|cp|cr|p
 // d=8 位日期 + t=6 位时间，a=成交额；数据行末尾允许残留空段（旧 pc 位，如 "...|4332.1|"）
 // ts=1767337200 → 2026-01-02 07:00 UTC → America/New_York（UTC-5）2026-01-02 02:00:00（20260102020000）
-const sampleMvsvLayoutB = `# Format : "MVSV-1"
+const sampleMvsvLayoutB = `# Title : "GCmain_Min_V3_2026_195279_2026072202"
+# Format : "MVSV-1"
 # Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p"
+# FieldType : "Int|Long|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal"
+# FieldName : "Ts|Date|Time|Open|Close|Low|High|Volume|Amount|ChangePrice|ChangeRatio|PrevClose"
+# 字段名称 : "时间戳(UTC)|日期|时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 3
 # EffectiveTimeZone : "America/New_York"
+# StockId : 70000294
 # Code : "GCMain"
 # Market : "COMEX"
 # MarketCode : 1320
 # Exchange : "COMEX"
-# ExchangeCode : 1317
+# ExchangeCode : 33
 # CurrencyCode : 55
 # PriceAccuracy : 1
 # LotSize : 100
+# Name : "黄金期货主连 (2608)"
+# Region : "US"
+# Period : "Min"
+# Dsv : 3
 
 1767337200|20260102|020000|4340|4907.5|4319.7|5626.8|5926343|0|575.4|13.282242|4332.1|
 1767337260|20260102|020100|4340|4343.9|4338.5|4349.5|314|0|11.8|0.272385|4332.1|
@@ -232,5 +250,30 @@ func TestParseMissingExchange(t *testing.T) {
 	_, err := Parse([]byte(content), "no_exchange.mvsv")
 	if err == nil || !strings.Contains(err.Error(), "Exchange") {
 		t.Fatalf("期望缺少 Exchange 错误，实际: %v", err)
+	}
+}
+
+// 溯源类必填键（用户约定 2026-08-06）：Title/Region/Name/Period/Dsv/FieldType/FieldName/字段名称/StockId
+func TestParseMissingTitle(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# Title : \"US_NVDA_Min_V4_2026\"\n", "", 1)
+	_, err := Parse([]byte(content), "no_title.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "Title") {
+		t.Fatalf("期望缺少 Title 错误，实际: %v", err)
+	}
+}
+
+func TestParseMissingStockId(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# StockId : 202597\n", "", 1)
+	_, err := Parse([]byte(content), "no_stockid.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "StockId") {
+		t.Fatalf("期望缺少 StockId 错误，实际: %v", err)
+	}
+}
+
+func TestParseMissingFieldType(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# FieldType : \"Int|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal\"\n", "", 1)
+	_, err := Parse([]byte(content), "no_fieldtype.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "FieldType") {
+		t.Fatalf("期望缺少 FieldType 错误，实际: %v", err)
 	}
 }
