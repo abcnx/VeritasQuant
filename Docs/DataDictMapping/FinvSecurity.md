@@ -19,6 +19,7 @@
 | `init_date` | INTEGER | NOT NULL DEFAULT 20000000 | 首次上市交易日期（yyyyMMdd） |
 | `timezone` | TEXT | 可空 | 时区（如 `-04:00` / `+08:00`） |
 | `tz` | TEXT | 可空 | 时区标识（如 `America/New_York` / `Asia/Shanghai`） |
+| `flag_enable` | CHAR(1) | NOT NULL DEFAULT '0' | 启用标志（'0'=禁用，'1'=启用；V18 新增，供元数据维护菜单切换；禁用后不出现在证券下拉字典） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
 

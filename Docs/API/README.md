@@ -37,3 +37,6 @@
 - **详细接口文档**：
   - [`HistoryQuote/ImportsUpload.md`](HistoryQuote/ImportsUpload.md) — `POST /API/V1/Quote/Import/Upload`（MVSV 历史行情导入）
   - [`HistoryQuote/HistoryQuote.md`](HistoryQuote/HistoryQuote.md) — `GET /API/V1/Quote/Query`（历史行情查询）
+  - [`Meta/MetaExchange.md`](Meta/MetaExchange.md) — `GET/POST /API/V1/Meta/Exchange/*`（交易所信息维护）
+  - [`Meta/MetaMarket.md`](Meta/MetaMarket.md) — `GET/POST /API/V1/Meta/Market/*`（交易所下设市场信息维护）
+  - [`Meta/MetaSecurity.md`](Meta/MetaSecurity.md) — `GET/POST /API/V1/Meta/Security/*`（规范证券信息维护）
