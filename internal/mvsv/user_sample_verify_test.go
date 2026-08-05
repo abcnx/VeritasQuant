@@ -18,6 +18,7 @@ const userGCmainSample = `# Title : "GCmain_Min_V3_2026_195279_2026072202"
 # Market : "COMEX"
 # MarketCode : 1320
 # Exchange : "COMEX"
+# ExchangeCode : 1317
 # PriceAccuracy : 1
 # CurrencyCode : 55
 # InstrumentType : 10

@@ -12,6 +12,8 @@ const sampleMvsv = `# Format : "MVSV-1"
 # Code : "518880"
 # Market : "SSE"
 # MarketCode : 1
+# Exchange : "SSE"
+# ExchangeCode : 11
 # CurrencyCode : 1
 # PriceAccuracy : 3
 # LotSize : 100
@@ -90,6 +92,8 @@ const sampleMvsvLayoutB = `# Format : "MVSV-1"
 # Code : "GCMain"
 # Market : "COMEX"
 # MarketCode : 1320
+# Exchange : "COMEX"
+# ExchangeCode : 1317
 # CurrencyCode : 55
 # PriceAccuracy : 1
 # LotSize : 100
@@ -211,5 +215,22 @@ func TestInvalidTimeZone(t *testing.T) {
 	_, err := Parse([]byte(content), "bad_tz.mvsv")
 	if err == nil || !strings.Contains(err.Error(), "时区非法") {
 		t.Fatalf("期望 TimeZone 非法错误，实际: %v", err)
+	}
+}
+
+// Exchange / ExchangeCode / Market / MarketCode 四键必填（用户约定 2026-08-06）
+func TestParseMissingExchangeCode(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# ExchangeCode : 11\n", "", 1)
+	_, err := Parse([]byte(content), "no_exchangecode.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "ExchangeCode") {
+		t.Fatalf("期望缺少 ExchangeCode 错误，实际: %v", err)
+	}
+}
+
+func TestParseMissingExchange(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# Exchange : \"SSE\"\n", "", 1)
+	_, err := Parse([]byte(content), "no_exchange.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "Exchange") {
+		t.Fatalf("期望缺少 Exchange 错误，实际: %v", err)
 	}
 }
