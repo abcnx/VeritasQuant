@@ -239,7 +239,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # FutuSymbol : "GCmain"
 # Code : "GCMain"
 # Exchange : "COMEX"
-# ExchangeCode : 1317
+# ExchangeCode : 33
 # Market : "COMEX"
 # MarketCode : 1320
 # PriceAccuracy : 1
