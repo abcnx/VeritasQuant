@@ -1,7 +1,7 @@
 # FinvFutuMappingCSMarket — 富途 CS 市场映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvFutuMappingCSMarket.md`
-> 数据表：`finv_futu_mapping_cs_market`（表结构：[`Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql`](../../Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql)；新增列/约束放宽：[`Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql`](../../Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql)；增量列：[`Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql`](../../Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql)；初始数据：[`Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql`](../../Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql)）
+> 数据表：`finv_futu_mapping_cs_market`（表结构：[`Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql`](../../Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql)；新增列/约束放宽：[`Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql`](../../Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql)；增量列：[`Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql`](../../Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql)；初始数据：[`Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql`](../../Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql)；全量替换：[`Deploy/Migrations/V100011__finv_futu_mapping_cs_market_seed_full.sql`](../../Deploy/Migrations/V100011__finv_futu_mapping_cs_market_seed_full.sql)）
 > 用途：FT（富途/moomoo）行情源 CS 市场标识与交易所代码（finv_exchange.exchange_code）的字段映射表。
 
 ## 1. 表结构
@@ -21,15 +21,17 @@
 
 ## 2. 数据清单（29 条）
 
+> V100011 全量替换 V100008（先 DELETE 存量，再 INSERT 全量 29 条）；相对 V100008 有 10 处映射值更新（0→0、6→22、8→300、17→10001、21→41、22→56、29→44、30→43、33→42、36→57）。
+
 | futu_cs_market | exchange_name | finv_exchange_code |
 |----------------|---------------|-------------------:|
-| 0 | 场外交易/结构化产品/加密货币（无明确交易所） | -1 |
+| 0 | 场外交易/结构化产品/加密货币（无明确交易所） | 0 |
 | 1 | 香港证券市场 | 21 |
 | 2 | 美国证券市场 | 30 |
 | 3 | 上海证券交易所（A 股） | 11 |
 | 4 | 深圳证券交易所（A 股） | 12 |
-| 6 | 香港期货交易所 | -1 |
-| 8 | 美国期货交易所 | -1 |
+| 6 | 香港期货交易所 | 22 |
+| 8 | 美国期货交易所 | 300 |
 | 10 | 上交所科创板（STAR Market） | 11 |
 | 11 | 外汇市场（Forex） | 100 |
 | 12 | 债券 | -1 |
@@ -37,20 +39,20 @@
 | 14 | 全球主要指数（FTSE/DAX/CAC 等） | -1 |
 | 15 | 新加坡交易所 | 53 |
 | 16 | 日本大阪交易所（期货） | 51 |
-| 17 | 加密货币市场 | -1 |
+| 17 | 加密货币市场 | 10001 |
 | 18 | 国债收益率 | -1 |
 | 19 | 基金（Fund） | -1 |
-| 21 | 加拿大 CSE 交易所 | -1 |
-| 22 | 澳大利亚证券交易所 | -1 |
+| 21 | 加拿大 CSE 交易所 | 41 |
+| 22 | 澳大利亚证券交易所 | 56 |
 | 23 | 北京证券交易所（北交所，Beijing Stock Exchange） | 13 |
 | 24 | 日本（板块分类） | 52 |
 | 25 | 日本东京证券交易所 | 52 |
 | 27 | 债券市场（Bond Market System） | -1 |
 | 28 | 马来西亚 Bursa Malaysia | -1 |
-| 29 | 加拿大 TSX 主板 | -1 |
-| 30 | 加拿大 TSX Venture 创业板 | -1 |
-| 33 | 加拿大 NEO 交易所 | -1 |
-| 36 | 韩国证券交易所 | -1 |
+| 29 | 加拿大 TSX 主板 | 44 |
+| 30 | 加拿大 TSX Venture 创业板 | 43 |
+| 33 | 加拿大 NEO 交易所 | 42 |
+| 36 | 韩国证券交易所 | 57 |
 | 37 | 其他 | -1 |
 
 ## 3. 说明
