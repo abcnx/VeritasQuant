@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import * as echarts from 'echarts'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
+import { apiGet } from '../api'
 
 interface QuoteBar {
   date: number
@@ -16,6 +18,12 @@ interface QuoteBar {
   remark: string | null
 }
 
+// 证券下拉选项（usc 为 key，security_name_cn 为展示值，来自 finv_security 字典）
+interface SecurityOption {
+  usc: string
+  security_name_cn: string
+}
+
 // 富途牛牛风格配色：红涨绿跌 + 均线黄/蓝/紫/青
 const COLOR_UP = '#ef232a'
 const COLOR_DOWN = '#14b143'
@@ -23,7 +31,8 @@ const MA_COLORS = ['#f6c343', '#3b8ff7', '#c56cf0', '#2fb28a'] // MA5 / MA10 / M
 
 const PAGE_SIZE = 240 // 每页条数（约全天 4 小时交易时段的分钟线数）
 
-const secuCode = ref('')
+const secuCode = ref('NVDA') // 证券代码（usc key），默认 NVDA
+const secuName = ref('') // 证券名称（security_name_cn），选中字典项后回填，便于确认
 const dateInput = ref<string | null>(null) // 日历选择的日期（yyyy-MM-dd）
 const dateMenu = ref(false)
 const period = ref('Min')
@@ -37,14 +46,65 @@ const chartEl = ref<HTMLDivElement | null>(null)
 
 let chart: echarts.ECharts | null = null
 
-const todayISO = new Date().toISOString().slice(0, 10)
-// 提交给后端的交易日期（yyyymmdd）
+// 本地时区当天（不使用 toISOString 避免 UTC 偏移跨日）
+function localTodayISO(): string {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+const todayISO = localTodayISO()
+
+// Vuetify 4 的 v-date-picker 选中后 model 值可能是 Date 对象（随 locale 显示为英文），
+// 统一规范化为 yyyy-MM-dd 纯日期字符串（无时间），保证展示与传参格式稳定
+function normalizeDate(v: unknown): string | null {
+  if (v === null || v === undefined || v === '') return null
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v
+  const d = new Date(v as string)
+  if (Number.isNaN(d.getTime())) return null
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+function onDatePicked(v: unknown) {
+  dateInput.value = normalizeDate(v)
+  dateMenu.value = false
+}
+
+// 提交给后端的交易日期（yyyymmdd 纯数字，8 位）
 const date = computed(() => (dateInput.value ? dateInput.value.replace(/-/g, '') : ''))
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
+
+// 证券下拉选项（usc:security_name_cn 作为展示文本，value 为 usc）
+const securityOptions = ref<SecurityOption[]>([])
+const secuItems = computed(() =>
+  securityOptions.value.map((o) => ({
+    title: `${o.usc}:${o.security_name_cn}`,
+    value: o.usc,
+  })),
+)
+
+// 证券代码输入变化：若命中字典项则回填证券名称，否则清空
+function onSecuCodeInput(val: unknown) {
+  const hit = securityOptions.value.find((o) => o.usc === val)
+  secuName.value = hit ? hit.security_name_cn : ''
+}
 
 // 查询条件变化时回到第 1 页（不自动触发查询，由用户点击“查询”）
 watch([secuCode, dateInput, days, period], () => {
   page.value = 1
+})
+
+onMounted(async () => {
+  // 加载证券下拉字典（finv_security.usc + security_name_cn）
+  try {
+    const data = await apiGet<{ list: SecurityOption[] }>('/Meta/Security/Options')
+    securityOptions.value = data.list ?? []
+  } catch {
+    // 字典加载失败不阻塞查询（仍可手动输入证券代码）
+    securityOptions.value = []
+  }
 })
 
 onBeforeUnmount(() => {
@@ -117,6 +177,10 @@ async function query() {
       page: String(page.value),
       page_size: String(PAGE_SIZE),
     })
+    // 选中字典项时回传证券名称（security_name_cn），便于服务端与前端确认证券
+    if (secuName.value.trim()) {
+      params.set('secu_name', secuName.value.trim())
+    }
     const response = await fetch(`/API/V1/Quote/Query?${params}`)
     const body = await response.json()
     if (body.code !== 0) {
@@ -130,7 +194,8 @@ async function query() {
       days.value > 1 && bars.length
         ? `${String(bars[0].date).slice(4)}-${String(bars[bars.length - 1].date).slice(4)}`
         : date.value
-    summary.value = `${data.secu_code ?? '?'} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根 · 第 ${page.value}/${totalPages.value} 页`
+    const namePart = secuName.value.trim() ? `（${secuName.value.trim()}）` : ''
+    summary.value = `${data.secu_code ?? '?'}${namePart} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根 · 第 ${page.value}/${totalPages.value} 页`
     await nextTick()
     if (bars.length) {
       renderChart(bars)
@@ -303,7 +368,7 @@ function renderChart(bars: QuoteBar[]) {
 <template>
   <v-card>
     <v-card-title>
-      <v-icon icon="mdi-chart-candlestick" class="mr-2" />
+      <v-icon icon="mdi-chart-line" class="mr-2" />
       历史行情查询
     </v-card-title>
     <v-card-subtitle>
@@ -314,7 +379,17 @@ function renderChart(bars: QuoteBar[]) {
       <v-form @submit.prevent="query">
         <v-row align="center" dense>
           <v-col cols="12" sm="3">
-            <v-text-field v-model="secuCode" label="证券代码" placeholder="如: NVDA" density="compact" hide-details />
+            <!-- 证券代码：下拉字典（usc:security_name_cn）+ 手动输入，默认 NVDA -->
+            <v-combobox
+              v-model="secuCode"
+              :items="secuItems"
+              label="证券代码"
+              placeholder="如: NVDA"
+              density="compact"
+              hide-details
+              clearable
+              @update:model-value="onSecuCodeInput"
+            />
           </v-col>
           <v-col cols="12" sm="3">
             <v-menu v-model="dateMenu" :close-on-content-click="false" transition="scale-transition">
@@ -334,7 +409,7 @@ function renderChart(bars: QuoteBar[]) {
                 v-model="dateInput"
                 :max="todayISO"
                 show-adjacent-months
-                @update:model-value="dateMenu = false"
+                @update:model-value="onDatePicked"
               />
             </v-menu>
           </v-col>
