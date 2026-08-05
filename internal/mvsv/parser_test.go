@@ -161,3 +161,55 @@ func TestParseLayoutBTrailingEmptySegment(t *testing.T) {
 		t.Fatalf("末行 close=%v", last.Close)
 	}
 }
+
+// 时区解析：TimeZone 优先于 EffectiveTimeZone（用户更正：以 TimeZone 为准，EffectiveTimeZone 仅参考）
+func TestTimeZonePrecedence(t *testing.T) {
+	// 同一 ts，TimeZone=Asia/Shanghai 与 EffectiveTimeZone=America/New_York 的本地时间不同。
+	// ts=1785720600 → Asia/Shanghai 20260803093000；America/New_York 20260802213000
+	content := strings.Replace(sampleMvsv,
+		"# EffectiveTimeZone : \"Asia/Shanghai\"",
+		"# EffectiveTimeZone : \"America/New_York\"\n# TimeZone : \"Asia/Shanghai\"", 1)
+	result, err := Parse([]byte(content), "tz_precedence.mvsv")
+	if err != nil {
+		t.Fatalf("TimeZone 优先解析失败: %v", err)
+	}
+	if result.Header.TimeZone != "Asia/Shanghai" {
+		t.Fatalf("TimeZone=%s，期望 Asia/Shanghai（应优先于 EffectiveTimeZone）", result.Header.TimeZone)
+	}
+}
+
+// EffectiveTimeZone 缺失：非必填（用户更正），仅 TimeZone 存在即可正常解析
+func TestMissingEffectiveTimeZone(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# EffectiveTimeZone : \"Asia/Shanghai\"\n", "", 1)
+	// 此时头部已无 EffectiveTimeZone，但 TimeZone 也不存在 → 应跳过校验正常解析
+	result, err := Parse([]byte(content), "no_etz.mvsv")
+	if err != nil {
+		t.Fatalf("缺少 EffectiveTimeZone 不应报错: %v", err)
+	}
+	if result.Header.TimeZone != "" {
+		t.Fatalf("TimeZone=%s，期望空（两者都未提供）", result.Header.TimeZone)
+	}
+}
+
+// 两者都缺失：不校验 ts 一致性，正常解析（头部少一行不影响数据）
+func TestMissingBothTimeZones(t *testing.T) {
+	content := strings.Replace(sampleMvsv, "# EffectiveTimeZone : \"Asia/Shanghai\"\n", "", 1)
+	result, err := Parse([]byte(content), "no_tz.mvsv")
+	if err != nil {
+		t.Fatalf("两者都缺失不应报错: %v", err)
+	}
+	if len(result.Rows) != 3 {
+		t.Fatalf("行数=%d，期望 3", len(result.Rows))
+	}
+}
+
+// TimeZone 非法时报错（以 TimeZone 为准的校验）
+func TestInvalidTimeZone(t *testing.T) {
+	content := strings.Replace(sampleMvsv,
+		"# EffectiveTimeZone : \"Asia/Shanghai\"",
+		"# EffectiveTimeZone : \"Asia/Shanghai\"\n# TimeZone : \"Not/AZone\"", 1)
+	_, err := Parse([]byte(content), "bad_tz.mvsv")
+	if err == nil || !strings.Contains(err.Error(), "时区非法") {
+		t.Fatalf("期望 TimeZone 非法错误，实际: %v", err)
+	}
+}
