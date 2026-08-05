@@ -6,6 +6,8 @@
 # tag 规则：
 #   - dev/main/FinvQuant 分支推送：latest + v{VERSION}-YYYYMMDDHHMM（Asia/Shanghai，如 v0.1.0-202608051901）
 #   - v* tag 推送（main 发布）：latest + v{VERSION}（即 git tag 名，如 v0.1.0）
+#   - 多平台构建：linux/amd64 + linux/arm64，另打平台专属 tag
+#     （v{VERSION}[-YYYYMMDDHHMM]-linux-amd64 / -linux-arm64）
 
 name: FinvQuantCICD
 
@@ -19,6 +21,8 @@ on:
 
 env:
   IMAGE: ghcr.io/acanx/finvquant
+  # 多平台构建（平台 tag 后缀据此生成，如 -linux-amd64 / -linux-arm64）
+  PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
   # ------------------------------------------------------------------
@@ -99,12 +103,14 @@ jobs:
           VERSION=$(cat VERSION)
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
             # v* tag 推送（main 发布）：latest + v{VERSION}（git tag 名）
-            echo "tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            BASE="${{ github.ref_name }}"
           else
             # 分支推送（dev/main/FinvQuant）：latest + v{VERSION}-YYYYMMDDHHMM（Asia/Shanghai）
             TS=$(TZ=Asia/Shanghai date +%Y%m%d%H%M)
-            echo "tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:v${VERSION}-${TS}" >> "$GITHUB_OUTPUT"
+            BASE="v${VERSION}-${TS}"
           fi
+          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
+          echo "tags=${{ env.IMAGE }}:latest,${{ env.IMAGE }}:${BASE}" >> "$GITHUB_OUTPUT"
 
       - name: LoginToGHCR
         uses: docker/login-action@v3
@@ -112,6 +118,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: SetupQEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: SetupDockerBuildx
         uses: docker/setup-buildx-action@v3
@@ -122,10 +131,24 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+
+      # 为每个平台单独打 tag（如 v0.1.0-202608051934-linux-amd64 / -linux-arm64），
+      # 便于按平台拉取/区分构建产物
+      - name: TagPerPlatformManifests
+        run: |
+          BASE="${{ steps.tags.outputs.base }}"
+          for PLAT in ${{ env.PLATFORMS }}; do
+            SUFFIX=${PLAT//\//-}
+            docker buildx imagetools create \
+              --platform "$PLAT" \
+              --tag "${{ env.IMAGE }}:${BASE}-${SUFFIX}" \
+              "${{ env.IMAGE }}:${BASE}"
+          done
 
   # ------------------------------------------------------------------
   # 4. PR 验证：仅构建镜像不推送
