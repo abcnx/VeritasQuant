@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/acanx/finvquant/internal/api/handler"
+	"github.com/acanx/finvquant/internal/backtest"
 	"github.com/acanx/finvquant/internal/meta"
 	"github.com/acanx/finvquant/internal/quote"
 )
@@ -40,6 +41,7 @@ func NewRouter(deps *Deps) *gin.Engine {
 	quoteImport := handler.NewQuoteImport(quote.NewService(deps.Pool))
 	quoteQuery := handler.NewQuoteQuery(quote.NewService(deps.Pool))
 	metaHandler := handler.NewMeta(meta.NewService(deps.Pool))
+	backtestHandler := handler.NewBacktest(backtest.NewService(deps.Pool))
 
 	apiGroup := router.Group("/API/V1")
 	{
@@ -61,6 +63,25 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.POST("/Meta/FinvQuant/Metadata/Security/Toggle", metaHandler.ToggleSecurity)
 		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/Options", metaHandler.SecurityOptions)
 		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/Lookup", metaHandler.LookupSecurity)
+
+		// 通用量化回测：策略 / 账户 / 任务 / 报告
+		apiGroup.GET("/Backtest/Strategy/List", backtestHandler.ListStrategies)
+		apiGroup.GET("/Backtest/Strategy/Get", backtestHandler.GetStrategy)
+		apiGroup.POST("/Backtest/Strategy/Save", backtestHandler.SaveStrategy)
+		apiGroup.POST("/Backtest/Strategy/Toggle", backtestHandler.ToggleStrategy)
+		apiGroup.POST("/Backtest/Strategy/Delete", backtestHandler.DeleteStrategy)
+		apiGroup.GET("/Backtest/Account/List", backtestHandler.ListAccounts)
+		apiGroup.GET("/Backtest/Account/Get", backtestHandler.GetAccount)
+		apiGroup.POST("/Backtest/Account/Save", backtestHandler.SaveAccount)
+		apiGroup.POST("/Backtest/Account/Toggle", backtestHandler.ToggleAccount)
+		apiGroup.POST("/Backtest/Account/Delete", backtestHandler.DeleteAccount)
+		apiGroup.POST("/Backtest/Run/Create", backtestHandler.CreateRun)
+		apiGroup.GET("/Backtest/Run/List", backtestHandler.ListRuns)
+		apiGroup.GET("/Backtest/Run/Get", backtestHandler.GetRun)
+		apiGroup.POST("/Backtest/Run/Cancel", backtestHandler.CancelRun)
+		apiGroup.GET("/Backtest/Run/Report", backtestHandler.GetReport)
+		apiGroup.GET("/Backtest/Run/Equity", backtestHandler.ListEquity)
+		apiGroup.GET("/Backtest/Run/Trades", backtestHandler.ListTrades)
 	}
 
 	return router

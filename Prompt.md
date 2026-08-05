@@ -151,12 +151,50 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 
 - [x] 历史行情导入：PG 建表（V1 迁移启动自动执行）、`POST /API/V1/Quote/Import/Upload` 上传导入（支持备注字段）、前端「历史行情数据导入」菜单页
 - [x] 历史行情查询：`GET /API/V1/Quote/Query`（secu_code/date/period=Min）、前端「历史行情查询」菜单页（K 线蜡烛图、红涨绿跌、悬停详情）
-- [ ] 服务端业务模块：行情、账户、策略、订单、风控 API
-- [ ] 前端业务页面：策略管理、行情看板、交易面板
+- [x] 通用量化回测：策略/账户/任务/报告全链路（见下）
+- [ ] 服务端业务模块：行情、账户、策略、订单、风控 API（实盘链路）
+- [ ] 前端业务页面：行情看板、交易面板（模拟盘/实盘）
 - [ ] 数据库迁移与 Schema 管理（golang-migrate / goose）
 - [ ] Redis 缓存策略与消息通道接入
 - [ ] 认证授权（JWT / RBAC）
 - [ ] 与 `VeritasQuant/` 子项目的数据/能力集成（行情导入 PG 等）
+
+## 9.5 通用量化回测模块（2026-08-06 已落地）
+
+### 能力矩阵
+
+| 模块 | 说明 | 状态 |
+|------|------|------|
+| 量化策略验证 | 顶级菜单；含「黄金期货合约回测验证」（GCMain 等标的配置+启动+报告） | ✅ 已落地 |
+| 账户管理 | 回测账户（初始资金/手续费/滑点/保证金模式），CRUD + 回测开关 | ✅ 已落地 |
+| 策略管理 | 结构化策略定义（JSON 模型 v1），内置模板（双均线/RSI/布林带/MACD） | ✅ 已落地 |
+| 回测分析 | 回测任务列表 + 收益分析报告（指标卡 + 四类曲线 + 成交记录） | ✅ 已落地 |
+| 资金管理 | 回测任务资金曲线（现金/总资产）查看 | ✅ 已落地 |
+| 持仓管理 | 回测任务持仓曲线 + 开平仓记录查看 | ✅ 已落地 |
+| 仿真数据验证 | 数据校验/比对（规划中） | 🚧 规划 |
+| 模拟盘验证 | 虚拟资金模拟盘（规划中） | 🚧 规划 |
+| 实盘仿真验证 | 实盘行情流+仿真撮合（规划中） | 🚧 规划 |
+| 实盘交易 | 真实经纪商接入（规划中，仿真验证通过后开放） | 🚧 规划 |
+
+### 服务端（internal/backtest）
+
+- 策略定义模型 `StrategyDefinition`（universe/data/indicators/signals/rules/risk/cost），JSONB 持久化 + 保存时编译校验；
+- 指标计算（MA/EMA/RSI/MACD/BOLL/ATR/STDDEV/HHV/LLV）；
+- 信号表达式引擎（自研，支持比较/逻辑/算术 + cross_up/cross_down/ref/highest/lowest/abs）；
+- 回测引擎：逐 bar 回放（预热 → 挂单撮合（NEXT_BAR_OPEN）→ 止损止盈 → 信号 → 规则限制 → 账户更新 → 报告点）；
+- 报告：余额/收益率/收益额/持仓金额曲线（按报告精度）+ 最大投入/平均投入/到期收益率/最大回撤/夏普/胜率/盈亏比等技术指标；
+- 异步任务调度：并发上限 4、进度/状态持久化、可取消；
+- 数据库：V22~V26（策略/账户/任务/净值曲线/成交记录）+ V100019 种子数据（默认账户 + GCMain 双均线示例策略）。
+
+### API（/API/V1/Backtest/**）
+
+- 策略：`Strategy/List|Get|Save|Toggle|Delete`
+- 账户：`Account/List|Get|Save|Toggle|Delete`
+- 任务：`Run/Create|List|Get|Cancel`、报告 `Run/Report`、曲线 `Run/Equity`、成交 `Run/Trades`
+
+### 规范文档
+
+- 策略定义模型与表达式语法：`Docs/DevSpec/BacktestStrategySpec.md`
 
 ## 10. 变更记录
 
@@ -168,3 +206,4 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 | 2026-08-04 | API 路径大写 | API 路径统一 `/API/V1/` 前缀（写入 ApiSpec 规范） |
 | 2026-08-04 | 历史行情导入 | PG 建表（`Deploy/Migrations/V1__finv_quote_secu_kline_min.sql` 启动自动迁移）；Go MVSV-1 解析器 + 字段级覆盖 upsert 导入服务；`POST /API/V1/Quote/Import/Upload`；前端新增「历史行情数据导入」菜单页（批量上传 MVSV 分钟行情） |
 | 2026-08-04 | 规范与文档 | 建表规范：`finv_` 前缀、行情表 `finv_quote_xxx`；迁移重命名 `Deploy/Migrations/V1__finv_quote_secu_kline_min.sql`（表名修正 `finv_quote_ingest_batches`/`finv_quote_revision_log`）；新增 `Docs/API/` 服务端接口文档（含 /Quote/Import/Upload 端点） |
+| 2026-08-06 | 通用量化回测 | 前端新增顶级菜单「量化策略验证/账户管理/资金管理/持仓管理/策略管理/回测分析/仿真数据验证/模拟盘验证/实盘仿真验证/实盘交易」；「量化策略验证 → 黄金期货合约回测验证」支持配置初始资金/策略/限制/回测开关并启动回测、查看报告。服务端新增 `internal/backtest`（结构化策略定义模型+指标+信号表达式引擎+回测引擎+报告生成+异步任务调度），迁移 V22~V26 + V100019 种子（默认账户 + GCMain 双均线示例策略）；API `/API/V1/Backtest/**`（策略/账户/任务/报告/曲线/成交）；规范文档 `Docs/DevSpec/BacktestStrategySpec.md` |

@@ -1,0 +1,296 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { apiGet, apiPost } from '../api'
+
+const router = useRouter()
+
+interface StrategyOption {
+  strategy_id: string
+  strategy_code: string
+  strategy_name: string
+  data_period: string
+  secu_code: string
+}
+
+interface AccountOption {
+  account_id: string
+  account_code: string
+  account_name: string
+  initial_capital: number
+  currency_type: string
+}
+
+interface RunRow {
+  run_id: string
+  run_no: number
+  strategy_name: string
+  account_name: string
+  secu_code: string
+  period: string
+  report_precision: string
+  start_date: number
+  end_date: number
+  status: string
+  progress: number
+  error_message: string
+  created_by: string
+}
+
+const strategies = ref<StrategyOption[]>([])
+const accounts = ref<AccountOption[]>([])
+const runs = ref<RunRow[]>([])
+const runTotal = ref(0)
+const runPage = ref(1)
+const runPageSize = ref(10)
+
+const strategyId = ref('')
+const accountId = ref('')
+const secuCode = ref('GCMain')
+const startDate = ref('')
+const endDate = ref('')
+const period = ref('Min')
+const reportPrecision = ref('Day')
+const enableBacktest = ref(true)
+const initialCapital = ref<number | null>(null)
+const useInitialCapital = ref(false)
+const maxTradesPerDay = ref<number | null>(null)
+const useMaxTrades = ref(false)
+const allowedTimes = ref('')
+
+const loading = ref(false)
+const submitting = ref(false)
+const error = ref('')
+const message = ref('')
+
+async function loadOptions() {
+  try {
+    const [s, a] = await Promise.all([
+      apiGet<{ list: StrategyOption[] }>('/Backtest/Strategy/List?page=1&page_size=100&allow_backtest=1'),
+      apiGet<{ list: AccountOption[] }>('/Backtest/Account/List?page=1&page_size=100&allow_backtest=1'),
+    ])
+    strategies.value = s.list ?? []
+    accounts.value = a.list ?? []
+    // 默认选中 GCMain 相关策略与首个账户
+    if (!strategyId.value) {
+      const gc = strategies.value.find((x) => x.secu_code === 'GCMain')
+      strategyId.value = gc?.strategy_id ?? strategies.value[0]?.strategy_id ?? ''
+      if (gc) period.value = gc.data_period || 'Min'
+    }
+    if (!accountId.value) accountId.value = accounts.value[0]?.account_id ?? ''
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+async function loadRuns() {
+  try {
+    const data = await apiGet<{ total: number; list: RunRow[] }>(
+      `/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
+    )
+    runs.value = data.list ?? []
+    runTotal.value = data.total ?? 0
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+function fmtDate(d: number): string {
+  if (!d) return '-'
+  const s = String(d)
+  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
+}
+
+function toDateInt(v: string): number {
+  return Number(v.replaceAll('-', '')) || 0
+}
+
+async function startBacktest() {
+  error.value = ''
+  message.value = ''
+  if (!strategyId.value) {
+    error.value = '请先选择策略（可在「策略管理」中创建）'
+    return
+  }
+  if (!accountId.value) {
+    error.value = '请先选择账户（可在「账户管理」中创建）'
+    return
+  }
+  submitting.value = true
+  try {
+    const options: Record<string, unknown> = { enable_backtest: enableBacktest.value }
+    if (useInitialCapital.value && initialCapital.value) options.initial_capital = initialCapital.value
+    if (useMaxTrades.value && maxTradesPerDay.value) options.max_trades_per_day = maxTradesPerDay.value
+    if (allowedTimes.value.trim()) {
+      options.allowed_times = allowedTimes.value.split(/[,，\s]+/).filter(Boolean)
+    }
+    const run = await apiPost<RunRow>('/Backtest/Run/Create', {
+      strategy_id: strategyId.value,
+      account_id: accountId.value,
+      secu_code: secuCode.value || undefined,
+      start_date: toDateInt(startDate.value) || undefined,
+      end_date: toDateInt(endDate.value) || undefined,
+      period: period.value,
+      report_precision: reportPrecision.value,
+      options,
+    })
+    message.value = `回测任务 #${run.run_no} 已创建并启动（${run.status}），执行中请稍后刷新查看报告`
+    await loadRuns()
+  } catch (e) {
+    error.value = (e as Error).message
+  } finally {
+    submitting.value = false
+  }
+}
+
+function statusColor(s: string): string {
+  return { PENDING: 'grey', RUNNING: 'primary', SUCCEEDED: 'success', FAILED: 'error', CANCELLED: 'warning' }[s] ?? 'grey'
+}
+
+function viewReport(run: RunRow) {
+  router.push({ path: '/backtest/analysis', query: { run_id: run.run_id } })
+}
+
+onMounted(async () => {
+  await loadOptions()
+  await loadRuns()
+})
+</script>
+
+<template>
+  <v-container fluid>
+    <v-alert type="info" variant="tonal" density="compact" class="mb-3">
+      <v-icon icon="mdi-gold" class="mr-1" />黄金期货合约回测验证：基于已导入的 GCMain 黄金期货主连
+      2018~2026 分钟行情，选择策略与账户、配置回测条件后启动回测；任务完成后可查看收益分析报告。
+      通用引擎同样支持 ETF / 股票 / 场外基金 / 国内期货 / 美股期货 / 商品期货等任意已导入行情数据的证券。
+    </v-alert>
+
+    <v-row>
+      <!-- 回测配置 -->
+      <v-col cols="12" md="5">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon icon="mdi-tune-variant" class="mr-2" color="primary" />回测条件配置
+          </v-card-title>
+          <v-card-text>
+            <v-select v-model="strategyId" :items="strategies.map((s) => ({
+              title: `${s.strategy_code} ${s.strategy_name}（${s.secu_code || '通用'}）`,
+              value: s.strategy_id,
+            }))" label="交易策略 *" hint="策略在「策略管理」中维护（结构化定义）" class="mb-2" @update:model-value="(v: string) => {
+              const s = strategies.find((x) => x.strategy_id === v)
+              if (s) { if (s.secu_code) secuCode = s.secu_code; if (s.data_period) period = s.data_period }
+            }" />
+            <v-select v-model="accountId" :items="accounts.map((a) => ({
+              title: `${a.account_code} ${a.account_name}（${a.initial_capital.toLocaleString()} ${a.currency_type}）`,
+              value: a.account_id,
+            }))" label="回测账户 *" hint="初始资金/手续费/滑点在「账户管理」中维护" class="mb-2" />
+
+            <v-text-field v-model="secuCode" label="回测标的证券代码" hint="如 GCMain（黄金期货主连）/ 518880 / NVDA" class="mb-2" />
+
+            <v-row>
+              <v-col cols="6">
+                <v-text-field v-model="startDate" label="开始日期" type="date" hint="留空=行情最早日期" />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field v-model="endDate" label="结束日期" type="date" hint="留空=行情最晚日期" />
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="6">
+                <v-select v-model="period" :items="[
+                  { title: '分钟（Min）', value: 'Min' },
+                  { title: '小时（Hour）', value: 'Hour' },
+                  { title: '日（Day）', value: 'Day' },
+                ]" label="回测数据周期" />
+              </v-col>
+              <v-col cols="6">
+                <v-select v-model="reportPrecision" :items="[
+                  { title: '日（Day）', value: 'Day' },
+                  { title: '小时（Hour）', value: 'Hour' },
+                  { title: '分钟（Min）', value: 'Min' },
+                ]" label="报告时间精度" hint="曲线数据粒度" />
+              </v-col>
+            </v-row>
+
+            <v-divider class="my-3" />
+            <v-card-subtitle class="pa-0 mb-2">限制条件（可选覆盖）</v-card-subtitle>
+            <v-row align="center">
+              <v-col cols="1"><v-switch v-model="useInitialCapital" density="compact" hide-details /></v-col>
+              <v-col cols="11">
+                <v-text-field v-model.number="initialCapital" label="初始资金覆盖（覆盖账户初始资金）" type="number"
+                  :disabled="!useInitialCapital" />
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="1"><v-switch v-model="useMaxTrades" density="compact" hide-details /></v-col>
+              <v-col cols="11">
+                <v-text-field v-model.number="maxTradesPerDay" label="每日最大成交笔数限制" type="number"
+                  :disabled="!useMaxTrades" />
+              </v-col>
+            </v-row>
+            <v-text-field v-model="allowedTimes" label="限定交易时间点（hhmmss，逗号分隔，空=不限）"
+              hint="如 09:30:00,14:00:00 填 093000,140000" />
+
+            <v-divider class="my-3" />
+            <v-row align="center">
+              <v-col cols="auto">
+                <v-switch v-model="enableBacktest" color="primary" hide-details
+                  :label="enableBacktest ? '回测开关：已开启' : '回测开关：已关闭'" />
+              </v-col>
+              <v-spacer />
+              <v-btn color="primary" size="large" :loading="submitting" :disabled="!enableBacktest"
+                prepend-icon="mdi-play" @click="startBacktest">
+                启动回测
+              </v-btn>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- 回测任务列表 -->
+      <v-col cols="12" md="7">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon icon="mdi-history" class="mr-2" color="primary" />回测任务（{{ secuCode }}）
+            <v-spacer />
+            <v-btn size="small" variant="tonal" prepend-icon="mdi-refresh" @click="loadRuns">刷新</v-btn>
+          </v-card-title>
+          <v-alert v-if="error" type="error" dismissible class="mx-4 mb-2">{{ error }}</v-alert>
+          <v-alert v-if="message" type="success" dismissible class="mx-4 mb-2">{{ message }}</v-alert>
+
+          <v-data-table-server v-model:page="runPage" v-model:items-per-page="runPageSize"
+            :headers="[
+              { title: '任务号', key: 'run_no', width: 80 },
+              { title: '策略', key: 'strategy_name' },
+              { title: '账户', key: 'account_name', width: 130 },
+              { title: '区间', key: 'range', width: 190 },
+              { title: '周期', key: 'period', width: 70 },
+              { title: '精度', key: 'report_precision', width: 70 },
+              { title: '状态', key: 'status', width: 110 },
+              { title: '进度', key: 'progress', width: 130 },
+              { title: '操作', key: 'actions', width: 110, sortable: false },
+            ]" :items="runs" :loading="loading" :items-length="runTotal" item-value="run_id"
+            @update:options="loadRuns">
+            <template #item.range="{ item }">
+              {{ fmtDate(item.start_date) }} ~ {{ fmtDate(item.end_date) }}
+            </template>
+            <template #item.status="{ item }">
+              <v-chip size="small" :color="statusColor(item.status)">{{ item.status }}</v-chip>
+              <div v-if="item.error_message" class="text-caption text-error mt-1">{{ item.error_message }}</div>
+            </template>
+            <template #item.progress="{ item }">
+              <v-progress-linear v-if="item.status === 'RUNNING' || item.status === 'PENDING'"
+                :model-value="item.progress" color="primary" height="8" rounded class="mt-2" />
+              <span v-else class="text-body-2">{{ item.progress }}%</span>
+            </template>
+            <template #item.actions="{ item }">
+              <v-btn size="small" variant="text" color="primary" :disabled="item.status !== 'SUCCEEDED'"
+                @click="viewReport(item)">查看报告</v-btn>
+            </template>
+          </v-data-table-server>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
