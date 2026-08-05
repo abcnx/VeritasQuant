@@ -1,7 +1,7 @@
 # FinvMarket — 交易市场字典映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvMarket.md`
-> 数据表：`finv_market`（表结构：[`Deploy/Migrations/V3__finv_market.sql`](../../Deploy/Migrations/V3__finv_market.sql)；初始数据：[`Deploy/Migrations/V100015__finv_market_seed.sql`](../../Deploy/Migrations/V100015__finv_market_seed.sql)）
+> 数据表：`finv_market`（表结构：[`Deploy/Migrations/V3__finv_market.sql`](../../Deploy/Migrations/V3__finv_market.sql)；初始数据：[`Deploy/Migrations/V100015__finv_market_seed.sql`](../../Deploy/Migrations/V100015__finv_market_seed.sql)；二次定版：[`Deploy/Migrations/V100017__finv_market_seed_full.sql`](../../Deploy/Migrations/V100017__finv_market_seed_full.sql)）
 > 用途：交易所下属交易市场代码表（如 上交所股票/基金/债券等细分市场），与 [`FinvExchange.md`](FinvExchange.md) 交易所字典互补。
 
 ## 1. 表结构
@@ -24,7 +24,7 @@
 
 ## 2. 数据清单（54 条）
 
-> V100015 全量初始数据（ACANX 2026-08-05 提供）。市场代码采用**重新编码体系**（非富途原始值），如 `1100`=外汇、`1110`=上交所 A 股、`1120`=深交所 A 股、`1210`=港股主板、`1310`=美股指数、`2000`=加拿大 TSX 主板、`8300`=日本、`10001`=加密货币；`market_flag` = exchange + '_' + market_code；`en_security_type` 暂填 market_code 占位，`base_currency` 暂空串（待后续按市场补齐）。完整清单见迁移文件 [`V100015__finv_market_seed.sql`](../../Deploy/Migrations/V100015__finv_market_seed.sql)。
+> V100017 二次定版（ACANX 2026-08-05 再次发放），与 V100015 逐条核对 **54/54 一致**。市场代码采用**重新编码体系**（非富途原始值），如 `1100`=外汇、`1110`=上交所 A 股、`1120`=深交所 A 股、`1210`=港股主板、`1310`=美股指数、`2000`=加拿大 TSX 主板、`8300`=日本、`10001`=加密货币；`market_flag` = exchange + '_' + market_code；`en_security_type` 暂填 market_code 占位，`base_currency` 暂空串（待后续按市场补齐）。完整清单见迁移文件 [`V100017__finv_market_seed_full.sql`](../../Deploy/Migrations/V100017__finv_market_seed_full.sql)。
 
 ## 3. 说明
 
