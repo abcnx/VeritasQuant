@@ -20,6 +20,7 @@ interface SecurityOption {
 interface SecurityDetail {
   usc: string
   exchange_code: number
+  market_code: number
   security_type: string
   security_code: string
   security_name: string
@@ -110,8 +111,11 @@ async function onPickSecu(val: string | null) {
     }
     pickedSec.value = data.security
     secuCode.value = data.security.usc
-    // 自动带出市场代码（交易所代码）便于核对；文件头 MarketCode 会在选文件后二次核对
-    marketCode.value = String(data.security.exchange_code)
+    // 自动带出市场代码：优先取字典 market_code（有值则用之），
+    // 未维护（0）时回退到交易所代码 exchange_code；选文件后以文件头 MarketCode 二次核对
+    marketCode.value = data.security.market_code > 0
+      ? String(data.security.market_code)
+      : String(data.security.exchange_code)
   } catch (e) {
     pickError.value = (e as Error).message
   } finally {
@@ -179,10 +183,16 @@ function verifyStrategy1(h: FileHeader) {
     return
   }
   const codeOk = h.code === sec.usc || h.code === sec.security_code
-  const marketOk = h.marketCode === String(sec.exchange_code)
+  // 市场代码核对：字典 market_code 已维护（>0）时与文件头比对；未维护时仅展示提示，不强校验
+  const marketRef = sec.market_code > 0 ? String(sec.market_code) : ''
+  const marketOk = marketRef ? h.marketCode === marketRef : true
   const parts: string[] = []
   parts.push(`文件证券代码 ${h.code} ${codeOk ? '✓ 与' : '✗ 不匹配'} 字典 ${sec.usc}(${sec.security_code})`)
-  parts.push(`文件市场代码 ${h.marketCode} ${marketOk ? '✓ 与' : '✗ 不匹配'} 交易所 ${sec.exchange_code}`)
+  parts.push(
+    marketRef
+      ? `文件市场代码 ${h.marketCode} ${marketOk ? '✓ 与' : '✗ 不匹配'} 字典 ${marketRef}`
+      : `文件市场代码 ${h.marketCode}（字典未维护 market_code，跳过市场代码强校验）`,
+  )
   if (codeOk && marketOk) {
     checkStatus.value = 'ok'
     checkDetail.value = `核对通过：${parts.join('；')}`
@@ -341,9 +351,9 @@ async function submitImport() {
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="marketCode"
-                label="市场代码（交易所代码，自动带出）"
+                label="市场代码（自动带出）"
                 readonly
-                hint="以字典证券的 exchange_code 自动带出；选文件后以文件头 MarketCode 二次核对"
+                hint="优先取字典 market_code（未维护时回退交易所代码）；选文件后以文件头 MarketCode 二次核对"
               />
             </v-col>
           </v-row>
@@ -361,6 +371,7 @@ async function submitImport() {
                 <v-col cols="6" md="3"><strong>源代码：</strong>{{ pickedSec.security_code }}</v-col>
                 <v-col cols="6" md="3"><strong>类型：</strong>{{ pickedSec.security_type }}</v-col>
                 <v-col cols="6" md="3"><strong>交易所：</strong>{{ pickedSec.exchange_code }}</v-col>
+                <v-col cols="6" md="3"><strong>市场：</strong>{{ pickedSec.market_code || '未维护' }}</v-col>
                 <v-col cols="6" md="3"><strong>币种：</strong>{{ pickedSec.currency_type }}</v-col>
                 <v-col cols="6" md="3"><strong>状态：</strong>
                   <v-chip :color="pickedSec.flag_enable === '1' ? 'success' : 'error'" size="small">
@@ -421,6 +432,7 @@ async function submitImport() {
                 <v-col cols="6" md="3"><strong>源代码：</strong>{{ matchedSec.security_code }}</v-col>
                 <v-col cols="6" md="3"><strong>类型：</strong>{{ matchedSec.security_type }}</v-col>
                 <v-col cols="6" md="3"><strong>交易所：</strong>{{ matchedSec.exchange_code }}</v-col>
+                <v-col cols="6" md="3"><strong>市场：</strong>{{ matchedSec.market_code || '未维护' }}</v-col>
                 <v-col cols="6" md="3"><strong>币种：</strong>{{ matchedSec.currency_type }}</v-col>
               </v-row>
             </v-card-text>

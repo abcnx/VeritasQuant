@@ -7,6 +7,7 @@ import { apiGet, apiPost } from '../api'
 interface SecurityRow {
   usc: string
   exchange_code: number
+  market_code: number
   security_type: string
   security_code: string
   security_name: string
@@ -34,6 +35,7 @@ const editing = ref(false)
 const form = ref<SecurityRow>({
   usc: '',
   exchange_code: 0,
+  market_code: 0,
   security_type: '',
   security_code: '',
   security_name: '',
@@ -67,6 +69,7 @@ function openCreate() {
   form.value = {
     usc: '',
     exchange_code: 0,
+    market_code: 0,
     security_type: '',
     security_code: '',
     security_name: '',
@@ -106,6 +109,7 @@ async function save() {
     await apiPost('/Meta/FinvQuant/Metadata/Security/Save', {
       usc: form.value.usc.trim(),
       exchange_code: form.value.exchange_code,
+      market_code: form.value.market_code ?? 0,
       security_type: form.value.security_type.trim(),
       security_code: form.value.security_code.trim(),
       security_name: form.value.security_name.trim(),
@@ -182,6 +186,7 @@ onMounted(load)
         :headers="[
           { title: 'usc', key: 'usc', width: 110 },
           { title: '交易所', key: 'exchange_code', width: 80 },
+          { title: '市场', key: 'market_code', width: 80 },
           { title: '类型', key: 'security_type', width: 100 },
           { title: '源代码', key: 'security_code', width: 110 },
           { title: '证券名称', key: 'security_name' },
@@ -236,6 +241,9 @@ onMounted(load)
             </v-col>
             <v-col cols="6">
               <v-text-field v-model.number="form.exchange_code" label="交易所代码（对齐 finv_exchange）" type="number" density="compact" />
+            </v-col>
+            <v-col cols="6">
+              <v-text-field v-model.number="form.market_code" label="市场代码（对齐 finv_market，缺省 0）" type="number" density="compact" />
             </v-col>
             <v-col cols="6">
               <v-text-field v-model="form.security_code" label="源证券代码（交易所原始代码）" density="compact" />

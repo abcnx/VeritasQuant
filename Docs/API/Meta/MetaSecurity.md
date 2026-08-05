@@ -30,6 +30,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
       {
         "usc": "GCMain",
         "exchange_code": 33,
+        "market_code": 0,
         "security_type": "Futures",
         "security_code": "GCMain",
         "security_name": "GCMain2512",
@@ -57,6 +58,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 |------|------|------|------|
 | `usc` | string | ✅ | 统一证券代码（全局唯一）；**已存在则 UPDATE，不存在则 INSERT** |
 | `exchange_code` | int | ✅ | 交易所代码（对齐 finv_exchange，正整数） |
+| `market_code` | int | 可选 | 交易市场代码（对齐 finv_market，缺省 0；V19 新增） |
 | `security_type` | string | ✅ | 证券类型（如 Futures / StockIndex / Stock / ETF） |
 | `security_code` | string | ✅ | 源证券代码（交易所原始代码） |
 | `security_name` | string | ✅ | 源证券名称 |
@@ -136,6 +138,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
     "security": {
       "usc": "NVDA",
       "exchange_code": 30,
+      "market_code": 0,
       "security_type": "Stock",
       "security_code": "NVDA",
       "security_name": "NVIDIA",

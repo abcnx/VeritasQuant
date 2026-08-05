@@ -65,6 +65,7 @@ type Market struct {
 type Security struct {
 	USC             string  `json:"usc"`
 	ExchangeCode    int     `json:"exchange_code"`
+	MarketCode      int     `json:"market_code"` // 交易市场代码（对齐 finv_market.market_code，缺省 0）
 	SecurityType    string  `json:"security_type"`
 	SecurityCode    string  `json:"security_code"`
 	SecurityName    string  `json:"security_name"`
@@ -333,7 +334,7 @@ func (s *Service) ListSecurities(ctx context.Context, pager Pager, keyword, flag
 	}
 
 	rows, err := s.pool.Query(ctx, `
-SELECT usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+SELECT usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
        security_name_full, currency_type, init_date, timezone, tz, flag_enable
 FROM finv_security
 WHERE `+cond+`
@@ -348,7 +349,7 @@ LIMIT $`+strconv.Itoa(len(args)+1)+` OFFSET $`+strconv.Itoa(len(args)+2),
 	list := []Security{}
 	for rows.Next() {
 		var sec Security
-		if err := rows.Scan(&sec.USC, &sec.ExchangeCode, &sec.SecurityType, &sec.SecurityCode,
+		if err := rows.Scan(&sec.USC, &sec.ExchangeCode, &sec.MarketCode, &sec.SecurityType, &sec.SecurityCode,
 			&sec.SecurityName, &sec.SecurityNameCN, &sec.SecurityNameFull, &sec.CurrencyType,
 			&sec.InitDate, &sec.Timezone, &sec.Tz, &sec.FlagEnable); err != nil {
 			return nil, 0, err
@@ -372,21 +373,21 @@ func (s *Service) SaveSecurity(ctx context.Context, sec Security) (string, error
 	if exists == 1 {
 		_, err := s.pool.Exec(ctx, `
 UPDATE finv_security SET
-    exchange_code = $2, security_type = $3, security_code = $4, security_name = $5,
-    security_name_cn = $6, security_name_full = $7, currency_type = $8,
-    init_date = $9, timezone = $10, tz = $11
+    exchange_code = $2, market_code = $3, security_type = $4, security_code = $5, security_name = $6,
+    security_name_cn = $7, security_name_full = $8, currency_type = $9,
+    init_date = $10, timezone = $11, tz = $12
 WHERE usc = $1`,
-			sec.USC, sec.ExchangeCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
+			sec.USC, sec.ExchangeCode, sec.MarketCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
 			sec.SecurityNameCN, sec.SecurityNameFull, sec.CurrencyType,
 			sec.InitDate, sec.Timezone, sec.Tz)
 		return sec.USC, err
 	}
 	_, err := s.pool.Exec(ctx, `
 INSERT INTO finv_security
-    (usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+    (usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
      security_name_full, currency_type, init_date, timezone, tz, flag_enable)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, '1')`,
-		sec.USC, sec.ExchangeCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, '1')`,
+		sec.USC, sec.ExchangeCode, sec.MarketCode, sec.SecurityType, sec.SecurityCode, sec.SecurityName,
 		sec.SecurityNameCN, sec.SecurityNameFull, sec.CurrencyType,
 		sec.InitDate, sec.Timezone, sec.Tz)
 	return sec.USC, err
@@ -446,13 +447,13 @@ func (s *Service) LookupSecurity(ctx context.Context, code string) (*Security, e
 	}
 	var sec Security
 	err := s.pool.QueryRow(ctx, `
-SELECT usc, exchange_code, security_type, security_code, security_name, security_name_cn,
+SELECT usc, exchange_code, market_code, security_type, security_code, security_name, security_name_cn,
        security_name_full, currency_type, init_date, timezone, tz, flag_enable
 FROM finv_security
 WHERE usc = $1 OR security_code = $1
 ORDER BY (usc = $1) DESC
 LIMIT 1`, code).Scan(
-		&sec.USC, &sec.ExchangeCode, &sec.SecurityType, &sec.SecurityCode,
+		&sec.USC, &sec.ExchangeCode, &sec.MarketCode, &sec.SecurityType, &sec.SecurityCode,
 		&sec.SecurityName, &sec.SecurityNameCN, &sec.SecurityNameFull, &sec.CurrencyType,
 		&sec.InitDate, &sec.Timezone, &sec.Tz, &sec.FlagEnable)
 	if err == pgx.ErrNoRows {

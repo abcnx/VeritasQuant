@@ -14,10 +14,10 @@
 ### 策略 1：先选证券，再选文件核对
 
 1. 在「证券代码」下拉（来源 `Security/Options`，格式 `usc:security_name_cn`，可搜索/手动输入）选择证券；
-2. 选中后自动调用 `Security/Lookup` 带出证券详情卡片（usc / 名称 / 源代码 / 类型 / 交易所 / 币种 / 启用状态），并自动回填「市场代码」（字典证券的 exchange_code）；
+2. 选中后自动调用 `Security/Lookup` 带出证券详情卡片（usc / 名称 / 源代码 / 类型 / 交易所 / 市场 / 币种 / 启用状态），并自动回填「市场代码」（**优先取字典 `market_code`**，未维护（0）时回退交易所 `exchange_code`）；
 3. 选择 MVSV 文件后，前端解析文件头（`# Code` / `# MarketCode`），与所选证券**双向核对**：
    - 文件 Code 必须等于证券的 usc 或 security_code；
-   - 文件 MarketCode 必须等于证券 exchange_code；
+   - 文件 MarketCode 与字典 `market_code` 比对（字典未维护时跳过市场代码强校验，仅提示）；
 4. 核对全部一致（绿色提示）后，「上传并导入」按钮才可用；不一致则提示具体差异项，不允许上传。
 
 ### 策略 2：先选文件，自动匹配证券
