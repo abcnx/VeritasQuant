@@ -51,7 +51,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: SecurityRow[] }>(
-      `/Meta/Security/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/FinvQuant/Metadata/Security/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -103,7 +103,7 @@ async function save() {
     return
   }
   try {
-    await apiPost('/Meta/Security/Save', {
+    await apiPost('/Meta/FinvQuant/Metadata/Security/Save', {
       usc: form.value.usc.trim(),
       exchange_code: form.value.exchange_code,
       security_type: form.value.security_type.trim(),
@@ -128,7 +128,7 @@ async function toggle(row: SecurityRow) {
   error.value = ''
   const next = row.flag_enable === '1' ? '0' : '1'
   try {
-    await apiPost('/Meta/Security/Toggle', { usc: row.usc, flag_enable: next })
+    await apiPost('/Meta/FinvQuant/Metadata/Security/Toggle', { usc: row.usc, flag_enable: next })
     row.flag_enable = next
     message.value = `已${next === '1' ? '启用' : '禁用'}证券 ${row.usc}`
   } catch (e) {

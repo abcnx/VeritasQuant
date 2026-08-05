@@ -1,11 +1,11 @@
-# GET/POST /API/V1/Meta/Security/* — 规范证券信息维护
+# GET/POST /API/V1/Meta/FinvQuant/Metadata/Security/* — 规范证券信息维护
 
 finv_security 证券代码字典维护接口：分页查询、新增/修改、禁用/启用、下拉选项。
 
 ## 1. 分页查询证券
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/Security/List`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Security/List`
 
 ### Query 参数
 
@@ -47,7 +47,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 ## 2. 新增/修改证券
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/Security/Save`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Security/Save`
 
 ### 请求体（JSON）
 
@@ -74,7 +74,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 ## 3. 禁用/启用证券
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/Security/Toggle`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Security/Toggle`
 
 ### 请求体（JSON）
 
@@ -92,7 +92,7 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 ## 4. 证券下拉选项（供历史行情查询证券代码筛选）
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/Security/Options`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Security/Options`
 - **说明**：仅返回**启用状态**（flag_enable='1'）的证券；`usc` 为下拉选项 key，`security_name_cn` 为字面展示值。
 
 ### 响应（成功 HTTP 200）
@@ -122,4 +122,4 @@ finv_security 证券代码字典维护接口：分页查询、新增/修改、�
 ## 已使用位置登记
 
 - 规范证券信息维护菜单（`Docs/Menu/Meta/MetaSecurity.md`，视图 `MetaSecurityView.vue`）
-- 历史行情查询菜单（`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`，视图 `QuoteQueryView.vue`）—— 仅使用 `GET /API/V1/Meta/Security/Options` 作为证券代码下拉字典来源
+- 历史行情查询菜单（`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`，视图 `QuoteQueryView.vue`）—— 仅使用 `GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` 作为证券代码下拉字典来源

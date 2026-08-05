@@ -50,16 +50,16 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.GET("/Quote/Query", quoteQuery.Query)
 
 		// 元数据管理：交易所 / 市场 / 证券字典维护
-		apiGroup.GET("/Meta/Exchange/List", metaHandler.ListExchanges)
-		apiGroup.POST("/Meta/Exchange/Save", metaHandler.SaveExchange)
-		apiGroup.POST("/Meta/Exchange/Toggle", metaHandler.ToggleExchange)
-		apiGroup.GET("/Meta/Market/List", metaHandler.ListMarkets)
-		apiGroup.POST("/Meta/Market/Save", metaHandler.SaveMarket)
-		apiGroup.POST("/Meta/Market/Toggle", metaHandler.ToggleMarket)
-		apiGroup.GET("/Meta/Security/List", metaHandler.ListSecurities)
-		apiGroup.POST("/Meta/Security/Save", metaHandler.SaveSecurity)
-		apiGroup.POST("/Meta/Security/Toggle", metaHandler.ToggleSecurity)
-		apiGroup.GET("/Meta/Security/Options", metaHandler.SecurityOptions)
+		apiGroup.GET("/Meta/FinvQuant/Metadata/Exchange/List", metaHandler.ListExchanges)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Exchange/Save", metaHandler.SaveExchange)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Exchange/Toggle", metaHandler.ToggleExchange)
+		apiGroup.GET("/Meta/FinvQuant/Metadata/Market/List", metaHandler.ListMarkets)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Market/Save", metaHandler.SaveMarket)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Market/Toggle", metaHandler.ToggleMarket)
+		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/List", metaHandler.ListSecurities)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Security/Save", metaHandler.SaveSecurity)
+		apiGroup.POST("/Meta/FinvQuant/Metadata/Security/Toggle", metaHandler.ToggleSecurity)
+		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/Options", metaHandler.SecurityOptions)
 	}
 
 	return router

@@ -99,7 +99,7 @@ watch([secuCode, dateInput, days, period], () => {
 onMounted(async () => {
   // 加载证券下拉字典（finv_security.usc + security_name_cn）
   try {
-    const data = await apiGet<{ list: SecurityOption[] }>('/Meta/Security/Options')
+    const data = await apiGet<{ list: SecurityOption[] }>('/Meta/FinvQuant/Metadata/Security/Options')
     securityOptions.value = data.list ?? []
   } catch {
     // 字典加载失败不阻塞查询（仍可手动输入证券代码）

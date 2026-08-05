@@ -56,7 +56,7 @@
 
 ### 4.2 证券代码下拉字典
 
-- 页面加载时请求 `GET /API/V1/Meta/Security/Options` 获取**启用状态**证券列表（`usc` + `security_name_cn`）。
+- 页面加载时请求 `GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` 获取**启用状态**证券列表（`usc` + `security_name_cn`）。
 - 下拉选项展示格式：`usc:security_name_cn`（如 `GCMain:黄金期货主连`）；选中后自动回填证券名称 `secu_name`。
 - 字典加载失败不阻塞使用（仍可手动输入证券代码查询）。
 

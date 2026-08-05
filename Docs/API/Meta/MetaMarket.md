@@ -1,11 +1,11 @@
-# GET/POST /API/V1/Meta/Market/* — 交易所下设市场信息维护
+# GET/POST /API/V1/Meta/FinvQuant/Metadata/Market/* — 交易所下设市场信息维护
 
 finv_market 交易市场字典维护接口：分页查询、新增/修改、禁用/启用。
 
 ## 1. 分页查询市场
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/Market/List`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Market/List`
 
 ### Query 参数
 
@@ -42,7 +42,7 @@ finv_market 交易市场字典维护接口：分页查询、新增/修改、禁�
 ## 2. 新增/修改市场
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/Market/Save`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Market/Save`
 
 ### 请求体（JSON）
 
@@ -64,7 +64,7 @@ finv_market 交易市场字典维护接口：分页查询、新增/修改、禁�
 ## 3. 禁用/启用市场
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/Market/Toggle`
+- **路径**：`/API/V1/Meta/FinvQuant/Metadata/Market/Toggle`
 
 ### 请求体（JSON）
 

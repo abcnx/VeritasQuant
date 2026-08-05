@@ -21,7 +21,7 @@ func NewMeta(service *meta.Service) *Meta {
 }
 
 // ---------------------------------------------------------------------
-// finv_exchange：GET /API/V1/Meta/Exchange/List
+// finv_exchange：GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List
 // ---------------------------------------------------------------------
 
 // ListExchanges 分页查询交易所字典。
@@ -40,7 +40,7 @@ func (h *Meta) ListExchanges(c *gin.Context) {
 	})
 }
 
-// SaveExchange 新增或更新交易所（POST /API/V1/Meta/Exchange/Save）。
+// SaveExchange 新增或更新交易所（POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Save）。
 func (h *Meta) SaveExchange(c *gin.Context) {
 	var e meta.Exchange
 	if err := c.ShouldBindJSON(&e); err != nil {
@@ -55,7 +55,7 @@ func (h *Meta) SaveExchange(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"exchange_code": code}})
 }
 
-// ToggleExchange 切换交易所启用状态（POST /API/V1/Meta/Exchange/Toggle）。
+// ToggleExchange 切换交易所启用状态（POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle）。
 func (h *Meta) ToggleExchange(c *gin.Context) {
 	var req struct {
 		ExchangeCode int    `json:"exchange_code"`
@@ -73,7 +73,7 @@ func (h *Meta) ToggleExchange(c *gin.Context) {
 }
 
 // ---------------------------------------------------------------------
-// finv_market：GET /API/V1/Meta/Market/List
+// finv_market：GET /API/V1/Meta/FinvQuant/Metadata/Market/List
 // ---------------------------------------------------------------------
 
 // ListMarkets 分页查询交易市场。
@@ -92,7 +92,7 @@ func (h *Meta) ListMarkets(c *gin.Context) {
 	})
 }
 
-// SaveMarket 新增或更新交易市场（POST /API/V1/Meta/Market/Save）。
+// SaveMarket 新增或更新交易市场（POST /API/V1/Meta/FinvQuant/Metadata/Market/Save）。
 func (h *Meta) SaveMarket(c *gin.Context) {
 	var m meta.Market
 	if err := c.ShouldBindJSON(&m); err != nil {
@@ -107,7 +107,7 @@ func (h *Meta) SaveMarket(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"market_code": code}})
 }
 
-// ToggleMarket 切换市场启用状态（POST /API/V1/Meta/Market/Toggle）。
+// ToggleMarket 切换市场启用状态（POST /API/V1/Meta/FinvQuant/Metadata/Market/Toggle）。
 func (h *Meta) ToggleMarket(c *gin.Context) {
 	var req struct {
 		MarketCode int    `json:"market_code"`
@@ -125,7 +125,7 @@ func (h *Meta) ToggleMarket(c *gin.Context) {
 }
 
 // ---------------------------------------------------------------------
-// finv_security：GET /API/V1/Meta/Security/List
+// finv_security：GET /API/V1/Meta/FinvQuant/Metadata/Security/List
 // ---------------------------------------------------------------------
 
 // ListSecurities 分页查询证券代码。
@@ -144,7 +144,7 @@ func (h *Meta) ListSecurities(c *gin.Context) {
 	})
 }
 
-// SaveSecurity 新增或更新证券代码（POST /API/V1/Meta/Security/Save）。
+// SaveSecurity 新增或更新证券代码（POST /API/V1/Meta/FinvQuant/Metadata/Security/Save）。
 func (h *Meta) SaveSecurity(c *gin.Context) {
 	var sec meta.Security
 	if err := c.ShouldBindJSON(&sec); err != nil {
@@ -159,7 +159,7 @@ func (h *Meta) SaveSecurity(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"usc": usc}})
 }
 
-// ToggleSecurity 切换证券启用状态（POST /API/V1/Meta/Security/Toggle）。
+// ToggleSecurity 切换证券启用状态（POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle）。
 func (h *Meta) ToggleSecurity(c *gin.Context) {
 	var req struct {
 		USC        string `json:"usc"`
@@ -176,7 +176,7 @@ func (h *Meta) ToggleSecurity(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "切换成功", "data": gin.H{"usc": req.USC, "flag_enable": req.FlagEnable}})
 }
 
-// SecurityOptions 返回证券下拉选项（GET /API/V1/Meta/Security/Options）。
+// SecurityOptions 返回证券下拉选项（GET /API/V1/Meta/FinvQuant/Metadata/Security/Options）。
 func (h *Meta) SecurityOptions(c *gin.Context) {
 	list, err := h.service.SecurityOptions(c.Request.Context())
 	if err != nil {

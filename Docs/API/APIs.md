@@ -14,16 +14,16 @@
 | 3 | GET | `/API/V1/version` | 服务端版本信息：`name` / `version` / `go_version` / `commit` | — | — |
 | 4 | POST | `/API/V1/Quote/Import/Upload` | 上传 MVSV 历史行情文件并导入 PG（字段级/整行覆盖） | [HistoryQuote/ImportsUpload.md](HistoryQuote/ImportsUpload.md) | 历史行情数据导入（`QuoteImportView.vue`） |
 | 5 | GET | `/API/V1/Quote/Query` | 按证券代码+日期查询分钟级 K 线（周期 Min，1日/5日回溯，分页；可选回传证券名称 secu_name） | [HistoryQuote/HistoryQuote.md](HistoryQuote/HistoryQuote.md) | 历史行情查询（[Menus.md](../Menu/Menus.md#3) 之历史行情查询菜单，文档见 [HistoryQuote/HistoryQuoteQuery.md](../Menu/HistoryQuote/HistoryQuoteQuery.md)） |
-| 6 | GET | `/API/V1/Meta/Exchange/List` | 分页查询交易所字典 finv_exchange | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（[Menus.md](../Menu/Menus.md#6)，文档见 [Meta/MetaExchange.md](../Menu/Meta/MetaExchange.md)） |
-| 7 | POST | `/API/V1/Meta/Exchange/Save` | 新增/修改交易所字典 | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（同上） |
-| 8 | POST | `/API/V1/Meta/Exchange/Toggle` | 禁用/启用交易所 | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（同上） |
-| 9 | GET | `/API/V1/Meta/Market/List` | 分页查询交易市场字典 finv_market | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（[Menus.md](../Menu/Menus.md#7)，文档见 [Meta/MetaMarket.md](../Menu/Meta/MetaMarket.md)） |
-| 10 | POST | `/API/V1/Meta/Market/Save` | 新增/修改交易市场字典 | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（同上） |
-| 11 | POST | `/API/V1/Meta/Market/Toggle` | 禁用/启用交易市场 | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（同上） |
-| 12 | GET | `/API/V1/Meta/Security/List` | 分页查询证券代码字典 finv_security | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（[Menus.md](../Menu/Menus.md#8)，文档见 [Meta/MetaSecurity.md](../Menu/Meta/MetaSecurity.md)） |
-| 13 | POST | `/API/V1/Meta/Security/Save` | 新增/修改证券代码字典 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
-| 14 | POST | `/API/V1/Meta/Security/Toggle` | 禁用/启用证券代码 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
-| 15 | GET | `/API/V1/Meta/Security/Options` | 证券下拉选项（usc+security_name_cn，仅启用状态） | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上）、历史行情查询（[HistoryQuote/HistoryQuoteQuery.md](../Menu/HistoryQuote/HistoryQuoteQuery.md)） |
+| 6 | GET | `/API/V1/Meta/FinvQuant/Metadata/Exchange/List` | 分页查询交易所字典 finv_exchange | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（[Menus.md](../Menu/Menus.md#6)，文档见 [Meta/MetaExchange.md](../Menu/Meta/MetaExchange.md)） |
+| 7 | POST | `/API/V1/Meta/FinvQuant/Metadata/Exchange/Save` | 新增/修改交易所字典 | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（同上） |
+| 8 | POST | `/API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle` | 禁用/启用交易所 | [Meta/MetaExchange.md](Meta/MetaExchange.md) | 交易所信息维护（同上） |
+| 9 | GET | `/API/V1/Meta/FinvQuant/Metadata/Market/List` | 分页查询交易市场字典 finv_market | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（[Menus.md](../Menu/Menus.md#7)，文档见 [Meta/MetaMarket.md](../Menu/Meta/MetaMarket.md)） |
+| 10 | POST | `/API/V1/Meta/FinvQuant/Metadata/Market/Save` | 新增/修改交易市场字典 | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（同上） |
+| 11 | POST | `/API/V1/Meta/FinvQuant/Metadata/Market/Toggle` | 禁用/启用交易市场 | [Meta/MetaMarket.md](Meta/MetaMarket.md) | 交易所下设市场信息维护（同上） |
+| 12 | GET | `/API/V1/Meta/FinvQuant/Metadata/Security/List` | 分页查询证券代码字典 finv_security | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（[Menus.md](../Menu/Menus.md#8)，文档见 [Meta/MetaSecurity.md](../Menu/Meta/MetaSecurity.md)） |
+| 13 | POST | `/API/V1/Meta/FinvQuant/Metadata/Security/Save` | 新增/修改证券代码字典 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
+| 14 | POST | `/API/V1/Meta/FinvQuant/Metadata/Security/Toggle` | 禁用/启用证券代码 | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上） |
+| 15 | GET | `/API/V1/Meta/FinvQuant/Metadata/Security/Options` | 证券下拉选项（usc+security_name_cn，仅启用状态） | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) | 规范证券信息维护（同上）、历史行情查询（[HistoryQuote/HistoryQuoteQuery.md](../Menu/HistoryQuote/HistoryQuoteQuery.md)） |
 
 ## 说明
 
