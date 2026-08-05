@@ -75,6 +75,9 @@ Copy-Item Deploy\.env.example Deploy\.env
 | `FINV_REDIS_PASSWORD` | 空 | Redis 密码（生产环境建议设置） |
 | `FINV_REDIS_EXPOSE_PORT` | `6380` | Redis 暴露到宿主机的端口 |
 | `FINV_IMAGE_TAG` | `latest` | 镜像 tag（`latest` 或版本号 `v*`，升级时使用） |
+| `FINV_CONTAINER_NAME` | `finvquant` | **主服务容器名**（默认 `finvquant`；与既有容器冲突时可自定义，如 `finvquant-prod`） |
+| `FINV_PG_CONTAINER_NAME` | `fq-postgres` | PostgreSQL 容器名 |
+| `FINV_REDIS_CONTAINER_NAME` | `fq-redis` | Redis 容器名 |
 | `TZ` | `Asia/Shanghai` | 时区 |
 
 **Windows 路径注意事项：**
@@ -86,6 +89,8 @@ Copy-Item Deploy\.env.example Deploy\.env
 > 以下命令均在**仓库根目录**（含 `Deploy/` 的目录）执行；compose 文件位于 `Deploy/` 子目录，需用 `-f Deploy/docker-compose.yml` 显式指定（否则报 `no configuration file provided`）。
 >
 > 便捷方式：先 `cd Deploy` 再执行 `docker compose --env-file .env <命令>` 可省略 `-f`（此时 compose 项目目录为 `Deploy/`，未显式设置的相对路径卷 `./pgdata` 将落在 `Deploy/pgdata`）。
+>
+> **⚠️ 容器名说明**：compose 已通过 `container_name` 显式固定容器名（主服务默认 `finvquant`，见 .env 的 `FINV_CONTAINER_NAME`）。若你的环境中容器名显示为 `deploy` 之类，通常是使用了 `docker compose -p <项目名>` 或 `docker stack deploy` 等方式覆盖了项目名/容器名；请使用文档推荐命令（`-f Deploy/docker-compose.yml --env-file Deploy/.env`）启动，或通过 `.env` 的 `FINV_CONTAINER_NAME` 显式指定。
 
 ```powershell
 docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env up -d
