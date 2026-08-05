@@ -25,7 +25,7 @@ COPY . .
 COPY --from=web-builder /web/dist /app/internal/webui/dist
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags "-s -w -X main.version=$(git describe --tags --always 2>/dev/null || echo 0.1.0) -X main.commit=$(git rev-parse --short HEAD 2>/dev/null || echo dev)" \
+    -ldflags "-s -w -X main.version=$(cat VERSION) -X main.commit=$(git rev-parse --short HEAD 2>/dev/null || echo dev)" \
     -o /finvquant ./cmd/server
 
 # ---- 阶段 3：运行（单镜像单进程）----
