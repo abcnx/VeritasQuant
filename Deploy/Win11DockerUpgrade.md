@@ -96,6 +96,8 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs --tail=5
 - 迁移在**单事务**内执行（脚本含 `BEGIN/COMMIT`），失败自动回滚并导致服务启动失败。
 - 新增迁移脚本只需放入 `Deploy/Migrations/`（随镜像发布），升级时服务启动即自动应用，无需手动 `psql`。
 
+> ⚠️ **量化回测模块（V22~V28 + V100019/V100020）需在全新库一次性应用**：该组迁移在 PR 内完成过改名与加列（无 checksum 校验），若曾在中间态部署过，请重建数据库或人工核对后再升级（详见 `Docs/DevSpec/BacktestStrategySpec.md` 第 13 章）。
+
 ## 5. 回滚方案
 
 ```powershell
