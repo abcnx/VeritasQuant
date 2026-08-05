@@ -194,10 +194,18 @@ func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMo
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+	// market_code 已从主表移除（V21）：从 finv_security 字典关联获取，保持响应字段兼容
+	marketCode := 0
+	if err := s.pool.QueryRow(ctx,
+		`SELECT market_code FROM finv_security WHERE usc = $1 OR security_code = $1 LIMIT 1`,
+		rows[0].SecuCode).Scan(&marketCode); err != nil {
+		// 字典未登记时返回 0（前端展示“未维护”），不影响导入结果
+		marketCode = 0
+	}
 	return &UpsertResult{
 		BatchID:     batchID,
 		SecuCode:    rows[0].SecuCode,
-		MarketCode:  rows[0].MarketCode,
+		MarketCode:  marketCode,
 		RecordCount: len(rows),
 		Inserted:    inserted,
 		Updated:     updated,
@@ -214,10 +222,10 @@ func buildUpsertSQL(mode UpsertMode) string {
 	}
 	base := `
 INSERT INTO finv_quote_secu_kline_min
-    (market_code, secu_code, ts, date, "time", prev_close, open, high, low, close,
+    (secu_code, ts, date, "time", prev_close, open, high, low, close,
      paocd, volume, turnover, ext_field, remark)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-ON CONFLICT (ts, market_code, secu_code) DO UPDATE SET
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+ON CONFLICT (ts, secu_code) DO UPDATE SET
 `
 	var assignments []string
 	for _, column := range updatable {
@@ -280,7 +288,6 @@ func (s *Service) upsertBatch(
 
 func rowParams(row mvsv.Row) []any {
 	return []any{
-		row.MarketCode,
 		row.SecuCode,
 		row.Ts,
 		row.Date,
