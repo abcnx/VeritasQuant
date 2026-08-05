@@ -1,7 +1,7 @@
 # FinvFutuMappingCSMarket — 富途 CS 市场映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvFutuMappingCSMarket.md`
-> 数据表：`finv_futu_mapping_cs_market`（表结构：[`Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql`](../../Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql)；新增列/约束放宽：[`Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql`](../../Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql)；初始数据：[`Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql`](../../Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql)）
+> 数据表：`finv_futu_mapping_cs_market`（表结构：[`Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql`](../../Deploy/Migrations/V9__finv_futu_mapping_cs_market.sql)；新增列/约束放宽：[`Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql`](../../Deploy/Migrations/V16__finv_futu_mapping_cs_market_add_exchange_name.sql)；增量列：[`Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql`](../../Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql)；初始数据：[`Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql`](../../Deploy/Migrations/V100008__finv_futu_mapping_cs_market_seed.sql)）
 > 用途：FT（富途/moomoo）行情源 CS 市场标识与交易所代码（finv_exchange.exchange_code）的字段映射表。
 
 ## 1. 表结构
@@ -11,6 +11,7 @@
 | `futu_cs_market` | TEXT | PK | 富途行情源 CS 市场标识（如 `0` / `1` / `8` / `17`） |
 | `finv_exchange_code` | INTEGER | NOT NULL，-1~999999 | 交易所代码（关联 [FinvExchange](FinvExchange.md) `exchange_code`；无对应用 `-1` 缺省） |
 | `exchange_name` | TEXT | 可空 | 交易所/市场名称（如 `香港证券市场` / `美国证券市场`，V16 新增） |
+| `flag_enable` | CHAR(1) | NOT NULL DEFAULT '0' | 启用标志（`0`=禁用 / `1`=启用，V17 新增） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
 
