@@ -1,7 +1,7 @@
 # FinvExchange — 交易所/市场字典映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvExchange.md`
-> 数据表：`finv_exchange`（表结构：[`Deploy/Migrations/V2__finv_exchange.sql`](../../Deploy/Migrations/V2__finv_exchange.sql)；初始数据：[`Deploy/Migrations/V100000__finv_exchange_seed.sql`](../../Deploy/Migrations/V100000__finv_exchange_seed.sql)；全量替换：[`Deploy/Migrations/V100010__finv_exchange_seed_full.sql`](../../Deploy/Migrations/V100010__finv_exchange_seed_full.sql)）
+> 数据表：`finv_exchange`（表结构：[`Deploy/Migrations/V2__finv_exchange.sql`](../../Deploy/Migrations/V2__finv_exchange.sql)；初始数据：[`Deploy/Migrations/V100000__finv_exchange_seed.sql`](../../Deploy/Migrations/V100000__finv_exchange_seed.sql)；全量替换：[`Deploy/Migrations/V100010__finv_exchange_seed_full.sql`](../../Deploy/Migrations/V100010__finv_exchange_seed_full.sql) / [`Deploy/Migrations/V100016__finv_exchange_seed_full.sql`](../../Deploy/Migrations/V100016__finv_exchange_seed_full.sql)）
 > 用途：交易所/市场编码字典（单一事实来源），覆盖证券 / 期货 / 黄金及贵金属 / 场外 / 期权 / 外汇市场。
 
 ## 1. 表结构
@@ -27,7 +27,7 @@
 
 ## 2. 数据清单（44 条）
 
-> V100010 全量替换 V100000（先 DELETE 存量 22 条，再 INSERT 全量 44 条）；`ft_list_exchange_code` 列暂为空，后续按 FT 行情源列表编码映射补充。
+> V100016 再次全量替换 V100010（先 DELETE 存量，再 INSERT 全量 44 条）；相对 V100010 仅 1 处调整：code 101 FX-CFD 的 `exchange_name`/`exchange_abbr_cn` 互换（exchange_name='FX-CFD'，exchange_abbr_cn='外汇-差价合约'），其余 43 条一致；`ft_list_exchange_code` 列暂为空。
 
 | exchange_code | exchange_flag | exchange_abbr | exchange_name | exchange_abbr_cn | en_market_type | region | base_currency | ft_list_exchange_code |
 |--------------:|---------------|---------------|---------------|------------------|----------------|--------|---------------|-----------------------|
@@ -60,7 +60,7 @@
 | 57 | KRX | KRX | Korea Exchange | 韩国证券交易所 | 证券 | KR | KRW | |
 | 58 | BMD | BMD | Bursa Malaysia Derivatives | 马来西亚衍生品交易所 | 期货 | MY | MYR | |
 | 100 | FX | FX | 外汇市场 | 外汇交易市场 | 外汇 | FX | CNY | |
-| 101 | FX-CFD | FX-CFD | 外汇-差价合约 | FX-CFD | 外汇 | FX | USD | |
+| 101 | FX-CFD | FX-CFD | FX-CFD | 外汇-差价合约 | 外汇 | FX | USD | |
 | 120 | BD | BD | Bond Market | 债券市场 | 债券 | N/A | USD | |
 | 121 | BMS | BMS | Bond Market System | 债券市场系统 | 债券 | N/A | USD | |
 | 122 | FD | FD | Fund Market | 基金市场 | 基金 | N/A | USD | |
@@ -79,7 +79,7 @@
 ## 3. 说明
 
 - **迁移拆分**：表结构（`V2__finv_exchange.sql`）与初始数据（`V100000__finv_exchange_seed.sql`）分文件存放；数据种子统一使用 **V100000+ 段位**，确保在所有表结构脚本（V1~V99999）之后执行，后续新增表结构/变更脚本不受影响。
-- **全量替换（V100010）**：用户提供 finv_exchange 全量 44 条数据（ACANX 2026-08-05），V100000 已发布不可修改，故新增 V100010 先 `DELETE FROM finv_exchange` 清空存量（含手动补充），再 INSERT 全量 44 条；单事务失败回滚，重复执行结果一致（幂等）。
+- **全量替换（V100010/V100016）**：V100000 已发布不可修改，V100010 先 `DELETE FROM finv_exchange` 清空存量再 INSERT 全量 44 条；V100016（ACANX 2026-08-05 二次定版）再次全量替换，仅 code 101 名称字段互换；均单事务失败回滚、重复执行幂等。
 - **exchange_code 段位**：1~999 常规市场（证券/期货/外汇等），9001+ 富途结构化产品/测试环境，10000+ 加密货币交易所；`exchange_flag` / `exchange_abbr` 均唯一。
 - **数据来源**：FT 交易所清单；原始数据中 `exchange_code=19` 存在 `OTC` / `CNOTC` 两条冲突记录，经 ACANX 确认**仅保留 `19 CNOTC 中国场外交易`**。
 - **映射表依赖**：`finv_futu_mapping_cs_market.finv_exchange_code`（V100008）引用的 `-1`（无对应）项，可在本表扩充后由后续迁移 UPDATE 补齐（如 HKFE/ASX/KR/CA/CRYPTO/BD/FD 等）。
