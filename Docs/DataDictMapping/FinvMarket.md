@@ -13,6 +13,7 @@
 | `market_abbr` | TEXT | NOT NULL | 交易所简码 |
 | `market_name` | TEXT | NOT NULL | 交易所名称 |
 | `en_security_type` | TEXT | NOT NULL | 允许证券类型（如 `STOCK` / `FUND` / `BOND` 等） |
+| `exchange_code` | INTEGER | NOT NULL DEFAULT 0 | 所属交易所代码（关联 [FinvExchange](FinvExchange.md) `exchange_code`；缺省 0=未维护；V20 新增） |
 | `base_currency` | TEXT | NOT NULL | 基础计价货币（如 `CNY` / `USD` / `HKD`） |
 | `flag_enable` | CHAR(1) | NOT NULL DEFAULT '0' | 启用标志（'0'=禁用，'1'=启用；V18 新增，供元数据维护菜单切换） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
