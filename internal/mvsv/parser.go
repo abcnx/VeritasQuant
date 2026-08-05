@@ -20,9 +20,11 @@ import (
 // RequiredHeaders MVSV-1 必填头部键。
 // 注意：时区键（TimeZone / EffectiveTimeZone）均非必填——解析时优先取 TimeZone，
 // 缺失时回退 EffectiveTimeZone；两者都缺失则跳过 ts 一致性校验。
+// Exchange / ExchangeCode / Market / MarketCode 四键必填（用户约定 2026-08-06）。
 var RequiredHeaders = []string{
 	"Format", "Field", "Count", "Code",
-	"Market", "MarketCode", "CurrencyCode", "PriceAccuracy", "LotSize",
+	"Exchange", "ExchangeCode", "Market", "MarketCode",
+	"CurrencyCode", "PriceAccuracy", "LotSize",
 }
 
 // columnKind 数据区列语义。

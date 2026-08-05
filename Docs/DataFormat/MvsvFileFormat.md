@@ -45,7 +45,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 ## 2. 头部键清单
 
-### 2.1 必填头部键（9 个，缺一不可）
+### 2.1 必填头部键（11 个，缺一不可）
 
 缺失任一必填键，文件整体解析失败（HTTP 422，`MVSV 解析失败: 缺少必填头部: <Key>`）。
 
@@ -55,11 +55,13 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 2 | `Field` | string | `"ts\|dt\|o\|c\|l\|h\|v\|t\|cp\|cr\|p"` | **必须匹配 §3 支持的一种列布局**，否则报「Field 布局不支持」 |
 | 3 | `Count` | int | `15000` | **必须为非负整数**；且必须等于数据区实际记录行数（末尾不匹配报错） |
 | 4 | `Code` | string | `"NVDA"` / `"GCMain"` | 证券代码（通常与 FinvQuant 字典 usc 一致）；导入时作为 `secu_code` |
-| 5 | `Market` | string | `"NSDQ"` / `"COMEX"` | 市场标识（描述性，不参与落表，仅头部保留） |
-| 6 | `MarketCode` | int | `11` / `1320` | 市场数字代码（与 FinvQuant 市场编码体系对应；导入时参与一致性校验） |
-| 7 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
-| 8 | `PriceAccuracy` | int | `3` / `1` | 价格精度（小数位；描述性，不参与计算） |
-| 9 | `LotSize` | int | `1` / `100` | 每手股数/合约乘数（描述性） |
+| 5 | `Exchange` | string | `"NSDQ"` / `"COMEX"` | 交易所标识（**必填**，用户约定 2026-08-06） |
+| 6 | `ExchangeCode` | int | `31` / `1317` | 交易所数字代码（**必填**，用户约定 2026-08-06） |
+| 7 | `Market` | string | `"NSDQ"` / `"COMEX"` | 市场标识（**必填**） |
+| 8 | `MarketCode` | int | `1315` / `1320` | 市场数字代码（**必填**；**通常为四位**，如 NVDA→1315、GCMain→1320；导入时参与一致性校验） |
+| 9 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
+| 10 | `PriceAccuracy` | int | `3` / `1` | 价格精度（小数位；描述性，不参与计算） |
+| 11 | `LotSize` | int | `1` / `100` | 每手股数/合约乘数（描述性） |
 
 ### 2.2 可选头部键（不影响解析，导出程序建议携带以便溯源）
 
@@ -187,7 +189,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 ## 4. 完整文件示例
 
-### 4.1 布局 A 完整示例（美股分钟线）
+### 4.1 布局 A 完整示例（美股分钟线，NVDA）
 
 ```
 # Title : "US_NVDA_Min_V4_2026"
@@ -197,18 +199,28 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # FieldName : "Ts|DateTime|Open|Close|Low|High|Volume|Turnover|ChangePrice|ChangeRatio|PrevClose"
 # 字段名称 : "时间戳(UTC)|日期时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 3
-# EffectiveTimeZone : "Asia/Shanghai"
-# Code : "518880"
-# Market : "SSE"
-# MarketCode : 1
-# CurrencyCode : 1
+# EffectiveTimeZone : "America/New_York"
+# TimeZone : "America/New_York"
+# StockId : 202597
+# FutuSymbol : "NVDA"
+# Code : "NVDA"
+# Exchange : "NSDQ"
+# ExchangeCode : 31
+# Market : "NSDQ"
+# MarketCode : 1315
+# CurrencyCode : 55
 # PriceAccuracy : 3
-# LotSize : 100
+# LotSize : 1
+# EngName : "NVIDIA"
+# Name : "英伟达"
+# Period : "Min"
 
-1785720600|20260803093000|7.001|7.002|6.999|7.003|100000|70010000000|0.001|0.000143|7.000
-1785720660|20260803093100|7.002|7.001|7.000|7.003|80000|56010000000|0.000|-0.000143|7.002
-1785720720|20260803093200|7.003|7.004|7.001|7.005|90000|63020000000|0.002|0.000286|7.001
+1777405260|20260428154100|213.670966101|213.633309989|213.491175647|213.700931177|275700|58954901483|-0.0276|-0.012904|213.660877859
+1777405320|20260428154200|213.636006846|213.61103595|213.559595903|213.696935833|206387|44140799148|-0.0223|-0.010427|213.633309989
+1777405380|20260428154300|213.621024308|213.511152364|213.501164006|213.667370292|258389|55247003250|-0.0999|-0.046781|213.61103595
 ```
+
+> 📌 布局 A 示例数据（ts=1777405260 → America/New_York 2026-04-28 15:41:00）与本地时间 dt 一致。
 
 ### 4.2 布局 B 完整示例（期货分钟线）
 
@@ -222,9 +234,10 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # StockId : 70000294
 # FutuSymbol : "GCmain"
 # Code : "GCMain"
+# Exchange : "COMEX"
+# ExchangeCode : 1317
 # Market : "COMEX"
 # MarketCode : 1320
-# Exchange : "COMEX"
 # PriceAccuracy : 1
 # CurrencyCode : 55
 # InstrumentType : 10
@@ -265,7 +278,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 7 | `Count` 必须为非负整数 | Count 必须为非负整数 |
 | 8 | `Count` 必须等于数据区实际行数 | Count=…，实际记录数=… |
 | 9 | 若提供时区（`TimeZone` 或回退 `EffectiveTimeZone`），必须为 IANA 合法时区 | 时区非法（TimeZone/EffectiveTimeZone） |
-| 10 | 9 个必填头部键一个不能少 | 缺少必填头部 |
+| 10 | 11 个必填头部键一个不能少 | 缺少必填头部 |
 | 11 | 数据行列数必须与 `# Field` 完全一致（行尾空段除外，见 §3.2） | 列数=…，期望 …（Field: …） |
 | 12 | 若提供了时区：每行 ts 与本地时间（dt 或 d+t）在解析用时区下必须一致；未提供时区则跳过 | ts 与本地时间/时区不一致 |
 
@@ -285,7 +298,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 ## 6. 与 FinvQuant 字典的关联（导出程序须知）
 
 - **`Code`**：建议使用 FinvQuant `finv_security` 字典的 **usc**（如 `NVDA`、`GCMain`、`518880`），导入时可被 `Security/Lookup` 匹配；若用源证券代码（security_code），Lookup 也支持。
-- **`MarketCode`**：建议与 FinvQuant `finv_market.market_code` 编码体系一致（如 11=上交所、1320=COMEX 期货等）；导入时会与表单/字典做一致性核对。
+- **`MarketCode`**：建议与 FinvQuant `finv_market.market_code` 编码体系一致（**通常四位**，如 1315=美股（NVDA）、1320=COMEX 期货（GCMain）等）；导入时会与表单/字典做一致性核对。
 - 主表 `finv_quote_secu_kline_min` 不再存储 market_code（V21 起），市场信息由 `finv_security` 字典关联获取；文件头 `MarketCode` 仍参与导入一致性校验。
 
 ---
@@ -310,3 +323,4 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 1.0 | 2026-08-06 | 初版：双布局（11 列/13 列）规范，必填/可选要求明细（对应 `internal/mvsv/parser.go` 双布局支持） |
 | 1.1 | 2026-08-06 | 更正：布局 B 实为 12 列（`ts|d|t|o|c|l|h|v|a|cp|cr|p`，pc 已过时移除）；补充行尾空段容忍说明 |
 | 1.2 | 2026-08-06 | 时区规则更正：解析以头部 `TimeZone` 为准，`EffectiveTimeZone` 仅参考且非必填；两者都缺失时跳过 ts 一致性校验 |
+| 1.3 | 2026-08-06 | 必填键 9→11：新增 `Exchange` / `ExchangeCode`（与 `Market` / `MarketCode` 四键必填）；`MarketCode` 通常为四位；示例统一 NVDA→1315、GCMain→1320 |
