@@ -54,22 +54,48 @@ type fieldLayout struct {
 	Kinds []columnKind // 与 Field 列一一对应的语义
 }
 
-// supportedLayouts 当前支持的 MVSV 数据区列布局。
-var supportedLayouts = map[string]fieldLayout{
-	"ts|dt|o|c|l|h|v|t|cp|cr|p": {
+// supportedLayouts 当前支持的 MVSV 数据区核心列布局。
+// 匹配规则：文件头 # Field 的列名序列只需以其中某个核心布局开头即可，
+// 多余列（如已过时的 pc）允许存在并自动忽略（用户约定 2026-08-06）。
+var supportedLayouts = []fieldLayout{
+	{
 		Field: "ts|dt|o|c|l|h|v|t|cp|cr|p",
 		Kinds: []columnKind{
 			colTS, colDateTime, colOpen, colClose, colLow, colHigh,
 			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
 		},
 	},
-	"ts|d|t|o|c|l|h|v|a|cp|cr|p": {
+	{
 		Field: "ts|d|t|o|c|l|h|v|a|cp|cr|p",
 		Kinds: []columnKind{
 			colTS, colDate, colTime, colOpen, colClose, colLow, colHigh,
 			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
 		},
 	},
+}
+
+// matchLayout 按核心列前缀匹配布局：
+// 文件头 # Field 声明（如 ts|d|t|o|c|l|h|v|a|cp|cr|p|pc）的列名序列
+// 只要以某核心布局开头即命中（多余列忽略）。返回命中的布局与核心列数。
+func matchLayout(field string) (fieldLayout, bool) {
+	cols := strings.Split(field, "|")
+	for _, layout := range supportedLayouts {
+		core := strings.Split(layout.Field, "|")
+		if len(cols) < len(core) {
+			continue
+		}
+		matched := true
+		for i := range core {
+			if cols[i] != core[i] {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			return layout, true
+		}
+	}
+	return fieldLayout{}, false
 }
 
 // Header MVSV-1 头部信息。
@@ -185,14 +211,14 @@ func buildHeader(values map[string]string) (*Header, error) {
 	if values["Format"] != "MVSV-1" {
 		return nil, fmt.Errorf("Format 必须严格为 MVSV-1，实际: %s", values["Format"])
 	}
-	layout, ok := supportedLayouts[values["Field"]]
+	layout, ok := matchLayout(values["Field"])
 	if !ok {
 		var supported []string
 		for _, l := range supportedLayouts {
 			supported = append(supported, l.Field)
 		}
 		sort.Strings(supported)
-		return nil, fmt.Errorf("Field 布局不支持: %s（支持: %s）",
+		return nil, fmt.Errorf("Field 布局不支持: %s（核心布局须以 %s 之一开头，多余列自动忽略）",
 			values["Field"], strings.Join(supported, " / "))
 	}
 	count, err := strconv.Atoi(values["Count"])
@@ -221,15 +247,13 @@ func buildHeader(values map[string]string) (*Header, error) {
 
 func parseRow(line string, header *Header, lineNumber int) (Row, error) {
 	fields := strings.Split(line, "|")
-	// 容忍行尾多余空段：旧格式（含已过时的 pc 列）可能在末尾残留一个空段，
-	// 如 "...|4332.1|"（split 后末段为空字符串）。仅当末段为空时截断。
-	for len(fields) > len(header.Layout.Kinds) && strings.TrimSpace(fields[len(fields)-1]) == "" {
-		fields = fields[:len(fields)-1]
+	coreLen := len(header.Layout.Kinds)
+	if len(fields) < coreLen {
+		return Row{}, fmt.Errorf("列数=%d，少于核心列数 %d（Field: %s）",
+			len(fields), coreLen, header.Layout.Field)
 	}
-	if len(fields) != len(header.Layout.Kinds) {
-		return Row{}, fmt.Errorf("列数=%d，期望 %d（Field: %s）",
-			len(fields), len(header.Layout.Kinds), header.Layout.Field)
-	}
+	// 允许多余列：只取核心列数，其余（含旧 pc 空段等）自动忽略
+	fields = fields[:coreLen]
 
 	row := Row{}
 	row.SecuCode = header.Values["Code"]
