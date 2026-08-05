@@ -56,7 +56,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 3 | `Count` | int | `15000` | **必须为非负整数**；且必须等于数据区实际记录行数（末尾不匹配报错） |
 | 4 | `Code` | string | `"NVDA"` / `"GCMain"` | 证券代码（通常与 FinvQuant 字典 usc 一致）；导入时作为 `secu_code` |
 | 5 | `Exchange` | string | `"NSDQ"` / `"COMEX"` | 交易所标识（**必填**，用户约定 2026-08-06） |
-| 6 | `ExchangeCode` | int | `31` / `1317` | 交易所数字代码（**必填**，用户约定 2026-08-06） |
+| 6 | `ExchangeCode` | int | `31` / `33` | 交易所数字代码（**必填**，用户约定 2026-08-06） |
 | 7 | `Market` | string | `"NSDQ"` / `"COMEX"` | 市场标识（**必填**） |
 | 8 | `MarketCode` | int | `1315` / `1320` | 市场数字代码（**必填**；**通常为四位**，如 NVDA→1315、GCMain→1320；导入时参与一致性校验） |
 | 9 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
