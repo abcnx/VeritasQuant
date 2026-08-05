@@ -26,6 +26,7 @@ func NewQuoteQuery(service *quote.Service) *QuoteQuery {
 // 支持 page/page_size 分页。
 func (h *QuoteQuery) Query(c *gin.Context) {
 	secuCode := c.Query("secu_code")
+	secuName := c.Query("secu_name") // 证券名称（可选，前端从 usc 字典选中后回传，便于确认证券）
 	dateStr := c.Query("date")
 	period := c.Query("period")
 	if period == "" {
@@ -59,6 +60,7 @@ func (h *QuoteQuery) Query(c *gin.Context) {
 		"message": "查询完成",
 		"data": gin.H{
 			"secu_code": secuCode,
+			"secu_name": secuName, // 回显证券名称（可为空）
 			"date":      date,
 			"period":    period,
 			"days":      days,

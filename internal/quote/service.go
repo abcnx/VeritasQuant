@@ -47,6 +47,7 @@ func NewService(pool *pgxpool.Pool) *Service {
 
 // Bar 查询返回的分钟级 K 线（涨跌额/涨跌幅由 close 与 prev_close 计算）。
 type Bar struct {
+	TS        int64    `json:"ts"`         // UTC 时间戳（秒，主键列，如 1754398800）
 	Date      int      `json:"date"`       // 交易日期 yyyymmdd（多日查询时用于区分）
 	Time      int      `json:"time"`       // 交易时间 hhmmss
 	Open      *string  `json:"open"`       // 开盘价
@@ -110,7 +111,7 @@ WHERE secu_code = $1 AND `+dayFilter, secuCode, secuCode, date, days).Scan(&tota
 
 	offset := (page - 1) * pageSize
 	rows, err := s.pool.Query(ctx, `
-SELECT date, "time", open, high, low, close, volume, turnover, prev_close, remark
+SELECT ts, date, "time", open, high, low, close, volume, turnover, prev_close, remark
 FROM finv_quote_secu_kline_min
 WHERE secu_code = $1 AND `+dayFilter+`
 ORDER BY date ASC, ts ASC
@@ -124,7 +125,7 @@ LIMIT $5 OFFSET $6`, secuCode, secuCode, date, days, pageSize, offset)
 	for rows.Next() {
 		var bar Bar
 		var prevClose *string
-		if err := rows.Scan(&bar.Date, &bar.Time, &bar.Open, &bar.High, &bar.Low, &bar.Close,
+		if err := rows.Scan(&bar.TS, &bar.Date, &bar.Time, &bar.Open, &bar.High, &bar.Low, &bar.Close,
 			&bar.Volume, &bar.Turnover, &prevClose, &bar.Remark); err != nil {
 			return nil, 0, err
 		}

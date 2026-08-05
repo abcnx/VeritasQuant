@@ -17,6 +17,7 @@
 | `region` | TEXT | NOT NULL | 地区编码（如 `CN` / `HK` / `USA` / `JP`） |
 | `base_currency` | TEXT | NOT NULL | 基础计价货币（如 `CNY` / `USD` / `HKD`） |
 | `ft_list_exchange_code` | TEXT | 可空 | FT 行情源列表交易所编码（映射预留，暂空，后续补充） |
+| `flag_enable` | CHAR(1) | NOT NULL DEFAULT '0' | 启用标志（'0'=禁用，'1'=启用；V18 新增，供元数据维护菜单切换） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
 
