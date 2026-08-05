@@ -1,5 +1,5 @@
 -- =====================================================================
--- FinvQuant PostgreSQL V22：回测策略定义表 finv_backtest_strategy
+-- FinvQuant PostgreSQL V22：回测策略定义表 finv_quant_backtest_strategy
 --
 -- 决策（ACANX 2026-08-06）：
 --   - 通用量化回测首版：策略采用"结构化定义"模型，definition 列以 JSONB
@@ -16,7 +16,7 @@
 
 BEGIN;
 
-CREATE TABLE finv_backtest_strategy (
+CREATE TABLE finv_quant_backtest_strategy (
     strategy_id        TEXT        PRIMARY KEY,             -- 策略 ID（UUID）
     strategy_code      TEXT        NOT NULL UNIQUE,         -- 策略编码（用户可读，全局唯一）
     strategy_name      TEXT        NOT NULL,                -- 策略名称
@@ -38,15 +38,15 @@ CREATE TABLE finv_backtest_strategy (
 );
 
 -- 按类型/开关/状态检索
-CREATE INDEX idx_finv_backtest_strategy_type
-    ON finv_backtest_strategy (strategy_type, status, allow_backtest);
+CREATE INDEX idx_finv_quant_backtest_strategy_type
+    ON finv_quant_backtest_strategy (strategy_type, status, allow_backtest);
 
 -- 按标的检索（黄金期货回测验证页默认过滤 GCMain）
-CREATE INDEX idx_finv_backtest_strategy_secu
-    ON finv_backtest_strategy (secu_code);
+CREATE INDEX idx_finv_quant_backtest_strategy_secu
+    ON finv_quant_backtest_strategy (secu_code);
 
-CREATE TRIGGER trg_finv_backtest_strategy_gmt_update
-    BEFORE UPDATE ON finv_backtest_strategy
+CREATE TRIGGER trg_finv_quant_backtest_strategy_gmt_update
+    BEFORE UPDATE ON finv_quant_backtest_strategy
     FOR EACH ROW EXECUTE FUNCTION vq_set_gmt_update();
 
 COMMIT;

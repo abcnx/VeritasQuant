@@ -264,3 +264,36 @@ func (h *Backtest) ListTrades(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
+
+// ListCashflows GET /API/V1/Backtest/Run/Cashflows?run_id=xxx&page=&page_size=
+func (h *Backtest) ListCashflows(c *gin.Context) {
+	list, total, err := h.service.ListCashflows(c.Request.Context(),
+		c.Query("run_id"), parseBTPager(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 2006, "message": "查询资金流水失败: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
+}
+
+// ListPositionLogs GET /API/V1/Backtest/Run/PositionLogs?run_id=xxx&page=&page_size=
+func (h *Backtest) ListPositionLogs(c *gin.Context) {
+	list, total, err := h.service.ListPositionLogs(c.Request.Context(),
+		c.Query("run_id"), parseBTPager(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 2006, "message": "查询持仓变化明细失败: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
+}
+
+// ListEventTraces GET /API/V1/Backtest/Run/EventTraces?run_id=xxx&page=&page_size=
+func (h *Backtest) ListEventTraces(c *gin.Context) {
+	list, total, err := h.service.ListEventTraces(c.Request.Context(),
+		c.Query("run_id"), parseBTPager(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 2006, "message": "查询事件追踪失败: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
+}

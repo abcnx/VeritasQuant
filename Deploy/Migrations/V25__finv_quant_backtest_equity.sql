@@ -1,5 +1,5 @@
 -- =====================================================================
--- FinvQuant PostgreSQL V25：回测净值/曲线数据表 finv_backtest_equity
+-- FinvQuant PostgreSQL V25：回测净值/曲线数据表 finv_quant_backtest_equity
 --
 -- 决策（ACANX 2026-08-06）：
 --   - 按"报告时间精度"（report_precision：Day/Hour/Min）逐点落库，
@@ -16,7 +16,7 @@
 
 BEGIN;
 
-CREATE TABLE finv_backtest_equity (
+CREATE TABLE finv_quant_backtest_equity (
     id               BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_id           TEXT         NOT NULL,                 -- 关联回测任务
     seq              INTEGER      NOT NULL DEFAULT 0,       -- 序列号（报告点顺序 1..N）
@@ -33,7 +33,7 @@ CREATE TABLE finv_backtest_equity (
     UNIQUE (run_id, ts)
 );
 
-CREATE INDEX idx_finv_backtest_equity_run
-    ON finv_backtest_equity (run_id, seq);
+CREATE INDEX idx_finv_quant_backtest_equity_run
+    ON finv_quant_backtest_equity (run_id, seq);
 
 COMMIT;

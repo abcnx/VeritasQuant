@@ -1,5 +1,5 @@
 -- =====================================================================
--- FinvQuant PostgreSQL V26：回测成交记录表 finv_backtest_trade
+-- FinvQuant PostgreSQL V26：回测成交记录表 finv_quant_backtest_trade
 --
 -- 决策（ACANX 2026-08-06）：
 --   - 记录每次撮合成交（BUY/SELL），含成交价/数量/金额/手续费/成交后现金与
@@ -12,9 +12,10 @@
 
 BEGIN;
 
-CREATE TABLE finv_backtest_trade (
+CREATE TABLE finv_quant_backtest_trade (
     trade_id       BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_id         TEXT         NOT NULL,                   -- 关联回测任务
+    seq            INTEGER      NOT NULL DEFAULT 0,         -- 引擎内成交顺序号（明细表 trade_id 关联用）
     ts             BIGINT       NOT NULL CHECK (ts >= 0),   -- 成交时间（UTC 秒）
     date           INTEGER      DEFAULT 0,                  -- 成交日期 yyyymmdd
     "time"         INTEGER      DEFAULT 0,                  -- 成交时间 hhmmss
@@ -30,7 +31,7 @@ CREATE TABLE finv_backtest_trade (
     remark         TEXT                                     -- 备注
 );
 
-CREATE INDEX idx_finv_backtest_trade_run
-    ON finv_backtest_trade (run_id, ts);
+CREATE INDEX idx_finv_quant_backtest_trade_run
+    ON finv_quant_backtest_trade (run_id, ts);
 
 COMMIT;

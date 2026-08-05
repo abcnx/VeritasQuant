@@ -6,7 +6,7 @@
 ## 1. 设计目标
 
 - **通用性**：同一套策略定义模型支持 ETF / 股票 / 场外基金 / 国内期货 / 美股期货 / 黄金、石油等商品期货 / 积存金等任意**已导入分钟行情**（`finv_quote_secu_kline_min`）的证券；
-- **结构化**：策略定义以 JSONB 持久化（`finv_backtest_strategy.definition`），可机器求值、可版本化（`definition_version`）、可复现（任务保存策略快照）；
+- **结构化**：策略定义以 JSONB 持久化（`finv_quant_backtest_strategy.definition`），可机器求值、可版本化（`definition_version`）、可复现（任务保存策略快照）；
 - **可扩展**：指标类型、信号函数、数量模式均为插件式注册，后续可平滑扩展多标的、多周期、机器学习类策略（`strategy_type` 已预留 `MACHINE_LEARNING`）；
 - **高度自定义**：指标参数、信号表达式、规则限制（时间点/频率/次数/数量）、风控（止损/止盈/仓位）均可自由组合。
 
@@ -151,20 +151,39 @@ primary   := NUMBER | IDENT | FUNC(args) | ( expr )
 | 单期收益分布 | `best_day_pct` / `worst_day_pct` / `profit_days` / `loss_days` | ⑧ |
 | 信号归因 | `trade_signal_detail`（信号名→笔数） | ⑧ |
 
-**曲线数据**（`finv_backtest_equity`，按报告精度 Day/Hour/Min 逐点落库）：
+**曲线数据**（`finv_quant_backtest_equity`，按报告精度 Day/Hour/Min 逐点落库）：
 - ① 账户余额曲线：`equity`（总资产=现金+持仓市值，持仓换算现金）与 `cash`；
 - ② 投资收益率曲线：`roi`；
 - ③ 投资收益额曲线：`profit`；
 - ⑦ 持仓金额曲线：`position_value`（另含 `position_qty`）；
 - ⑧ 回撤曲线：`drawdown`。
 
-**成交记录**（`finv_backtest_trade`）：时间/方向/价格/数量/金额/手续费/平仓盈亏/成交后持仓与现金/触发信号，支持任意时点账户状态回放。
+**成交记录**（`finv_quant_backtest_trade`）：时间/方向/价格/数量/金额/手续费/平仓盈亏/成交后持仓与现金/触发信号，支持任意时点账户状态回放。
 
 ## 8. 持久化与回看
 
-- 策略/账户/任务/曲线/成交全部落 PostgreSQL（`finv_*` 前缀表，见迁移 V22~V26）；
+- 策略/账户/任务/曲线/成交/链路追踪全部落 PostgreSQL（`finv_quant_` 前缀表，见迁移 V22~V27）；
 - 任务保存**策略与账户快照**：策略/账户后续修改不影响历史任务结果（可复现）；
 - 前端「回测分析」按 run_id 拉取报告与曲线，支持持久化保存与随时回看。
+
+## 8.5 链路追踪（需求⑨）
+
+持仓变动详细情况链路追踪分析，三个维度（对应迁移 V27 三张表）：
+
+**① 资金流水明细**（`finv_quant_backtest_cashflow`）：
+- 类型：`INITIAL_DEPOSIT`（初始资金注入）/ `BUY_PAY`（买入付款）/ `SELL_RECEIVE`（卖出收款）/ `FEE`（手续费）/ `MARGIN_HOLD`（保证金占用）/ `MARGIN_RELEASE`（保证金释放）；
+- 记录每次资金变动的金额、变动前后现金余额（流水连续可校验：下一条 cash_before = 上一条 cash_after），关联成交记录。
+
+**② 持仓变化明细**（`finv_quant_backtest_position_log`）：
+- 动作：`OPEN`（开仓）/ `ADD`（加仓）/ `REDUCE`（减仓）/ `CLOSE`（平仓）；
+- 记录变动前后持仓数量与加权成本（avg_cost_before/after），关联成交记录与触发信号。
+
+**③ 交易事件追踪**（`finv_quant_backtest_event_trace`）：
+- 触发原因：买入信号 / 卖出信号 / 止损 / 止盈；
+- 事件结果：`PENDING`（挂单）/ `FILLED`（成交）/ `REJECTED`（拒绝）/ `EXPIRED`（过期，回测结束未成交）；
+- 委托耗时：触发 → 成交的 bar 数（latency_bars）与秒数（latency_sec）；
+- 未成交原因：资金不足 / 超过规则每日最大触发次数 / 超过规则回测总触发次数 / 超过每日最大成交笔数 / 未满足最小交易间隔 / 不在允许交易时间点内 / 已达最大持仓 / 无持仓可卖 / 回测结束委托未执行；
+- 报告 `event_stats` 汇总：触发/成交/拒绝/过期计数、平均委托耗时、未成交原因分布、触发原因分布。
 
 ## 9. 扩展路线
 

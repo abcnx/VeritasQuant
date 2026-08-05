@@ -13,7 +13,7 @@
 BEGIN;
 
 -- 默认回测账户
-INSERT INTO finv_backtest_account
+INSERT INTO finv_quant_backtest_account
     (account_id, account_code, account_name, initial_capital, currency_type,
      commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by)
 VALUES
@@ -22,7 +22,7 @@ VALUES
 ON CONFLICT (account_id) DO NOTHING;
 
 -- 示例策略：GCMain 双均线交叉（黄金期货合约回测验证首版演示）
-INSERT INTO finv_backtest_strategy
+INSERT INTO finv_quant_backtest_strategy
     (strategy_id, strategy_code, strategy_name, strategy_type, description,
      definition, definition_version, data_period, secu_code, allow_backtest, status, created_by)
 VALUES

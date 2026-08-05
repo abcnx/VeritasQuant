@@ -183,14 +183,16 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 - 信号表达式引擎（自研，支持比较/逻辑/算术 + cross_up/cross_down/ref/highest/lowest/abs）；
 - 回测引擎：逐 bar 回放（预热 → 挂单撮合（NEXT_BAR_OPEN）→ 止损止盈 → 信号 → 规则限制 → 账户更新 → 报告点）；
 - 报告：余额/收益率/收益额/持仓金额曲线（按报告精度）+ 最大投入/平均投入/到期收益率/最大回撤/夏普/胜率/盈亏比等技术指标；
+- **链路追踪（需求⑨）**：资金流水明细（初始注入/买入付款/卖出收款/手续费/保证金占用释放）、持仓变化明细（开仓/加仓/减仓/平仓 + 成本变化）、交易事件追踪（触发原因/成交结果 FILLED·REJECTED·EXPIRED/委托耗时 bar·秒/未成交原因分类统计）；
 - 异步任务调度：并发上限 4、进度/状态持久化、可取消；
-- 数据库：V22~V26（策略/账户/任务/净值曲线/成交记录）+ V100019 种子数据（默认账户 + GCMain 双均线示例策略）。
+- 数据库：V22~V27（策略/账户/任务/净值曲线/成交记录/资金流水/持仓变化/事件追踪）+ V100019 种子数据（默认账户 + GCMain 双均线示例策略）。
+- **表名规范**：量化回测模块统一前缀 `finv_quant_`（如 `finv_quant_backtest_strategy` / `finv_quant_backtest_run`）。
 
 ### API（/API/V1/Backtest/**）
 
 - 策略：`Strategy/List|Get|Save|Toggle|Delete`
 - 账户：`Account/List|Get|Save|Toggle|Delete`
-- 任务：`Run/Create|List|Get|Cancel`、报告 `Run/Report`、曲线 `Run/Equity`、成交 `Run/Trades`
+- 任务：`Run/Create|List|Get|Cancel`、报告 `Run/Report`、曲线 `Run/Equity`、成交 `Run/Trades`、链路追踪 `Run/Cashflows|PositionLogs|EventTraces`
 
 ### 规范文档
 
@@ -207,3 +209,4 @@ FINV_PG_DATA_DIR=D:/Dev/Docker/HostFileSystem/FinvQuant/PostgreSQL
 | 2026-08-04 | 历史行情导入 | PG 建表（`Deploy/Migrations/V1__finv_quote_secu_kline_min.sql` 启动自动迁移）；Go MVSV-1 解析器 + 字段级覆盖 upsert 导入服务；`POST /API/V1/Quote/Import/Upload`；前端新增「历史行情数据导入」菜单页（批量上传 MVSV 分钟行情） |
 | 2026-08-04 | 规范与文档 | 建表规范：`finv_` 前缀、行情表 `finv_quote_xxx`；迁移重命名 `Deploy/Migrations/V1__finv_quote_secu_kline_min.sql`（表名修正 `finv_quote_ingest_batches`/`finv_quote_revision_log`）；新增 `Docs/API/` 服务端接口文档（含 /Quote/Import/Upload 端点） |
 | 2026-08-06 | 通用量化回测 | 前端新增顶级菜单「量化策略验证/账户管理/资金管理/持仓管理/策略管理/回测分析/仿真数据验证/模拟盘验证/实盘仿真验证/实盘交易」；「量化策略验证 → 黄金期货合约回测验证」支持配置初始资金/策略/限制/回测开关并启动回测、查看报告。服务端新增 `internal/backtest`（结构化策略定义模型+指标+信号表达式引擎+回测引擎+报告生成+异步任务调度），迁移 V22~V26 + V100019 种子（默认账户 + GCMain 双均线示例策略）；API `/API/V1/Backtest/**`（策略/账户/任务/报告/曲线/成交）；规范文档 `Docs/DevSpec/BacktestStrategySpec.md` |
+| 2026-08-06 | 回测链路追踪+命名规范 | 按评审意见：① 表名统一 `finv_quant_` 前缀（V22~V26 迁移与代码同步改名）；② 新增需求⑨链路追踪——迁移 V27（资金流水 `finv_quant_backtest_cashflow`/持仓变化 `finv_quant_backtest_position_log`/事件追踪 `finv_quant_backtest_event_trace`），引擎登记触发原因/成交结果/委托耗时/未成交原因，报告新增 `event_stats` 统计，前端回测分析页新增 ⑨ 链路追踪统计与三张明细表；API 新增 `Run/Cashflows|PositionLogs|EventTraces` |

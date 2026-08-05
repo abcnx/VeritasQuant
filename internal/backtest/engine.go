@@ -42,6 +42,9 @@ type EngineConfig struct {
 type EngineResult struct {
 	EquityPoints []EquityPoint
 	Trades       []Trade
+	Cashflows    []Cashflow
+	PositionLogs []PositionLog
+	EventTraces  []EventTrace
 	Report       *RunReport
 	BarCount     int
 }
@@ -167,6 +170,18 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	result := &EngineResult{}
 	trades := []Trade{}
 	equityPoints := []EquityPoint{}
+	cashflows := []Cashflow{}
+	positionLogs := []PositionLog{}
+	eventTraces := []EventTrace{}
+
+	// 初始资金注入流水（需求⑨-1）
+	if len(bars) > 0 {
+		cashflows = append(cashflows, Cashflow{
+			Seq: 1, TS: bars[0].TS, Date: bars[0].Date, Time: bars[0].Time,
+			FlowType: "INITIAL_DEPOSIT", Amount: initialCapital,
+			CashBefore: 0, CashAfter: initialCapital, TradeID: 0, Remark: "初始启动资金注入",
+		})
+	}
 
 	// 报告桶（按 report_precision 聚合曲线点）
 	bucketKeyOf := func(b Bar) string {
@@ -224,19 +239,30 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		}
 		evalCtx.At = i
 
-		// ---------- 1. 执行上一 bar 收盘产生的挂单（当前 bar 开盘价成交） ----------
+		// ---------- 1. 执行上一 bar 收盘产生的挂单（当前 bar 开盘价成交，事件追踪更新） ----------
 		if pendingOrder != nil {
 			execPrice := b.Open * (1 + pendingOrder.slippageSign*slippage/100)
-			executed := e.fill(pendingOrder.action, execPrice, b, i, state, dc, &trades,
-				commission, &totalFee, signalDetail, &grossProfit, &grossLoss, &winCount, &lossCount,
-				pendingOrder.signal, maxTradesPerDay)
+			tradeSeq, executed := e.fill(pendingOrder.action, execPrice, b, i, state, dc, &trades,
+				&cashflows, &positionLogs, commission, &totalFee, signalDetail,
+				&grossProfit, &grossLoss, &winCount, &lossCount, pendingOrder.signal, maxTradesPerDay)
+			ev := &eventTraces[pendingOrder.eventIdx]
+			ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
+			ev.LatencyBars = i - pendingOrder.triggerBar
+			ev.LatencySec = b.TS - ev.TriggerTS
+			ev.Price = round6(execPrice)
 			if executed {
 				dc.lastTradeBar = i
+				ev.ExecStatus = "FILLED"
+				ev.Qty = trades[len(trades)-1].Qty
+				ev.TradeSeq = int(tradeSeq)
+			} else {
+				ev.ExecStatus = "REJECTED"
+				ev.RejectReason = "资金不足（可用资金无法覆盖委托金额）"
 			}
 			pendingOrder = nil
 		}
 
-		// ---------- 2. 风控（止损/止盈，基于当前 bar 高低价内触达） ----------
+		// ---------- 2. 风控（止损/止盈，基于当前 bar 高低价内触达，intrabar 直接成交） ----------
 		if state.position > 0 && (def.Risk.StopLossPct > 0 || def.Risk.TakeProfitPct > 0) {
 			stopPrice := state.avgCost * (1 - def.Risk.StopLossPct/100)
 			tpPrice := state.avgCost * (1 + def.Risk.TakeProfitPct/100)
@@ -250,13 +276,24 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 				reason = "止盈"
 			}
 			if exitPrice > 0 {
-				e.fill(ActionSell, exitPrice, b, i, state, dc, &trades, commission, &totalFee,
-					signalDetail, &grossProfit, &grossLoss, &winCount, &lossCount, reason, maxTradesPerDay)
-				dc.lastTradeBar = i
+				tradeSeq, executed := e.fill(ActionSell, exitPrice, b, i, state, dc, &trades,
+					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
+					&grossProfit, &grossLoss, &winCount, &lossCount, reason, maxTradesPerDay)
+				if executed {
+					dc.lastTradeBar = i
+					// 风控事件：触发即成交（latency=0）
+					evIdx := e.newEvent(&eventTraces, ActionSell, reason, b)
+					ev := &eventTraces[evIdx]
+					ev.ExecStatus = "FILLED"
+					ev.ExecTS, ev.ExecDate, ev.ExecTime = b.TS, b.Date, b.Time
+					ev.Price = round6(exitPrice)
+					ev.Qty = trades[len(trades)-1].Qty
+					ev.TradeSeq = int(tradeSeq)
+				}
 			}
 		}
 
-		// ---------- 3. 信号求值（基于当前 bar 收盘） ----------
+		// ---------- 3. 信号求值（基于当前 bar 收盘，不做限制过滤；限制与拒绝原因在步骤 4 统一判定） ----------
 		buyHit, sellHit := false, false
 		if buyRuleAllowed(def) && strings.TrimSpace(def.Signals.Buy) != "" {
 			v, err := buyExpr(evalCtx)
@@ -272,31 +309,35 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 			}
 			sellHit = v
 		}
+		barTime := fmt.Sprintf("%02d%02d%02d", b.Time/10000, (b.Time/100)%100, b.Time%100)
 
-		// 限制：交易时间点
-		if len(allowedTimes) > 0 {
-			barTime := fmt.Sprintf("%02d%02d%02d", b.Time/10000, (b.Time/100)%100, b.Time%100)
-			if buyHit && !allowedTimes[barTime] {
-				buyHit = false
-			}
-			if sellHit && !allowedTimes[barTime] {
-				sellHit = false
-			}
-		}
-
-		// ---------- 4. 下单（限制：频率/次数/仓位） ----------
-		if buyHit && state.position <= 0 {
-			if dc.ruleAllowed(def.Rules.Buy, "buy", maxTradesPerDay, i) {
+		// ---------- 4. 下单（限制判定：仓位/时间点/频率/次数，事件追踪登记拒绝原因） ----------
+		if buyHit {
+			if state.position > 0 {
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "已达最大持仓（当前版本单标的同时仅允许 1 个持仓）")
+			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在允许交易时间点内")
+			} else if reason := dc.ruleRejectReason(def.Rules.Buy, "buy", maxTradesPerDay, i, def.Risk); reason != "" {
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, reason)
+			} else {
 				dc.ruleTrades["buy"]++
 				dc.ruleRunTrades["buy"]++
-				pendingOrder = &pendingOrderT{action: ActionBuy, slippageSign: 1, signal: "买入信号"}
+				evIdx := e.newEvent(&eventTraces, ActionBuy, "买入信号", b)
+				pendingOrder = &pendingOrderT{action: ActionBuy, slippageSign: 1, signal: "买入信号", eventIdx: evIdx, triggerBar: i}
 			}
 		}
-		if sellHit && state.position > 0 {
-			if dc.ruleAllowed(def.Rules.Sell, "sell", maxTradesPerDay, i) {
+		if sellHit {
+			if state.position <= 0 {
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "无持仓可卖")
+			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在允许交易时间点内")
+			} else if reason := dc.ruleRejectReason(def.Rules.Sell, "sell", maxTradesPerDay, i, def.Risk); reason != "" {
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, reason)
+			} else {
 				dc.ruleTrades["sell"]++
 				dc.ruleRunTrades["sell"]++
-				pendingOrder = &pendingOrderT{action: ActionSell, slippageSign: -1, signal: "卖出信号"}
+				evIdx := e.newEvent(&eventTraces, ActionSell, "卖出信号", b)
+				pendingOrder = &pendingOrderT{action: ActionSell, slippageSign: -1, signal: "卖出信号", eventIdx: evIdx, triggerBar: i}
 			}
 		}
 
@@ -360,6 +401,14 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		periodReturns = append(periodReturns, pctChange(prevBucketEquity, curEquity))
 	}
 
+	// 回测结束：仍有挂单未执行 → 事件标记 EXPIRED（需求⑨-3 委托结果追踪）
+	if pendingOrder != nil {
+		ev := &eventTraces[pendingOrder.eventIdx]
+		ev.ExecStatus = "EXPIRED"
+		ev.RejectReason = "回测结束，委托未执行（后续无 K 线可成交）"
+		pendingOrder = nil
+	}
+
 	// 期末总资产（持仓按最后收盘价换算现金）
 	finalEquity := equityAt(bars[len(bars)-1], state)
 
@@ -367,10 +416,13 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	report := buildReport(e.cfg, bars, initialCapital, finalEquity, trades,
 		equityPoints, periodReturns, maxDD, maxDDStart, maxDDEnd, maxInvested,
 		investedSum, investedBars, investedDays, grossProfit, grossLoss, winCount, lossCount,
-		totalFee, signalDetail)
+		totalFee, signalDetail, eventTraces)
 
 	result.EquityPoints = equityPoints
 	result.Trades = trades
+	result.Cashflows = cashflows
+	result.PositionLogs = positionLogs
+	result.EventTraces = eventTraces
 	result.Report = report
 	result.BarCount = len(bars)
 	return result, nil
@@ -379,15 +431,55 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 func buyRuleAllowed(def StrategyDefinition) bool  { return def.Rules.Buy.Allow }
 func sellRuleAllowed(def StrategyDefinition) bool { return def.Rules.Sell.Allow }
 
-// ruleAllowed 检查规则限制：每日笔数/全回测笔数/全局每日笔数/最小间隔。
-func (dc *dayCounters) ruleAllowed(rule RuleDef, key string, maxTradesPerDay, barIdx int) bool {
+// ruleRejectReason 检查规则限制并返回拒绝原因（空串=允许）。
+// 限制维度：规则每日触发次数 / 规则全回测触发次数 / 全局每日成交笔数 / 最小交易间隔。
+func (dc *dayCounters) ruleRejectReason(rule RuleDef, key string, maxTradesPerDay, barIdx int, risk RiskDef) string {
 	if rule.MaxPerDay > 0 && dc.ruleTrades[key] >= rule.MaxPerDay {
-		return false
+		return fmt.Sprintf("超过规则每日最大触发次数（%d 次）", rule.MaxPerDay)
 	}
 	if rule.MaxPerRun > 0 && dc.ruleRunTrades[key] >= rule.MaxPerRun {
-		return false
+		return fmt.Sprintf("超过规则回测总触发次数（%d 次）", rule.MaxPerRun)
 	}
-	return true
+	if maxTradesPerDay > 0 && dc.trades >= maxTradesPerDay {
+		return fmt.Sprintf("超过每日最大成交笔数（%d 笔）", maxTradesPerDay)
+	}
+	if risk.MinIntervalBars > 0 && dc.lastTradeBar >= 0 && barIdx-dc.lastTradeBar < risk.MinIntervalBars {
+		return fmt.Sprintf("未满足最小交易间隔（%d bar）", risk.MinIntervalBars)
+	}
+	return ""
+}
+
+// newEvent 登记一个交易事件（初始 PENDING），返回事件索引。
+func (e *Engine) newEvent(eventTraces *[]EventTrace, action, reason string, b Bar) int {
+	ev := EventTrace{
+		Seq:           len(*eventTraces) + 1,
+		Action:        action,
+		TriggerReason: reason,
+		TriggerTS:     b.TS,
+		TriggerDate:   b.Date,
+		TriggerTime:   b.Time,
+		ExecStatus:    "PENDING",
+	}
+	*eventTraces = append(*eventTraces, ev)
+	return len(*eventTraces) - 1
+}
+
+// recordReject 登记一个被拒绝的交易事件（触发但未成交，登记原因）。
+func (e *Engine) recordReject(eventTraces *[]EventTrace, action, reason string, b Bar, rejectReason string) {
+	ev := EventTrace{
+		Seq:           len(*eventTraces) + 1,
+		Action:        action,
+		TriggerReason: reason,
+		TriggerTS:     b.TS,
+		TriggerDate:   b.Date,
+		TriggerTime:   b.Time,
+		ExecStatus:    "REJECTED",
+		ExecTS:        b.TS,
+		ExecDate:      b.Date,
+		ExecTime:      b.Time,
+		RejectReason:  rejectReason,
+	}
+	*eventTraces = append(*eventTraces, ev)
 }
 
 // equityAt 计算 bar 收盘口径总资产。
@@ -423,12 +515,16 @@ type pendingOrderT struct {
 	action       string
 	slippageSign float64
 	signal       string
+	eventIdx     int // 关联事件追踪索引（更新 FILLED/REJECTED 状态）
+	triggerBar   int // 触发 bar 索引（计算委托耗时）
 }
 
-// fill 执行一笔成交（买入/卖出），更新账户与成交记录。返回是否成交。
+// fill 执行一笔成交（买入/卖出），更新账户、成交记录、资金流水与持仓明细。
+// 返回引擎内成交序号（tradeSeq，明细表 trade_id 关联用）与是否成交。
 func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *accountState, dc *dayCounters,
-	trades *[]Trade, commission float64, totalFee *float64, signalDetail map[string]int,
-	grossProfit, grossLoss *float64, winCount, lossCount *int, signal string, maxTradesPerDay int) bool {
+	trades *[]Trade, cashflows *[]Cashflow, positionLogs *[]PositionLog,
+	commission float64, totalFee *float64, signalDetail map[string]int,
+	grossProfit, grossLoss *float64, winCount, lossCount *int, signal string, maxTradesPerDay int) (int64, bool) {
 
 	def := e.cfg.Definition
 	acc := e.cfg.Account
@@ -441,11 +537,11 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 	}
 	// 全局每日笔数限制
 	if maxTradesPerDay > 0 && dc.trades >= maxTradesPerDay {
-		return false
+		return 0, false
 	}
 	// 相邻交易最小间隔
 	if def.Risk.MinIntervalBars > 0 && dc.lastTradeBar >= 0 && barIdx-dc.lastTradeBar < def.Risk.MinIntervalBars {
-		return false
+		return 0, false
 	}
 
 	marginRate := acc.MarginRate
@@ -456,19 +552,29 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 	profit := 0.0
 	fee := 0.0
 	amount := 0.0
+	avgCostBefore := state.avgCost
+	posBefore := state.position
+	seq := int64(len(*trades) + 1) // 引擎内成交序号（明细表 trade_id 关联用）
 
 	switch action {
 	case ActionBuy:
 		qty = e.buyQuantity(b, state, price, def.Rules.Buy, commission, marginRate)
 		if qty <= 0 {
-			return false
+			return 0, false
 		}
 		amount = qty * price
 		fee = amount * commission
+		// 资金流水：扣款 + 手续费（FUTURES 模式为保证金占用）
+		cashBeforePay := state.cash
 		if acc.MarginMode == "FUTURES" {
-			state.cash -= amount*marginRate + fee
+			hold := amount * marginRate
+			state.cash -= hold + fee
+			appendCashflow(cashflows, b, "MARGIN_HOLD", -hold, cashBeforePay, state.cash+fee, seq, signal)
+			appendCashflow(cashflows, b, "FEE", -fee, state.cash+fee, state.cash, seq, signal)
 		} else {
 			state.cash -= amount + fee
+			appendCashflow(cashflows, b, "BUY_PAY", -amount, cashBeforePay, state.cash+fee, seq, signal)
+			appendCashflow(cashflows, b, "FEE", -fee, state.cash+fee, state.cash, seq, signal)
 		}
 		newPos := state.position + qty
 		state.avgCost = (state.position*state.avgCost + qty*price) / newPos
@@ -477,11 +583,21 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 	case ActionSell:
 		qty = state.position
 		if qty <= 0 {
-			return false
+			return 0, false
 		}
 		amount = qty * price
 		fee = amount * commission
-		state.cash += amount - fee
+		cashBeforeRecv := state.cash
+		if acc.MarginMode == "FUTURES" {
+			release := amount * marginRate
+			state.cash += release - fee
+			appendCashflow(cashflows, b, "MARGIN_RELEASE", release, cashBeforeRecv, state.cash+fee, seq, signal)
+			appendCashflow(cashflows, b, "FEE", -fee, state.cash+fee, state.cash, seq, signal)
+		} else {
+			state.cash += amount - fee
+			appendCashflow(cashflows, b, "SELL_RECEIVE", amount, cashBeforeRecv, state.cash+fee, seq, signal)
+			appendCashflow(cashflows, b, "FEE", -fee, state.cash+fee, state.cash, seq, signal)
+		}
 		profit = (price - state.avgCost) * qty
 		if profit > 0 {
 			*grossProfit += profit
@@ -498,7 +614,6 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 	}
 
 	*totalFee += fee
-
 	trade := Trade{
 		TS:            b.TS,
 		Date:          b.Date,
@@ -512,10 +627,56 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		PositionAfter: round6(state.position),
 		CashAfter:     round6(state.cash),
 		Signal:        signal,
+		Seq:           int(seq),
 	}
 	*trades = append(*trades, trade)
 	dc.trades++
-	return true
+
+	// 持仓变化明细（需求⑨-2）：开仓/加仓/减仓/平仓
+	posAction := "OPEN"
+	if action == ActionBuy {
+		if posBefore > 0 {
+			posAction = "ADD"
+		}
+	} else {
+		if state.position > 0 {
+			posAction = "REDUCE"
+		} else {
+			posAction = "CLOSE"
+		}
+	}
+	*positionLogs = append(*positionLogs, PositionLog{
+		Seq:            len(*positionLogs) + 1,
+		TS:             b.TS,
+		Date:           b.Date,
+		Time:           b.Time,
+		Action:         posAction,
+		Price:          round6(price),
+		Qty:            round6(qty),
+		PositionBefore: round6(posBefore),
+		PositionAfter:  round6(state.position),
+		AvgCostBefore:  round6(avgCostBefore),
+		AvgCostAfter:   round6(state.avgCost),
+		TradeSeq:       int(seq),
+		Remark:         signal,
+	})
+	return seq, true
+}
+
+// appendCashflow 追加资金流水（需求⑨-1）。
+func appendCashflow(cashflows *[]Cashflow, b Bar, flowType string, amount, cashBefore, cashAfter float64, tradeSeq int64, remark string) {
+	*cashflows = append(*cashflows, Cashflow{
+		Seq:        len(*cashflows) + 1,
+		TS:         b.TS,
+		Date:       b.Date,
+		Time:       b.Time,
+		FlowType:   flowType,
+		Amount:     round6(amount),
+		CashBefore: round6(cashBefore),
+		CashAfter:  round6(cashAfter),
+		TradeSeq:   int(tradeSeq),
+		Remark:     remark,
+	})
 }
 
 // buyQuantity 计算买入数量。
@@ -652,7 +813,7 @@ func buildReport(cfg EngineConfig, bars []Bar, initialCapital, finalEquity float
 	trades []Trade, equityPoints []EquityPoint, periodReturns []float64,
 	maxDD float64, maxDDStart, maxDDEnd int64, maxInvested, investedSum float64, investedBars float64,
 	investedDays map[int]bool, grossProfit, grossLoss float64, winCount, lossCount int,
-	totalFee float64, signalDetail map[string]int) *RunReport {
+	totalFee float64, signalDetail map[string]int, eventTraces []EventTrace) *RunReport {
 
 	totalProfit := finalEquity - initialCapital
 	totalReturnPct := 0.0
@@ -718,6 +879,9 @@ func buildReport(cfg EngineConfig, bars []Bar, initialCapital, finalEquity float
 		}
 	}
 
+	// 事件追踪统计（需求⑨-3）
+	eventStats := buildEventStats(eventTraces)
+
 	return &RunReport{
 		SecuCode:           cfg.SecuCode,
 		Period:             cfg.Period,
@@ -751,8 +915,45 @@ func buildReport(cfg EngineConfig, bars []Bar, initialCapital, finalEquity float
 		ProfitDays:         profitDays,
 		LossDays:           lossDays,
 		TradeSignalDetail:  signalDetail,
+		EventStats:         eventStats,
 		GeneratedAt:        time.Now().UTC().Format(time.RFC3339),
 	}
+}
+
+// buildEventStats 汇总交易事件统计（需求⑨-3）。
+func buildEventStats(eventTraces []EventTrace) *EventStats {
+	if len(eventTraces) == 0 {
+		return nil
+	}
+	es := &EventStats{
+		RejectReasons:  map[string]int{},
+		TriggerReasons: map[string]int{},
+	}
+	var latencyBarsSum, latencySecSum int
+	filled := 0
+	for _, ev := range eventTraces {
+		es.TriggerReasons[ev.TriggerReason]++
+		es.TriggerCount++
+		switch ev.ExecStatus {
+		case "FILLED":
+			es.FilledCount++
+			filled++
+			latencyBarsSum += ev.LatencyBars
+			latencySecSum += int(ev.LatencySec)
+		case "REJECTED":
+			es.RejectedCount++
+			es.RejectReasons[ev.RejectReason]++
+		case "EXPIRED":
+			es.ExpiredCount++
+		case "PENDING":
+			es.PendingCount++
+		}
+	}
+	if filled > 0 {
+		es.AvgLatencyBars = round6(float64(latencyBarsSum) / float64(filled))
+		es.AvgLatencySec = round6(float64(latencySecSum) / float64(filled))
+	}
+	return es
 }
 
 func computeSharpeVol(periodReturns []float64, precision string) (float64, float64) {

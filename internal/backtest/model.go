@@ -277,6 +277,7 @@ type EquityPoint struct {
 type Trade struct {
 	TradeID       int64   `json:"trade_id"`
 	RunID         string  `json:"run_id"`
+	Seq           int     `json:"seq"` // 引擎内成交顺序号（明细关联用）
 	TS            int64   `json:"ts"`
 	Date          int     `json:"date"`
 	Time          int     `json:"time"`
@@ -289,6 +290,66 @@ type Trade struct {
 	PositionAfter float64 `json:"position_after"`
 	CashAfter     float64 `json:"cash_after"`
 	Signal        string  `json:"signal"`
+}
+
+// Cashflow 资金流水明细（需求⑨-1）。
+type Cashflow struct {
+	CashflowID int64   `json:"cashflow_id"`
+	RunID      string  `json:"run_id"`
+	Seq        int     `json:"seq"`
+	TS         int64   `json:"ts"`
+	Date       int     `json:"date"`
+	Time       int     `json:"time"`
+	FlowType   string  `json:"flow_type"`
+	Amount     float64 `json:"amount"`
+	CashBefore float64 `json:"cash_before"`
+	CashAfter  float64 `json:"cash_after"`
+	TradeID    int64   `json:"trade_id"`
+	TradeSeq   int     `json:"trade_seq"` // 引擎内成交序号（落库时映射为 trade_id）
+	Remark     string  `json:"remark"`
+}
+
+// PositionLog 持仓变化明细（需求⑨-2）。
+type PositionLog struct {
+	LogID          int64   `json:"log_id"`
+	RunID          string  `json:"run_id"`
+	Seq            int     `json:"seq"`
+	TS             int64   `json:"ts"`
+	Date           int     `json:"date"`
+	Time           int     `json:"time"`
+	Action         string  `json:"action"`
+	Price          float64 `json:"price"`
+	Qty            float64 `json:"qty"`
+	PositionBefore float64 `json:"position_before"`
+	PositionAfter  float64 `json:"position_after"`
+	AvgCostBefore  float64 `json:"avg_cost_before"`
+	AvgCostAfter   float64 `json:"avg_cost_after"`
+	TradeID        int64   `json:"trade_id"`
+	TradeSeq       int     `json:"trade_seq"` // 引擎内成交序号（落库时映射为 trade_id）
+	Remark         string  `json:"remark"`
+}
+
+// EventTrace 交易事件追踪（需求⑨-3）：触发原因/成交结果/委托耗时/未成交原因。
+type EventTrace struct {
+	EventID       int64   `json:"event_id"`
+	RunID         string  `json:"run_id"`
+	Seq           int     `json:"seq"`
+	Action        string  `json:"action"`
+	TriggerReason string  `json:"trigger_reason"`
+	TriggerTS     int64   `json:"trigger_ts"`
+	TriggerDate   int     `json:"trigger_date"`
+	TriggerTime   int     `json:"trigger_time"`
+	ExecStatus    string  `json:"exec_status"`
+	ExecTS        int64   `json:"exec_ts"`
+	ExecDate      int     `json:"exec_date"`
+	ExecTime      int     `json:"exec_time"`
+	LatencyBars   int     `json:"latency_bars"`
+	LatencySec    int64   `json:"latency_sec"`
+	RejectReason  string  `json:"reject_reason"`
+	Price         float64 `json:"price"`
+	Qty           float64 `json:"qty"`
+	TradeID       int64   `json:"trade_id"`
+	TradeSeq      int     `json:"trade_seq"` // 引擎内成交序号（落库时映射为 trade_id）
 }
 
 // ---------------------------------------------------------------------
@@ -337,6 +398,22 @@ type RunReport struct {
 	// 其他
 	TradeSignalDetail map[string]int `json:"trade_signal_detail"` // 信号归因统计（信号名 → 笔数）
 	GeneratedAt       string         `json:"generated_at"`        // 报告生成时间（RFC3339）
+
+	// 链路追踪统计（需求⑨）：事件触发/成交/拒绝/耗时分布
+	EventStats *EventStats `json:"event_stats,omitempty"` // 事件追踪汇总（nil=无事件）
+}
+
+// EventStats 交易事件追踪汇总统计。
+type EventStats struct {
+	TriggerCount   int            `json:"trigger_count"`    // 事件触发总数
+	FilledCount    int            `json:"filled_count"`     // 成交事件数
+	RejectedCount  int            `json:"rejected_count"`   // 拒绝事件数
+	ExpiredCount   int            `json:"expired_count"`    // 过期事件数
+	PendingCount   int            `json:"pending_count"`    // 挂单事件数
+	AvgLatencyBars float64        `json:"avg_latency_bars"` // 平均委托耗时（bar）
+	AvgLatencySec  float64        `json:"avg_latency_sec"`  // 平均委托耗时（秒）
+	RejectReasons  map[string]int `json:"reject_reasons"`   // 未成交原因分布
+	TriggerReasons map[string]int `json:"trigger_reasons"`  // 触发原因分布
 }
 
 // RunListQuery 任务列表查询参数。

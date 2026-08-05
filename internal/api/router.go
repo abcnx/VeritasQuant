@@ -82,6 +82,9 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.GET("/Backtest/Run/Report", backtestHandler.GetReport)
 		apiGroup.GET("/Backtest/Run/Equity", backtestHandler.ListEquity)
 		apiGroup.GET("/Backtest/Run/Trades", backtestHandler.ListTrades)
+		apiGroup.GET("/Backtest/Run/Cashflows", backtestHandler.ListCashflows)
+		apiGroup.GET("/Backtest/Run/PositionLogs", backtestHandler.ListPositionLogs)
+		apiGroup.GET("/Backtest/Run/EventTraces", backtestHandler.ListEventTraces)
 	}
 
 	return router

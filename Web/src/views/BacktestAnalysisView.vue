@@ -53,7 +53,20 @@ interface Report {
   profit_days: number
   loss_days: number
   trade_signal_detail: Record<string, number>
+  event_stats: EventStats | null
   generated_at: string
+}
+
+interface EventStats {
+  trigger_count: number
+  filled_count: number
+  rejected_count: number
+  expired_count: number
+  pending_count: number
+  avg_latency_bars: number
+  avg_latency_sec: number
+  reject_reasons: Record<string, number>
+  trigger_reasons: Record<string, number>
 }
 
 interface EquityPoint {
@@ -72,6 +85,7 @@ interface EquityPoint {
 
 interface TradeRow {
   trade_id: number
+  seq: number
   ts: number
   date: number
   time: number
@@ -84,6 +98,53 @@ interface TradeRow {
   position_after: number
   cash_after: number
   signal: string
+}
+
+interface CashflowRow {
+  cashflow_id: number
+  seq: number
+  date: number
+  time: number
+  flow_type: string
+  amount: number
+  cash_before: number
+  cash_after: number
+  trade_id: number
+  remark: string
+}
+
+interface PositionLogRow {
+  log_id: number
+  seq: number
+  date: number
+  time: number
+  action: string
+  price: number
+  qty: number
+  position_before: number
+  position_after: number
+  avg_cost_before: number
+  avg_cost_after: number
+  trade_id: number
+  remark: string
+}
+
+interface EventTraceRow {
+  event_id: number
+  seq: number
+  action: string
+  trigger_reason: string
+  trigger_date: number
+  trigger_time: number
+  exec_status: string
+  exec_date: number
+  exec_time: number
+  latency_bars: number
+  latency_sec: number
+  reject_reason: string
+  price: number
+  qty: number
+  trade_id: number
 }
 
 const runs = ref<RunRow[]>([])
@@ -103,6 +164,10 @@ const trades = ref<TradeRow[]>([])
 const tradeTotal = ref(0)
 const tradePage = ref(1)
 const tradePageSize = ref(20)
+const cashflows = ref<CashflowRow[]>([])
+const positionLogs = ref<PositionLogRow[]>([])
+const eventTraces = ref<EventTraceRow[]>([])
+const traceTab = ref('trades')
 const reportLoading = ref(false)
 
 const charts: echarts.ECharts[] = []
@@ -129,6 +194,34 @@ function fmtPct(v: number | undefined | null): string {
 
 function statusColor(s: string): string {
   return { PENDING: 'grey', RUNNING: 'primary', SUCCEEDED: 'success', FAILED: 'error', CANCELLED: 'warning' }[s] ?? 'grey'
+}
+
+// ⑨ 链路追踪展示辅助
+function flowTypeName(t: string): string {
+  return {
+    INITIAL_DEPOSIT: '初始资金', BUY_PAY: '买入付款', SELL_RECEIVE: '卖出收款',
+    FEE: '手续费', MARGIN_HOLD: '保证金占用', MARGIN_RELEASE: '保证金释放',
+  }[t] ?? t
+}
+
+function flowTypeColor(t: string): string {
+  return { INITIAL_DEPOSIT: 'blue', BUY_PAY: 'red', SELL_RECEIVE: 'green', FEE: 'orange', MARGIN_HOLD: 'purple', MARGIN_RELEASE: 'teal' }[t] ?? 'grey'
+}
+
+function posActionName(a: string): string {
+  return { OPEN: '开仓', ADD: '加仓', REDUCE: '减仓', CLOSE: '平仓' }[a] ?? a
+}
+
+function posActionColor(a: string): string {
+  return { OPEN: 'green', ADD: 'teal', REDUCE: 'orange', CLOSE: 'red' }[a] ?? 'grey'
+}
+
+function execStatusName(s: string): string {
+  return { FILLED: '成交', REJECTED: '拒绝', PENDING: '挂单', EXPIRED: '过期' }[s] ?? s
+}
+
+function execStatusColor(s: string): string {
+  return { FILLED: 'green', REJECTED: 'red', PENDING: 'blue', EXPIRED: 'orange' }[s] ?? 'grey'
 }
 
 async function loadRuns() {
@@ -161,16 +254,25 @@ async function openRun(run: RunRow) {
   report.value = null
   equity.value = []
   trades.value = []
+  cashflows.value = []
+  positionLogs.value = []
+  eventTraces.value = []
   try {
-    const [rep, eq, tr] = await Promise.all([
+    const [rep, eq, tr, cf, pl, ev] = await Promise.all([
       apiGet<Report>(`/Backtest/Run/Report?run_id=${run.run_id}`),
       apiGet<{ list: EquityPoint[] }>(`/Backtest/Run/Equity?run_id=${run.run_id}&page=1&page_size=5000`),
       apiGet<{ total: number; list: TradeRow[] }>(`/Backtest/Run/Trades?run_id=${run.run_id}&page=1&page_size=${tradePageSize.value}`),
+      apiGet<{ list: CashflowRow[] }>(`/Backtest/Run/Cashflows?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<{ list: PositionLogRow[] }>(`/Backtest/Run/PositionLogs?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<{ list: EventTraceRow[] }>(`/Backtest/Run/EventTraces?run_id=${run.run_id}&page=1&page_size=1000`),
     ])
     report.value = rep
     equity.value = eq.list ?? []
     trades.value = tr.list ?? []
     tradeTotal.value = tr.total ?? 0
+    cashflows.value = cf.list ?? []
+    positionLogs.value = pl.list ?? []
+    eventTraces.value = ev.list ?? []
     await nextTick()
     renderCharts()
   } catch (e) {
@@ -497,7 +599,7 @@ onBeforeUnmount(() => {
             <v-col cols="12" lg="6"><v-card class="mb-3"><div ref="positionChartEl" style="height: 300px" /></v-card></v-col>
           </v-row>
 
-          <!-- 信号归因 + 成交记录 -->
+          <!-- 信号归因 + ⑨ 链路追踪明细 -->
           <v-card class="mb-3">
             <v-card-title class="text-subtitle-1">
               <v-icon icon="mdi-sigma" class="mr-2" color="primary" />信号归因
@@ -509,37 +611,149 @@ onBeforeUnmount(() => {
             </v-card-text>
           </v-card>
 
-          <v-card>
+          <!-- ⑨ 链路追踪统计（事件触发/成交/拒绝/委托耗时） -->
+          <v-card v-if="report.event_stats" class="mb-3">
             <v-card-title class="text-subtitle-1">
-              <v-icon icon="mdi-swap-horizontal" class="mr-2" color="primary" />成交记录
+              <v-icon icon="mdi-routes" class="mr-2" color="primary" />⑨ 链路追踪统计（事件触发 → 委托 → 成交/拒绝）
             </v-card-title>
-            <v-data-table-server v-model:page="tradePage" v-model:items-per-page="tradePageSize"
-              :headers="[
-                { title: '时间', key: 'timeText', width: 170 },
-                { title: '方向', key: 'action', width: 80 },
-                { title: '价格', key: 'price', width: 100 },
-                { title: '数量', key: 'qty', width: 100 },
-                { title: '金额', key: 'amount', width: 120 },
-                { title: '手续费', key: 'fee', width: 100 },
-                { title: '盈亏', key: 'profit', width: 110 },
-                { title: '持仓后', key: 'position_after', width: 100 },
-                { title: '信号', key: 'signal' },
-              ]" :items="trades" :items-length="tradeTotal" item-value="trade_id"
-              @update:options="loadTradesPage">
-              <template #item.timeText="{ item }">
-                {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
-              </template>
-              <template #item.action="{ item }">
-                <v-chip size="small" :color="item.action === 'BUY' ? 'red' : 'green'">
-                  {{ item.action === 'BUY' ? '买入' : '卖出' }}
-                </v-chip>
-              </template>
-              <template #item.profit="{ item }">
-                <span :class="item.profit > 0 ? 'text-success' : item.profit < 0 ? 'text-error' : ''">
-                  {{ fmtNum(item.profit) }}
-                </span>
-              </template>
-            </v-data-table-server>
+            <v-card-text>
+              <v-row>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="blue"><v-card-text class="pa-2 text-center"><div class="text-caption">事件触发总数</div><div class="text-h6">{{ report.event_stats.trigger_count }}</div></v-card-text></v-card></v-col>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="green"><v-card-text class="pa-2 text-center"><div class="text-caption">成交事件</div><div class="text-h6">{{ report.event_stats.filled_count }}</div></v-card-text></v-card></v-col>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="red"><v-card-text class="pa-2 text-center"><div class="text-caption">拒绝事件</div><div class="text-h6">{{ report.event_stats.rejected_count }}</div></v-card-text></v-card></v-col>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="orange"><v-card-text class="pa-2 text-center"><div class="text-caption">过期事件</div><div class="text-h6">{{ report.event_stats.expired_count }}</div></v-card-text></v-card></v-col>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均委托耗时</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_bars, 2) }} bar</div></v-card-text></v-card></v-col>
+                <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均耗时（秒）</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_sec, 2) }} s</div></v-card-text></v-card></v-col>
+              </v-row>
+              <v-row v-if="report.event_stats.reject_reasons && Object.keys(report.event_stats.reject_reasons).length" class="mt-2">
+                <v-col cols="12">
+                  <span class="text-caption text-medium-emphasis mr-2">未成交原因分布：</span>
+                  <v-chip v-for="(cnt, reason) in report.event_stats.reject_reasons" :key="reason" size="small" color="error" variant="tonal" class="mr-2 mb-1">
+                    {{ reason }}：{{ cnt }}
+                  </v-chip>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
+          <!-- ⑨ 链路追踪明细：成交记录 / 资金流水 / 持仓变化 / 事件追踪 -->
+          <v-card>
+            <v-tabs v-model="traceTab" color="primary">
+              <v-tab value="trades"><v-icon icon="mdi-swap-horizontal" class="mr-1" />成交记录（{{ report.trade_count }}）</v-tab>
+              <v-tab value="cashflows"><v-icon icon="mdi-cash-multiple" class="mr-1" />资金流水明细（{{ cashflows.length }}）</v-tab>
+              <v-tab value="positionLogs"><v-icon icon="mdi-briefcase-variant-outline" class="mr-1" />持仓变化明细（{{ positionLogs.length }}）</v-tab>
+              <v-tab value="eventTraces"><v-icon icon="mdi-routes" class="mr-1" />事件追踪（{{ eventTraces.length }}）</v-tab>
+            </v-tabs>
+            <v-window v-model="traceTab">
+              <!-- 成交记录 -->
+              <v-window-item value="trades">
+                <v-data-table-server v-model:page="tradePage" v-model:items-per-page="tradePageSize"
+                  :headers="[
+                    { title: '时间', key: 'timeText', width: 170 },
+                    { title: '方向', key: 'action', width: 80 },
+                    { title: '价格', key: 'price', width: 100 },
+                    { title: '数量', key: 'qty', width: 100 },
+                    { title: '金额', key: 'amount', width: 120 },
+                    { title: '手续费', key: 'fee', width: 100 },
+                    { title: '盈亏', key: 'profit', width: 110 },
+                    { title: '持仓后', key: 'position_after', width: 100 },
+                    { title: '信号', key: 'signal' },
+                  ]" :items="trades" :items-length="tradeTotal" item-value="trade_id"
+                  @update:options="loadTradesPage">
+                  <template #item.timeText="{ item }">
+                    {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
+                  </template>
+                  <template #item.action="{ item }">
+                    <v-chip size="small" :color="item.action === 'BUY' ? 'red' : 'green'">
+                      {{ item.action === 'BUY' ? '买入' : '卖出' }}
+                    </v-chip>
+                  </template>
+                  <template #item.profit="{ item }">
+                    <span :class="item.profit > 0 ? 'text-success' : item.profit < 0 ? 'text-error' : ''">
+                      {{ fmtNum(item.profit) }}
+                    </span>
+                  </template>
+                </v-data-table-server>
+              </v-window-item>
+
+              <!-- 资金流水明细 -->
+              <v-window-item value="cashflows">
+                <v-table density="compact">
+                  <thead>
+                    <tr><th>序号</th><th>时间</th><th>类型</th><th>金额</th><th>变动前现金</th><th>变动后现金</th><th>关联成交</th><th>备注</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cf in cashflows" :key="cf.cashflow_id">
+                      <td>{{ cf.seq }}</td>
+                      <td>{{ fmtDate(cf.date) }} {{ String(cf.time).padStart(6, '0').slice(0, 2) }}:{{ String(cf.time).padStart(6, '0').slice(2, 4) }}</td>
+                      <td>
+                        <v-chip size="x-small" :color="flowTypeColor(cf.flow_type)">{{ flowTypeName(cf.flow_type) }}</v-chip>
+                      </td>
+                      <td :class="cf.amount < 0 ? 'text-error' : 'text-success'">{{ fmtNum(cf.amount) }}</td>
+                      <td>{{ fmtNum(cf.cash_before) }}</td>
+                      <td>{{ fmtNum(cf.cash_after) }}</td>
+                      <td>{{ cf.trade_id ? '#' + cf.trade_id : '-' }}</td>
+                      <td class="text-caption">{{ cf.remark }}</td>
+                    </tr>
+                    <tr v-if="!cashflows.length"><td colspan="8" class="text-center text-medium-emphasis py-4">暂无资金流水</td></tr>
+                  </tbody>
+                </v-table>
+              </v-window-item>
+
+              <!-- 持仓变化明细 -->
+              <v-window-item value="positionLogs">
+                <v-table density="compact">
+                  <thead>
+                    <tr><th>序号</th><th>时间</th><th>动作</th><th>价格</th><th>变动数量</th><th>持仓前</th><th>持仓后</th><th>成本前</th><th>成本后</th><th>关联成交</th><th>备注</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="pl in positionLogs" :key="pl.log_id">
+                      <td>{{ pl.seq }}</td>
+                      <td>{{ fmtDate(pl.date) }} {{ String(pl.time).padStart(6, '0').slice(0, 2) }}:{{ String(pl.time).padStart(6, '0').slice(2, 4) }}</td>
+                      <td>
+                        <v-chip size="x-small" :color="posActionColor(pl.action)">{{ posActionName(pl.action) }}</v-chip>
+                      </td>
+                      <td>{{ fmtNum(pl.price) }}</td>
+                      <td :class="pl.qty < 0 ? 'text-error' : 'text-success'">{{ fmtNum(pl.qty, 4) }}</td>
+                      <td>{{ fmtNum(pl.position_before, 4) }}</td>
+                      <td>{{ fmtNum(pl.position_after, 4) }}</td>
+                      <td>{{ fmtNum(pl.avg_cost_before) }}</td>
+                      <td>{{ fmtNum(pl.avg_cost_after) }}</td>
+                      <td>{{ pl.trade_id ? '#' + pl.trade_id : '-' }}</td>
+                      <td class="text-caption">{{ pl.remark }}</td>
+                    </tr>
+                    <tr v-if="!positionLogs.length"><td colspan="11" class="text-center text-medium-emphasis py-4">暂无持仓变化</td></tr>
+                  </tbody>
+                </v-table>
+              </v-window-item>
+
+              <!-- 事件追踪 -->
+              <v-window-item value="eventTraces">
+                <v-table density="compact">
+                  <thead>
+                    <tr><th>序号</th><th>方向</th><th>触发原因</th><th>触发时间</th><th>结果</th><th>成交时间</th><th>委托耗时</th><th>未成交原因</th><th>关联成交</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="ev in eventTraces" :key="ev.event_id">
+                      <td>{{ ev.seq }}</td>
+                      <td>
+                        <v-chip size="x-small" :color="ev.action === 'BUY' ? 'red' : 'green'">{{ ev.action === 'BUY' ? '买入' : '卖出' }}</v-chip>
+                      </td>
+                      <td>{{ ev.trigger_reason }}</td>
+                      <td>{{ fmtDate(ev.trigger_date) }} {{ String(ev.trigger_time).padStart(6, '0').slice(0, 2) }}:{{ String(ev.trigger_time).padStart(6, '0').slice(2, 4) }}</td>
+                      <td>
+                        <v-chip size="x-small" :color="execStatusColor(ev.exec_status)">{{ execStatusName(ev.exec_status) }}</v-chip>
+                      </td>
+                      <td>{{ ev.exec_status === 'FILLED' ? fmtDate(ev.exec_date) + ' ' + String(ev.exec_time).padStart(6, '0').slice(0, 2) + ':' + String(ev.exec_time).padStart(6, '0').slice(2, 4) : '-' }}</td>
+                      <td>{{ ev.exec_status === 'FILLED' ? ev.latency_bars + ' bar / ' + ev.latency_sec + 's' : '-' }}</td>
+                      <td class="text-error text-caption">{{ ev.reject_reason || '-' }}</td>
+                      <td>{{ ev.trade_id ? '#' + ev.trade_id : '-' }}</td>
+                    </tr>
+                    <tr v-if="!eventTraces.length"><td colspan="9" class="text-center text-medium-emphasis py-4">暂无事件追踪记录</td></tr>
+                  </tbody>
+                </v-table>
+              </v-window-item>
+            </v-window>
           </v-card>
         </template>
       </v-col>

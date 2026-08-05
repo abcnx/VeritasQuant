@@ -1,11 +1,11 @@
 -- =====================================================================
--- FinvQuant PostgreSQL V24：回测任务表 finv_backtest_run
+-- FinvQuant PostgreSQL V24：回测任务表 finv_quant_backtest_run
 --
 -- 决策（ACANX 2026-08-06）：
 --   - 一条回测任务 = 一次独立回放：策略快照 + 账户快照 + 标的时间区间 +
 --     回测配置（周期/报告精度/回测开关/限制覆盖），运行结束后 report 保存
---     汇总指标（JSONB），曲线与成交明细分别落 finv_backtest_equity /
---     finv_backtest_trade，支持持久化保存与回看；
+--     汇总指标（JSONB），曲线与成交明细分别落 finv_quant_backtest_equity /
+--     finv_quant_backtest_trade，支持持久化保存与回看；
 --   - 快照列（strategy_snapshot / account_snapshot / options）保证任务结果
 --     可复现：策略/账户后续修改不影响历史任务；
 --   - status 状态机：PENDING → RUNNING → SUCCEEDED / FAILED / CANCELLED；
@@ -17,7 +17,7 @@
 
 BEGIN;
 
-CREATE TABLE finv_backtest_run (
+CREATE TABLE finv_quant_backtest_run (
     run_id              TEXT        PRIMARY KEY,            -- 任务 ID（UUID）
     run_no              BIGINT      GENERATED ALWAYS AS IDENTITY, -- 任务序号（展示用，单调递增）
     strategy_id         TEXT        NOT NULL,               -- 引用策略（无物理外键，程序层控制）
@@ -53,19 +53,19 @@ CREATE TABLE finv_backtest_run (
 );
 
 -- 按状态查询（回测分析页默认按状态/时间倒序）
-CREATE INDEX idx_finv_backtest_run_status
-    ON finv_backtest_run (status, gmt_create DESC);
+CREATE INDEX idx_finv_quant_backtest_run_status
+    ON finv_quant_backtest_run (status, gmt_create DESC);
 
 -- 按标的 + 时间查询（黄金期货回测验证页）
-CREATE INDEX idx_finv_backtest_run_secu
-    ON finv_backtest_run (secu_code, gmt_create DESC);
+CREATE INDEX idx_finv_quant_backtest_run_secu
+    ON finv_quant_backtest_run (secu_code, gmt_create DESC);
 
 -- 按策略查询
-CREATE INDEX idx_finv_backtest_run_strategy
-    ON finv_backtest_run (strategy_id, gmt_create DESC);
+CREATE INDEX idx_finv_quant_backtest_run_strategy
+    ON finv_quant_backtest_run (strategy_id, gmt_create DESC);
 
-CREATE TRIGGER trg_finv_backtest_run_gmt_update
-    BEFORE UPDATE ON finv_backtest_run
+CREATE TRIGGER trg_finv_quant_backtest_run_gmt_update
+    BEFORE UPDATE ON finv_quant_backtest_run
     FOR EACH ROW EXECUTE FUNCTION vq_set_gmt_update();
 
 COMMIT;

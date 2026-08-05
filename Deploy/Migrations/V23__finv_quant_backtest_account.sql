@@ -1,5 +1,5 @@
 -- =====================================================================
--- FinvQuant PostgreSQL V23：回测账户表 finv_backtest_account
+-- FinvQuant PostgreSQL V23：回测账户表 finv_quant_backtest_account
 --
 -- 决策（ACANX 2026-08-06）：
 --   - 回测账户 = 回测运行的"初始资金 + 交易成本 + 保证金模式"基线配置；
@@ -15,7 +15,7 @@
 
 BEGIN;
 
-CREATE TABLE finv_backtest_account (
+CREATE TABLE finv_quant_backtest_account (
     account_id        TEXT         PRIMARY KEY,             -- 账户 ID（UUID）
     account_code      TEXT         NOT NULL UNIQUE,         -- 账户编码（用户可读，全局唯一）
     account_name      TEXT         NOT NULL,                -- 账户名称
@@ -40,11 +40,11 @@ CREATE TABLE finv_backtest_account (
     gmt_update        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_finv_backtest_account_status
-    ON finv_backtest_account (status, allow_backtest);
+CREATE INDEX idx_finv_quant_backtest_account_status
+    ON finv_quant_backtest_account (status, allow_backtest);
 
-CREATE TRIGGER trg_finv_backtest_account_gmt_update
-    BEFORE UPDATE ON finv_backtest_account
+CREATE TRIGGER trg_finv_quant_backtest_account_gmt_update
+    BEFORE UPDATE ON finv_quant_backtest_account
     FOR EACH ROW EXECUTE FUNCTION vq_set_gmt_update();
 
 COMMIT;

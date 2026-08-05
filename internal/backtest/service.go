@@ -75,7 +75,7 @@ func (s *Service) SaveStrategy(ctx context.Context, st *Strategy) (string, error
 	}
 
 	_, err = s.pool.Exec(ctx, `
-INSERT INTO finv_backtest_strategy
+INSERT INTO finv_quant_backtest_strategy
     (strategy_id, strategy_code, strategy_name, strategy_type, description,
      definition, definition_version, data_period, secu_code, allow_backtest, status, created_by)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
@@ -117,14 +117,14 @@ func (s *Service) ListStrategies(ctx context.Context, pager Pager, keyword, allo
 	cond := strings.Join(where, " AND ")
 
 	var total int
-	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_backtest_strategy WHERE `+cond, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_backtest_strategy WHERE `+cond, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	rows, err := s.pool.Query(ctx, `
 SELECT strategy_id, strategy_code, strategy_name, strategy_type, description,
        definition, definition_version, data_period, secu_code, allow_backtest, status, created_by, gmt_update
-FROM finv_backtest_strategy
+FROM finv_quant_backtest_strategy
 WHERE `+cond+`
 ORDER BY gmt_update DESC
 LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
@@ -150,7 +150,7 @@ func (s *Service) GetStrategy(ctx context.Context, strategyID string) (*Strategy
 	row := s.pool.QueryRow(ctx, `
 SELECT strategy_id, strategy_code, strategy_name, strategy_type, description,
        definition, definition_version, data_period, secu_code, allow_backtest, status, created_by, gmt_update
-FROM finv_backtest_strategy WHERE strategy_id = $1`, strategyID)
+FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
 	st, err := scanStrategy(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -166,7 +166,7 @@ func (s *Service) ToggleStrategy(ctx context.Context, strategyID, allowBacktest 
 	if allowBacktest != FlagOn && allowBacktest != FlagOff {
 		return fmt.Errorf("allow_backtest 仅支持 0/1")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE finv_backtest_strategy SET allow_backtest=$2 WHERE strategy_id=$1`, strategyID, allowBacktest)
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_strategy SET allow_backtest=$2 WHERE strategy_id=$1`, strategyID, allowBacktest)
 	if err != nil {
 		return err
 	}
@@ -180,13 +180,13 @@ func (s *Service) ToggleStrategy(ctx context.Context, strategyID, allowBacktest 
 func (s *Service) DeleteStrategy(ctx context.Context, strategyID string) error {
 	var runCount int
 	if err := s.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM finv_backtest_run WHERE strategy_id = $1`, strategyID).Scan(&runCount); err != nil {
+		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE strategy_id = $1`, strategyID).Scan(&runCount); err != nil {
 		return err
 	}
 	if runCount > 0 {
 		return fmt.Errorf("策略已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_backtest_strategy WHERE strategy_id = $1`, strategyID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_strategy WHERE strategy_id = $1`, strategyID)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (s *Service) SaveAccount(ctx context.Context, acc *Account) (string, error)
 	}
 
 	_, err := s.pool.Exec(ctx, `
-INSERT INTO finv_backtest_account
+INSERT INTO finv_quant_backtest_account
     (account_id, account_code, account_name, initial_capital, currency_type,
      commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
@@ -269,14 +269,14 @@ func (s *Service) ListAccounts(ctx context.Context, pager Pager, keyword, allowB
 	cond := strings.Join(where, " AND ")
 
 	var total int
-	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_backtest_account WHERE `+cond, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_backtest_account WHERE `+cond, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	rows, err := s.pool.Query(ctx, `
 SELECT account_id, account_code, account_name, initial_capital, currency_type,
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
-FROM finv_backtest_account
+FROM finv_quant_backtest_account
 WHERE `+cond+`
 ORDER BY gmt_update DESC
 LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
@@ -304,7 +304,7 @@ func (s *Service) GetAccount(ctx context.Context, accountID string) (*Account, e
 	row := s.pool.QueryRow(ctx, `
 SELECT account_id, account_code, account_name, initial_capital, currency_type,
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
-FROM finv_backtest_account WHERE account_id = $1`, accountID)
+FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
 	var a Account
 	if err := row.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.InitialCapital,
 		&a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
@@ -322,7 +322,7 @@ func (s *Service) ToggleAccount(ctx context.Context, accountID, allowBacktest st
 	if allowBacktest != FlagOn && allowBacktest != FlagOff {
 		return fmt.Errorf("allow_backtest 仅支持 0/1")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE finv_backtest_account SET allow_backtest=$2 WHERE account_id=$1`, accountID, allowBacktest)
+	tag, err := s.pool.Exec(ctx, `UPDATE finv_quant_backtest_account SET allow_backtest=$2 WHERE account_id=$1`, accountID, allowBacktest)
 	if err != nil {
 		return err
 	}
@@ -336,13 +336,13 @@ func (s *Service) ToggleAccount(ctx context.Context, accountID, allowBacktest st
 func (s *Service) DeleteAccount(ctx context.Context, accountID string) error {
 	var runCount int
 	if err := s.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM finv_backtest_run WHERE account_id = $1`, accountID).Scan(&runCount); err != nil {
+		`SELECT COUNT(*) FROM finv_quant_backtest_run WHERE account_id = $1`, accountID).Scan(&runCount); err != nil {
 		return err
 	}
 	if runCount > 0 {
 		return fmt.Errorf("账户已关联 %d 个回测任务，禁止删除（可改为禁用）", runCount)
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_backtest_account WHERE account_id = $1`, accountID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_account WHERE account_id = $1`, accountID)
 	if err != nil {
 		return err
 	}
@@ -437,7 +437,7 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 
 	runID := uuid.NewString()
 	_, err = s.pool.Exec(ctx, `
-INSERT INTO finv_backtest_run
+INSERT INTO finv_quant_backtest_run
     (run_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
      account_id, account_code, account_name, account_snapshot,
      secu_code, market_code, period, report_precision,
@@ -473,7 +473,7 @@ func (s *Service) CancelRun(ctx context.Context, runID string) error {
 	if !ok {
 		// 非运行中任务：检查状态，仅 PENDING/RUNNING 可取消
 		var status string
-		if err := s.pool.QueryRow(ctx, `SELECT status FROM finv_backtest_run WHERE run_id=$1`, runID).Scan(&status); err != nil {
+		if err := s.pool.QueryRow(ctx, `SELECT status FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(&status); err != nil {
 			return fmt.Errorf("任务不存在: %s", runID)
 		}
 		if status == RunPending || status == RunRunning {
@@ -511,7 +511,7 @@ func (s *Service) ListRuns(ctx context.Context, q RunListQuery) ([]Run, int, err
 	cond := strings.Join(where, " AND ")
 
 	var total int
-	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_backtest_run WHERE `+cond, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_backtest_run WHERE `+cond, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -521,7 +521,7 @@ SELECT run_id, run_no, strategy_id, strategy_code, strategy_name, strategy_snaps
        secu_code, market_code, period, report_precision,
        start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
        started_at, finished_at, created_by, gmt_update
-FROM finv_backtest_run
+FROM finv_quant_backtest_run
 WHERE `+cond+`
 ORDER BY run_no DESC
 LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
@@ -550,7 +550,7 @@ SELECT run_id, run_no, strategy_id, strategy_code, strategy_name, strategy_snaps
        secu_code, market_code, period, report_precision,
        start_ts, end_ts, start_date, end_date, options, status, progress, error_message, report,
        started_at, finished_at, created_by, gmt_update
-FROM finv_backtest_run WHERE run_id = $1`, runID)
+FROM finv_quant_backtest_run WHERE run_id = $1`, runID)
 	r, err := scanRun(row)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -566,7 +566,7 @@ func (s *Service) GetReport(ctx context.Context, runID string) (*RunReport, erro
 	var reportJSON []byte
 	var status string
 	err := s.pool.QueryRow(ctx,
-		`SELECT status, COALESCE(report, '{}') FROM finv_backtest_run WHERE run_id=$1`, runID).Scan(&status, &reportJSON)
+		`SELECT status, COALESCE(report, '{}') FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(&status, &reportJSON)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("回测任务不存在: %s", runID)
@@ -588,12 +588,12 @@ func (s *Service) ListEquity(ctx context.Context, runID string, pager Pager) ([]
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM finv_backtest_equity WHERE run_id=$1`, runID).Scan(&total); err != nil {
+		`SELECT COUNT(*) FROM finv_quant_backtest_equity WHERE run_id=$1`, runID).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
 SELECT seq, ts, date, "time", equity, cash, position_value, position_qty, profit, roi, drawdown
-FROM finv_backtest_equity WHERE run_id=$1
+FROM finv_quant_backtest_equity WHERE run_id=$1
 ORDER BY seq ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	if err != nil {
@@ -618,12 +618,12 @@ func (s *Service) ListTrades(ctx context.Context, runID string, pager Pager) ([]
 	pager = normalizeLargePager(pager)
 	var total int
 	if err := s.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM finv_backtest_trade WHERE run_id=$1`, runID).Scan(&total); err != nil {
+		`SELECT COUNT(*) FROM finv_quant_backtest_trade WHERE run_id=$1`, runID).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT trade_id, run_id, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal
-FROM finv_backtest_trade WHERE run_id=$1
+SELECT trade_id, run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal
+FROM finv_quant_backtest_trade WHERE run_id=$1
 ORDER BY ts ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	if err != nil {
@@ -634,11 +634,107 @@ LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
 	list := []Trade{}
 	for rows.Next() {
 		var t Trade
-		if err := rows.Scan(&t.TradeID, &t.RunID, &t.TS, &t.Date, &t.Time, &t.Action, &t.Price,
+		if err := rows.Scan(&t.TradeID, &t.RunID, &t.Seq, &t.TS, &t.Date, &t.Time, &t.Action, &t.Price,
 			&t.Qty, &t.Amount, &t.Fee, &t.Profit, &t.PositionAfter, &t.CashAfter, &t.Signal); err != nil {
 			return nil, 0, err
 		}
 		list = append(list, t)
+	}
+	return list, total, rows.Err()
+}
+
+// ListCashflows 分页查询资金流水明细（需求⑨-1）。
+func (s *Service) ListCashflows(ctx context.Context, runID string, pager Pager) ([]Cashflow, int, error) {
+	pager = normalizeLargePager(pager)
+	var total int
+	if err := s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM finv_quant_backtest_cashflow WHERE run_id=$1`, runID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT cashflow_id, run_id, seq, ts, date, "time", flow_type, amount, cash_before, cash_after, trade_id, remark
+FROM finv_quant_backtest_cashflow WHERE run_id=$1
+ORDER BY seq ASC
+LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []Cashflow{}
+	for rows.Next() {
+		var cf Cashflow
+		if err := rows.Scan(&cf.CashflowID, &cf.RunID, &cf.Seq, &cf.TS, &cf.Date, &cf.Time,
+			&cf.FlowType, &cf.Amount, &cf.CashBefore, &cf.CashAfter, &cf.TradeID, &cf.Remark); err != nil {
+			return nil, 0, err
+		}
+		list = append(list, cf)
+	}
+	return list, total, rows.Err()
+}
+
+// ListPositionLogs 分页查询持仓变化明细（需求⑨-2）。
+func (s *Service) ListPositionLogs(ctx context.Context, runID string, pager Pager) ([]PositionLog, int, error) {
+	pager = normalizeLargePager(pager)
+	var total int
+	if err := s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM finv_quant_backtest_position_log WHERE run_id=$1`, runID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT log_id, run_id, seq, ts, date, "time", action, price, qty,
+       position_before, position_after, avg_cost_before, avg_cost_after, trade_id, remark
+FROM finv_quant_backtest_position_log WHERE run_id=$1
+ORDER BY seq ASC
+LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []PositionLog{}
+	for rows.Next() {
+		var pl PositionLog
+		if err := rows.Scan(&pl.LogID, &pl.RunID, &pl.Seq, &pl.TS, &pl.Date, &pl.Time, &pl.Action,
+			&pl.Price, &pl.Qty, &pl.PositionBefore, &pl.PositionAfter, &pl.AvgCostBefore,
+			&pl.AvgCostAfter, &pl.TradeID, &pl.Remark); err != nil {
+			return nil, 0, err
+		}
+		list = append(list, pl)
+	}
+	return list, total, rows.Err()
+}
+
+// ListEventTraces 分页查询交易事件追踪（需求⑨-3）。
+func (s *Service) ListEventTraces(ctx context.Context, runID string, pager Pager) ([]EventTrace, int, error) {
+	pager = normalizeLargePager(pager)
+	var total int
+	if err := s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM finv_quant_backtest_event_trace WHERE run_id=$1`, runID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT event_id, run_id, seq, action, trigger_reason, trigger_ts, trigger_date, trigger_time,
+       exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec,
+       reject_reason, price, qty, trade_id
+FROM finv_quant_backtest_event_trace WHERE run_id=$1
+ORDER BY seq ASC
+LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []EventTrace{}
+	for rows.Next() {
+		var ev EventTrace
+		if err := rows.Scan(&ev.EventID, &ev.RunID, &ev.Seq, &ev.Action, &ev.TriggerReason,
+			&ev.TriggerTS, &ev.TriggerDate, &ev.TriggerTime, &ev.ExecStatus, &ev.ExecTS,
+			&ev.ExecDate, &ev.ExecTime, &ev.LatencyBars, &ev.LatencySec, &ev.RejectReason,
+			&ev.Price, &ev.Qty, &ev.TradeID); err != nil {
+			return nil, 0, err
+		}
+		list = append(list, ev)
 	}
 	return list, total, rows.Err()
 }
@@ -671,7 +767,7 @@ func (s *Service) executeRun(ctx context.Context, runID string) {
 	}
 
 	now := time.Now().UTC()
-	_, _ = s.pool.Exec(ctx, `UPDATE finv_backtest_run SET status='RUNNING', started_at=$2 WHERE run_id=$1`, runID, now)
+	_, _ = s.pool.Exec(ctx, `UPDATE finv_quant_backtest_run SET status='RUNNING', started_at=$2 WHERE run_id=$1`, runID, now)
 
 	// 加载行情（按 date 范围）
 	bars, err := s.loadBars(ctx, run.SecuCode, run.StartDate, run.EndDate)
@@ -701,7 +797,7 @@ func (s *Service) executeRun(ctx context.Context, runID string) {
 		pct := processed * 100 / total
 		if pct != lastProgress {
 			lastProgress = pct
-			_, _ = s.pool.Exec(ctx, `UPDATE finv_backtest_run SET progress=$2 WHERE run_id=$1`, runID, pct)
+			_, _ = s.pool.Exec(ctx, `UPDATE finv_quant_backtest_run SET progress=$2 WHERE run_id=$1`, runID, pct)
 		}
 	})
 
@@ -748,12 +844,51 @@ ORDER BY ts ASC`, secuCode, startDate, endDate)
 	return bars, rows.Err()
 }
 
-// persistResult 批量落库曲线/成交/报告。
+// persistResult 批量落库曲线/成交/资金流水/持仓明细/事件追踪/报告。
+// 成交记录先落库（RETURNING trade_id, seq），明细表通过 seq 映射关联 trade_id。
 func (s *Service) persistResult(ctx context.Context, runID string, result *EngineResult) error {
+	// Step 1: 插入成交记录，建立 seq → trade_id 映射
+	tradeBatch := &pgx.Batch{}
+	for _, t := range result.Trades {
+		tradeBatch.Queue(`
+INSERT INTO finv_quant_backtest_trade
+    (run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+RETURNING trade_id, seq`,
+			runID, t.Seq, t.TS, t.Date, t.Time, t.Action, t.Price, t.Qty, t.Amount,
+			t.Fee, t.Profit, t.PositionAfter, t.CashAfter, t.Signal)
+	}
+	tradeIDBySeq := map[int]int64{}
+	if tradeBatch.Len() > 0 {
+		tradeResults := s.pool.SendBatch(ctx, tradeBatch)
+		for i := 0; i < tradeBatch.Len(); i++ {
+			rows, err := tradeResults.Query()
+			if err != nil {
+				_ = tradeResults.Close()
+				return err
+			}
+			for rows.Next() {
+				var tradeID int64
+				var seq int
+				if err := rows.Scan(&tradeID, &seq); err != nil {
+					rows.Close()
+					_ = tradeResults.Close()
+					return err
+				}
+				tradeIDBySeq[seq] = tradeID
+			}
+			rows.Close()
+		}
+		if err := tradeResults.Close(); err != nil {
+			return err
+		}
+	}
+
+	// Step 2: 曲线 + 明细 + 报告
 	batch := &pgx.Batch{}
 	for _, p := range result.EquityPoints {
 		batch.Queue(`
-INSERT INTO finv_backtest_equity (run_id, seq, ts, date, "time", equity, cash, position_value, position_qty, profit, roi, drawdown)
+INSERT INTO finv_quant_backtest_equity (run_id, seq, ts, date, "time", equity, cash, position_value, position_qty, profit, roi, drawdown)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 ON CONFLICT (run_id, ts) DO UPDATE SET
   equity=EXCLUDED.equity, cash=EXCLUDED.cash, position_value=EXCLUDED.position_value,
@@ -761,15 +896,36 @@ ON CONFLICT (run_id, ts) DO UPDATE SET
 			runID, p.Seq, p.TS, p.Date, p.Time, p.Equity, p.Cash, p.PositionValue,
 			p.PositionQty, p.Profit, p.ROI, p.Drawdown)
 	}
-	for _, t := range result.Trades {
+	for _, cf := range result.Cashflows {
 		batch.Queue(`
-INSERT INTO finv_backtest_trade (run_id, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-			runID, t.TS, t.Date, t.Time, t.Action, t.Price, t.Qty, t.Amount, t.Fee,
-			t.Profit, t.PositionAfter, t.CashAfter, t.Signal)
+INSERT INTO finv_quant_backtest_cashflow
+    (run_id, seq, ts, date, "time", flow_type, amount, cash_before, cash_after, trade_id, remark)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+			runID, cf.Seq, cf.TS, cf.Date, cf.Time, cf.FlowType, cf.Amount,
+			cf.CashBefore, cf.CashAfter, tradeIDBySeq[cf.TradeSeq], cf.Remark)
+	}
+	for _, pl := range result.PositionLogs {
+		batch.Queue(`
+INSERT INTO finv_quant_backtest_position_log
+    (run_id, seq, ts, date, "time", action, price, qty, position_before, position_after, avg_cost_before, avg_cost_after, trade_id, remark)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+			runID, pl.Seq, pl.TS, pl.Date, pl.Time, pl.Action, pl.Price, pl.Qty,
+			pl.PositionBefore, pl.PositionAfter, pl.AvgCostBefore, pl.AvgCostAfter,
+			tradeIDBySeq[pl.TradeSeq], pl.Remark)
+	}
+	for _, ev := range result.EventTraces {
+		batch.Queue(`
+INSERT INTO finv_quant_backtest_event_trace
+    (run_id, seq, action, trigger_reason, trigger_ts, trigger_date, trigger_time,
+     exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec,
+     reject_reason, price, qty, trade_id)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+			runID, ev.Seq, ev.Action, ev.TriggerReason, ev.TriggerTS, ev.TriggerDate, ev.TriggerTime,
+			ev.ExecStatus, ev.ExecTS, ev.ExecDate, ev.ExecTime, ev.LatencyBars, ev.LatencySec,
+			ev.RejectReason, ev.Price, ev.Qty, tradeIDBySeq[ev.TradeSeq])
 	}
 	reportJSON, _ := json.Marshal(result.Report)
-	batch.Queue(`UPDATE finv_backtest_run SET report=$2 WHERE run_id=$1`, runID, reportJSON)
+	batch.Queue(`UPDATE finv_quant_backtest_run SET report=$2 WHERE run_id=$1`, runID, reportJSON)
 
 	results := s.pool.SendBatch(ctx, batch)
 	defer results.Close()
@@ -804,7 +960,7 @@ func (s *Service) markRun(ctx context.Context, runID, status string, progress in
 		reportJSON = nil
 	}
 	_, _ = s.pool.Exec(ctx, `
-UPDATE finv_backtest_run
+UPDATE finv_quant_backtest_run
 SET status=$2, progress=$3, error_message=$4, report=COALESCE($5, report), finished_at=now()
 WHERE run_id=$1`, runID, status, progress, nullIfEmpty(errMsg), reportJSON)
 }
