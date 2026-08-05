@@ -188,6 +188,10 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 ## 4. 完整文件示例
 
+> 📁 **可直接参考/复制的成品示例文件**（已通过解析器验证）：
+> - 布局 A（美股）：[`Example_US_NVDA_Min_V4_2026.mvsv`](Example_US_NVDA_Min_V4_2026.mvsv)（NVDA，20 条）
+> - 布局 B（期货）：[`Example_GCmain_Min_V3_2026.mvsv`](Example_GCmain_Min_V3_2026.mvsv)（GCMain，20 条）
+
 ### 4.1 布局 A 完整示例（美股分钟线，NVDA）
 
 ```
