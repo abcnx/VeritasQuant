@@ -45,7 +45,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 ## 2. 头部键清单
 
-### 2.1 必填头部键（10 个，缺一不可）
+### 2.1 必填头部键（9 个，缺一不可）
 
 缺失任一必填键，文件整体解析失败（HTTP 422，`MVSV 解析失败: 缺少必填头部: <Key>`）。
 
@@ -54,13 +54,12 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 1 | `Format` | string | `"MVSV-1"` | **必须严格等于 `MVSV-1`** |
 | 2 | `Field` | string | `"ts\|dt\|o\|c\|l\|h\|v\|t\|cp\|cr\|p"` | **必须匹配 §3 支持的一种列布局**，否则报「Field 布局不支持」 |
 | 3 | `Count` | int | `15000` | **必须为非负整数**；且必须等于数据区实际记录行数（末尾不匹配报错） |
-| 4 | `EffectiveTimeZone` | string | `"Asia/Shanghai"` / `"America/New_York"` | **必须为 IANA 合法时区名**（`time.LoadLocation` 可加载），用于 ts 一致性校验 |
-| 5 | `Code` | string | `"NVDA"` / `"GCMain"` | 证券代码（通常与 FinvQuant 字典 usc 一致）；导入时作为 `secu_code` |
-| 6 | `Market` | string | `"NSDQ"` / `"COMEX"` | 市场标识（描述性，不参与落表，仅头部保留） |
-| 7 | `MarketCode` | int | `11` / `1320` | 市场数字代码（与 FinvQuant 市场编码体系对应；导入时参与一致性校验） |
-| 8 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
-| 9 | `PriceAccuracy` | int | `3` / `1` | 价格精度（小数位；描述性，不参与计算） |
-| 10 | `LotSize` | int | `1` / `100` | 每手股数/合约乘数（描述性） |
+| 4 | `Code` | string | `"NVDA"` / `"GCMain"` | 证券代码（通常与 FinvQuant 字典 usc 一致）；导入时作为 `secu_code` |
+| 5 | `Market` | string | `"NSDQ"` / `"COMEX"` | 市场标识（描述性，不参与落表，仅头部保留） |
+| 6 | `MarketCode` | int | `11` / `1320` | 市场数字代码（与 FinvQuant 市场编码体系对应；导入时参与一致性校验） |
+| 7 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
+| 8 | `PriceAccuracy` | int | `3` / `1` | 价格精度（小数位；描述性，不参与计算） |
+| 9 | `LotSize` | int | `1` / `100` | 每手股数/合约乘数（描述性） |
 
 ### 2.2 可选头部键（不影响解析，导出程序建议携带以便溯源）
 
@@ -78,7 +77,6 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | `Exchange` | `"US"` / `"COMEX"` | 交易所标识 |
 | `InstrumentType` / `InstrumentTypeV2` | `3` / `10` | 证券类型编码 |
 | `EngName` | `"NVIDIA"` | 英文名称 |
-| `TimeZone` | `"America/New_York"` | 时区标识（与 EffectiveTimeZone 通常一致） |
 | `DelistingFlag` | `0` | 退市标志 |
 | `ListedExchange` / `ListedBoard` | `"NASDAQ"` / `""` | 上市交易所/板块 |
 | `Region` | `"US"` | 地区 |
@@ -163,21 +161,27 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 成交量 | 非负整数；负数解析为 NULL | 建议 |
 | 空行 | 数据区中的空行会被跳过（不计入 Count） | — |
 
-### 3.3 ts 与本地时间一致性校验（强制）
+### 3.3 ts 与本地时间一致性校验（强制，但时区缺失时跳过）
 
-解析器会对每行做校验：`ts` 换算到 `EffectiveTimeZone` 的本地时间，必须等于该行声明的本地时间（布局 A 的 `dt` 或布局 B 的 `d+t` 拼接的 14 位 `yyyyMMddHHmmss`）。**不一致则该行报错，整个文件导入失败。**
+解析器会对每行做校验：`ts` 换算到**解析用时区**的本地时间，必须等于该行声明的本地时间（布局 A 的 `dt` 或布局 B 的 `d+t` 拼接的 14 位 `yyyyMMddHHmmss`）。**不一致则该行报错，整个文件导入失败。**
+
+**时区解析规则（用户约定 2026-08-06 更正）：**
+1. **以头部 `TimeZone` 字段为准**（权威）；
+2. 缺失 `TimeZone` 时**回退 `EffectiveTimeZone`**（仅参考，非必填）；
+3. 两者都缺失 → **跳过一致性校验**（不报错）；
+4. 解析用时区非法（如 `TimeZone: "Not/AZone"`）→ 报错「时区非法」。
 
 ```
 示例（布局 A）：
-  ts=1785720600, EffectiveTimeZone=Asia/Shanghai
+  ts=1785720600, TimeZone=Asia/Shanghai
   → 本地时间 = 20260803093000 → 数据行 dt 必须为 20260803093000
 
 示例（布局 B）：
-  ts=1767337200, EffectiveTimeZone=America/New_York
+  ts=1767337200, TimeZone=America/New_York
   → 本地时间 = 20260102020000 → 数据行 d+t 必须为 20260102 + 020000
 ```
 
-> 导出程序建议：**本地时间直接用 ts 换算得出**（`ts → EffectiveTimeZone → yyyyMMddHHmmss`），不要自行推导，避免时区/夏令时误差。`ts <= 0` 或本地时间字段缺失/不足 14 位时跳过该校验。
+> 导出程序建议：**本地时间直接用 ts 换算得出**（`ts → 解析用时区 → yyyyMMddHHmmss`），不要自行推导，避免时区/夏令时误差。`ts <= 0` 或本地时间字段缺失/不足 14 位时跳过该校验。
 
 ---
 
@@ -260,10 +264,10 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 6 | `Field` 必须是两种支持布局之一 | Field 布局不支持 |
 | 7 | `Count` 必须为非负整数 | Count 必须为非负整数 |
 | 8 | `Count` 必须等于数据区实际行数 | Count=…，实际记录数=… |
-| 9 | `EffectiveTimeZone` 必须为 IANA 合法时区 | EffectiveTimeZone 非法 |
-| 10 | 10 个必填头部键一个不能少 | 缺少必填头部 |
-| 11 | 数据行列数必须与 `# Field` 完全一致 | 列数=…，期望 …（Field: …） |
-| 12 | 每行 ts 与本地时间（dt 或 d+t）在 EffectiveTimeZone 下必须一致 | ts 与本地时间/EffectiveTimeZone 不一致 |
+| 9 | 若提供时区（`TimeZone` 或回退 `EffectiveTimeZone`），必须为 IANA 合法时区 | 时区非法（TimeZone/EffectiveTimeZone） |
+| 10 | 9 个必填头部键一个不能少 | 缺少必填头部 |
+| 11 | 数据行列数必须与 `# Field` 完全一致（行尾空段除外，见 §3.2） | 列数=…，期望 …（Field: …） |
+| 12 | 若提供了时区：每行 ts 与本地时间（dt 或 d+t）在解析用时区下必须一致；未提供时区则跳过 | ts 与本地时间/时区不一致 |
 
 ### 🟡 可选 / 建议要求（不满足不报错，但影响质量）
 
@@ -305,3 +309,4 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 |------|------|------|
 | 1.0 | 2026-08-06 | 初版：双布局（11 列/13 列）规范，必填/可选要求明细（对应 `internal/mvsv/parser.go` 双布局支持） |
 | 1.1 | 2026-08-06 | 更正：布局 B 实为 12 列（`ts|d|t|o|c|l|h|v|a|cp|cr|p`，pc 已过时移除）；补充行尾空段容忍说明 |
+| 1.2 | 2026-08-06 | 时区规则更正：解析以头部 `TimeZone` 为准，`EffectiveTimeZone` 仅参考且非必填；两者都缺失时跳过 ts 一致性校验 |

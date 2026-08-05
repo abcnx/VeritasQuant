@@ -18,8 +18,10 @@ import (
 )
 
 // RequiredHeaders MVSV-1 必填头部键。
+// 注意：时区键（TimeZone / EffectiveTimeZone）均非必填——解析时优先取 TimeZone，
+// 缺失时回退 EffectiveTimeZone；两者都缺失则跳过 ts 一致性校验。
 var RequiredHeaders = []string{
-	"Format", "Field", "Count", "EffectiveTimeZone", "Code",
+	"Format", "Field", "Count", "Code",
 	"Market", "MarketCode", "CurrencyCode", "PriceAccuracy", "LotSize",
 }
 
@@ -69,7 +71,8 @@ var supportedLayouts = map[string]fieldLayout{
 type Header struct {
 	Values            map[string]string
 	Count             int
-	EffectiveTimeZone string
+	TimeZone          string // 解析用时区（优先 TimeZone，回退 EffectiveTimeZone；空=未提供）
+	EffectiveTimeZone string // 头部 EffectiveTimeZone 原始值（仅参考，非必填）
 	Layout            fieldLayout // 数据区列布局（由 # Field 决定）
 }
 
@@ -191,12 +194,21 @@ func buildHeader(values map[string]string) (*Header, error) {
 	if err != nil || count < 0 {
 		return nil, fmt.Errorf("Count 必须为非负整数")
 	}
-	if _, err := time.LoadLocation(values["EffectiveTimeZone"]); err != nil {
-		return nil, fmt.Errorf("EffectiveTimeZone 非法: %s", values["EffectiveTimeZone"])
+	// 时区解析：优先 TimeZone（权威），缺失回退 EffectiveTimeZone（仅参考）；
+	// 两者都提供但 TimeZone 非法时仍报错（以 TimeZone 为准）；都缺失则不校验 ts。
+	tz := values["TimeZone"]
+	if tz == "" {
+		tz = values["EffectiveTimeZone"]
+	}
+	if tz != "" {
+		if _, err := time.LoadLocation(tz); err != nil {
+			return nil, fmt.Errorf("时区非法（TimeZone/EffectiveTimeZone）: %s", tz)
+		}
 	}
 	return &Header{
 		Values:            values,
 		Count:             count,
+		TimeZone:          tz,
 		EffectiveTimeZone: values["EffectiveTimeZone"],
 		Layout:            layout,
 	}, nil
@@ -273,16 +285,16 @@ func parseRow(line string, header *Header, lineNumber int) (Row, error) {
 		}
 	}
 
-	// ts 与本地时间/EffectiveTimeZone 一致性校验
-	if err := validateTsConsistency(row.Ts, localDT, header.EffectiveTimeZone); err != nil {
+	// ts 与本地时间/时区一致性校验（时区 = TimeZone 优先，EffectiveTimeZone 回退；缺失则跳过）
+	if err := validateTsConsistency(row.Ts, localDT, header.TimeZone); err != nil {
 		return Row{}, fmt.Errorf("第 %d 行: %w", lineNumber, err)
 	}
 	return row, nil
 }
 
 func validateTsConsistency(ts int64, localDT string, tzName string) error {
-	if ts <= 0 || len(localDT) < 14 {
-		return nil // 数据缺失时不强校验
+	if ts <= 0 || len(localDT) < 14 || tzName == "" {
+		return nil // 数据缺失或未提供时区时不强校验
 	}
 	location, err := time.LoadLocation(tzName)
 	if err != nil {
@@ -292,7 +304,7 @@ func validateTsConsistency(ts int64, localDT string, tzName string) error {
 	expected := fmt.Sprintf("%04d%02d%02d%02d%02d%02d",
 		local.Year(), local.Month(), local.Day(), local.Hour(), local.Minute(), local.Second())
 	if expected != localDT {
-		return fmt.Errorf("ts 与本地时间/EffectiveTimeZone 不一致（期望 %s，实际 %s）", expected, localDT)
+		return fmt.Errorf("ts 与本地时间/时区不一致（期望 %s，实际 %s）", expected, localDT)
 	}
 	return nil
 }
