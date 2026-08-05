@@ -132,8 +132,10 @@ async function parseFileHeader(f: File): Promise<FileHeader> {
   const get = (key: string) => {
     const hit = head.find((l) => l.trim().toLowerCase().startsWith(`# ${key.toLowerCase()}`))
     if (!hit) return ''
+    // 与后端 internal/mvsv/parser.go buildHeader 保持一致：去掉值首尾的双引号
+    // （MVSV 头部值为带引号字符串，如 # Code : "NVDA"）
     const val = hit.split(':').slice(1).join(':').trim()
-    return val
+    return val.replace(/^"+|"+$/g, '')
   }
   const code = get('Code')
   const marketCodeVal = get('MarketCode')
