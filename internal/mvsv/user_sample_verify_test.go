@@ -10,6 +10,9 @@ import (
 const userGCmainSample = `# Title : "GCmain_Min_V3_2026_195279_2026072202"
 # Format : "MVSV-1"
 # Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p"
+# FieldType : "Int|Long|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal"
+# FieldName : "Ts|Date|Time|Open|Close|Low|High|Volume|Amount|ChangePrice|ChangeRatio|PrevClose"
+# 字段名称 : "时间戳(UTC)|日期|时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 6
 # EffectiveTimeZone : "America/New_York"
 # StockId : 70000294
@@ -27,6 +30,7 @@ const userGCmainSample = `# Title : "GCmain_Min_V3_2026_195279_2026072202"
 # EngName : "Gold Futures (AUG6)"
 # TimeZone : "America/New_York"
 # Name : "黄金期货主连 (2608)"
+# Region : "US"
 # Period : "Min"
 # Start : "202601010500"
 # End : "202607210632"

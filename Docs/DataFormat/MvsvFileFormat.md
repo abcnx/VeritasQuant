@@ -45,7 +45,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 ## 2. 头部键清单
 
-### 2.1 必填头部键（11 个，缺一不可）
+### 2.1 必填头部键（20 个，缺一不可）
 
 缺失任一必填键，文件整体解析失败（HTTP 422，`MVSV 解析失败: 缺少必填头部: <Key>`）。
 
@@ -62,6 +62,15 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 9 | `CurrencyCode` | int | `55` | 货币代码（描述性） |
 | 10 | `PriceAccuracy` | int | `3` / `1` | 价格精度（小数位；描述性，不参与计算） |
 | 11 | `LotSize` | int | `1` / `100` | 每手股数/合约乘数（描述性） |
+| 12 | `Title` | string | `"US_NVDA_Min_V4_2026"` | 文件标题/批次名（**必填**，用户约定 2026-08-06） |
+| 13 | `Region` | string | `"US"` | 地区（**必填**） |
+| 14 | `Name` | string | `"英伟达"` | 中文名称（**必填**） |
+| 15 | `Period` | string | `"Min"` | 周期（**必填**，当前仅分钟） |
+| 16 | `Dsv` | int | `3` | 数据源版本（**必填**） |
+| 17 | `FieldType` | string | `"Int\|Long\|Decimal\|..."` | 各列类型声明（**必填**） |
+| 18 | `FieldName` | string | `"Ts\|DateTime\|Open\|..."` | 各列英文名（**必填**） |
+| 19 | `字段名称` | string | `"时间戳(UTC)\|日期时间\|..."` | 各列中文名（**必填**；注意键可含中文） |
+| 20 | `StockId` | int | `202597` | 行情源证券 ID（**必填**） |
 
 ### 2.2 可选头部键（不影响解析，导出程序建议携带以便溯源）
 
@@ -69,24 +78,14 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 
 | 键 | 示例 | 说明 |
 |----|------|------|
-| `Title` | `"US_NVDA_Min_V4_2026"` | 文件标题/批次名 |
-| `FieldType` | `"Int\|Long\|Decimal\|..."` | 各列类型声明（描述性） |
-| `FieldName` | `"Ts\|DateTime\|Open\|..."` | 各列英文名（描述性） |
-| `字段名称` | `"时间戳(UTC)\|日期时间\|..."` | 各列中文名（描述性；注意键可含中文） |
 | `TimeZoneSource` | `"StockMapping.db secu_futu.tz ..."` | 时区来源说明 |
-| `StockId` | `202597` | 行情源证券 ID |
 | `FutuSymbol` | `"NVDA"` / `"GCmain"` | 富途符号（可能与 Code 大小写不同） |
-| `Exchange` | `"US"` / `"COMEX"` | 交易所标识 |
 | `InstrumentType` / `InstrumentTypeV2` | `3` / `10` | 证券类型编码 |
 | `EngName` | `"NVIDIA"` | 英文名称 |
 | `DelistingFlag` | `0` | 退市标志 |
 | `ListedExchange` / `ListedBoard` | `"NASDAQ"` / `""` | 上市交易所/板块 |
-| `Region` | `"US"` | 地区 |
-| `Name` | `"英伟达"` | 中文名称 |
-| `Period` | `"Min"` | 周期（当前仅分钟） |
 | `Start` / `End` | `"202601010500"` / `"202607210632"` | 数据起止时间（描述性） |
 | `Size` | `195279` | 记录数（描述性，通常与 Count 一致） |
-| `Dsv` | `3` | 数据源版本 |
 | `Year` | `2026` | 数据年份 |
 
 > 规则：**任何 `# Key : Value` 形式的额外头部键都会被接受并保留**，只要键不重复、格式合法。导出程序可自由扩展自定义键（如批次号、生成时间）。
@@ -213,7 +212,9 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # LotSize : 1
 # EngName : "NVIDIA"
 # Name : "英伟达"
+# Region : "US"
 # Period : "Min"
+# Dsv : 3
 
 1777405260|20260428154100|213.670966101|213.633309989|213.491175647|213.700931177|275700|58954901483|-0.0276|-0.012904|213.660877859
 1777405320|20260428154200|213.636006846|213.61103595|213.559595903|213.696935833|206387|44140799148|-0.0223|-0.010427|213.633309989
@@ -228,6 +229,9 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # Title : "GCmain_Min_V3_2026_195279_2026072202"
 # Format : "MVSV-1"
 # Field : "ts|d|t|o|c|l|h|v|a|cp|cr|p"
+# FieldType : "Int|Long|Long|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal|Decimal"
+# FieldName : "Ts|Date|Time|Open|Close|Low|High|Volume|Amount|ChangePrice|ChangeRatio|PrevClose"
+# 字段名称 : "时间戳(UTC)|日期|时间|开盘价|收盘价|最低价|最高价|成交量|成交额|涨跌值|涨跌幅(%)|前一收盘价"
 # Count : 3
 # EffectiveTimeZone : "America/New_York"
 # TimeZoneSource : "JSON time_zone"
@@ -249,6 +253,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 # ListedExchange : "COMEX"
 # ListedBoard : ""
 # Name : "黄金期货主连 (2608)"
+# Region : "US"
 # Period : "Min"
 # Start : "202601010500"
 # End : "202607210632"
@@ -278,7 +283,7 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 7 | `Count` 必须为非负整数 | Count 必须为非负整数 |
 | 8 | `Count` 必须等于数据区实际行数 | Count=…，实际记录数=… |
 | 9 | 若提供时区（`TimeZone` 或回退 `EffectiveTimeZone`），必须为 IANA 合法时区 | 时区非法（TimeZone/EffectiveTimeZone） |
-| 10 | 11 个必填头部键一个不能少 | 缺少必填头部 |
+| 10 | 20 个必填头部键一个不能少 | 缺少必填头部 |
 | 11 | 数据行列数必须与 `# Field` 完全一致（行尾空段除外，见 §3.2） | 列数=…，期望 …（Field: …） |
 | 12 | 若提供了时区：每行 ts 与本地时间（dt 或 d+t）在解析用时区下必须一致；未提供时区则跳过 | ts 与本地时间/时区不一致 |
 
@@ -324,3 +329,4 @@ MVSV-1（Minute Value Stream V1）是 FinvQuant 历史分钟行情的文本交�
 | 1.1 | 2026-08-06 | 更正：布局 B 实为 12 列（`ts|d|t|o|c|l|h|v|a|cp|cr|p`，pc 已过时移除）；补充行尾空段容忍说明 |
 | 1.2 | 2026-08-06 | 时区规则更正：解析以头部 `TimeZone` 为准，`EffectiveTimeZone` 仅参考且非必填；两者都缺失时跳过 ts 一致性校验 |
 | 1.3 | 2026-08-06 | 必填键 9→11：新增 `Exchange` / `ExchangeCode`（与 `Market` / `MarketCode` 四键必填）；`MarketCode` 通常为四位；示例统一 NVDA→1315、GCMain→1320 |
+| 1.4 | 2026-08-06 | 必填键 11→20：新增 `Title` / `Region` / `Name` / `Period` / `Dsv` / `FieldType` / `FieldName` / `字段名称` / `StockId`（溯源类键强制） |
