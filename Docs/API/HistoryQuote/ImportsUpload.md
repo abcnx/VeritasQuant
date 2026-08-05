@@ -2,6 +2,13 @@
 
 上传 MVSV-1 分钟级历史行情文件，服务端解析后**字段级覆盖**导入 PostgreSQL `finv_quote_secu_kline_min` 表（主键 `ts + secu_code`；V21 起不再冗余存储 `market_code`，市场信息由 `finv_security` 字典关联获取）。
 
+> 📐 **MVSV-1 文件格式完整规范**（必填/可选头部键、两种列布局、数据行要求、一致性校验）见 [Docs/DataFormat/MvsvFileFormat.md](../../DataFormat/MvsvFileFormat.md)——**所有导出程序请按该规范生成文件**。
+
+> **支持两种 MVSV 数据区列布局**（由文件头 `# Field` 声明自动识别）：
+> ① `ts|dt|o|c|l|h|v|t|cp|cr|p`（11 列，`dt`=14 位日期时间，`t`=成交额）——如 `US_NVDA_Min_V4` 系列；
+> ② `ts|d|t|o|c|l|h|v|a|cp|cr|p|pc`（13 列，`d`=8 位日期 + `t`=6 位时间，`a`=成交额，`pc` 忽略）——如 `GCmain_Min_V3` 系列；
+> 其余列（`cp` 涨跌值 / `cr` 涨跌幅）解析但不落表。
+
 ## 请求
 
 - **方法**：`POST`
@@ -44,7 +51,7 @@
 | data 字段 | 说明 |
 |-----------|------|
 | `batch_id` | 导入批次 ID（对应 `finv_quote_ingest_batches`） |
-| `secu_code` / `market_code` | 证券代码 / 市场数字代码（来自文件头部 `Code` / `MarketCode`） |
+| `secu_code` / `market_code` | 证券代码 / 市场数字代码（`secu_code` 来自文件头部 `Code`；`market_code` V21 起从 `finv_security` 字典关联获取，未登记返回 0） |
 | `record_count` | 本次导入记录数 |
 | `inserted` | 新增行数 |
 | `updated` | 覆盖行数（>0 时自动写入 `finv_quote_revision_log` 修正审计） |

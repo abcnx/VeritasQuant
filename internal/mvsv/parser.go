@@ -2,11 +2,15 @@
 //
 // 格式（与 VeritasQuant/data/Mvsv.py 对齐）：
 //   - 头部：# Key : Value 行，空行分隔头部与数据区；
-//   - 数据区：ts|dt|o|c|l|h|v|t|cp|cr|p（11 列）。
+//   - 数据区：列布局由头部 # Field 声明，当前支持两种：
+//     ① ts|dt|o|c|l|h|v|t|cp|cr|p（11 列，dt=14 位日期时间，t=成交额）
+//     ② ts|d|t|o|c|l|h|v|a|cp|cr|p|pc（13 列，d=8 位日期 + t=6 位时间，a=成交额）
+//   其余列（cp 涨跌值 / cr 涨跌幅 / pc）解析但不落表。
 package mvsv
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,14 +23,54 @@ var RequiredHeaders = []string{
 	"Market", "MarketCode", "CurrencyCode", "PriceAccuracy", "LotSize",
 }
 
-// FieldLayout MVSV-1 数据区固定列顺序。
-const FieldLayout = "ts|dt|o|c|l|h|v|t|cp|cr|p"
+// columnKind 数据区列语义。
+type columnKind int
+
+const (
+	colTS columnKind = iota // ts：UTC 时间戳（秒）
+	colDate                 // d：8 位交易日期 yyyymmdd
+	colDateTime             // dt：14 位日期时间 yyyymmddHHMMSS
+	colTime                 // t：6 位时间 HHMMSS
+	colOpen                 // o：开盘价
+	colClose                // c：收盘价
+	colLow                  // l：最低价
+	colHigh                 // h：最高价
+	colVolume               // v：成交量
+	colTurnover             // t（布局 A）/ a（布局 B）：成交额
+	colPrevClose            // p：前一收盘价
+	colIgnore               // cp / cr / pc：解析但不落表
+)
+
+// fieldLayout 一种数据区列布局（列名序列 → 语义序列）。
+type fieldLayout struct {
+	Field string       // 头部 # Field 声明值
+	Kinds []columnKind // 与 Field 列一一对应的语义
+}
+
+// supportedLayouts 当前支持的 MVSV 数据区列布局。
+var supportedLayouts = map[string]fieldLayout{
+	"ts|dt|o|c|l|h|v|t|cp|cr|p": {
+		Field: "ts|dt|o|c|l|h|v|t|cp|cr|p",
+		Kinds: []columnKind{
+			colTS, colDateTime, colOpen, colClose, colLow, colHigh,
+			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
+		},
+	},
+	"ts|d|t|o|c|l|h|v|a|cp|cr|p": {
+		Field: "ts|d|t|o|c|l|h|v|a|cp|cr|p",
+		Kinds: []columnKind{
+			colTS, colDate, colTime, colOpen, colClose, colLow, colHigh,
+			colVolume, colTurnover, colIgnore, colIgnore, colPrevClose,
+		},
+	},
+}
 
 // Header MVSV-1 头部信息。
 type Header struct {
 	Values            map[string]string
 	Count             int
 	EffectiveTimeZone string
+	Layout            fieldLayout // 数据区列布局（由 # Field 决定）
 }
 
 // Row 一条分钟行情（与 finv_quote_secu_kline_min 表对齐；价格保留字符串精度）。
@@ -133,8 +177,15 @@ func buildHeader(values map[string]string) (*Header, error) {
 	if values["Format"] != "MVSV-1" {
 		return nil, fmt.Errorf("Format 必须严格为 MVSV-1，实际: %s", values["Format"])
 	}
-	if values["Field"] != FieldLayout {
-		return nil, fmt.Errorf("Field 必须严格为 %s，实际: %s", FieldLayout, values["Field"])
+	layout, ok := supportedLayouts[values["Field"]]
+	if !ok {
+		var supported []string
+		for _, l := range supportedLayouts {
+			supported = append(supported, l.Field)
+		}
+		sort.Strings(supported)
+		return nil, fmt.Errorf("Field 布局不支持: %s（支持: %s）",
+			values["Field"], strings.Join(supported, " / "))
 	}
 	count, err := strconv.Atoi(values["Count"])
 	if err != nil || count < 0 {
@@ -147,49 +198,90 @@ func buildHeader(values map[string]string) (*Header, error) {
 		Values:            values,
 		Count:             count,
 		EffectiveTimeZone: values["EffectiveTimeZone"],
+		Layout:            layout,
 	}, nil
 }
 
 func parseRow(line string, header *Header, lineNumber int) (Row, error) {
 	fields := strings.Split(line, "|")
-	if len(fields) != 11 {
-		return Row{}, fmt.Errorf("列数=%d，期望 11（ts|dt|o|c|l|h|v|t|cp|cr|p）", len(fields))
+	// 容忍行尾多余空段：旧格式（含已过时的 pc 列）可能在末尾残留一个空段，
+	// 如 "...|4332.1|"（split 后末段为空字符串）。仅当末段为空时截断。
+	for len(fields) > len(header.Layout.Kinds) && strings.TrimSpace(fields[len(fields)-1]) == "" {
+		fields = fields[:len(fields)-1]
+	}
+	if len(fields) != len(header.Layout.Kinds) {
+		return Row{}, fmt.Errorf("列数=%d，期望 %d（Field: %s）",
+			len(fields), len(header.Layout.Kinds), header.Layout.Field)
 	}
 
 	row := Row{}
-	row.Ts, _ = strconv.ParseInt(strings.TrimSpace(fields[0]), 10, 64)
 	row.SecuCode = header.Values["Code"]
 	row.MarketCode, _ = strconv.Atoi(header.Values["MarketCode"])
 
-	// dt（本地时间）→ date/time
-	if dt := strings.TrimSpace(fields[1]); len(dt) >= 14 {
-		date, err1 := strconv.Atoi(dt[:8])
-		clock, err2 := strconv.Atoi(dt[8:14])
-		if err1 == nil && err2 == nil {
-			row.Date, row.Time = &date, &clock
+	// 本地时间字段（dt 14 位 / d+t 拼接），用于 ts 一致性校验
+	localDT := ""
+
+	for index, kind := range header.Layout.Kinds {
+		raw := strings.TrimSpace(fields[index])
+		switch kind {
+		case colTS:
+			row.Ts, _ = strconv.ParseInt(raw, 10, 64)
+		case colDate:
+			// d：8 位日期 yyyymmdd
+			if len(raw) >= 8 {
+				date, err := strconv.Atoi(raw[:8])
+				if err == nil {
+					row.Date = &date
+				}
+			}
+			localDT += raw
+		case colDateTime:
+			// dt：14 位日期时间 yyyymmddHHMMSS
+			if len(raw) >= 14 {
+				date, err1 := strconv.Atoi(raw[:8])
+				clock, err2 := strconv.Atoi(raw[8:14])
+				if err1 == nil && err2 == nil {
+					row.Date, row.Time = &date, &clock
+				}
+			}
+			localDT += raw
+		case colTime:
+			// t（布局 B）：6 位时间 HHMMSS
+			if len(raw) >= 6 {
+				clock, err := strconv.Atoi(raw[:6])
+				if err == nil {
+					row.Time = &clock
+				}
+			}
+			localDT += raw
+		case colOpen:
+			row.Open = decimalOrNil(raw)
+		case colClose:
+			row.Close = decimalOrNil(raw)
+		case colLow:
+			row.Low = decimalOrNil(raw)
+		case colHigh:
+			row.High = decimalOrNil(raw)
+		case colVolume:
+			row.Volume = int64OrNil(raw)
+		case colTurnover:
+			row.Turnover = decimalOrNil(raw)
+		case colPrevClose:
+			row.PrevClose = decimalOrNil(raw)
+		case colIgnore:
+			// cp / cr / pc：不落表
 		}
 	}
 
-	// ts 与 dt/EffectiveTimeZone 一致性校验
-	if err := validateTsConsistency(row.Ts, fields[1], header.EffectiveTimeZone); err != nil {
+	// ts 与本地时间/EffectiveTimeZone 一致性校验
+	if err := validateTsConsistency(row.Ts, localDT, header.EffectiveTimeZone); err != nil {
 		return Row{}, fmt.Errorf("第 %d 行: %w", lineNumber, err)
 	}
-
-	// 价格/数量：保留字符串精度（表列为 NUMERIC）
-	row.Open = decimalOrNil(fields[2])
-	row.Close = decimalOrNil(fields[3])
-	row.Low = decimalOrNil(fields[4])
-	row.High = decimalOrNil(fields[5])
-	row.Volume = int64OrNil(fields[6])
-	row.Turnover = decimalOrNil(fields[7])
-	// fields[8]=cp 涨跌值、fields[9]=cr 涨跌幅(%) 不落表
-	row.PrevClose = decimalOrNil(fields[10])
-
 	return row, nil
 }
 
-func validateTsConsistency(ts int64, dtField string, tzName string) error {
-	if ts <= 0 || len(dtField) < 14 {
+func validateTsConsistency(ts int64, localDT string, tzName string) error {
+	if ts <= 0 || len(localDT) < 14 {
 		return nil // 数据缺失时不强校验
 	}
 	location, err := time.LoadLocation(tzName)
@@ -199,8 +291,8 @@ func validateTsConsistency(ts int64, dtField string, tzName string) error {
 	local := time.Unix(ts, 0).In(location)
 	expected := fmt.Sprintf("%04d%02d%02d%02d%02d%02d",
 		local.Year(), local.Month(), local.Day(), local.Hour(), local.Minute(), local.Second())
-	if expected != dtField {
-		return fmt.Errorf("ts 与 dt/EffectiveTimeZone 不一致（期望 %s，实际 %s）", expected, dtField)
+	if expected != localDT {
+		return fmt.Errorf("ts 与本地时间/EffectiveTimeZone 不一致（期望 %s，实际 %s）", expected, localDT)
 	}
 	return nil
 }
