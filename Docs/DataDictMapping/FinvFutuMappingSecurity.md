@@ -1,7 +1,7 @@
 # FinvFutuMappingSecurity — 富途证券代码映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvFutuMappingSecurity.md`
-> 数据表：`finv_futu_mapping_security`（表结构：[`Deploy/Migrations/V7__finv_futu_mapping_security.sql`](../../Deploy/Migrations/V7__finv_futu_mapping_security.sql)；增量列：[`Deploy/Migrations/V10__finv_futu_mapping_security_add_futu_symbol.sql`](../../Deploy/Migrations/V10__finv_futu_mapping_security_add_futu_symbol.sql)）
+> 数据表：`finv_futu_mapping_security`（表结构：[`Deploy/Migrations/V7__finv_futu_mapping_security.sql`](../../Deploy/Migrations/V7__finv_futu_mapping_security.sql)；增量列：[`Deploy/Migrations/V10__finv_futu_mapping_security_add_futu_symbol.sql`](../../Deploy/Migrations/V10__finv_futu_mapping_security_add_futu_symbol.sql) / [`Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql`](../../Deploy/Migrations/V17__finv_futu_mapping_add_flag_enable.sql)）
 > 用途：FT（富途/moomoo）行情源证券内部 ID 与统一证券代码（usc）的字段映射表，供行情源数据入库时转换证券标识。
 
 ## 1. 表结构
@@ -11,6 +11,7 @@
 | `futu_stock_id` | TEXT | PK | 富途证券内部 ID（moomoo stockId，如 `70000294` / `50616191183396`） |
 | `futu_symbol` | TEXT | 可空 | 富途证券代码标识（如 `HK.00700` / `US.AAPL`，V10 新增） |
 | `finv_usc` | TEXT | NOT NULL | 统一证券代码（关联 [FinvSecurity](FinvSecurity.md) `usc`） |
+| `flag_enable` | CHAR(1) | NOT NULL DEFAULT '0' | 启用标志（`0`=禁用 / `1`=启用，V17 新增） |
 | `gmt_create` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 首次插入时间 |
 | `gmt_update` | TIMESTAMPTZ | NOT NULL DEFAULT now() | 最后更新时间（触发器维护） |
 
