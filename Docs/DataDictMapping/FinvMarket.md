@@ -1,7 +1,7 @@
 # FinvMarket — 交易市场字典映射
 
 > 所属：FinvQuant 数据字典映射 · 存放：`Docs/DataDictMapping/FinvMarket.md`
-> 数据表：`finv_market`（表结构：[`Deploy/Migrations/V3__finv_market.sql`](../../Deploy/Migrations/V3__finv_market.sql)；初始数据：[`Deploy/Migrations/V100015__finv_market_seed.sql`](../../Deploy/Migrations/V100015__finv_market_seed.sql)；二次定版：[`Deploy/Migrations/V100017__finv_market_seed_full.sql`](../../Deploy/Migrations/V100017__finv_market_seed_full.sql)）
+> 数据表：`finv_market`（表结构：[`Deploy/Migrations/V3__finv_market.sql`](../../Deploy/Migrations/V3__finv_market.sql)；初始数据：[`Deploy/Migrations/V100015__finv_market_seed.sql`](../../Deploy/Migrations/V100015__finv_market_seed.sql)；二次定版：[`Deploy/Migrations/V100017__finv_market_seed_full.sql`](../../Deploy/Migrations/V100017__finv_market_seed_full.sql)；三次定版：[`Deploy/Migrations/V100018__finv_market_seed_full.sql`](../../Deploy/Migrations/V100018__finv_market_seed_full.sql)）
 > 用途：交易所下属交易市场代码表（如 上交所股票/基金/债券等细分市场），与 [`FinvExchange.md`](FinvExchange.md) 交易所字典互补。
 
 ## 1. 表结构
@@ -22,9 +22,11 @@
 - `idx_finv_market_security_type`：`(en_security_type, market_code)`
 - `idx_finv_market_base_currency`：`(base_currency, market_code)`
 
-## 2. 数据清单（54 条）
+## 2. 数据清单（55 条）
 
-> V100017 二次定版（ACANX 2026-08-05 再次发放），与 V100015 逐条核对 **54/54 一致**。市场代码采用**重新编码体系**（非富途原始值），如 `1100`=外汇、`1110`=上交所 A 股、`1120`=深交所 A 股、`1210`=港股主板、`1310`=美股指数、`2000`=加拿大 TSX 主板、`8300`=日本、`10001`=加密货币；`market_flag` = exchange + '_' + market_code；`en_security_type` 暂填 market_code 占位，`base_currency` 暂空串（待后续按市场补齐）。完整清单见迁移文件 [`V100017__finv_market_seed_full.sql`](../../Deploy/Migrations/V100017__finv_market_seed_full.sql)。
+> V100018 三次定版（ACANX 2026-08-05）。市场编码体系重大调整（较 V100017 新增 43/删除 42/flag 变化 10）：
+> 外汇 `1251`、上交所 A/B/科创板 `1110/1111/1112`、深交所 `1120/1121`、北交所 `1130`、中国商品期货 `1140`、港期所 `1150`、港股 `1201~1203`、美股 `1310~1319`、加拿大 `1401~1404`、亚太 `1501~1521`、欧洲 `1600`、债券 `2001~2004`、基金 `3001~3003`、板块 `8000`、结构化 `9145/9146`、加密 `10001~10015`；
+> `en_security_type` 为富途侧类型编码（如 1110/1210/1310），`base_currency` 暂空串。完整清单见迁移文件 [`V100018__finv_market_seed_full.sql`](../../Deploy/Migrations/V100018__finv_market_seed_full.sql)。
 
 ## 3. 说明
 
