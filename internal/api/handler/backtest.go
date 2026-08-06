@@ -314,6 +314,91 @@ func (h *Backtest) CancelRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "取消请求已受理"})
 }
 
+// DeleteRun POST /API/V1/Meta/FinvQuant/Backtest/Run/Delete
+// 提交回测任务删除任务（异步执行），删除任务及其关联明细，策略/账户/环境/模板保留。
+func (h *Backtest) DeleteRun(c *gin.Context) {
+	var req struct {
+		RunID  string `json:"run_id"`
+		UserID string `json:"user_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "请求体格式错误: " + err.Error()})
+		return
+	}
+	uid := req.UserID
+	if uid == "" {
+		uid = "default"
+	}
+	delTaskID, err := h.service.DeleteRun(c.Request.Context(), req.RunID, uid)
+	if err != nil {
+		respondError(c, "提交删除任务失败", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "删除任务已提交", "data": gin.H{"del_task_id": delTaskID}})
+}
+
+// ListRunDelTasks GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/List?status=&runId=&page=&pageSize=
+func (h *Backtest) ListRunDelTasks(c *gin.Context) {
+	q := backtest.DelTaskListQuery{
+		Pager:  parseBTPager(c),
+		Status: c.Query("status"),
+		RunID:  c.Query("runId"),
+	}
+	list, total, err := h.service.ListRunDelTasks(c.Request.Context(), q, btUserID(c))
+	if err != nil {
+		respondError(c, "查询删除任务失败", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
+}
+
+// ListRunDelLogs GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Logs?delTaskId=xxx
+func (h *Backtest) ListRunDelLogs(c *gin.Context) {
+	id, ok := btIDQuery(c, "delTaskId")
+	if !ok {
+		return
+	}
+	list, err := h.service.ListRunDelLogs(c.Request.Context(), id, btUserID(c))
+	if err != nil {
+		respondError(c, "查询删除日志失败", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"list": list}})
+}
+
+// RetryRunDelete POST /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Retry
+func (h *Backtest) RetryRunDelete(c *gin.Context) {
+	var req struct {
+		DelTaskID string `json:"del_task_id"`
+		UserID    string `json:"user_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "请求体格式错误: " + err.Error()})
+		return
+	}
+	uid := req.UserID
+	if uid == "" {
+		uid = "default"
+	}
+	delTaskID, err := h.service.RetryRunDelete(c.Request.Context(), req.DelTaskID, uid)
+	if err != nil {
+		respondError(c, "重试删除任务失败", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "删除任务已重新提交", "data": gin.H{"del_task_id": delTaskID}})
+}
+
+// ListRunArchives GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Archives?runId=&page=&pageSize=
+// 查询已删除任务归档（"曾经存在的证明"：失败/已结束任务被删后执行记录留痕）。
+func (h *Backtest) ListRunArchives(c *gin.Context) {
+	list, total, err := h.service.ListRunArchives(c.Request.Context(), parseBTPager(c), c.Query("runId"))
+	if err != nil {
+		respondError(c, "查询任务归档失败", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
+}
+
 // GetReport GET /API/V1/Meta/FinvQuant/Backtest/Run/Report?runId=xxx
 func (h *Backtest) GetReport(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")

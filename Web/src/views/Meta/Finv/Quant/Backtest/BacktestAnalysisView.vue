@@ -60,6 +60,7 @@ const secuFilter = ref('')
 const keyword = ref('')
 const loading = ref(false)
 const error = ref('')
+const message = ref('')
 const cancelling = ref('')
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
@@ -122,6 +123,20 @@ async function cancelRun(run: RunRow) {
   }
 }
 
+// 提交删除任务（异步执行）：删除任务及其全部明细，策略/账户/环境/模板保留
+async function deleteRun(run: RunRow) {
+  const msg = `确认删除回测任务 #${run.run_no}？\n将删除该任务的净值曲线/成交/资金流水/持仓/事件追踪等全部记录（不可恢复）。\n策略、账户、环境、模板保留不受影响。`
+  if (!confirm(msg)) return
+  try {
+    const res = await apiPost<{ del_task_id: string }>('/Meta/FinvQuant/Backtest/Run/Delete', { run_id: run.run_id })
+    message.value = `删除任务已提交（${res.del_task_id}），后台异步执行中`
+    // 跳转到删除任务管理页查看进度与日志
+    router.push({ path: '/Meta/Finv/Quant/Backtest/RunDeleteTasks' })
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
 // 点击 SUCCEEDED 任务 → 跳转独立报告页
 function openRun(run: RunRow) {
   if (run.status !== 'SUCCEEDED') return
@@ -157,6 +172,7 @@ onBeforeUnmount(() => {
       </v-card-title>
 
       <v-alert v-if="error" type="error" dismissible class="mx-4 mb-2">{{ error }}</v-alert>
+      <v-alert v-if="message" type="success" dismissible class="mx-4 mb-2">{{ message }}</v-alert>
 
       <v-card-text class="pt-0">
         <v-row>
@@ -231,6 +247,13 @@ onBeforeUnmount(() => {
           </v-btn>
           <v-btn size="small" variant="text" color="primary" :disabled="item.status !== 'SUCCEEDED'"
             @click="openRun(item)">查看报告</v-btn>
+          <!-- 删除任务：仅已结束任务可删（SUCCEEDED/FAILED/CANCELLED） -->
+          <v-btn size="small" variant="text" color="error"
+            :disabled="item.status === 'PENDING' || item.status === 'RUNNING'"
+            title="删除任务及其全部明细（异步）"
+            @click="deleteRun(item)">
+            <v-icon icon="mdi-delete-outline" size="18" />
+          </v-btn>
         </template>
       </v-data-table-server>
       <v-pagination v-model="page" :length="Math.max(1, Math.ceil(runTotal / pageSize))" density="compact"

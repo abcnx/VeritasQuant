@@ -1611,6 +1611,406 @@ func dateToTS(date int) int64 {
 }
 
 // ---------------------------------------------------------------------
+// 回测任务删除（异步批处理删除任务 + 审计日志留痕）
+//
+// 设计（ACANX 需求）：回测任务可能产生大量无参考价值记录（净值曲线/成交/
+// 资金流水/持仓/事件追踪明细），按 run_id 删除任务及其关联记录；策略/账户/
+// 环境/模板保留。删除以异步任务执行（复用 s.tasks/s.sem 并发模式），
+// 全过程写 finv_quant_backtest_del_log 审计日志（创建/每表删除行数/成功/失败）。
+// ---------------------------------------------------------------------
+
+// deleteDetailTables 删除任务明细表的删除顺序（先子表后主表，避免中途失败遗留孤立数据）。
+var deleteDetailTables = []string{
+	"finv_quant_backtest_event_trace",
+	"finv_quant_backtest_position_log",
+	"finv_quant_backtest_cashflow",
+	"finv_quant_backtest_trade",
+	"finv_quant_backtest_equity",
+}
+
+// DeleteRun 提交一个回测任务删除任务（异步执行）。
+// 校验：任务存在且属于当前用户、状态为已结束（SUCCEEDED/FAILED/CANCELLED）、
+// 且无进行中的删除任务。返回删除任务 ID（del_task_id）。
+func (s *Service) DeleteRun(ctx context.Context, runID, userID string) (string, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	// 校验任务归属与状态
+	var owner, status string
+	if err := s.pool.QueryRow(ctx,
+		`SELECT user_id, status FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(&owner, &status); err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("回测任务不存在: %s", runID)
+		}
+		return "", err
+	}
+	if owner != userID {
+		return "", fmt.Errorf("无权操作其他用户的任务: %s", runID)
+	}
+	if status == RunPending || status == RunRunning {
+		return "", fmt.Errorf("任务正在执行（%s），仅已结束任务可删除", status)
+	}
+
+	// 防重复：存在该 run 的进行中删除任务时拒绝
+	var activeCnt int
+	if err := s.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM finv_quant_backtest_del_task
+		 WHERE run_id=$1 AND status IN ('PENDING','RUNNING')`, runID).Scan(&activeCnt); err != nil {
+		return "", err
+	}
+	if activeCnt > 0 {
+		return "", fmt.Errorf("该任务已有进行中的删除任务，请勿重复提交")
+	}
+
+	// 创建删除任务（UUID 大写）
+	delTaskID := newUUID()
+	if _, err := s.pool.Exec(ctx, `
+INSERT INTO finv_quant_backtest_del_task (del_task_id, run_id, status, progress, created_by)
+VALUES ($1,$2,$3,0,$4)`, delTaskID, runID, DelPending, userID); err != nil {
+		return "", err
+	}
+	// 审计日志：任务创建
+	s.appendDelLog(ctx, delTaskID, runID, "TASK_CREATED", "删除任务创建（run_id="+runID+"）")
+
+	// 注册异步执行（复用 s.tasks/s.sem 并发模式）
+	delCtx, cancel := context.WithCancel(context.Background())
+	s.mu.Lock()
+	s.tasks["del:"+delTaskID] = cancel
+	s.mu.Unlock()
+	go func() {
+		defer func() {
+			s.mu.Lock()
+			delete(s.tasks, "del:"+delTaskID)
+			s.mu.Unlock()
+		}()
+		s.executeRunDelete(delCtx, delTaskID, runID)
+	}()
+
+	return delTaskID, nil
+}
+
+// executeRunDelete 异步执行删除任务：按序删除 5 张明细表 + 主表，全程写审计日志。
+func (s *Service) executeRunDelete(ctx context.Context, delTaskID, runID string) {
+	// 并发信号量（排队等待，与回测任务共用上限）
+	select {
+	case s.sem <- struct{}{}:
+		defer func() { <-s.sem }()
+	case <-ctx.Done():
+		s.failDelTask(context.Background(), delTaskID, runID, "删除任务已取消")
+		return
+	}
+
+	// 状态置 RUNNING
+	if _, err := s.pool.Exec(ctx,
+		`UPDATE finv_quant_backtest_del_task SET status=$2, gmt_update=now() WHERE del_task_id=$1`,
+		delTaskID, DelRunning); err != nil {
+		s.failDelTask(context.Background(), delTaskID, runID, "更新删除任务状态失败: "+err.Error())
+		return
+	}
+
+	// 先归档 run 元信息（"曾经存在的证明"）：失败/已结束任务的执行记录
+	// 写入归档表留痕，再物理删除明细与主表（归档失败则中止删除，保证留痕不缺失）。
+	if err := s.archiveRun(ctx, delTaskID, runID); err != nil {
+		s.failDelTask(context.Background(), delTaskID, runID, "归档任务元信息失败: "+err.Error())
+		return
+	}
+
+	counts := map[string]int{}
+	tableCnt := len(deleteDetailTables) + 1 // 明细表 + 主表
+	step := 0
+
+	// 1. 按序删除明细表
+	for _, tbl := range deleteDetailTables {
+		if ctx.Err() != nil {
+			s.failDelTask(context.Background(), delTaskID, runID, "删除任务已取消")
+			return
+		}
+		tag, err := s.pool.Exec(ctx, `DELETE FROM `+tbl+` WHERE run_id=$1`, runID)
+		if err != nil {
+			s.failDelTask(context.Background(), delTaskID, runID, fmt.Sprintf("删除表 %s 失败: %v", tbl, err))
+			return
+		}
+		n := int(tag.RowsAffected())
+		counts[tbl] = n
+		step++
+		// 审计日志 + 进度
+		s.appendDelLog(ctx, delTaskID, runID, "DELETING_TABLE",
+			fmt.Sprintf("%s: 删除 %d 行", tbl, n))
+		progress := step * 100 / tableCnt
+		_, _ = s.pool.Exec(ctx,
+			`UPDATE finv_quant_backtest_del_task SET progress=$2, gmt_update=now() WHERE del_task_id=$1`,
+			delTaskID, progress)
+	}
+
+	// 2. 删除主表
+	tag, err := s.pool.Exec(ctx, `DELETE FROM finv_quant_backtest_run WHERE run_id=$1`, runID)
+	if err != nil {
+		s.failDelTask(context.Background(), delTaskID, runID, "删除任务主表失败: "+err.Error())
+		return
+	}
+	counts["finv_quant_backtest_run"] = int(tag.RowsAffected())
+	step++
+
+	// 3. 更新删除任务为 SUCCEEDED，登记各表删除行数
+	countsJSON, _ := json.Marshal(counts)
+	if _, err := s.pool.Exec(ctx,
+		`UPDATE finv_quant_backtest_del_task SET status=$2, progress=100, deleted_counts=$3, gmt_update=now()
+		 WHERE del_task_id=$1`, delTaskID, DelSucceeded, countsJSON); err != nil {
+		s.failDelTask(context.Background(), delTaskID, runID, "更新删除任务结果失败: "+err.Error())
+		return
+	}
+	// 审计日志：成功（含各表行数汇总）
+	s.appendDelLog(ctx, delTaskID, runID, "TASK_SUCCEEDED",
+		fmt.Sprintf("删除完成，共 %d 张表（%v）", step, counts))
+}
+
+// failDelTask 将删除任务标记为 FAILED 并写失败日志。
+func (s *Service) failDelTask(ctx context.Context, delTaskID, runID, reason string) {
+	_, _ = s.pool.Exec(ctx,
+		`UPDATE finv_quant_backtest_del_task SET status=$2, error_message=$3, gmt_update=now()
+		 WHERE del_task_id=$1`, delTaskID, DelFailed, nullIfEmpty(reason))
+	s.appendDelLog(ctx, delTaskID, runID, "TASK_FAILED", reason)
+}
+
+// appendDelLog 追加删除审计日志（只追加，不可改）。
+func (s *Service) appendDelLog(ctx context.Context, delTaskID, runID, action, detail string) {
+	var seq int
+	_ = s.pool.QueryRow(ctx,
+		`SELECT COALESCE(MAX(seq), 0)+1 FROM finv_quant_backtest_del_log WHERE del_task_id=$1`,
+		delTaskID).Scan(&seq)
+	_, _ = s.pool.Exec(ctx, `
+INSERT INTO finv_quant_backtest_del_log (del_task_id, run_id, seq, action, detail)
+VALUES ($1,$2,$3,$4,$5)`, delTaskID, runID, seq, action, detail)
+}
+
+// archiveRun 归档待删除任务的元信息（"曾经存在的证明"）：把 run 主表元信息
+// （任务号/策略/账户/标的/区间/状态/错误信息/报告）写入归档表，再删除主表。
+// 返回错误则中止删除流程（保证留痕不缺失）。
+func (s *Service) archiveRun(ctx context.Context, delTaskID, runID string) error {
+	var a RunArchive
+	var reportJSON []byte
+	var strategyID, strategyName, accountID, accountName, secu, period, errMsg *string
+	var startDate, endDate *int
+	if err := s.pool.QueryRow(ctx, `
+SELECT run_id, run_no, strategy_id, strategy_name, account_id, account_name,
+       secu_code, period, start_date, end_date, status, error_message, report
+FROM finv_quant_backtest_run WHERE run_id=$1`, runID).Scan(
+		&a.RunID, &a.RunNo,
+		&strategyID, &strategyName, &accountID, &accountName,
+		&secu, &period, &startDate, &endDate,
+		&a.Status, &errMsg, &reportJSON); err != nil {
+		return fmt.Errorf("读取任务元信息失败: %w", err)
+	}
+	if strategyID != nil {
+		a.StrategyID = *strategyID
+	}
+	if strategyName != nil {
+		a.StrategyName = *strategyName
+	}
+	if accountID != nil {
+		a.AccountID = *accountID
+	}
+	if accountName != nil {
+		a.AccountName = *accountName
+	}
+	if secu != nil {
+		a.SecuCode = *secu
+	}
+	if period != nil {
+		a.Period = *period
+	}
+	if startDate != nil {
+		a.StartDate = *startDate
+	}
+	if endDate != nil {
+		a.EndDate = *endDate
+	}
+	if errMsg != nil {
+		a.ErrorMessage = *errMsg
+	}
+	if len(reportJSON) > 0 {
+		a.ReportJSON = string(reportJSON)
+	}
+
+	a.ArchiveID = newUUID()
+	// 操作者取删除任务创建人（DeleteRun 已做归属校验）
+	deletedBy := "console"
+	if err := s.pool.QueryRow(ctx,
+		`SELECT created_by FROM finv_quant_backtest_del_task WHERE del_task_id=$1`, delTaskID).Scan(&deletedBy); err != nil {
+		deletedBy = "console"
+	}
+	a.DeletedBy = deletedBy
+	a.DelTaskID = delTaskID
+	_, err := s.pool.Exec(ctx, `
+INSERT INTO finv_quant_backtest_run_archive
+    (archive_id, run_id, run_no, strategy_id, strategy_name, account_id, account_name,
+     secu_code, period, start_date, end_date, status, error_message, report_json,
+     deleted_at, deleted_by, del_task_id)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,now(),$15,$16)`,
+		a.ArchiveID, a.RunID, a.RunNo, a.StrategyID, a.StrategyName, a.AccountID, a.AccountName,
+		a.SecuCode, a.Period, a.StartDate, a.EndDate, a.Status, a.ErrorMessage, a.ReportJSON,
+		a.DeletedBy, delTaskID)
+	if err != nil {
+		return err
+	}
+	// 审计日志：归档留痕
+	s.appendDelLog(ctx, delTaskID, runID, "ARCHIVE_RUN",
+		fmt.Sprintf("任务 #%d 元信息已归档（archive_id=%s）", a.RunNo, a.ArchiveID))
+	return nil
+}
+
+// ListRunArchives 分页查询已删除任务归档（"曾经存在的证明"）。
+func (s *Service) ListRunArchives(ctx context.Context, pager Pager, runID string) ([]RunArchive, int, error) {
+	pager.Normalize()
+	where := "1=1"
+	args := []any{}
+	if runID != "" {
+		args = append(args, runID)
+		where = "run_id = $1"
+	}
+	var total int
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_backtest_run_archive WHERE `+where, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT archive_id, run_id, run_no, COALESCE(strategy_id,''), COALESCE(strategy_name,''),
+       COALESCE(account_id,''), COALESCE(account_name,''), COALESCE(secu_code,''),
+       COALESCE(period,''), COALESCE(start_date,0), COALESCE(end_date,0),
+       status, COALESCE(error_message,''), COALESCE(report_json,''),
+       deleted_at, deleted_by, del_task_id
+FROM finv_quant_backtest_run_archive
+WHERE `+where+`
+ORDER BY deleted_at DESC
+LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
+		append(args, pager.PageSize, (pager.Page-1)*pager.PageSize)...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []RunArchive{}
+	for rows.Next() {
+		var a RunArchive
+		if err := rows.Scan(&a.ArchiveID, &a.RunID, &a.RunNo, &a.StrategyID, &a.StrategyName,
+			&a.AccountID, &a.AccountName, &a.SecuCode, &a.Period, &a.StartDate, &a.EndDate,
+			&a.Status, &a.ErrorMessage, &a.ReportJSON, &a.DeletedAt, &a.DeletedBy, &a.DelTaskID); err != nil {
+			return nil, 0, err
+		}
+		list = append(list, a)
+	}
+	return list, total, rows.Err()
+}
+
+// ListRunDelTasks 分页查询删除任务（按 user_id 隔离：仅本人创建的删除任务）。
+func (s *Service) ListRunDelTasks(ctx context.Context, q DelTaskListQuery, userID string) ([]RunDelTask, int, error) {
+	q.Pager.Normalize()
+	if userID == "" {
+		userID = "default"
+	}
+	where := []string{"created_by = $1"}
+	args := []any{userID}
+	if q.Status != "" {
+		args = append(args, q.Status)
+		where = append(where, fmt.Sprintf("status = $%d", len(args)))
+	}
+	if q.RunID != "" {
+		args = append(args, q.RunID)
+		where = append(where, fmt.Sprintf("run_id = $%d", len(args)))
+	}
+	cond := strings.Join(where, " AND ")
+
+	var total int
+	if err := s.pool.QueryRow(ctx, `SELECT COUNT(*) FROM finv_quant_backtest_del_task WHERE `+cond, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT del_task_id, run_id, status, progress, COALESCE(error_message, ''), COALESCE(deleted_counts, '{}'::jsonb), created_by, gmt_update
+FROM finv_quant_backtest_del_task
+WHERE `+cond+`
+ORDER BY gmt_update DESC
+LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
+		append(args, q.PageSize, (q.Page-1)*q.PageSize)...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	list := []RunDelTask{}
+	for rows.Next() {
+		var t RunDelTask
+		var countsJSON []byte
+		if err := rows.Scan(&t.DelTaskID, &t.RunID, &t.Status, &t.Progress, &t.ErrorMessage,
+			&countsJSON, &t.CreatedBy, &t.GMTUpdate); err != nil {
+			return nil, 0, err
+		}
+		if len(countsJSON) > 0 {
+			_ = json.Unmarshal(countsJSON, &t.DeletedCounts)
+		}
+		list = append(list, t)
+	}
+	return list, total, rows.Err()
+}
+
+// ListRunDelLogs 按删除任务查询审计日志（留痕）。
+func (s *Service) ListRunDelLogs(ctx context.Context, delTaskID, userID string) ([]RunDelLog, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	// 归属校验：删除任务须属于当前用户
+	var owner string
+	if err := s.pool.QueryRow(ctx,
+		`SELECT created_by FROM finv_quant_backtest_del_task WHERE del_task_id=$1`, delTaskID).Scan(&owner); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("删除任务不存在: %s", delTaskID)
+		}
+		return nil, err
+	}
+	if owner != userID {
+		return nil, fmt.Errorf("无权查看其他用户的删除任务: %s", delTaskID)
+	}
+	rows, err := s.pool.Query(ctx, `
+SELECT log_id, del_task_id, run_id, seq, action, COALESCE(detail, ''), created_at
+FROM finv_quant_backtest_del_log WHERE del_task_id=$1 ORDER BY seq ASC`, delTaskID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	list := []RunDelLog{}
+	for rows.Next() {
+		var l RunDelLog
+		if err := rows.Scan(&l.LogID, &l.DelTaskID, &l.RunID, &l.Seq, &l.Action, &l.Detail, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		list = append(list, l)
+	}
+	return list, rows.Err()
+}
+
+// RetryRunDelete 重试失败的删除任务（新建一个删除任务重新执行；原任务保留为 FAILED 留痕）。
+func (s *Service) RetryRunDelete(ctx context.Context, delTaskID, userID string) (string, error) {
+	if userID == "" {
+		userID = "default"
+	}
+	var owner, status, runID string
+	if err := s.pool.QueryRow(ctx,
+		`SELECT created_by, status, run_id FROM finv_quant_backtest_del_task WHERE del_task_id=$1`,
+		delTaskID).Scan(&owner, &status, &runID); err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("删除任务不存在: %s", delTaskID)
+		}
+		return "", err
+	}
+	if owner != userID {
+		return "", fmt.Errorf("无权操作其他用户的删除任务: %s", delTaskID)
+	}
+	if status != DelFailed {
+		return "", fmt.Errorf("仅 FAILED 状态的删除任务可重试（当前 %s）", status)
+	}
+	return s.DeleteRun(ctx, runID, userID)
+}
+
+// ---------------------------------------------------------------------
 // 行扫描与解析辅助
 // ---------------------------------------------------------------------
 

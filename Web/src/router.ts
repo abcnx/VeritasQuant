@@ -15,6 +15,7 @@ import PositionManageView from './views/Meta/Finv/Quant/Position/PositionManageV
 import StrategyManageView from './views/Meta/Finv/Quant/Strategy/StrategyManageView.vue'
 import BacktestAnalysisView from './views/Meta/Finv/Quant/Backtest/BacktestAnalysisView.vue'
 import BacktestReportView from './views/Meta/Finv/Quant/Backtest/BacktestReportView.vue'
+import RunDeleteTasksView from './views/Meta/Finv/Quant/Backtest/RunDeleteTasksView.vue'
 import EnvironmentTemplateView from './views/Meta/Finv/Quant/Backtest/EnvironmentTemplateView.vue'
 import PlaceholderView from './views/Common/PlaceholderView.vue'
 
@@ -50,6 +51,13 @@ const router = createRouter({
     { path: '/Meta/Finv/Quant/Position', name: 'position', component: PositionManageView, meta: { title: '持仓管理' } },
     { path: '/Meta/Finv/Quant/Strategy', name: 'strategy', component: StrategyManageView, meta: { title: '策略管理' } },
     { path: '/Meta/Finv/Quant/Backtest/Analysis', name: 'backtest-analysis', component: BacktestAnalysisView, meta: { title: '回测分析' } },
+    // 回测任务删除管理（异步删除任务 + 审计留痕）
+    {
+      path: '/Meta/Finv/Quant/Backtest/RunDeleteTasks',
+      name: 'run-delete-tasks',
+      component: RunDeleteTasksView,
+      meta: { title: '回测任务删除管理' },
+    },
     // 投资策略回测收益分析报告（独立页，任务列表跳转进入，?runId= 深链）
     {
       path: '/Meta/Finv/Quant/Backtest/Analysis/Report',

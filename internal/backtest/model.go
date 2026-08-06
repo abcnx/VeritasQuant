@@ -29,6 +29,12 @@ const (
 	RunFailed    = "FAILED"
 	RunCancelled = "CANCELLED"
 
+	// 回测任务删除任务状态
+	DelPending   = "PENDING"
+	DelRunning   = "RUNNING"
+	DelSucceeded = "SUCCEEDED"
+	DelFailed    = "FAILED"
+
 	PeriodMin  = "Min"
 	PeriodHour = "Hour"
 	PeriodDay  = "Day"
@@ -523,4 +529,59 @@ type RunListQuery struct {
 	SecuCode   string
 	StrategyID string
 	Keyword    string
+}
+
+// ---------------------------------------------------------------------
+// 回测任务删除（异步批处理删除任务 + 审计日志）
+// ---------------------------------------------------------------------
+
+// RunDelTask 回测任务删除任务表行（按 run_id 删除任务及其关联明细）。
+type RunDelTask struct {
+	DelTaskID     string         `json:"del_task_id"`
+	RunID         string         `json:"run_id"`
+	Status        string         `json:"status"`         // PENDING/RUNNING/SUCCEEDED/FAILED
+	Progress      int            `json:"progress"`       // 进度 0-100
+	ErrorMessage  string         `json:"error_message"`  // 失败原因
+	DeletedCounts map[string]int `json:"deleted_counts"` // 各表删除行数 {表名: 行数}
+	CreatedBy     string         `json:"created_by"`
+	GMTUpdate     time.Time      `json:"gmt_update"`
+}
+
+// RunDelLog 删除任务审计日志行（只追加，不可改）。
+type RunDelLog struct {
+	LogID     int64     `json:"log_id"`
+	DelTaskID string    `json:"del_task_id"`
+	RunID     string    `json:"run_id"`
+	Seq       int       `json:"seq"`
+	Action    string    `json:"action"` // TASK_CREATED/DELETING_TABLE/TASK_SUCCEEDED/TASK_FAILED
+	Detail    string    `json:"detail"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// RunArchive 已删除任务归档（"曾经存在的证明"）：删除任务时归档 run 元信息留痕。
+type RunArchive struct {
+	ArchiveID    string    `json:"archive_id"`
+	RunID        string    `json:"run_id"`
+	RunNo        int64     `json:"run_no"`
+	StrategyID   string    `json:"strategy_id"`
+	StrategyName string    `json:"strategy_name"`
+	AccountID    string    `json:"account_id"`
+	AccountName  string    `json:"account_name"`
+	SecuCode     string    `json:"secu_code"`
+	Period       string    `json:"period"`
+	StartDate    int       `json:"start_date"`
+	EndDate      int       `json:"end_date"`
+	Status       string    `json:"status"` // 删除前任务状态
+	ErrorMessage string    `json:"error_message"`
+	ReportJSON   string    `json:"report_json"`
+	DeletedAt    time.Time `json:"deleted_at"`
+	DeletedBy    string    `json:"deleted_by"`
+	DelTaskID    string    `json:"del_task_id"`
+}
+
+// DelTaskListQuery 删除任务列表查询参数。
+type DelTaskListQuery struct {
+	Pager
+	Status string
+	RunID  string
 }
