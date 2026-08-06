@@ -222,10 +222,10 @@ async function loadRuns() {
   try {
     const params = new URLSearchParams({
       page: String(page.value),
-      page_size: String(pageSize.value),
+      pageSize: String(pageSize.value),
     })
     if (statusFilter.value) params.set('status', statusFilter.value)
-    if (secuFilter.value) params.set('secu_code', secuFilter.value)
+    if (secuFilter.value) params.set('secuCode', secuFilter.value)
     if (keyword.value) params.set('keyword', keyword.value)
     const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
     runs.value = data.list ?? []
@@ -247,9 +247,9 @@ function syncPolling() {
   if (runs.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')) {
     pollTimer = setInterval(async () => {
       try {
-        const params = new URLSearchParams({ page: String(page.value), page_size: String(pageSize.value) })
+        const params = new URLSearchParams({ page: String(page.value), pageSize: String(pageSize.value) })
         if (statusFilter.value) params.set('status', statusFilter.value)
-        if (secuFilter.value) params.set('secu_code', secuFilter.value)
+        if (secuFilter.value) params.set('secuCode', secuFilter.value)
         if (keyword.value) params.set('keyword', keyword.value)
         const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
         runs.value = data.list ?? []
@@ -289,12 +289,12 @@ async function openRun(run: RunRow) {
   eventTraces.value = []
   try {
     const [rep, eq, tr, cf, pl, ev] = await Promise.all([
-      apiGet<Report>(`/Meta/FinvQuant/Backtest/Run/Report?run_id=${run.run_id}`),
-      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?run_id=${run.run_id}&page=1&page_size=5000`),
-      apiGet<{ total: number; list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?run_id=${run.run_id}&page=1&page_size=${tradePageSize.value}`),
-      apiGet<{ list: CashflowRow[] }>(`/Meta/FinvQuant/Backtest/Run/Cashflows?run_id=${run.run_id}&page=1&page_size=1000`),
-      apiGet<{ list: PositionLogRow[] }>(`/Meta/FinvQuant/Backtest/Run/PositionLogs?run_id=${run.run_id}&page=1&page_size=1000`),
-      apiGet<{ list: EventTraceRow[] }>(`/Meta/FinvQuant/Backtest/Run/EventTraces?run_id=${run.run_id}&page=1&page_size=1000`),
+      apiGet<Report>(`/Meta/FinvQuant/Backtest/Run/Report?runId=${run.run_id}`),
+      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?runId=${run.run_id}&page=1&pageSize=5000`),
+      apiGet<{ total: number; list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?runId=${run.run_id}&page=1&pageSize=${tradePageSize.value}`),
+      apiGet<{ list: CashflowRow[] }>(`/Meta/FinvQuant/Backtest/Run/Cashflows?runId=${run.run_id}&page=1&pageSize=1000`),
+      apiGet<{ list: PositionLogRow[] }>(`/Meta/FinvQuant/Backtest/Run/PositionLogs?runId=${run.run_id}&page=1&pageSize=1000`),
+      apiGet<{ list: EventTraceRow[] }>(`/Meta/FinvQuant/Backtest/Run/EventTraces?runId=${run.run_id}&page=1&pageSize=1000`),
     ])
     report.value = rep
     equity.value = eq.list ?? []
@@ -396,7 +396,7 @@ async function loadTradesPage() {
   if (!currentRun.value) return
   try {
     const tr = await apiGet<{ total: number; list: TradeRow[] }>(
-      `/Meta/FinvQuant/Backtest/Run/Trades?run_id=${currentRun.value.run_id}&page=${tradePage.value}&page_size=${tradePageSize.value}`,
+      `/Meta/FinvQuant/Backtest/Run/Trades?runId=${currentRun.value.run_id}&page=${tradePage.value}&pageSize=${tradePageSize.value}`,
     )
     trades.value = tr.list ?? []
     tradeTotal.value = tr.total ?? 0
@@ -410,11 +410,11 @@ async function loadTradesPage() {
 
 onMounted(async () => {
   await loadRuns()
-  const q = route.query.run_id as string | undefined
+  const q = route.query.runId as string | undefined
   if (q) {
     // 深链：优先用 Run/Get 直接加载任务（评审：原实现只查第一页，深链经常失败）
     try {
-      const target = await apiGet<RunRow>(`/Meta/FinvQuant/Backtest/Run/Get?run_id=${encodeURIComponent(q)}`)
+      const target = await apiGet<RunRow>(`/Meta/FinvQuant/Backtest/Run/Get?runId=${encodeURIComponent(q)}`)
       if (target?.status === 'SUCCEEDED') {
         await openRun(target)
       } else {

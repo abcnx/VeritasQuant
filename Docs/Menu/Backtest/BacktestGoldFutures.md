@@ -39,7 +39,7 @@
 
 ### 4.1 前端交互
 
-- 页面加载时并行拉取策略（allow_backtest=1）、账户（allow_backtest=1）、环境（BACKTEST 且开关开启）下拉；
+- 页面加载时并行拉取策略（allowBacktest=1）、账户（allowBacktest=1）、环境（BACKTEST 且开关开启）下拉；
   默认选中 GCMain 相关策略、首个账户、默认环境（is_default='1'）。
 - 选择策略后自动带出标的（secu_code）与默认周期（data_period）。
 - 日期输入为 yyyy-mm-dd，提交时转换为 yyyymmdd 整数；留空则不传（服务端取行情最早/最晚日期）。
@@ -50,7 +50,7 @@
 |------|------|
 | 加载下拉选项 | `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List`、`.../Account/List`、`.../Environment/List` |
 | 启动回测 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create`（含 strategy_id/account_id/env_id/secu_code/区间/周期/精度/options） |
-| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?secu_code=GCMain`（RUNNING/PENDING 时每 5s 轮询） |
+| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?secuCode=GCMain`（RUNNING/PENDING 时每 5s 轮询） |
 | 取消任务 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel`（RUNNING/PENDING 可取消） |
 
 ### 4.3 后端处理（Run/Create）
@@ -71,8 +71,10 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List` | [BacktestStrategy.md](../../API/Backtest/BacktestStrategy.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [BacktestAccount.md](../../API/Backtest/BacktestAccount.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Environment/List` | [BacktestEnvironment.md](../../API/Backtest/BacktestEnvironment.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create` | [BacktestRunCreate.md](../../API/Backtest/BacktestRunCreate.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [BacktestRunQuery.md](../../API/Backtest/BacktestRunQuery.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List` | [StrategyList.md](../../API/Backtest/StrategyList.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Environment/List` | [EnvironmentList.md](../../API/Backtest/EnvironmentList.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create` | [RunCreate.md](../../API/Backtest/RunCreate.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Get` | [RunGet.md](../../API/Backtest/RunGet.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel` | [RunCancel.md](../../API/Backtest/RunCancel.md) |

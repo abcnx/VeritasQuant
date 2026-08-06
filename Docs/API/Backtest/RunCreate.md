@@ -3,7 +3,12 @@
 创建回测任务（策略快照 + 账户快照 + 环境快照 + 标的区间 + 回测配置），校验通过后**异步执行**，
 返回任务初始状态（PENDING/RUNNING），前端轮询 `Run/Get` / `Run/List` 查看进度与结果。
 
-## 请求体（JSON）
+## 请求
+
+- **方法**：`POST`
+- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Create`
+
+### 请求体（JSON，wire 字段 snake_case）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -87,6 +92,6 @@ RUNNING → 加载行情（`finv_quote_secu_kline_min` 按 date 区间）→ 按
 
 ## 已使用位置（业务菜单）
 
-| 业务菜单 | 菜单文档 |
-|----------|----------|
-| 黄金期货合约回测验证 | [Docs/Menu/Backtest/BacktestGoldFutures.md](../../Menu/Backtest/BacktestGoldFutures.md) |
+| 业务菜单 | 菜单文档 | 使用接口 |
+|----------|----------|----------|
+| 黄金期货合约回测验证 | [Docs/Menu/Backtest/BacktestGoldFutures.md](../../Menu/Backtest/BacktestGoldFutures.md) | Run/Create（启动回测） |

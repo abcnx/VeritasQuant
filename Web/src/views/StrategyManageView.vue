@@ -160,7 +160,7 @@ const templateOptions = computed(() => {
 async function loadTemplates() {
   try {
     const data = await apiGet<{ list: { template_id: string; template_code: string; template_name: string; content: Record<string, unknown> }[] }>(
-      '/Meta/FinvQuant/Backtest/Template/List?page=1&page_size=100&template_type=STRATEGY',
+      '/Meta/FinvQuant/Backtest/Template/List?page=1&pageSize=100&templateType=STRATEGY',
     )
     apiTemplates.value = data.list ?? []
   } catch {
@@ -174,7 +174,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: StrategyRow[] }>(
-      `/Meta/FinvQuant/Backtest/Strategy/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/FinvQuant/Backtest/Strategy/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0

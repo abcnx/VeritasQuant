@@ -2,7 +2,7 @@
 
 > 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/Backtest/AccountManage.md`
 > 对应视图：`Web/src/views/AccountManageView.vue`
-> 接口契约：见 [Docs/API/Backtest/BacktestAccount.md](../../API/Backtest/BacktestAccount.md)
+> 接口契约：见 [Docs/API/Backtest/AccountList.md](../../API/Backtest/AccountList.md)
 
 ## 1. 菜单入口
 
@@ -50,7 +50,7 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [BacktestAccount.md](../../API/Backtest/BacktestAccount.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Save` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Toggle` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Delete` | 同上 |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Save` | [AccountSave.md](../../API/Backtest/AccountSave.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Toggle` | [AccountToggle.md](../../API/Backtest/AccountToggle.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Delete` | [AccountDelete.md](../../API/Backtest/AccountDelete.md) |

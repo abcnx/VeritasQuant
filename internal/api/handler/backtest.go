@@ -3,6 +3,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -10,15 +11,16 @@ import (
 	"github.com/acanx/finvquant/internal/backtest"
 )
 
-// parseBTPager 解析分页参数为 backtest.Pager。
+// parseBTPager 解析分页查询参数（URL 查询参数统一小驼峰：page / pageSize）。
 func parseBTPager(c *gin.Context) backtest.Pager {
-	p := parsePager(c)
-	return backtest.Pager{Page: p.Page, PageSize: p.PageSize}
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	return backtest.Pager{Page: page, PageSize: pageSize}
 }
 
-// btUserID 解析当前用户标识（多用户隔离；接入 JWT/RBAC 后改为从登录态获取）。
+// btUserID 解析当前用户标识（URL 查询参数 userId；接入 JWT/RBAC 后改为从登录态获取）。
 func btUserID(c *gin.Context) string {
-	uid := strings.TrimSpace(c.Query("user_id"))
+	uid := strings.TrimSpace(c.Query("userId"))
 	if uid == "" {
 		uid = "default"
 	}
@@ -74,7 +76,7 @@ func NewBacktest(service *backtest.Service) *Backtest {
 // ListStrategies GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List
 func (h *Backtest) ListStrategies(c *gin.Context) {
 	list, total, err := h.service.ListStrategies(c.Request.Context(),
-		parseBTPager(c), c.Query("keyword"), c.Query("allow_backtest"), btUserID(c))
+		parseBTPager(c), c.Query("keyword"), c.Query("allowBacktest"), btUserID(c))
 	if err != nil {
 		respondError(c, "查询策略列表失败", err)
 		return
@@ -82,9 +84,9 @@ func (h *Backtest) ListStrategies(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetStrategy GET /API/V1/Meta/FinvQuant/Backtest/Strategy/Get?strategy_id=xxx
+// GetStrategy GET /API/V1/Meta/FinvQuant/Backtest/Strategy/Get?strategyId=xxx
 func (h *Backtest) GetStrategy(c *gin.Context) {
-	id, ok := btIDQuery(c, "strategy_id")
+	id, ok := btIDQuery(c, "strategyId")
 	if !ok {
 		return
 	}
@@ -161,7 +163,7 @@ func (h *Backtest) DeleteStrategy(c *gin.Context) {
 // ListAccounts GET /API/V1/Meta/FinvQuant/Backtest/Account/List
 func (h *Backtest) ListAccounts(c *gin.Context) {
 	list, total, err := h.service.ListAccounts(c.Request.Context(),
-		parseBTPager(c), c.Query("keyword"), c.Query("allow_backtest"), btUserID(c))
+		parseBTPager(c), c.Query("keyword"), c.Query("allowBacktest"), btUserID(c))
 	if err != nil {
 		respondError(c, "查询账户列表失败", err)
 		return
@@ -169,9 +171,9 @@ func (h *Backtest) ListAccounts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetAccount GET /API/V1/Meta/FinvQuant/Backtest/Account/Get?account_id=xxx
+// GetAccount GET /API/V1/Meta/FinvQuant/Backtest/Account/Get?accountId=xxx
 func (h *Backtest) GetAccount(c *gin.Context) {
-	id, ok := btIDQuery(c, "account_id")
+	id, ok := btIDQuery(c, "accountId")
 	if !ok {
 		return
 	}
@@ -265,8 +267,8 @@ func (h *Backtest) ListRuns(c *gin.Context) {
 	q := backtest.RunListQuery{
 		Pager:      parseBTPager(c),
 		Status:     c.Query("status"),
-		SecuCode:   c.Query("secu_code"),
-		StrategyID: c.Query("strategy_id"),
+		SecuCode:   c.Query("secuCode"),
+		StrategyID: c.Query("strategyId"),
 		Keyword:    c.Query("keyword"),
 	}
 	list, total, err := h.service.ListRuns(c.Request.Context(), q, btUserID(c))
@@ -277,9 +279,9 @@ func (h *Backtest) ListRuns(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetRun GET /API/V1/Meta/FinvQuant/Backtest/Run/Get?run_id=xxx
+// GetRun GET /API/V1/Meta/FinvQuant/Backtest/Run/Get?runId=xxx
 func (h *Backtest) GetRun(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -312,9 +314,9 @@ func (h *Backtest) CancelRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "取消请求已受理"})
 }
 
-// GetReport GET /API/V1/Meta/FinvQuant/Backtest/Run/Report?run_id=xxx
+// GetReport GET /API/V1/Meta/FinvQuant/Backtest/Run/Report?runId=xxx
 func (h *Backtest) GetReport(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -326,9 +328,9 @@ func (h *Backtest) GetReport(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": report})
 }
 
-// ListEquity GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity?run_id=xxx&page=&page_size=
+// ListEquity GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=xxx&page=&pageSize=
 func (h *Backtest) ListEquity(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -340,9 +342,9 @@ func (h *Backtest) ListEquity(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListTrades GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades?run_id=xxx&page=&page_size=
+// ListTrades GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades?runId=xxx&page=&pageSize=
 func (h *Backtest) ListTrades(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -354,9 +356,9 @@ func (h *Backtest) ListTrades(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListCashflows GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows?run_id=xxx&page=&page_size=
+// ListCashflows GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows?runId=xxx&page=&pageSize=
 func (h *Backtest) ListCashflows(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -368,9 +370,9 @@ func (h *Backtest) ListCashflows(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListPositionLogs GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs?run_id=xxx&page=&page_size=
+// ListPositionLogs GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs?runId=xxx&page=&pageSize=
 func (h *Backtest) ListPositionLogs(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -382,9 +384,9 @@ func (h *Backtest) ListPositionLogs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListEventTraces GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces?run_id=xxx&page=&page_size=
+// ListEventTraces GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces?runId=xxx&page=&pageSize=
 func (h *Backtest) ListEventTraces(c *gin.Context) {
-	id, ok := btIDQuery(c, "run_id")
+	id, ok := btIDQuery(c, "runId")
 	if !ok {
 		return
 	}
@@ -403,7 +405,7 @@ func (h *Backtest) ListEventTraces(c *gin.Context) {
 // ListEnvironments GET /API/V1/Meta/FinvQuant/Backtest/Environment/List
 func (h *Backtest) ListEnvironments(c *gin.Context) {
 	list, total, err := h.service.ListEnvironments(c.Request.Context(),
-		parseBTPager(c), btUserID(c), c.Query("env_type"), c.Query("keyword"))
+		parseBTPager(c), btUserID(c), c.Query("envType"), c.Query("keyword"))
 	if err != nil {
 		respondError(c, "查询环境失败", err)
 		return
@@ -411,9 +413,9 @@ func (h *Backtest) ListEnvironments(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetEnvironment GET /API/V1/Meta/FinvQuant/Backtest/Environment/Get?env_id=xxx
+// GetEnvironment GET /API/V1/Meta/FinvQuant/Backtest/Environment/Get?envId=xxx
 func (h *Backtest) GetEnvironment(c *gin.Context) {
-	id, ok := btIDQuery(c, "env_id")
+	id, ok := btIDQuery(c, "envId")
 	if !ok {
 		return
 	}
@@ -490,7 +492,7 @@ func (h *Backtest) DeleteEnvironment(c *gin.Context) {
 // ListTemplates GET /API/V1/Meta/FinvQuant/Backtest/Template/List
 func (h *Backtest) ListTemplates(c *gin.Context) {
 	list, total, err := h.service.ListTemplates(c.Request.Context(),
-		parseBTPager(c), btUserID(c), c.Query("template_type"), c.Query("keyword"))
+		parseBTPager(c), btUserID(c), c.Query("templateType"), c.Query("keyword"))
 	if err != nil {
 		respondError(c, "查询模板失败", err)
 		return
@@ -498,9 +500,9 @@ func (h *Backtest) ListTemplates(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetTemplate GET /API/V1/Meta/FinvQuant/Backtest/Template/Get?template_id=xxx
+// GetTemplate GET /API/V1/Meta/FinvQuant/Backtest/Template/Get?templateId=xxx
 func (h *Backtest) GetTemplate(c *gin.Context) {
-	id, ok := btIDQuery(c, "template_id")
+	id, ok := btIDQuery(c, "templateId")
 	if !ok {
 		return
 	}

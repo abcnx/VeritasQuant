@@ -40,7 +40,7 @@ const chartEl = ref<HTMLDivElement | null>(null)
 async function loadRuns() {
   try {
     const data = await apiGet<{ list: RunRow[] }>(
-      '/Meta/FinvQuant/Backtest/Run/List?page=1&page_size=100&status=SUCCEEDED',
+      '/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=100&status=SUCCEEDED',
     )
     runs.value = data.list ?? []
   } catch (e) {
@@ -56,7 +56,7 @@ async function loadCurve() {
   chart = null
   try {
     const data = await apiGet<{ list: EquityPoint[] }>(
-      `/Meta/FinvQuant/Backtest/Run/Equity?run_id=${runId.value}&page=1&page_size=5000`,
+      `/Meta/FinvQuant/Backtest/Run/Equity?runId=${runId.value}&page=1&pageSize=5000`,
     )
     points.value = data.list ?? []
     await nextTick()
@@ -120,7 +120,7 @@ onBeforeUnmount(() => {
       <v-card-text>
         <v-alert type="info" variant="tonal" density="compact" class="mb-3">
           查看回测任务在报告精度下的现金余额与总资产（持仓换算现金）变化；结构化数据可通过
-          <code>/API/V1/Meta/FinvQuant/Backtest/Run/Equity?run_id=xxx</code> 获取。
+          <code>/API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=xxx</code> 获取。
         </v-alert>
         <v-skeleton-loader v-if="loading" type="image" height="320" />
         <div v-else ref="chartEl" style="width: 100%; height: 420px" />

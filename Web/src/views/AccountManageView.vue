@@ -51,7 +51,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: AccountRow[] }>(
-      `/Meta/FinvQuant/Backtest/Account/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/FinvQuant/Backtest/Account/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -77,7 +77,7 @@ async function openEdit(row: AccountRow) {
   editing.value = true
   // 通过 Account/Get 拉取最新详情（评审：Get 端点此前未被前端调用，已登记为已使用）
   try {
-    const detail = await apiGet<AccountRow>(`/Meta/FinvQuant/Backtest/Account/Get?account_id=${row.account_id}`)
+    const detail = await apiGet<AccountRow>(`/Meta/FinvQuant/Backtest/Account/Get?accountId=${row.account_id}`)
     form.value = { ...(detail ?? row) }
   } catch (e) {
     error.value = (e as Error).message

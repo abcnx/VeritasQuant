@@ -2,7 +2,7 @@
 
 > 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/Backtest/EnvironmentTemplate.md`
 > 对应视图：`Web/src/views/EnvironmentTemplateView.vue`
-> 接口契约：见 [Docs/API/Backtest/BacktestEnvironment.md](../../API/Backtest/BacktestEnvironment.md) 与 [BacktestTemplate.md](../../API/Backtest/BacktestTemplate.md)
+> 接口契约：见 [Docs/API/Backtest/EnvironmentList.md](../../API/Backtest/EnvironmentList.md) 与 [TemplateList.md](../../API/Backtest/TemplateList.md)
 
 ## 1. 菜单入口
 
@@ -59,10 +59,10 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Environment/List` | [BacktestEnvironment.md](../../API/Backtest/BacktestEnvironment.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Save` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Toggle` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Delete` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Template/List` | [BacktestTemplate.md](../../API/Backtest/BacktestTemplate.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Save` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Delete` | 同上 |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Environment/List` | [EnvironmentList.md](../../API/Backtest/EnvironmentList.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Save` | [EnvironmentSave.md](../../API/Backtest/EnvironmentSave.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Toggle` | [EnvironmentToggle.md](../../API/Backtest/EnvironmentToggle.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Environment/Delete` | [EnvironmentDelete.md](../../API/Backtest/EnvironmentDelete.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Template/List` | [TemplateList.md](../../API/Backtest/TemplateList.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Save` | [TemplateSave.md](../../API/Backtest/TemplateSave.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Delete` | [TemplateDelete.md](../../API/Backtest/TemplateDelete.md) |

@@ -86,9 +86,9 @@ function hasActiveRuns(): boolean {
 async function loadOptions() {
   try {
     const [s, a, e] = await Promise.all([
-      apiGet<{ list: StrategyOption[] }>('/Meta/FinvQuant/Backtest/Strategy/List?page=1&page_size=100&allow_backtest=1'),
-      apiGet<{ list: AccountOption[] }>('/Meta/FinvQuant/Backtest/Account/List?page=1&page_size=100&allow_backtest=1'),
-      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&page_size=100&env_type=BACKTEST'),
+      apiGet<{ list: StrategyOption[] }>('/Meta/FinvQuant/Backtest/Strategy/List?page=1&pageSize=100&allowBacktest=1'),
+      apiGet<{ list: AccountOption[] }>('/Meta/FinvQuant/Backtest/Account/List?page=1&pageSize=100&allowBacktest=1'),
+      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&pageSize=100&envType=BACKTEST'),
     ])
     strategies.value = s.list ?? []
     accounts.value = a.list ?? []
@@ -112,7 +112,7 @@ async function loadRuns() {
   loading.value = true
   try {
     const data = await apiGet<{ total: number; list: RunRow[] }>(
-      `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
+      `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&pageSize=${runPageSize.value}&secuCode=${encodeURIComponent(secuCode.value)}`,
     )
     runs.value = data.list ?? []
     runTotal.value = data.total ?? 0
@@ -134,7 +134,7 @@ function syncPolling() {
     pollTimer = setInterval(async () => {
       try {
         const data = await apiGet<{ list: RunRow[] }>(
-          `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&page_size=${runPageSize.value}&secu_code=${encodeURIComponent(secuCode.value)}`,
+          `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&pageSize=${runPageSize.value}&secuCode=${encodeURIComponent(secuCode.value)}`,
         )
         runs.value = data.list ?? []
         if (!hasActiveRuns()) syncPolling() // 全部结束后停止轮询
@@ -203,7 +203,7 @@ async function cancelRun(run: RunRow) {
 }
 
 function viewReport(run: RunRow) {
-  router.push({ path: '/meta/finvquant/backtest/analysis', query: { run_id: run.run_id } })
+  router.push({ path: '/meta/finvquant/backtest/analysis', query: { runId: run.run_id } })
 }
 
 onMounted(async () => {

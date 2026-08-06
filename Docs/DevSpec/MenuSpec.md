@@ -13,6 +13,7 @@
 ## 2. 菜单文档
 
 - **新添加的前端视图菜单，必须补充对应的业务菜单介绍文档**，介绍该菜单的业务功能、处理逻辑、使用方法、注意事项等。
+- **一个菜单一个文档**：每个业务菜单必须独立成一篇文档文件，**不允许多个业务菜单合并到同一文件中描述**；文档名与菜单/视图名对应（如 `FundManage.md` 对应资金管理菜单，`PositionManage.md` 对应持仓管理菜单）。
 - 文档位置通常在 `Docs/Menu/xxx/XXXX.md`（按业务模块建目录，文档名与菜单/视图名对应）。
 - 参考示例：[`Docs/Menu/HistoryQuote/HistoryQuoteQuery.md`](../Menu/HistoryQuote/HistoryQuoteQuery.md)（对应视图 `Web/src/views/QuoteQueryView.vue`）。
 - 菜单文档随视图代码在同一变更中提交，保持「代码 + 文档」同步交付。

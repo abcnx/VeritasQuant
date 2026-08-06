@@ -87,8 +87,8 @@ function emptyTmpl(): TemplateRow {
 async function loadEnvs() {
   envLoading.value = true
   try {
-    const q = new URLSearchParams({ page: String(envPage.value), page_size: String(envPageSize.value) })
-    if (envTypeFilter.value) q.set('env_type', envTypeFilter.value)
+    const q = new URLSearchParams({ page: String(envPage.value), pageSize: String(envPageSize.value) })
+    if (envTypeFilter.value) q.set('envType', envTypeFilter.value)
     const data = await apiGet<{ total: number; list: EnvRow[] }>(`/Meta/FinvQuant/Backtest/Environment/List?${q.toString()}`)
     envs.value = data.list ?? []
     envTotal.value = data.total ?? 0
@@ -102,8 +102,8 @@ async function loadEnvs() {
 async function loadTemplates() {
   tmplLoading.value = true
   try {
-    const q = new URLSearchParams({ page: String(tmplPage.value), page_size: String(tmplPageSize.value) })
-    if (tmplTypeFilter.value) q.set('template_type', tmplTypeFilter.value)
+    const q = new URLSearchParams({ page: String(tmplPage.value), pageSize: String(tmplPageSize.value) })
+    if (tmplTypeFilter.value) q.set('templateType', tmplTypeFilter.value)
     const data = await apiGet<{ total: number; list: TemplateRow[] }>(`/Meta/FinvQuant/Backtest/Template/List?${q.toString()}`)
     tmpls.value = data.list ?? []
     tmplTotal.value = data.total ?? 0
@@ -125,7 +125,7 @@ async function openEnvEdit(row: EnvRow) {
   envEditing.value = true
   // 通过 Environment/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
   try {
-    const detail = await apiGet<EnvRow>(`/Meta/FinvQuant/Backtest/Environment/Get?env_id=${row.env_id}`)
+    const detail = await apiGet<EnvRow>(`/Meta/FinvQuant/Backtest/Environment/Get?envId=${row.env_id}`)
     envForm.value = { ...(detail ?? row), config: JSON.parse(JSON.stringify((detail ?? row).config ?? {})) }
   } catch (e) {
     error.value = (e as Error).message
@@ -183,7 +183,7 @@ async function openTmplEdit(row: TemplateRow) {
   tmplEditing.value = true
   // 通过 Template/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
   try {
-    const detail = await apiGet<TemplateRow>(`/Meta/FinvQuant/Backtest/Template/Get?template_id=${row.template_id}`)
+    const detail = await apiGet<TemplateRow>(`/Meta/FinvQuant/Backtest/Template/Get?templateId=${row.template_id}`)
     tmplForm.value = { ...(detail ?? row), content: JSON.parse(JSON.stringify((detail ?? row).content ?? {})) }
   } catch (e) {
     error.value = (e as Error).message

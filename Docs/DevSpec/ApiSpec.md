@@ -7,7 +7,8 @@
 ## 1. 响应信封
 
 - 所有 REST JSON 响应顶层固定输出数值 `code` 和文本 `message`；`data`、`error`、`details`、`request_id`、`trace_id` 均为按语义可选字段。
-- 所有 wire 字段使用 **snake_case**。
+- 所有 wire 字段（JSON 请求/响应体）使用 **snake_case**。
+- **URL 查询参数统一使用小驼峰（camelCase）**（如 `pageSize`、`runId`、`secuCode`、`allowBacktest`、`envType`、`templateType`），与 JSON 体的 snake_case 区分：查询参数小驼峰、请求/响应体字段下划线。
 
 ## 2. API 路径
 
@@ -37,6 +38,7 @@ API 契约测试必须覆盖：
 ## 6. 接口文档
 
 - **新开发的 API 接口，必须补充对应的 API 接口文档**，说明请求参数、响应结构、错误码与调用示例；接口行为或契约变更时须同步更新对应文档。
+- **一个接口一个文档**：每个 API 接口必须独立成一篇文档文件，**不允许多个接口合并到同一文件中描述**；文档名与端点资源对应（如 `RunList.md` 对应 `GET .../Run/List`，`RunGet.md` 对应 `GET .../Run/Get`），同名资源按动作拆分（`StrategyList/StrategyGet/StrategySave/...`）。
 - 文档位置通常在 `Docs/API/xxx/XXXX.md`（按业务模块建目录，文档名与端点资源对应）。
 - 参考示例：[`Docs/API/HistoryQuote/HistoryQuote.md`](../API/HistoryQuote/HistoryQuote.md)（对应 `GET /API/V1/Quote/Query`）。
 - 新增接口文档后须在 [`Docs/API/README.md`](../API/README.md) 端点索引中登记链接，并同步更新 [`Docs/API/APIs.md`](../API/APIs.md) 接口总览清单。

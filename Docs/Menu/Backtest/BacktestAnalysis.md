@@ -2,7 +2,7 @@
 
 > 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/Backtest/BacktestAnalysis.md`
 > 对应视图：`Web/src/views/BacktestAnalysisView.vue`
-> 接口契约：见 [Docs/API/Backtest/BacktestRunQuery.md](../../API/Backtest/BacktestRunQuery.md)
+> 接口契约：见 [Docs/API/Backtest/RunList.md](../../API/Backtest/RunList.md)
 
 ## 1. 菜单入口
 
@@ -12,7 +12,7 @@
 - **菜单图标**：`mdi-chart-timeline-variant`
 - **URL 路由**：`/meta/finvquant/backtest/analysis`
 - **对应视图组件**：`Web/src/views/BacktestAnalysisView.vue`
-- **支持 URL 参数**：`?run_id=xxx`（自动打开指定任务的报告，由黄金期货回测验证页跳转携带）
+- **支持 URL 参数**：`?runId=xxx`（自动打开指定任务的报告，由黄金期货回测验证页跳转携带）
 
 ## 2. 业务功能概述
 
@@ -31,7 +31,7 @@
 ## 3. 使用方法
 
 ```
-左侧列表选择 SUCCEEDED 任务（或从黄金期货回测验证页点击「查看报告」带 run_id 直达，深链经 Run/Get 直接加载，不再受限于首页列表）
+左侧列表选择 SUCCEEDED 任务（或从黄金期货回测验证页点击「查看报告」带 runId 直达，深链经 Run/Get 直接加载，不再受限于首页列表）
 → 查看指标卡与曲线 → 下方页签切换：成交记录 / 资金流水明细 / 持仓变化明细 / 事件追踪
 → 成交记录支持分页浏览；RUNNING/PENDING 任务可点击列表项右侧取消按钮中止
 ```
@@ -42,13 +42,13 @@
 
 | 数据 | 接口 |
 |------|------|
-| 汇总报告 | `GET .../Backtest/Run/Report?run_id=` |
-| 净值曲线 | `GET .../Backtest/Run/Equity?run_id=&page=1&page_size=5000` |
-| 成交记录 | `GET .../Backtest/Run/Trades?run_id=`（分页） |
-| 资金流水 | `GET .../Backtest/Run/Cashflows?run_id=&page=1&page_size=1000` |
-| 持仓变化 | `GET .../Backtest/Run/PositionLogs?run_id=&page=1&page_size=1000` |
-| 事件追踪 | `GET .../Backtest/Run/EventTraces?run_id=&page=1&page_size=1000` |
-| 任务详情（深链/轮询） | `GET .../Backtest/Run/Get?run_id=` |
+| 汇总报告 | `GET .../Backtest/Run/Report?runId=` |
+| 净值曲线 | `GET .../Backtest/Run/Equity?runId=&page=1&pageSize=5000` |
+| 成交记录 | `GET .../Backtest/Run/Trades?runId=`（分页） |
+| 资金流水 | `GET .../Backtest/Run/Cashflows?runId=&page=1&pageSize=1000` |
+| 持仓变化 | `GET .../Backtest/Run/PositionLogs?runId=&page=1&pageSize=1000` |
+| 事件追踪 | `GET .../Backtest/Run/EventTraces?runId=&page=1&pageSize=1000` |
+| 任务详情（深链/轮询） | `GET .../Backtest/Run/Get?runId=` |
 | 取消任务 | `POST .../Backtest/Run/Cancel` |
 
 - ECharts 按报告精度生成 x 轴标签（Day=日期 / Hour=日期+时 / Min=日期+时分）；切换任务时 dispose 旧图实例；
@@ -65,12 +65,12 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [BacktestRunQuery.md](../../API/Backtest/BacktestRunQuery.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Report` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces` | 同上 |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Get` | 同上 |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel` | [BacktestRunCreate.md](../../API/Backtest/BacktestRunCreate.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Report` | [RunReport.md](../../API/Backtest/RunReport.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity` | [RunEquity.md](../../API/Backtest/RunEquity.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades` | [RunTrades.md](../../API/Backtest/RunTrades.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows` | [RunCashflows.md](../../API/Backtest/RunCashflows.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs` | [RunPositionLogs.md](../../API/Backtest/RunPositionLogs.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces` | [RunEventTraces.md](../../API/Backtest/RunEventTraces.md) |
+| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Get` | [RunGet.md](../../API/Backtest/RunGet.md) |
+| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel` | [RunCancel.md](../../API/Backtest/RunCancel.md) |
