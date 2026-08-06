@@ -17,6 +17,21 @@
 - 新增菜单时须在 `Web/src/App.vue` 的 `menuItems` 中登记：菜单 `key`（英文驼峰）、`title`（简体中文标题）、`icon`（mdi 图标）。
 - 视图组件与 `menuItems` 中的菜单项一一对应，禁止出现未登记入口的孤立视图。
 
+### 1.1 菜单路由路径命名规范（强制）
+
+- **所有前端菜单路由路径统一使用大驼峰（PascalCase）命名**：路径每段以大写字母开头、其余小写，段间用 `/` 分隔，不得使用小驼峰、下划线或全小写。
+- **FinvQuant 量化回测模块**：路由必须以 **`/Meta/FinvQuant/`** 为前缀，其后每段采用大驼峰，例如：
+  - 黄金期货合约回测验证 → `/Meta/FinvQuant/Backtest/GoldFutures`
+  - 回测分析 → `/Meta/FinvQuant/Backtest/Analysis`
+  - 投资策略回测收益分析报告 → `/Meta/FinvQuant/Backtest/Analysis/Report`
+  - 策略管理 → `/Meta/FinvQuant/Strategy`
+  - 环境与模板管理 → `/Meta/FinvQuant/EnvTemplate`
+  - 实盘仿真验证 → `/Meta/FinvQuant/Simulation/LiveSim`
+- **非 FinvQuant 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/quote/query`）在维护时逐步迁移对齐。
+- **禁止**使用 `-`（连字符）、`_`（下划线）或全小写路径片段（如 `/meta/finvquant/backtest/analysis` 为违规写法）。
+- 路由在 `Web/src/router.ts` 的 `path` 与 `Web/src/App.vue` 的 `menuItems[].path` 中**两处必须一致**，且与 `Docs/Menu/Menus.md` 索引中的「路由」列保持一致。
+- 后端 API 接口路径前缀保持 `/API/V1/Meta/FinvQuant/...`（大驼峰），前端路由与其保持同一前缀体系（见 `Docs/DevSpec/ApiSpec.md`）。
+
 ## 2. 菜单文档
 
 ### 2.1 文档必备性
