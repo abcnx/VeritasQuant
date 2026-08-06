@@ -316,14 +316,21 @@ onBeforeUnmount(() => {
             <v-divider class="my-3" />
             <v-card-subtitle class="pa-0 mb-2">限制条件（可选覆盖）</v-card-subtitle>
             <v-row align="center">
-              <v-col cols="1"><v-switch v-model="useInitialCapital" density="compact" hide-details /></v-col>
+              <v-col cols="1">
+                <!-- 开关规范样式：开启绿色 / 关闭灰色（与账户管理表格回测开关一致） -->
+                <v-switch v-model="useInitialCapital" density="compact" hide-details
+                  :color="useInitialCapital ? 'green' : 'grey'" />
+              </v-col>
               <v-col cols="11">
                 <v-text-field v-model.number="initialCapital" label="初始资金覆盖（覆盖账户初始资金）" type="number"
                   :disabled="!useInitialCapital" />
               </v-col>
             </v-row>
             <v-row align="center">
-              <v-col cols="1"><v-switch v-model="useMaxTrades" density="compact" hide-details /></v-col>
+              <v-col cols="1">
+                <v-switch v-model="useMaxTrades" density="compact" hide-details
+                  :color="useMaxTrades ? 'green' : 'grey'" />
+              </v-col>
               <v-col cols="11">
                 <v-text-field v-model.number="maxTradesPerDay" label="每日最大成交笔数限制" type="number"
                   :disabled="!useMaxTrades" />
