@@ -173,7 +173,7 @@ onMounted(() => {
           { title: '类型', key: 'env_type', width: 90 },
           { title: '地区', key: 'region', width: 70 },
           { title: '交易时段', key: 'sessions', width: 170 },
-          { title: 'tick_size', key: 'tick', width: 90 },
+          { title: '最小变动价位', key: 'tick', width: 110 },
           { title: '默认', key: 'is_default', width: 70 },
           { title: '回测开关', key: 'allow_backtest', width: 100 },
           { title: '操作', key: 'actions', width: 170, sortable: false },
@@ -229,7 +229,7 @@ onMounted(() => {
             rows="12" style="font-family: monospace" spellcheck="false" />
           <v-alert type="info" variant="tonal" density="compact">
             成本覆盖链：环境 &gt; 任务 &gt; 策略 &gt; 账户；trading_sessions 控制交易时段（hhmmss），
-            trading_rules.tick_size 控制价格最小变动单位，引擎自动对齐。
+            trading_rules.tick_size（最小变动价位）控制价格最小变动单位，引擎自动对齐。
           </v-alert>
         </v-card-text>
         <v-card-actions>
