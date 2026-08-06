@@ -90,13 +90,9 @@ set "REMOTE_ID="
 for /f "tokens=*" %%i in ('docker image inspect %IMG%:%CUR_TAG% --format "{{.Id}}" 2^>nul') do set "REMOTE_ID=%%i"
 set "REMOTE_SHORT=!REMOTE_ID:~7,12!"
 echo   - 远端（最新）镜像 ID : !REMOTE_ID!（简写 !REMOTE_SHORT!）
-echo   - manifest 摘要 :
-REM 多平台 index digest（镜像整体版本指纹，来自 RepoDigest）
-for /f "tokens=*" %%d in ('docker image inspect %IMG%:%CUR_TAG% --format "{{index .RepoDigests 0}}" 2^>nul') do (
-    echo     index digest : %%d
-)
-REM 各平台 manifest digest 列表（manifest inspect，用 PowerShell 解析避免多行 JSON 陷阱）
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$m = docker manifest inspect '%IMG%:%CUR_TAG%' 2>$null | Out-String | ConvertFrom-Json; foreach ($p in $m.manifests) { $os=$p.platform.os; $arch=$p.platform.architecture; Write-Output ('      ' + $p.digest + '  ' + $os + '/' + $arch) }"
+echo   - manifest 完整内容 :
+REM 完整输出 docker manifest inspect 原始 JSON（不做任何处理/解析）
+docker manifest inspect %IMG%:%CUR_TAG%
 
 REM ---------- 识别镜像版本号（v{VERSION}-YYYYMMDDHHMM）与构建时间 ----------
 REM docker 无"列出远端 tag"命令，用 digest 匹配探测（见 resolve-image-version.ps1）：
