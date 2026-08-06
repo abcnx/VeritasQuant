@@ -1,21 +1,21 @@
-@echo off
+ï»¿@echo off
 setlocal EnableDelayedExpansion
 
 REM =====================================================================
-REM FinvQuant Windows Ò»¼ü²¿Êğ½Å±¾£¨deploy.cmd£©
+REM FinvQuant Windows ä¸€é”®éƒ¨ç½²è„šæœ¬ï¼ˆdeploy.cmdï¼‰
 REM ---------------------------------------------------------------------
-REM ¹¦ÄÜ£ºÊ×´Î/ÖØĞÂÔÚ Windows 11 Docker ÉÏ²¿Êğ FinvQuant£¨All-in-One£©¡£
-REM   ²½Öè£º¢ÙÉú³É/ºË¶Ô Deploy\.env »·¾³±äÁ¿ ¡ú ¢ÚÆô¶¯ docker compose Èı¸ö·şÎñ
-REM         ¡ú ¢ÛµÈ´ı½¡¿µ ¡ú ¢ÜÑéÖ¤£¨°æ±¾/´æ»î/Ç¨ÒÆ/Êı¾İÄ¿Â¼£©¡£
-REM ÓÃ·¨£º  Deploy\deploy.cmd
-REM   ¿ÉÑ¡£ºDeploy\deploy.cmd --no-env    £¨Ìø¹ı .env Éú³É»·½Ú£¬Ö±½ÓÆô¶¯£©
-REM Ç°Ìá£º  ²Ö¿â¸ùÄ¿Â¼Ö´ĞĞ£»ÒÑ°²×° Docker Desktop£»ÍøÂç¿É´ï ghcr.io¡£
-REM ËµÃ÷£º  ¾µÏñÄ¬ÈÏ´Ó GHCR À­È¡£¨ghcr.io/acanx/finvquant:latest£©¡£
-REM        Êı¾İ¿â/Redis Êı¾İ³Ö¾Ã»¯ÔÚËŞÖ÷»ú£¨¼û .env ÖĞ *_DATA_DIR ÓëÃüÃû¾í£©¡£
+REM åŠŸèƒ½ï¼šé¦–æ¬¡/é‡æ–°åœ¨ Windows 11 Docker ä¸Šéƒ¨ç½² FinvQuantï¼ˆAll-in-Oneï¼‰ã€‚
+REM   æ­¥éª¤ï¼šâ‘ ç”Ÿæˆ/æ ¸å¯¹ Deploy\.env ç¯å¢ƒå˜é‡ â†’ â‘¡å¯åŠ¨ docker compose ä¸‰ä¸ªæœåŠ¡
+REM         â†’ â‘¢ç­‰å¾…å¥åº· â†’ â‘£éªŒè¯ï¼ˆç‰ˆæœ¬/å­˜æ´»/è¿ç§»/æ•°æ®ç›®å½•ï¼‰ã€‚
+REM ç”¨æ³•ï¼š  Deploy\deploy.cmd
+REM   å¯é€‰ï¼šDeploy\deploy.cmd --no-env    ï¼ˆè·³è¿‡ .env ç”Ÿæˆç¯èŠ‚ï¼Œç›´æ¥å¯åŠ¨ï¼‰
+REM å‰æï¼š  ä»“åº“æ ¹ç›®å½•æ‰§è¡Œï¼›å·²å®‰è£… Docker Desktopï¼›ç½‘ç»œå¯è¾¾ ghcr.ioã€‚
+REM è¯´æ˜ï¼š  é•œåƒé»˜è®¤ä» GHCR æ‹‰å–ï¼ˆghcr.io/acanx/finvquant:latestï¼‰ã€‚
+REM        æ•°æ®åº“/Redis æ•°æ®æŒä¹…åŒ–åœ¨å®¿ä¸»æœºï¼ˆè§ .env ä¸­ *_DATA_DIR ä¸å‘½åå·ï¼‰ã€‚
 REM =====================================================================
 
 set "ROOT=%~dp0.."
-pushd "%ROOT%" || (echo [ERROR] ÎŞ·¨½øÈë²Ö¿â¸ùÄ¿Â¼ %ROOT% & exit /b 1)
+pushd "%ROOT%" || (echo [ERROR] æ— æ³•è¿›å…¥ä»“åº“æ ¹ç›®å½• %ROOT% & exit /b 1)
 
 set "COMPOSE_CMD=docker compose -f Deploy\docker-compose.yml --env-file Deploy\.env"
 for /f "tokens=1,* delims==" %%a in ('findstr /i "FINV_IMAGE_TAG" Deploy\.env 2^>nul') do set "IMG_TAG=%%b"
@@ -25,66 +25,66 @@ for %%A in (%*) do ( if /I "%%A"=="--no-env" set "DO_ENV=0" )
 
 echo.
 echo ============================================================
-echo   FinvQuant Ò»¼ü²¿Êğ½Å±¾
-echo   ¹¤×÷Ä¿Â¼£º%ROOT%
+echo   FinvQuant ä¸€é”®éƒ¨ç½²è„šæœ¬
+echo   å·¥ä½œç›®å½•ï¼š%ROOT%
 echo ============================================================
 echo.
 
-REM ---------- 0. Ç°ÖÃ¼ì²é ----------
-echo [1/5] Ç°ÖÃ¼ì²é ...
-docker version >nul 2>&1 || (echo [ERROR] Docker Î´ÔËĞĞ£¬ÇëÏÈÆô¶¯ Docker Desktop & exit /b 1)
-echo [OK] Docker ¿ÉÓÃ¡£
+REM ---------- 0. å‰ç½®æ£€æŸ¥ ----------
+echo [1/5] å‰ç½®æ£€æŸ¥ ...
+docker version >nul 2>&1 || (echo [ERROR] Docker æœªè¿è¡Œï¼Œè¯·å…ˆå¯åŠ¨ Docker Desktop & exit /b 1)
+echo [OK] Docker å¯ç”¨ã€‚
 
-REM ---------- 1. Éú³É / ºË¶Ô .env ----------
+REM ---------- 1. ç”Ÿæˆ / æ ¸å¯¹ .env ----------
 echo.
 if "%DO_ENV%"=="1" (
-    echo [2/5] »·¾³±äÁ¿ÎÄ¼ş£¨.env£©¼ì²é ...
+    echo [2/5] ç¯å¢ƒå˜é‡æ–‡ä»¶ï¼ˆ.envï¼‰æ£€æŸ¥ ...
     if exist "Deploy\.env" (
-        echo   [OK] Deploy\.env ÒÑ´æÔÚ£¬½«ÑØÓÃÏÖÓĞÅäÖÃ¡£
-        echo   - ÈçĞèÖØĞÂÉú³É£¨»Ö¸´Ä¬ÈÏ£©£¬ÇëÏÈÊÖ¶¯É¾³ı Deploy\.env ºóÖØĞÂÖ´ĞĞ±¾½Å±¾
-        echo   - ¹Ø¼üÅäÖÃÏî¼ûÏÂ·½ºË¶Ô£º
+        echo   [OK] Deploy\.env å·²å­˜åœ¨ï¼Œå°†æ²¿ç”¨ç°æœ‰é…ç½®ã€‚
+        echo   - å¦‚éœ€é‡æ–°ç”Ÿæˆï¼ˆæ¢å¤é»˜è®¤ï¼‰ï¼Œè¯·å…ˆæ‰‹åŠ¨åˆ é™¤ Deploy\.env åé‡æ–°æ‰§è¡Œæœ¬è„šæœ¬
+        echo   - å…³é”®é…ç½®é¡¹è§ä¸‹æ–¹æ ¸å¯¹ï¼š
     ) else (
-        echo   [ÌáÊ¾] Î´ÕÒµ½ Deploy\.env£¬½«´Ó Deploy\.env.example Éú³ÉÄ¬ÈÏÅäÖÃ¡£
-        if not exist "Deploy\.env.example" (echo [ERROR] È±ÉÙ Deploy\.env.example£¬ÎŞ·¨Éú³É & popd & exit /b 1)
+        echo   [æç¤º] æœªæ‰¾åˆ° Deploy\.envï¼Œå°†ä» Deploy\.env.example ç”Ÿæˆé»˜è®¤é…ç½®ã€‚
+        if not exist "Deploy\.env.example" (echo [ERROR] ç¼ºå°‘ Deploy\.env.exampleï¼Œæ— æ³•ç”Ÿæˆ & popd & exit /b 1)
         copy /Y "Deploy\.env.example" "Deploy\.env" >nul
-        echo   [OK] ÒÑÉú³É Deploy\.env£¨´Ó .env.example ¸´ÖÆ£©
-        echo   - ??  ÇëºË¶ÔÒÔÏÂ¹Ø¼üÏî£¬±ØÒªÊ±±à¼­ Deploy\.env ºóÖØĞÂÖ´ĞĞ£º
+        echo   [OK] å·²ç”Ÿæˆ Deploy\.envï¼ˆä» .env.example å¤åˆ¶ï¼‰
+        echo   - ??  è¯·æ ¸å¯¹ä»¥ä¸‹å…³é”®é¡¹ï¼Œå¿…è¦æ—¶ç¼–è¾‘ Deploy\.env åé‡æ–°æ‰§è¡Œï¼š
     )
-    echo   ©¤©¤ ¹Ø¼üÅäÖÃºË¶Ô ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    echo   â”€â”€ å…³é”®é…ç½®æ ¸å¯¹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for /f "tokens=1,* delims==" %%a in ('findstr /i "^FINV_PG_USER= ^FINV_PG_PASSWORD= ^FINV_PG_DATABASE= ^FINV_PG_EXPOSE_PORT= ^FINV_REDIS_EXPOSE_PORT= ^FINV_IMAGE_TAG= ^FINV_CONTAINER_NAME= ^FINV_PROJECT_NAME=" Deploy\.env 2^>nul') do echo    %%a=%%b
-    echo   ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
-    echo   - Êı¾İ¿âÊı¾İÄ¿Â¼£ºÔÚ Deploy\.env ÖĞ FINV_PG_DATA_DIR£¨Windows Ê¾Àı D:\Dev\Docker\HostFileSystem\FinvQuant\PostgreSQL£©
-    echo   - Redis Êı¾İ£ºÃüÃû¾í finvquant_finvquant-redisdata£¨ÈİÆ÷ÖØ½¨²»¶ª£©
-    echo   - ¾µÏñÀ´Ô´£ºghcr.io/acanx/finvquant:!IMG_TAG!
+    echo   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    echo   - æ•°æ®åº“æ•°æ®ç›®å½•ï¼šåœ¨ Deploy\.env ä¸­ FINV_PG_DATA_DIRï¼ˆWindows ç¤ºä¾‹ D:\Dev\Docker\HostFileSystem\FinvQuant\PostgreSQLï¼‰
+    echo   - Redis æ•°æ®ï¼šå‘½åå· finvquant_finvquant-redisdataï¼ˆå®¹å™¨é‡å»ºä¸ä¸¢ï¼‰
+    echo   - é•œåƒæ¥æºï¼šghcr.io/acanx/finvquant:!IMG_TAG!
     echo.
 ) else (
-    echo [2/5] Ìø¹ı .env Éú³É£¨--no-env£©£¬ÒªÇó Deploy\.env ÒÑ´æÔÚ
-    if not exist "Deploy\.env" (echo [ERROR] È±ÉÙ Deploy\.env£¬ÇëÏÈÔËĞĞ Deploy\deploy.cmd Éú³É & popd & exit /b 1)
+    echo [2/5] è·³è¿‡ .env ç”Ÿæˆï¼ˆ--no-envï¼‰ï¼Œè¦æ±‚ Deploy\.env å·²å­˜åœ¨
+    if not exist "Deploy\.env" (echo [ERROR] ç¼ºå°‘ Deploy\.envï¼Œè¯·å…ˆè¿è¡Œ Deploy\deploy.cmd ç”Ÿæˆ & popd & exit /b 1)
 )
 
-REM ---------- 2. À­È¡¾µÏñ ----------
-echo [3/5] À­È¡¾µÏñ£¨ghcr.io/acanx/finvquant:!IMG_TAG!£©...
+REM ---------- 2. æ‹‰å–é•œåƒ ----------
+echo [3/5] æ‹‰å–é•œåƒï¼ˆghcr.io/acanx/finvquant:!IMG_TAG!ï¼‰...
 %COMPOSE_CMD% pull finvquant
-if errorlevel 1 (echo [ERROR] À­È¡¾µÏñÊ§°Ü£¬Çë¼ì²é ghcr.io ÍøÂç¿É´ïĞÔ & popd & exit /b 1)
-echo [OK] ¾µÏñÒÑ¾ÍĞ÷¡£
+if errorlevel 1 (echo [ERROR] æ‹‰å–é•œåƒå¤±è´¥ï¼Œè¯·æ£€æŸ¥ ghcr.io ç½‘ç»œå¯è¾¾æ€§ & popd & exit /b 1)
+echo [OK] é•œåƒå·²å°±ç»ªã€‚
 
-REM ---------- 3. Æô¶¯ compose£¨Ê×´Î´´½¨È«²¿·şÎñ£© ----------
+REM ---------- 3. å¯åŠ¨ composeï¼ˆé¦–æ¬¡åˆ›å»ºå…¨éƒ¨æœåŠ¡ï¼‰ ----------
 echo.
-echo [4/5] Æô¶¯ Docker Compose ·şÎñ£¨postgres + redis + finvquant£©...
+echo [4/5] å¯åŠ¨ Docker Compose æœåŠ¡ï¼ˆpostgres + redis + finvquantï¼‰...
 %COMPOSE_CMD% up -d
 if errorlevel 1 (
-    echo [ERROR] ·şÎñÆô¶¯Ê§°Ü£¬²é¿´ÈÕÖ¾£º%COMPOSE_CMD% logs --tail=100
+    echo [ERROR] æœåŠ¡å¯åŠ¨å¤±è´¥ï¼ŒæŸ¥çœ‹æ—¥å¿—ï¼š%COMPOSE_CMD% logs --tail=100
     popd & exit /b 1
 )
-echo [OK] ·şÎñÒÑÆô¶¯¡£
+echo [OK] æœåŠ¡å·²å¯åŠ¨ã€‚
 
-REM ---------- 4. µÈ´ı½¡¿µ + ÑéÖ¤ ----------
+REM ---------- 4. ç­‰å¾…å¥åº· + éªŒè¯ ----------
 echo.
-echo [5/5] µÈ´ı·şÎñ½¡¿µ£¨×î³¤ 120s£©...
+echo [5/5] ç­‰å¾…æœåŠ¡å¥åº·ï¼ˆæœ€é•¿ 120sï¼‰...
 set /a WAIT=0
 :waitloop
     if !WAIT! geq 24 (
-        echo [WARN] ½¡¿µ¼ì²é³¬Ê±£¬ÇëÊÖ¶¯²é¿´£º%COMPOSE_CMD% ps
+        echo [WARN] å¥åº·æ£€æŸ¥è¶…æ—¶ï¼Œè¯·æ‰‹åŠ¨æŸ¥çœ‹ï¼š%COMPOSE_CMD% ps
         goto :verify
     )
     set "ALLHEALTHY=1"
@@ -97,26 +97,26 @@ set /a WAIT=0
     set /a WAIT+=1
     goto :waitloop
 :healthy
-echo [OK] È«²¿·şÎñ½¡¿µ¡£
+echo [OK] å…¨éƒ¨æœåŠ¡å¥åº·ã€‚
 
 :verify
 echo.
-echo ÑéÖ¤²¿Êğ½á¹û ...
-echo   - ·şÎñ¶Ë°æ±¾½Ó¿Ú£º
+echo éªŒè¯éƒ¨ç½²ç»“æœ ...
+echo   - æœåŠ¡ç«¯ç‰ˆæœ¬æ¥å£ï¼š
 curl -s http://localhost:16001/API/V1/version 2>nul & echo.
-echo   - ´æ»îÌ½Õë£º
+echo   - å­˜æ´»æ¢é’ˆï¼š
 curl -s http://localhost:16001/API/V1/health/live 2>nul & echo.
-echo   - ÈİÆ÷×´Ì¬£º
+echo   - å®¹å™¨çŠ¶æ€ï¼š
 docker ps --filter "name=finvquant" --filter "name=postgres" --filter "name=redis" --format "  {{.Names}}: {{.Status}}"
-echo   - Êı¾İ¿âÇ¨ÒÆ¼ÇÂ¼£¨×îĞÂ 3 Ìõ£©£º
+echo   - æ•°æ®åº“è¿ç§»è®°å½•ï¼ˆæœ€æ–° 3 æ¡ï¼‰ï¼š
 docker exec fq-postgres psql -U finvquant -d finvquant -tc "SELECT version FROM schema_version ORDER BY version::int DESC LIMIT 3;" 2>nul
 
 echo.
 echo ============================================================
-echo   ²¿ÊğÍê³É£¡
-echo   - Ç°¶Ë¿ØÖÆÌ¨£ºhttp://localhost:16002
-echo   - ·şÎñ¶Ë API £ºhttp://localhost:16001/API/V1/health/live
-echo   - ÈÕ³£Éı¼¶£ºDeploy\upgrade.cmd
+echo   éƒ¨ç½²å®Œæˆï¼
+echo   - å‰ç«¯æ§åˆ¶å°ï¼šhttp://localhost:16002
+echo   - æœåŠ¡ç«¯ API ï¼šhttp://localhost:16001/API/V1/health/live
+echo   - æ—¥å¸¸å‡çº§ï¼šDeploy\upgrade.cmd
 echo ============================================================
 echo.
 

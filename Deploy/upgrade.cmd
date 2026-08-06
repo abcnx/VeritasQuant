@@ -1,23 +1,23 @@
-@echo off
+ï»¿@echo off
 setlocal EnableDelayedExpansion
 
 REM =====================================================================
-REM FinvQuant Windows °æ±¾¼ì²éÓëÉı¼¶½Å±¾£¨upgrade.cmd£©
+REM FinvQuant Windows ç‰ˆæœ¬æ£€æŸ¥ä¸å‡çº§è„šæœ¬ï¼ˆupgrade.cmdï¼‰
 REM ---------------------------------------------------------------------
-REM ¹¦ÄÜ£º¼ì²éÔ¶¶Ë GHCR ÊÇ·ñÓĞ±Èµ±Ç°±¾µØ²¿Êğ¸üĞÂµÄ¾µÏñ£»ÈçÓĞÔòÀ­È¡²¢°´Ğè
-REM       Éı¼¶²¿Êğ£»È«³ÌÊä³ö¹Ø¼üÒªËØÓë½á¹ûÈÕÖ¾¡£
-REM   ¢ÙÀ­È¡Ô¶¶Ë¾µÏñ×îĞÂ°æ±¾ĞÅÏ¢£¨pull£¬ÃİµÈ£© ¡ú ¢Ú¶Ô±È±¾µØÔËĞĞ°æ±¾
-REM   ¡ú ¢ÛÈôÔ¶¶Ë¸üĞÂÔòÖ´ĞĞÉı¼¶²¿Êğ£¨´æÁ¿ DB/Redis/ÅäÖÃ±£Áô£© ¡ú ¢ÜÑéÖ¤¡£
-REM ÓÃ·¨£º  Deploy\upgrade.cmd            £¨¼ì²é²¢°´ĞèÉı¼¶µ½ latest£©
-REM         Deploy\upgrade.cmd --skip-backup   £¨Ìø¹ıÊı¾İ¿â±¸·İ£¬Ó¦¼±ÓÃ£©
-REM         Deploy\upgrade.cmd --force    £¨¼´Ê¹°æ±¾ÏàÍ¬Ò²Ç¿ÖÆÖØ½¨²¿Êğ£©
-REM Ç°Ìá£º  ²Ö¿â¸ùÄ¿Â¼Ö´ĞĞ£»ÒÑ°²×° Docker Desktop£»ÍøÂç¿É´ï ghcr.io¡£
-REM ËµÃ÷£º  Éı¼¶²»ÖØ½¨ postgres/redis£¨ÅäÖÃÎ´±äÔòÊı¾İ²»¶ª£©£»Êı¾İ¿âÇ¨ÒÆÓÉ
-REM        ·şÎñ¶ËÆô¶¯×Ô¶¯Ó¦ÓÃ£¨ÃİµÈ£©¡£»Ø¹ö¼û Deploy\rollback.cmd¡£
+REM åŠŸèƒ½ï¼šæ£€æŸ¥è¿œç«¯ GHCR æ˜¯å¦æœ‰æ¯”å½“å‰æœ¬åœ°éƒ¨ç½²æ›´æ–°çš„é•œåƒï¼›å¦‚æœ‰åˆ™æ‹‰å–å¹¶æŒ‰éœ€
+REM       å‡çº§éƒ¨ç½²ï¼›å…¨ç¨‹è¾“å‡ºå…³é”®è¦ç´ ä¸ç»“æœæ—¥å¿—ã€‚
+REM   â‘ æ‹‰å–è¿œç«¯é•œåƒæœ€æ–°ç‰ˆæœ¬ä¿¡æ¯ï¼ˆpullï¼Œå¹‚ç­‰ï¼‰ â†’ â‘¡å¯¹æ¯”æœ¬åœ°è¿è¡Œç‰ˆæœ¬
+REM   â†’ â‘¢è‹¥è¿œç«¯æ›´æ–°åˆ™æ‰§è¡Œå‡çº§éƒ¨ç½²ï¼ˆå­˜é‡ DB/Redis/é…ç½®ä¿ç•™ï¼‰ â†’ â‘£éªŒè¯ã€‚
+REM ç”¨æ³•ï¼š  Deploy\upgrade.cmd            ï¼ˆæ£€æŸ¥å¹¶æŒ‰éœ€å‡çº§åˆ° latestï¼‰
+REM         Deploy\upgrade.cmd --skip-backup   ï¼ˆè·³è¿‡æ•°æ®åº“å¤‡ä»½ï¼Œåº”æ€¥ç”¨ï¼‰
+REM         Deploy\upgrade.cmd --force    ï¼ˆå³ä½¿ç‰ˆæœ¬ç›¸åŒä¹Ÿå¼ºåˆ¶é‡å»ºéƒ¨ç½²ï¼‰
+REM å‰æï¼š  ä»“åº“æ ¹ç›®å½•æ‰§è¡Œï¼›å·²å®‰è£… Docker Desktopï¼›ç½‘ç»œå¯è¾¾ ghcr.ioã€‚
+REM è¯´æ˜ï¼š  å‡çº§ä¸é‡å»º postgres/redisï¼ˆé…ç½®æœªå˜åˆ™æ•°æ®ä¸ä¸¢ï¼‰ï¼›æ•°æ®åº“è¿ç§»ç”±
+REM        æœåŠ¡ç«¯å¯åŠ¨è‡ªåŠ¨åº”ç”¨ï¼ˆå¹‚ç­‰ï¼‰ã€‚å›æ»šè§ Deploy\rollback.cmdã€‚
 REM =====================================================================
 
 set "ROOT=%~dp0.."
-pushd "%ROOT%" || (echo [ERROR] ÎŞ·¨½øÈë²Ö¿â¸ùÄ¿Â¼ %ROOT% & exit /b 1)
+pushd "%ROOT%" || (echo [ERROR] æ— æ³•è¿›å…¥ä»“åº“æ ¹ç›®å½• %ROOT% & exit /b 1)
 
 set "COMPOSE_CMD=docker compose -f Deploy\docker-compose.yml --env-file Deploy\.env"
 set "IMG=ghcr.io/acanx/finvquant"
@@ -28,127 +28,127 @@ for %%A in (%*) do (
     if /I "%%A"=="--force"       set "FORCE=1"
 )
 
-REM ---------- 0. Ç°ÖÃ¼ì²é ----------
+REM ---------- 0. å‰ç½®æ£€æŸ¥ ----------
 echo.
 echo ============================================================
-echo   FinvQuant °æ±¾¼ì²éÓëÉı¼¶½Å±¾
-echo   ¹¤×÷Ä¿Â¼£º%ROOT%
+echo   FinvQuant ç‰ˆæœ¬æ£€æŸ¥ä¸å‡çº§è„šæœ¬
+echo   å·¥ä½œç›®å½•ï¼š%ROOT%
 echo ============================================================
 echo.
-echo [1/8] Ç°ÖÃ¼ì²é ...
-docker version >nul 2>&1 || (echo [ERROR] Docker Î´ÔËĞĞ£¬ÇëÏÈÆô¶¯ Docker Desktop & exit /b 1)
+echo [1/8] å‰ç½®æ£€æŸ¥ ...
+docker version >nul 2>&1 || (echo [ERROR] Docker æœªè¿è¡Œï¼Œè¯·å…ˆå¯åŠ¨ Docker Desktop & exit /b 1)
 if not exist "Deploy\.env" (
-    echo [ERROR] È±ÉÙ Deploy\.env£¬ÇëÏÈÔËĞĞ Deploy\deploy.cmd Éú³É
+    echo [ERROR] ç¼ºå°‘ Deploy\.envï¼Œè¯·å…ˆè¿è¡Œ Deploy\deploy.cmd ç”Ÿæˆ
     exit /b 1
 )
 docker ps --filter "name=finvquant" --format "{{.Names}}" | findstr /i "finvquant" >nul
 if errorlevel 1 (
-    echo [ERROR] Î´¼ì²âµ½ÔËĞĞÖĞµÄ finvquant ÈİÆ÷¡£Ê×´Î²¿ÊğÇëÓÃ Deploy\deploy.cmd£¬»òÏÈÆô¶¯·şÎñ
+    echo [ERROR] æœªæ£€æµ‹åˆ°è¿è¡Œä¸­çš„ finvquant å®¹å™¨ã€‚é¦–æ¬¡éƒ¨ç½²è¯·ç”¨ Deploy\deploy.cmdï¼Œæˆ–å…ˆå¯åŠ¨æœåŠ¡
     popd & exit /b 1
 )
-echo [OK] Docker ¿ÉÓÃ£¬Deploy\.env ´æÔÚ£¬finvquant ÈİÆ÷ÔÚÔËĞĞ¡£
+echo [OK] Docker å¯ç”¨ï¼ŒDeploy\.env å­˜åœ¨ï¼Œfinvquant å®¹å™¨åœ¨è¿è¡Œã€‚
 
-REM ---------- 1. ¶ÁÈ¡µ±Ç°±¾µØÔËĞĞ°æ±¾ ----------
+REM ---------- 1. è¯»å–å½“å‰æœ¬åœ°è¿è¡Œç‰ˆæœ¬ ----------
 echo.
-echo [2/8] ¶ÁÈ¡µ±Ç°±¾µØÔËĞĞ°æ±¾ ...
+echo [2/8] è¯»å–å½“å‰æœ¬åœ°è¿è¡Œç‰ˆæœ¬ ...
 set "CUR_IMGID="
 for /f "tokens=*" %%i in ('docker inspect finvquant --format "{{.Image}}" 2^>nul') do set "CUR_IMGID=%%i"
 set "CUR_TAG="
 for /f "tokens=1,* delims==" %%a in ('findstr /i "FINV_IMAGE_TAG" Deploy\.env 2^>nul') do set "CUR_TAG=%%b"
 if not defined CUR_TAG set "CUR_TAG=latest"
 set "CUR_SHORT=!CUR_IMGID:~7,12!"
-echo   - ±¾µØÔËĞĞÈİÆ÷¾µÏñ ID : !CUR_IMGID!£¨¼òĞ´ !CUR_SHORT!£©
-echo   - ÅäÖÃµÄÄ¿±ê tag      : %CUR_TAG%
-echo   - ÈİÆ÷×´Ì¬            :
+echo   - æœ¬åœ°è¿è¡Œå®¹å™¨é•œåƒ ID : !CUR_IMGID!ï¼ˆç®€å†™ !CUR_SHORT!ï¼‰
+echo   - é…ç½®çš„ç›®æ ‡ tag      : %CUR_TAG%
+echo   - å®¹å™¨çŠ¶æ€            :
 docker ps --filter "name=finvquant" --format "    {{.Names}}: {{.Status}}  (uptime {{.RunningFor}})"
-echo   - ÒÀÀµ·şÎñ            :
+echo   - ä¾èµ–æœåŠ¡            :
 docker ps --filter "name=postgres" --format "    {{.Names}}: {{.Status}}"
 docker ps --filter "name=redis" --format "    {{.Names}}: {{.Status}}"
 
-REM ---------- 2. À­È¡Ô¶¶Ë¾µÏñ£¨ÃİµÈ£¬»ñÈ¡×îĞÂ°æ±¾ĞÅÏ¢£© ----------
+REM ---------- 2. æ‹‰å–è¿œç«¯é•œåƒï¼ˆå¹‚ç­‰ï¼Œè·å–æœ€æ–°ç‰ˆæœ¬ä¿¡æ¯ï¼‰ ----------
 echo.
-echo [3/8] À­È¡Ô¶¶Ë¾µÏñ×îĞÂ°æ±¾£¨%IMG%:%CUR_TAG%£©...
+echo [3/8] æ‹‰å–è¿œç«¯é•œåƒæœ€æ–°ç‰ˆæœ¬ï¼ˆ%IMG%:%CUR_TAG%ï¼‰...
 %COMPOSE_CMD% pull finvquant
 if errorlevel 1 (
-    echo [ERROR] À­È¡Ô¶¶Ë¾µÏñÊ§°Ü¡£Çë¼ì²é£ºghcr.io ÍøÂç¿É´ïĞÔ / Docker µÇÂ¼×´Ì¬
-    echo   - ÈôÎ´µÇÂ¼ GHCR£ºdocker login ghcr.io
+    echo [ERROR] æ‹‰å–è¿œç«¯é•œåƒå¤±è´¥ã€‚è¯·æ£€æŸ¥ï¼šghcr.io ç½‘ç»œå¯è¾¾æ€§ / Docker ç™»å½•çŠ¶æ€
+    echo   - è‹¥æœªç™»å½• GHCRï¼šdocker login ghcr.io
     popd & exit /b 1
 )
 set "REMOTE_ID="
 for /f "tokens=*" %%i in ('docker image inspect %IMG%:%CUR_TAG% --format "{{.Id}}" 2^>nul') do set "REMOTE_ID=%%i"
 set "REMOTE_SHORT=!REMOTE_ID:~7,12!"
-echo   - Ô¶¶Ë£¨×îĞÂ£©¾µÏñ ID : !REMOTE_ID!£¨¼òĞ´ !REMOTE_SHORT!£©
+echo   - è¿œç«¯ï¼ˆæœ€æ–°ï¼‰é•œåƒ ID : !REMOTE_ID!ï¼ˆç®€å†™ !REMOTE_SHORT!ï¼‰
 
-REM ---------- 3. °æ±¾¶Ô±È ----------
+REM ---------- 3. ç‰ˆæœ¬å¯¹æ¯” ----------
 echo.
-echo [4/8] °æ±¾¶Ô±È ...
-echo   - ±¾µØÔËĞĞ : !CUR_SHORT!
-echo   - Ô¶¶Ë×îĞÂ : !REMOTE_SHORT!
+echo [4/8] ç‰ˆæœ¬å¯¹æ¯” ...
+echo   - æœ¬åœ°è¿è¡Œ : !CUR_SHORT!
+echo   - è¿œç«¯æœ€æ–° : !REMOTE_SHORT!
 if not defined REMOTE_ID (
-    echo [WARN] ÎŞ·¨»ñÈ¡Ô¶¶Ë¾µÏñ ID£¬°´ĞèÉı¼¶½«Ìø¹ı
+    echo [WARN] æ— æ³•è·å–è¿œç«¯é•œåƒ IDï¼ŒæŒ‰éœ€å‡çº§å°†è·³è¿‡
     goto :verify
 )
 if "!CUR_IMGID!"=="!REMOTE_ID!" (
     if "%FORCE%"=="1" (
-        echo   [ÅĞ¶Ï] °æ±¾ÏàÍ¬£¨ÒÑÊÇ×îĞÂ£©£¬Òò --force Ç¿ÖÆÖØ½¨²¿Êğ
+        echo   [åˆ¤æ–­] ç‰ˆæœ¬ç›¸åŒï¼ˆå·²æ˜¯æœ€æ–°ï¼‰ï¼Œå›  --force å¼ºåˆ¶é‡å»ºéƒ¨ç½²
         set "NEED_UPGRADE=1"
     ) else (
-        echo   [ÅĞ¶Ï] °æ±¾ÏàÍ¬£¨ÒÑÊÇ×îĞÂ°æ±¾£©£¬ÎŞĞèÉı¼¶¡£
-        echo   [OK] µ±Ç°±¾µØ²¿ÊğÒÑÊÇ×îĞÂ°æ±¾£¬ÍË³ö¡£
+        echo   [åˆ¤æ–­] ç‰ˆæœ¬ç›¸åŒï¼ˆå·²æ˜¯æœ€æ–°ç‰ˆæœ¬ï¼‰ï¼Œæ— éœ€å‡çº§ã€‚
+        echo   [OK] å½“å‰æœ¬åœ°éƒ¨ç½²å·²æ˜¯æœ€æ–°ç‰ˆæœ¬ï¼Œé€€å‡ºã€‚
         goto :done
     )
 ) else (
-    echo   [ÅĞ¶Ï] Ô¶¶ËÓĞ¸üĞÂ°æ±¾£¨!CUR_SHORT! -^> !REMOTE_SHORT!£©£¬Ö´ĞĞÉı¼¶²¿Êğ¡£
+    echo   [åˆ¤æ–­] è¿œç«¯æœ‰æ›´æ–°ç‰ˆæœ¬ï¼ˆ!CUR_SHORT! -^> !REMOTE_SHORT!ï¼‰ï¼Œæ‰§è¡Œå‡çº§éƒ¨ç½²ã€‚
     set "NEED_UPGRADE=1"
 )
 
-REM ---------- 4. Éı¼¶Ç°±¸·İ ----------
+REM ---------- 4. å‡çº§å‰å¤‡ä»½ ----------
 if "!NEED_UPGRADE!"=="1" (
     if "%DO_BACKUP%"=="1" (
         echo.
-        echo [5/8] Éı¼¶Ç°±¸·İ ...
+        echo [5/8] å‡çº§å‰å¤‡ä»½ ...
         if not exist "Deploy\backup" mkdir "Deploy\backup"
         set "BK=Deploy\backup\finvquant_%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%.dump"
         set "BK=!BK: =0!"
-        echo   ±¸·İ .env -^> Deploy\.env.bak
+        echo   å¤‡ä»½ .env -^> Deploy\.env.bak
         copy /Y "Deploy\.env" "Deploy\.env.bak" >nul
-        echo   ±¸·İÊı¾İ¿â£¨pg_dump£¬º¬±í½á¹¹ÓëÊı¾İ£©...
+        echo   å¤‡ä»½æ•°æ®åº“ï¼ˆpg_dumpï¼Œå«è¡¨ç»“æ„ä¸æ•°æ®ï¼‰...
         docker exec fq-postgres pg_dump -U finvquant -d finvquant -F c -f /tmp/finvquant_backup.dump >nul 2>&1
         if errorlevel 1 (
-            echo   [WARN] Êı¾İ¿â±¸·İÊ§°Ü£¨¿ÉÄÜ PG Î´¾ÍĞ÷£©£¬¼ÌĞøÉı¼¶£»ÈçºóĞøÇ¨ÒÆÒì³£ÇëÊÖ¶¯±¸·İ
+            echo   [WARN] æ•°æ®åº“å¤‡ä»½å¤±è´¥ï¼ˆå¯èƒ½ PG æœªå°±ç»ªï¼‰ï¼Œç»§ç»­å‡çº§ï¼›å¦‚åç»­è¿ç§»å¼‚å¸¸è¯·æ‰‹åŠ¨å¤‡ä»½
         ) else (
             docker cp fq-postgres:/tmp/finvquant_backup.dump "!BK!" >nul 2>&1
-            echo   [OK] Êı¾İ¿â±¸·İÍê³É£º!BK!
+            echo   [OK] æ•°æ®åº“å¤‡ä»½å®Œæˆï¼š!BK!
         )
     ) else (
         echo.
-        echo [5/8] Ìø¹ı±¸·İ£¨--skip-backup£©
+        echo [5/8] è·³è¿‡å¤‡ä»½ï¼ˆ--skip-backupï¼‰
     )
 
-    REM ---------- 5. Éı¼¶²¿Êğ£¨½öÖØ½¨ finvquant£¬±£Áô DB/Redis£© ----------
+    REM ---------- 5. å‡çº§éƒ¨ç½²ï¼ˆä»…é‡å»º finvquantï¼Œä¿ç•™ DB/Redisï¼‰ ----------
     echo.
-    echo [6/8] Ö´ĞĞÉı¼¶²¿Êğ ...
-    echo   - ÖØ½¨·şÎñ£º½ö finvquant£¨postgres / redis ÅäÖÃÎ´±ä£¬²»ÖØ½¨¡¢Êı¾İ²»¶ª£©
-    echo   - ´æÁ¿Êı¾İ£ºPG Êı¾İÄ¿Â¼°ó¶¨¹ÒÔØ + Redis ÃüÃû¾í£¬Éı¼¶È«³Ì±£Áô
-    echo   - »·¾³ÅäÖÃ£ºÑØÓÃ Deploy\.env£¨Î´ĞŞ¸Ä£©
-    echo   - Êı¾İ¿âÇ¨ÒÆ£ºĞÂ°æ±¾·şÎñÆô¶¯Ê±×Ô¶¯Ó¦ÓÃ£¨ÃİµÈ£¬¼û schema_version ±í£©
+    echo [6/8] æ‰§è¡Œå‡çº§éƒ¨ç½² ...
+    echo   - é‡å»ºæœåŠ¡ï¼šä»… finvquantï¼ˆpostgres / redis é…ç½®æœªå˜ï¼Œä¸é‡å»ºã€æ•°æ®ä¸ä¸¢ï¼‰
+    echo   - å­˜é‡æ•°æ®ï¼šPG æ•°æ®ç›®å½•ç»‘å®šæŒ‚è½½ + Redis å‘½åå·ï¼Œå‡çº§å…¨ç¨‹ä¿ç•™
+    echo   - ç¯å¢ƒé…ç½®ï¼šæ²¿ç”¨ Deploy\.envï¼ˆæœªä¿®æ”¹ï¼‰
+    echo   - æ•°æ®åº“è¿ç§»ï¼šæ–°ç‰ˆæœ¬æœåŠ¡å¯åŠ¨æ—¶è‡ªåŠ¨åº”ç”¨ï¼ˆå¹‚ç­‰ï¼Œè§ schema_version è¡¨ï¼‰
     echo.
-    echo   Ö´ĞĞÃüÁî£º%COMPOSE_CMD% up -d --force-recreate finvquant
+    echo   æ‰§è¡Œå‘½ä»¤ï¼š%COMPOSE_CMD% up -d --force-recreate finvquant
     %COMPOSE_CMD% up -d --force-recreate finvquant
     if errorlevel 1 (
-        echo [ERROR] Éı¼¶²¿ÊğÊ§°Ü£¬²é¿´ÈÕÖ¾£º%COMPOSE_CMD% logs --tail=100 finvquant
-        echo   ÈçĞè»Ø¹ö£ºDeploy\rollback.cmd
+        echo [ERROR] å‡çº§éƒ¨ç½²å¤±è´¥ï¼ŒæŸ¥çœ‹æ—¥å¿—ï¼š%COMPOSE_CMD% logs --tail=100 finvquant
+        echo   å¦‚éœ€å›æ»šï¼šDeploy\rollback.cmd
         popd & exit /b 1
     )
-    echo [OK] finvquant ÈİÆ÷ÒÑÖØ½¨ÎªĞÂ°æ±¾¡£
+    echo [OK] finvquant å®¹å™¨å·²é‡å»ºä¸ºæ–°ç‰ˆæœ¬ã€‚
 
-    REM ---------- 6. µÈ´ı½¡¿µ ----------
+    REM ---------- 6. ç­‰å¾…å¥åº· ----------
     echo.
-    echo [7/8] µÈ´ı·şÎñ½¡¿µ¼ì²é£¨×î³¤ 90s£©...
+    echo [7/8] ç­‰å¾…æœåŠ¡å¥åº·æ£€æŸ¥ï¼ˆæœ€é•¿ 90sï¼‰...
     set /a WAIT=0
     :waitloop
         if !WAIT! geq 18 (
-            echo [WARN] ½¡¿µ¼ì²é³¬Ê±£¬ÇëÊÖ¶¯²é¿´£º%COMPOSE_CMD% logs --tail=100 finvquant
+            echo [WARN] å¥åº·æ£€æŸ¥è¶…æ—¶ï¼Œè¯·æ‰‹åŠ¨æŸ¥çœ‹ï¼š%COMPOSE_CMD% logs --tail=100 finvquant
             goto :verify
         )
         for /f "tokens=*" %%s in ('docker inspect finvquant --format "{{.State.Health.Status}}" 2^>nul') do set "HSTATUS=%%s"
@@ -157,29 +157,29 @@ if "!NEED_UPGRADE!"=="1" (
         set /a WAIT+=1
         goto :waitloop
     :healthy
-    echo [OK] ÈİÆ÷½¡¿µ£¨healthy£©¡£
+    echo [OK] å®¹å™¨å¥åº·ï¼ˆhealthyï¼‰ã€‚
 )
 
-REM ---------- 7. ÑéÖ¤ ----------
+REM ---------- 7. éªŒè¯ ----------
 :verify
 echo.
-echo [8/8] ÑéÖ¤Éı¼¶½á¹û ...
-echo   - ·şÎñ¶Ë°æ±¾½Ó¿Ú£º
+echo [8/8] éªŒè¯å‡çº§ç»“æœ ...
+echo   - æœåŠ¡ç«¯ç‰ˆæœ¬æ¥å£ï¼š
 curl -s http://localhost:16001/API/V1/version 2>nul & echo.
-echo   - ´æ»îÌ½Õë£º
+echo   - å­˜æ´»æ¢é’ˆï¼š
 curl -s http://localhost:16001/API/V1/health/live 2>nul & echo.
-echo   - ÈİÆ÷×´Ì¬£º
+echo   - å®¹å™¨çŠ¶æ€ï¼š
 docker ps --filter "name=finvquant" --format "  {{.Names}}: {{.Status}}"
-echo   - Êı¾İ¿âÇ¨ÒÆ¼ÇÂ¼£¨×îĞÂ 3 Ìõ£©£º
+echo   - æ•°æ®åº“è¿ç§»è®°å½•ï¼ˆæœ€æ–° 3 æ¡ï¼‰ï¼š
 docker exec fq-postgres psql -U finvquant -d finvquant -tc "SELECT version FROM schema_version ORDER BY version::int DESC LIMIT 3;" 2>nul
 
 :done
 echo.
 echo ============================================================
-echo   ±¾´ÎÉı¼¶²Ù×÷Íê³É¡£
-echo   - Ç°¶Ë¿ØÖÆÌ¨£ºhttp://localhost:16002
-echo   - ·şÎñ¶Ë API £ºhttp://localhost:16001/API/V1/health/live
-echo   - ÍêÕûÊÖ²á£ºDeploy\DeployUpgradeGuide.md
+echo   æœ¬æ¬¡å‡çº§æ“ä½œå®Œæˆã€‚
+echo   - å‰ç«¯æ§åˆ¶å°ï¼šhttp://localhost:16002
+echo   - æœåŠ¡ç«¯ API ï¼šhttp://localhost:16001/API/V1/health/live
+echo   - å®Œæ•´æ‰‹å†Œï¼šDeploy\DeployUpgradeGuide.md
 echo ============================================================
 echo.
 
