@@ -28,6 +28,7 @@ interface SecurityOption {
 const COLOR_UP = '#ef232a'
 const COLOR_DOWN = '#14b143'
 const MA_COLORS = ['#f6c343', '#3b8ff7', '#c56cf0', '#2fb28a'] // MA5 / MA10 / MA20 / MA30
+const BOLL_COLORS = ['#ff8c69', '#ffffff', '#7ec8e3'] // 上轨 / 中轨 / 下轨（布林带）
 
 const PAGE_SIZE = 240 // 每页条数（约全天 4 小时交易时段的分钟线数）
 
@@ -157,6 +158,39 @@ function computeMA(closes: (number | null)[], n: number): (number | null)[] {
   return out
 }
 
+// 布林带（BOLL）：中轨 = MA(n)，上/下轨 = 中轨 ± k × 标准差（滑动窗口）
+// 返回 [上轨, 中轨, 下轨] 三条序列；窗口内存在缺失值则输出 null
+function computeBOLL(closes: (number | null)[], n: number, k: number): [(number | null)[], (number | null)[], (number | null)[]] {
+  const upper: (number | null)[] = []
+  const mid: (number | null)[] = []
+  const lower: (number | null)[] = []
+  for (let i = 0; i < closes.length; i++) {
+    // 取窗口内有效值
+    const start = Math.max(0, i - n + 1)
+    const window: number[] = []
+    for (let j = start; j <= i; j++) {
+      const v = closes[j]
+      if (v !== null) window.push(v)
+    }
+    if (window.length < n) {
+      upper.push(null)
+      mid.push(null)
+      lower.push(null)
+      continue
+    }
+    let sum = 0
+    for (const v of window) sum += v
+    const mean = sum / window.length
+    let variance = 0
+    for (const v of window) variance += (v - mean) * (v - mean)
+    const std = Math.sqrt(variance / window.length)
+    mid.push(mean)
+    upper.push(mean + k * std)
+    lower.push(mean - k * std)
+  }
+  return [upper, mid, lower]
+}
+
 async function query() {
   error.value = ''
   summary.value = ''
@@ -241,6 +275,13 @@ function renderChart(bars: QuoteBar[]) {
     emphasis: { disabled: true },
     z: 3,
   }))
+  // 布林带三条线（20 周期，2 倍标准差）：上轨 / 中轨 / 下轨
+  const [bollUp, bollMid, bollLow] = computeBOLL(closes, 20, 2)
+  const bollSeries = [
+    { name: 'BOLL上轨', type: 'line' as const, data: bollUp, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[0] }, emphasis: { disabled: true }, z: 2 },
+    { name: 'BOLL中轨', type: 'line' as const, data: bollMid, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[1] }, emphasis: { disabled: true }, z: 2 },
+    { name: 'BOLL下轨', type: 'line' as const, data: bollLow, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[2] }, emphasis: { disabled: true }, z: 2 },
+  ]
 
   chart.setOption(
     {
@@ -281,19 +322,42 @@ function renderChart(bars: QuoteBar[]) {
             .filter(Boolean)
             .join('&nbsp;&nbsp;')
           if (maText) rows.push(maText)
+          // 布林带三条线值（与 legend 第二行一致）
+          const bollText = [
+            { label: 'BOLL上轨', v: bollUp[index] },
+            { label: 'BOLL中轨', v: bollMid[index] },
+            { label: 'BOLL下轨', v: bollLow[index] },
+          ]
+            .map((x) => (x.v === null ? '' : `${x.label} ${x.v.toFixed(4)}`))
+            .filter(Boolean)
+            .join('&nbsp;&nbsp;')
+          if (bollText) rows.push(bollText)
           if (bar.remark) rows.push(`备注 ${bar.remark}`)
           return rows.join('<br/>')
         },
       },
-      legend: {
-        top: 4,
-        left: 8,
-        itemWidth: 14,
-        itemHeight: 8,
-        icon: 'roundRect',
-        textStyle: { fontSize: 11, color: '#ccc' },
-        data: ['K线', 'MA5', 'MA10', 'MA20', 'MA30'],
-      },
+      legend: [
+        {
+          // 第一行：K 线 + 均线
+          top: 4,
+          left: 8,
+          itemWidth: 14,
+          itemHeight: 8,
+          icon: 'roundRect',
+          textStyle: { fontSize: 11, color: '#ccc' },
+          data: ['K线', 'MA5', 'MA10', 'MA20', 'MA30'],
+        },
+        {
+          // 第二行：布林带（上/中/下轨），支持点击显隐
+          top: 20,
+          left: 8,
+          itemWidth: 14,
+          itemHeight: 8,
+          icon: 'roundRect',
+          textStyle: { fontSize: 11, color: '#ccc' },
+          data: ['BOLL上轨', 'BOLL中轨', 'BOLL下轨'],
+        },
+      ],
       grid: [
         { left: 8, right: 56, top: 32, height: '58%' },
         { left: 8, right: 56, top: '72%', height: '17%' },
@@ -348,6 +412,7 @@ function renderChart(bars: QuoteBar[]) {
           },
         },
         ...maSeries,
+        ...bollSeries,
         {
           name: '成交量',
           type: 'bar',
