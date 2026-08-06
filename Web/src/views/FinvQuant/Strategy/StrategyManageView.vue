@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { apiGet, apiPost } from '../api'
+import { apiGet, apiPost } from '../../../api'
 
 interface StrategyRow {
   strategy_id: string
@@ -73,7 +73,7 @@ const localTemplates: Record<string, { name: string; json: string }> = {
     json: JSON.stringify({
       version: '1',
       strategy_type: 'RULE_BASED',
-      description: '双均线交叉策略：MA5 上穿 MA20 买入，下穿卖出，3% 止损',
+      description: '双均线交叉策略：MA5 上穿 MA20 买入，下穿卖出，3% 止损；分批建仓 + 分批减仓',
       universe: { securities: ['GCMain'] },
       data: { period: 'Min', price_field: 'close', warmup_bars: 30, fill_mode: 'NEXT_BAR_OPEN' },
       indicators: [
@@ -85,7 +85,13 @@ const localTemplates: Record<string, { name: string; json: string }> = {
         buy: { action: 'BUY', quantity_type: 'ALL_IN', quantity: 0, max_per_day: 0, max_per_run: 0, allowed_times: [], allow: true },
         sell: { action: 'SELL', quantity_type: 'ALL', quantity: 0, max_per_day: 0, max_per_run: 0, allowed_times: [], allow: true },
       },
-      risk: { stop_loss_pct: 3, take_profit_pct: 0, max_position_pct: 100, max_positions: 1, max_trades_per_day: 0, min_interval_bars: 0 },
+      risk: {
+        stop_loss_pct: 3, take_profit_pct: 0, max_position_pct: 100, max_positions: 1,
+        max_trades_per_day: 0, min_interval_bars: 0,
+        builder: { enabled: true, target_position_pct: 80, tranches: 4, tranche_interval_bars: 240 },
+        reduce_tranches: 3,
+        max_trades_per_week: 0, max_trades_per_month: 0, max_fee_per_window: 0, fee_window_days: 0,
+      },
       cost: { commission_rate: 0.0003, slippage_pct: 0.0001 },
     }, null, 2),
   },

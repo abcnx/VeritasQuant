@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 
 // 多级菜单定义（支持两级分组：顶级 → 二级 → 三级菜单项）
@@ -52,24 +53,25 @@ const menuItems: (MenuLeaf | MenuGroup)[] = [
     title: '量化策略验证',
     icon: 'mdi-flask-outline',
     children: [
-      { key: 'backtest-gold-futures', title: '黄金期货合约回测验证', icon: 'mdi-chart-bell-curve', path: '/meta/finvquant/backtest/gold-futures' },
-      { key: 'env-template', title: '环境与模板管理', icon: 'mdi-application-cog-outline', path: '/meta/finvquant/env-template' },
+      { key: 'backtest-gold-futures', title: '黄金期货合约回测验证', icon: 'mdi-chart-bell-curve', path: '/Meta/FinvQuant/Backtest/GoldFutures' },
+      { key: 'env-template', title: '环境与模板管理', icon: 'mdi-application-cog-outline', path: '/Meta/FinvQuant/EnvTemplate' },
     ],
   },
   // 账户 / 资金 / 持仓 / 策略 / 回测分析（通用量化回测）
-  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/meta/finvquant/account' },
-  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/meta/finvquant/fund' },
-  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/meta/finvquant/position' },
-  { key: 'strategy', title: '策略管理', icon: 'mdi-sitemap-outline', path: '/meta/finvquant/strategy' },
-  { key: 'backtest-analysis', title: '回测分析', icon: 'mdi-chart-timeline-variant', path: '/meta/finvquant/backtest/analysis' },
+  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/Meta/FinvQuant/Account' },
+  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/Meta/FinvQuant/Fund' },
+  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/Meta/FinvQuant/Position' },
+  { key: 'strategy', title: '策略管理', icon: 'mdi-sitemap-outline', path: '/Meta/FinvQuant/Strategy' },
+  { key: 'backtest-analysis', title: '回测分析', icon: 'mdi-chart-timeline-variant', path: '/Meta/FinvQuant/Backtest/Analysis' },
   // 仿真 / 模拟盘 / 实盘（规划中）
-  { key: 'simulation-data', title: '仿真数据验证', icon: 'mdi-database-sync-outline', path: '/meta/finvquant/simulation/data' },
-  { key: 'simulation-paper', title: '模拟盘验证', icon: 'mdi-account-cash-outline', path: '/meta/finvquant/simulation/paper' },
-  { key: 'simulation-live-sim', title: '实盘仿真验证', icon: 'mdi-robot-outline', path: '/meta/finvquant/simulation/live-sim' },
-  { key: 'live-trading', title: '实盘交易', icon: 'mdi-cash-register', path: '/meta/finvquant/live-trading' },
+  { key: 'simulation-data', title: '仿真数据验证', icon: 'mdi-database-sync-outline', path: '/Meta/FinvQuant/Simulation/Data' },
+  { key: 'simulation-paper', title: '模拟盘验证', icon: 'mdi-account-cash-outline', path: '/Meta/FinvQuant/Simulation/Paper' },
+  { key: 'simulation-live-sim', title: '实盘仿真验证', icon: 'mdi-robot-outline', path: '/Meta/FinvQuant/Simulation/LiveSim' },
+  { key: 'live-trading', title: '实盘交易', icon: 'mdi-cash-register', path: '/Meta/FinvQuant/LiveTrading' },
 ]
 
 const route = useRoute()
+const display = useDisplay()
 const drawer = ref(true)
 
 // 当前激活菜单项 key（叶子路径匹配）
@@ -86,18 +88,32 @@ function isActive(item: MenuLeaf | MenuGroup): boolean {
 function isGroupOpen(item: MenuGroup): boolean {
   return item.children.some((child) => (isLeaf(child) ? isActive(child) : isGroupOpen(child)))
 }
+
+// 路由切换后收起抽屉（移动端/小屏临时抽屉），桌面端保持折叠状态用户可自行展开
+watch(
+  () => route.fullPath,
+  () => {
+    if (display.mobile.value) drawer.value = false
+  },
+)
 </script>
 
 <template>
   <v-app>
     <v-app-bar color="primary" density="comfortable">
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title>
         <v-icon icon="mdi-finance" class="mr-2" />
         FinvQuant 量化策略交易平台
       </v-app-bar-title>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer
+      v-model="drawer"
+      :temporary="display.mobile.value"
+      :permanent="!display.mobile.value"
+      :width="260"
+    >
       <v-list density="comfortable" nav>
         <template v-for="item in menuItems" :key="item.key">
           <!-- 叶子菜单 -->
