@@ -6,7 +6,14 @@
 
 ## 1. 菜单新增
 
-- 前端视图组件存放于 `Web/src/views/`，每个菜单对应一个视图组件（如 `QuoteQueryView.vue`）。
+- **前端视图组件统一存放于 `Web/src/views/FinvQuant/` 目录下**，并**按照菜单层级结构放在对应的子目录中**（每级目录使用大驼峰 PascalCase 命名），例如：
+  - 策略管理菜单 → `Web/src/views/FinvQuant/Strategy/StrategyManageView.vue`；
+  - 回测分析菜单 → `Web/src/views/FinvQuant/Backtest/BacktestAnalysisView.vue`；
+  - 黄金期货合约回测验证 → `Web/src/views/FinvQuant/Backtest/BacktestGoldFuturesView.vue`；
+  - 账户管理 → `Web/src/views/FinvQuant/Account/AccountManageView.vue`。
+- 非 FinvQuant 模块的视图按各自模块目录存放（如 `Web/src/views/Metadata/MetaExchangeView.vue`、`Web/src/views/HistoryQuote/QuoteQueryView.vue`、`Web/src/views/Dashboard/DashboardView.vue`），占位共用组件放 `Web/src/views/Common/PlaceholderView.vue`。
+- 禁止在 `Web/src/views/` 根目录扁平存放业务视图；视图组件文件名仍使用大驼峰（PascalCase）并以 `View.vue` 结尾。
+- 每个菜单对应一个视图组件（如 `QuoteQueryView.vue`）。
 - 新增菜单时须在 `Web/src/App.vue` 的 `menuItems` 中登记：菜单 `key`（英文驼峰）、`title`（简体中文标题）、`icon`（mdi 图标）。
 - 视图组件与 `menuItems` 中的菜单项一一对应，禁止出现未登记入口的孤立视图。
 

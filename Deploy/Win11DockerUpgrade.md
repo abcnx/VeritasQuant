@@ -64,6 +64,25 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquan
 
 > **镜像 tag 规则**（CI 自动打，版本来自项目根 `VERSION` 文件）：分支推送（dev/main/FinvQuant）打 `latest` + `v{VERSION}-YYYYMMDDHHMM`（Asia/Shanghai，如 `v0.1.0-202608051901`）；推送 `v*` git tag（main 发布）打 `latest` + `v{VERSION}`（git tag 名，如 `v0.1.0`）。部署指定版本时把 `FINV_IMAGE_TAG` 改为对应 tag 即可（`docker images ghcr.io/acanx/finvquant` 可查看已拉取 tag）。
 
+### 3.2.1 本地源码构建升级（开发常用）
+
+> 改本地代码后想立即升级到最新本地代码，使用 `Deploy/upgrade.cmd` 一键完成（备份 → 构建 → 重建 → 验证）。
+
+```powershell
+# 模式 A：本地源码构建镜像并重建部署（默认；npm 使用国内镜像源 registry.npmmirror.com 解决网络问题）
+Deploy\upgrade.cmd
+
+# 模式 B：拉取 GHCR 已发布镜像并重建（不改本地代码）
+Deploy\upgrade.cmd --pull
+
+# 跳过数据库备份（仅应急；正常升级会先 pg_dump 到 Deploy\backup\）
+Deploy\upgrade.cmd --skip-backup
+```
+
+- 脚本在**仓库根目录**执行（自动 `pushd`），支持幂等重复运行。
+- `build:` 段 context 已指向仓库根（`Deploy/docker-compose.yml` 中 `context: ..`），本地构建时 npm 使用 `NPM_REGISTRY`（脚本顶部可改，默认 `https://registry.npmmirror.com`）加速并规避 `npm ci` 网络中断。
+- 升级异常需回滚时，使用 `Deploy\rollback.cmd`（回滚到 `.env` 中 `FINV_IMAGE_TAG` 指定的版本）。
+
 **3.3 重建服务端容器**
 
 ```powershell

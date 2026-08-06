@@ -6,9 +6,13 @@
 # ---- 阶段 1：前端构建（BUILDPLATFORM=runner 原生架构，仅构建一次，跨平台复用产物）----
 FROM --platform=$BUILDPLATFORM node:24-alpine AS web-builder
 
+# npm registry（默认官方源；国内/受限网络可 --build-arg NPM_REGISTRY=https://registry.npmmirror.com 加速）
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
 WORKDIR /web
 COPY Web/package.json Web/package-lock.json ./
-RUN npm ci
+RUN if [ "$NPM_REGISTRY" != "https://registry.npmjs.org" ]; then npm config set registry "$NPM_REGISTRY"; fi \
+    && npm ci
 COPY Web/ ./
 RUN npm run build
 

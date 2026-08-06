@@ -18,7 +18,8 @@ services:
   finvquant:
     image: ghcr.io/acanx/finvquant:${FINV_IMAGE_TAG:-latest}
     build:
-      context: .
+      # build context 指向仓库根目录（compose 位于 Deploy/ 子目录，上级即仓库根，Dockerfile 在此）
+      context: ..
       dockerfile: Dockerfile
     container_name: ${FINV_CONTAINER_NAME:-finvquant}
     ports:
