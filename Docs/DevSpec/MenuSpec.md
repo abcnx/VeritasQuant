@@ -6,14 +6,16 @@
 
 ## 1. 菜单新增
 
-- **前端视图组件统一存放于 `Web/src/views/FinvQuant/` 目录下**，并**按照菜单层级结构放在对应的子目录中**（每级目录使用大驼峰 PascalCase 命名），例如：
+- **前端视图组件统一存放于 `Web/src/views/` 目录下**，并**按照业务模块层级放在对应的子目录中**（每级目录使用大驼峰 PascalCase 命名），例如：
   - 策略管理菜单 → `Web/src/views/FinvQuant/Strategy/StrategyManageView.vue`；
   - 回测分析菜单 → `Web/src/views/FinvQuant/Backtest/BacktestAnalysisView.vue`；
   - 黄金期货合约回测验证 → `Web/src/views/FinvQuant/Backtest/BacktestGoldFuturesView.vue`；
-  - 账户管理 → `Web/src/views/FinvQuant/Account/AccountManageView.vue`。
-- 非 FinvQuant 模块的视图按各自模块目录存放（如 `Web/src/views/Metadata/MetaExchangeView.vue`、`Web/src/views/HistoryQuote/QuoteQueryView.vue`、`Web/src/views/Dashboard/DashboardView.vue`），占位共用组件放 `Web/src/views/Common/PlaceholderView.vue`。
-- 禁止在 `Web/src/views/` 根目录扁平存放业务视图；视图组件文件名仍使用大驼峰（PascalCase）并以 `View.vue` 结尾。
-- 每个菜单对应一个视图组件（如 `QuoteQueryView.vue`）。
+  - 账户管理 → `Web/src/views/FinvQuant/Account/AccountManageView.vue`；
+  - 历史行情查询 → `Web/src/views/Quote/History/HistoryQuoteQueryView.vue`；
+  - 交易所信息维护 → `Web/src/views/Meta/Exchange/MetaExchangeView.vue`。
+- 本项目下业务视图基本属于 **FinvQuant 量化模块**，统一存放于 `Web/src/views/FinvQuant/` 下按菜单/业务分层；通用性视图（如 `DashboardView.vue`）可直接放在 `Web/src/views/` 根目录。
+- 视图组件文件名使用大驼峰（PascalCase）并以 `View.vue` 结尾；必要时以模块前缀开头（如 `HistoryQuoteQueryView.vue`）避免同名歧义。
+- 每个菜单对应一个视图组件（如 `HistoryQuoteQueryView.vue`）。
 - 新增菜单时须在 `Web/src/App.vue` 的 `menuItems` 中登记：菜单 `key`（英文驼峰）、`title`（简体中文标题）、`icon`（mdi 图标）。
 - 视图组件与 `menuItems` 中的菜单项一一对应，禁止出现未登记入口的孤立视图。
 
