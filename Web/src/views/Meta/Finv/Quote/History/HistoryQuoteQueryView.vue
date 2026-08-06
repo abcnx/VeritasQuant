@@ -245,14 +245,14 @@ function renderChart(bars: QuoteBar[]) {
   chart.setOption(
     {
       animation: false,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#1e1e1e',
       axisPointer: { link: [{ xAxisIndex: 'all' }] },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'cross', label: { backgroundColor: '#3a3a3a' } },
-        backgroundColor: 'rgba(255,255,255,0.96)',
-        borderColor: '#e0e0e0',
-        textStyle: { color: '#333', fontSize: 12 },
+        backgroundColor: '#2d2d2d',
+        borderColor: '#444444',
+        textStyle: { color: '#eee', fontSize: 12 },
         formatter: (params: unknown) => {
           const list = params as Array<{ dataIndex: number; seriesName: string; value: number | number[] | null }>
           if (!list?.length) return ''
@@ -291,7 +291,7 @@ function renderChart(bars: QuoteBar[]) {
         itemWidth: 14,
         itemHeight: 8,
         icon: 'roundRect',
-        textStyle: { fontSize: 11, color: '#666' },
+        textStyle: { fontSize: 11, color: '#ccc' },
         data: ['K线', 'MA5', 'MA10', 'MA20', 'MA30'],
       },
       grid: [
@@ -303,15 +303,15 @@ function renderChart(bars: QuoteBar[]) {
           type: 'category',
           data: labels,
           boundaryGap: true,
-          axisLine: { lineStyle: { color: '#e8e8e8' } },
+          axisLine: { lineStyle: { color: '#3a3a3a' } },
           axisTick: { show: false },
-          axisLabel: { color: '#888', fontSize: 11, hideOverlap: true },
+          axisLabel: { color: '#aaa', fontSize: 11, hideOverlap: true },
         },
         {
           type: 'category',
           data: labels,
           gridIndex: 1,
-          axisLine: { lineStyle: { color: '#e8e8e8' } },
+          axisLine: { lineStyle: { color: '#3a3a3a' } },
           axisTick: { show: false },
           axisLabel: { show: false },
         },
@@ -320,10 +320,10 @@ function renderChart(bars: QuoteBar[]) {
         {
           scale: true,
           position: 'right',
-          axisLabel: { color: '#888', fontSize: 11 },
+          axisLabel: { color: '#aaa', fontSize: 11 },
           axisLine: { show: false },
           axisTick: { show: false },
-          splitLine: { lineStyle: { color: '#f0f0f0' } },
+          splitLine: { lineStyle: { color: '#333333' } },
         },
         {
           gridIndex: 1,
