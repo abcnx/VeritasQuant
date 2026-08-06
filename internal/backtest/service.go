@@ -16,6 +16,12 @@ import (
 // maxConcurrentRuns 并发回测任务上限（初始版本 4）。
 const maxConcurrentRuns = 4
 
+// newUUID 生成全大写的 UUID 字符串（run_id/template_id/env_id/strategy_id/account_id 等主键标识）。
+// 约定：禁止生成含小写英文字母的 UUID（统一大写，避免大小写混用导致关联/查询歧义）。
+func newUUID() string {
+	return strings.ToUpper(uuid.NewString())
+}
+
 // Service 回测服务：策略/账户/任务 CRUD + 异步回测执行调度。
 type Service struct {
 	pool  *pgxpool.Pool
@@ -60,7 +66,7 @@ func (s *Service) SaveStrategy(ctx context.Context, st *Strategy) (string, error
 		return "", err
 	}
 	if st.StrategyID == "" {
-		st.StrategyID = uuid.NewString()
+		st.StrategyID = newUUID()
 	}
 	if st.StrategyType == "" {
 		st.StrategyType = StrategyTypeRuleBased
@@ -241,7 +247,7 @@ func (s *Service) SaveAccount(ctx context.Context, acc *Account) (string, error)
 		return "", err
 	}
 	if acc.AccountID == "" {
-		acc.AccountID = uuid.NewString()
+		acc.AccountID = newUUID()
 	}
 	if acc.CurrencyType == "" {
 		acc.CurrencyType = "USD"
@@ -532,7 +538,7 @@ func (s *Service) CreateRun(ctx context.Context, req CreateRunRequest) (*Run, er
 	_ = s.pool.QueryRow(ctx,
 		`SELECT COALESCE(market_code, 0) FROM finv_security WHERE usc = $1 OR security_code = $1 LIMIT 1`, secuCode).Scan(&marketCode)
 
-	runID := uuid.NewString()
+	runID := newUUID()
 	_, err = s.pool.Exec(ctx, `
 INSERT INTO finv_quant_backtest_run
     (run_id, user_id, strategy_id, strategy_code, strategy_name, strategy_snapshot,
@@ -1190,7 +1196,7 @@ func (s *Service) SaveEnvironment(ctx context.Context, env *Environment) (string
 		return "", err
 	}
 	if env.EnvID == "" {
-		env.EnvID = uuid.NewString()
+		env.EnvID = newUUID()
 	}
 	if env.EnvType == "" {
 		env.EnvType = "BACKTEST"
@@ -1390,7 +1396,7 @@ func (s *Service) SaveTemplate(ctx context.Context, tmpl *Template) (string, err
 		return "", err
 	}
 	if tmpl.TemplateID == "" {
-		tmpl.TemplateID = uuid.NewString()
+		tmpl.TemplateID = newUUID()
 	}
 	if tmpl.UserID == "" {
 		tmpl.UserID = "default"

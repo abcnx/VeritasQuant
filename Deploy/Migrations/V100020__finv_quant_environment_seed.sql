@@ -17,7 +17,7 @@ BEGIN;
 INSERT INTO finv_quant_environment
     (env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by)
 VALUES
-    ('e0000000-0000-4000-8000-000000000001', 'ENV-BT-COMEX-GC', 'COMEX 黄金期货回测环境', 'BACKTEST', 'US', 0,
+    ('E0000000-0000-4000-8000-000000000001', 'ENV-BT-COMEX-GC', 'COMEX 黄金期货回测环境', 'BACKTEST', 'US', 0,
      '{
         "trading_sessions": [{"start": "000000", "end": "235959"}],
         "trading_rules": {"t_plus": 0, "tick_size": 0.1, "contract_multiplier": 100, "limit_up_pct": 0, "limit_down_pct": 0},
@@ -33,7 +33,7 @@ ON CONFLICT (env_id) DO NOTHING;
 INSERT INTO finv_quant_environment
     (env_id, env_code, env_name, env_type, region, market_code, config, user_id, is_default, allow_backtest, status, description, created_by)
 VALUES
-    ('e0000000-0000-4000-8000-000000000002', 'ENV-BT-CN-ETF', '沪深 ETF 回测环境', 'BACKTEST', 'CN', 0,
+    ('E0000000-0000-4000-8000-000000000002', 'ENV-BT-CN-ETF', '沪深 ETF 回测环境', 'BACKTEST', 'CN', 0,
      '{
         "trading_sessions": [{"start": "093000", "end": "113000"}, {"start": "130000", "end": "150000"}],
         "trading_rules": {"t_plus": 1, "tick_size": 0.001, "contract_multiplier": 1, "limit_up_pct": 10, "limit_down_pct": 10},

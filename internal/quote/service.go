@@ -168,7 +168,7 @@ func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMo
 			rows[index].Remark = &value
 		}
 	}
-	batchID := fmt.Sprintf("import_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
+	batchID := fmt.Sprintf("IMPORT_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
 
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {

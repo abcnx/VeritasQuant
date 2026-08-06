@@ -17,7 +17,7 @@ INSERT INTO finv_quant_backtest_account
     (account_id, account_code, account_name, initial_capital, currency_type,
      commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by)
 VALUES
-    ('a0000000-0000-4000-8000-000000000001', 'ACCT-GOLD-001', '黄金期货回测账户', 100000, 'USD',
+    ('A0000000-0000-4000-8000-000000000001', 'ACCT-GOLD-001', '黄金期货回测账户', 100000, 'USD',
      0.0003, 0.0001, 'FULL', 1, '1', 'ENABLED', '默认回测账户（GCMain 黄金期货主连）', 'system')
 ON CONFLICT (account_id) DO NOTHING;
 
@@ -26,7 +26,7 @@ INSERT INTO finv_quant_backtest_strategy
     (strategy_id, strategy_code, strategy_name, strategy_type, description,
      definition, definition_version, data_period, secu_code, allow_backtest, status, created_by)
 VALUES
-    ('b0000000-0000-4000-8000-000000000001', 'STRAT-DUALMA-GC', 'GCMain 双均线交叉策略', 'RULE_BASED',
+    ('B0000000-0000-4000-8000-000000000001', 'STRAT-DUALMA-GC', 'GCMain 双均线交叉策略', 'RULE_BASED',
      '双均线交叉策略（示例）：快线 MA5 上穿慢线 MA20 时全仓买入，下穿时清仓卖出；3% 止损。演示通用结构化策略定义模型（指标/信号/规则/风控/成本）。',
      '{
         "version": "1",
