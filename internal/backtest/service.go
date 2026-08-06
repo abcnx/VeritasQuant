@@ -333,10 +333,18 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	list := []Account{}
 	for rows.Next() {
 		var a Account
+		// remark / created_by 列可空，用指针接收避免 NULL 扫描失败
+		var remark, createdBy *string
 		if err := rows.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.UserID, &a.GroupID, &a.EnvID,
 			&a.InitialCapital, &a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
-			&a.AllowBacktest, &a.Status, &a.Remark, &a.CreatedBy, &a.GMTUpdate); err != nil {
+			&a.AllowBacktest, &a.Status, &remark, &createdBy, &a.GMTUpdate); err != nil {
 			return nil, 0, err
+		}
+		if remark != nil {
+			a.Remark = *remark
+		}
+		if createdBy != nil {
+			a.CreatedBy = *createdBy
 		}
 		list = append(list, a)
 	}
@@ -353,13 +361,21 @@ SELECT account_id, account_code, account_name, user_id, group_id, env_id, initia
        commission_rate, slippage_pct, margin_mode, margin_rate, allow_backtest, status, remark, created_by, gmt_update
 FROM finv_quant_backtest_account WHERE account_id = $1 AND user_id = $2`, accountID, userID)
 	var a Account
+	// remark / created_by 列可空，用指针接收避免 NULL 扫描失败
+	var remark, createdBy *string
 	if err := row.Scan(&a.AccountID, &a.AccountCode, &a.AccountName, &a.UserID, &a.GroupID, &a.EnvID,
 		&a.InitialCapital, &a.CurrencyType, &a.CommissionRate, &a.SlippagePct, &a.MarginMode, &a.MarginRate,
-		&a.AllowBacktest, &a.Status, &a.Remark, &a.CreatedBy, &a.GMTUpdate); err != nil {
+		&a.AllowBacktest, &a.Status, &remark, &createdBy, &a.GMTUpdate); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("账户不存在: %s", accountID)
 		}
 		return nil, err
+	}
+	if remark != nil {
+		a.Remark = *remark
+	}
+	if createdBy != nil {
+		a.CreatedBy = *createdBy
 	}
 	return &a, nil
 }
@@ -741,7 +757,7 @@ func (s *Service) ListEquity(ctx context.Context, runID, userID string, pager Pa
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT seq, ts, date, "time", equity, cash, position_value, position_qty, profit, roi, drawdown
+SELECT seq, ts, COALESCE(date, 0), COALESCE("time", 0), equity, cash, position_value, position_qty, profit, roi, drawdown
 FROM finv_quant_backtest_equity WHERE run_id=$1
 ORDER BY seq ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -777,7 +793,7 @@ func (s *Service) ListTrades(ctx context.Context, runID, userID string, pager Pa
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT trade_id, run_id, seq, ts, date, "time", action, price, qty, amount, fee, profit, position_after, cash_after, signal, remark
+SELECT trade_id, run_id, seq, ts, COALESCE(date, 0), COALESCE("time", 0), action, price, qty, amount, fee, COALESCE(profit, 0), position_after, cash_after, COALESCE(signal, ''), COALESCE(remark, '')
 FROM finv_quant_backtest_trade WHERE run_id=$1
 ORDER BY ts ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -813,7 +829,7 @@ func (s *Service) ListCashflows(ctx context.Context, runID, userID string, pager
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT cashflow_id, run_id, seq, ts, date, "time", flow_type, amount, cash_before, cash_after, trade_id, remark
+SELECT cashflow_id, run_id, seq, ts, COALESCE(date, 0), COALESCE("time", 0), flow_type, amount, cash_before, cash_after, COALESCE(trade_id, 0), COALESCE(remark, '')
 FROM finv_quant_backtest_cashflow WHERE run_id=$1
 ORDER BY seq ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -849,8 +865,8 @@ func (s *Service) ListPositionLogs(ctx context.Context, runID, userID string, pa
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-SELECT log_id, run_id, seq, ts, date, "time", action, price, qty,
-       position_before, position_after, avg_cost_before, avg_cost_after, trade_id, remark
+SELECT log_id, run_id, seq, ts, COALESCE(date, 0), COALESCE("time", 0), action, price, qty,
+       position_before, position_after, avg_cost_before, avg_cost_after, COALESCE(trade_id, 0), COALESCE(remark, '')
 FROM finv_quant_backtest_position_log WHERE run_id=$1
 ORDER BY seq ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -890,7 +906,7 @@ func (s *Service) ListEventTraces(ctx context.Context, runID, userID string, pag
 SELECT event_id, run_id, seq, action, trigger_reason, trigger_ts, trigger_date, trigger_time,
        order_ts, order_date, order_time,
        exec_status, exec_ts, exec_date, exec_time, latency_bars, latency_sec, alive_sec,
-       reject_reason, price, qty, trade_id
+       COALESCE(reject_reason, ''), price, qty, COALESCE(trade_id, 0)
 FROM finv_quant_backtest_event_trace WHERE run_id=$1
 ORDER BY seq ASC
 LIMIT $2 OFFSET $3`, runID, pager.PageSize, (pager.Page-1)*pager.PageSize)
@@ -998,7 +1014,7 @@ func (s *Service) executeRun(ctx context.Context, runID string) {
 // loadBars 加载分钟行情（date 范围，时间升序）。
 func (s *Service) loadBars(ctx context.Context, secuCode string, startDate, endDate int) ([]Bar, error) {
 	rows, err := s.pool.Query(ctx, `
-SELECT ts, date, "time",
+SELECT ts, COALESCE(date, 0), COALESCE("time", 0),
        COALESCE(open, close), COALESCE(high, close), COALESCE(low, close), COALESCE(close, open),
        COALESCE(volume, 0), COALESCE(turnover, 0)
 FROM finv_quote_secu_kline_min
@@ -1339,11 +1355,22 @@ func (s *Service) DeleteEnvironment(ctx context.Context, envID, userID string) e
 func scanEnvironment(row rowScanner) (*Environment, error) {
 	var env Environment
 	var configJSON []byte
-	err := row.Scan(&env.EnvID, &env.EnvCode, &env.EnvName, &env.EnvType, &env.Region, &env.MarketCode,
+	// region / description / created_by 列可空（region 无 NOT NULL），用指针接收避免 NULL 扫描失败
+	var region, desc, createdBy *string
+	err := row.Scan(&env.EnvID, &env.EnvCode, &env.EnvName, &env.EnvType, &region, &env.MarketCode,
 		&configJSON, &env.UserID, &env.IsDefault, &env.AllowBacktest, &env.Status,
-		&env.Description, &env.CreatedBy, &env.GMTUpdate)
+		&desc, &createdBy, &env.GMTUpdate)
 	if err != nil {
 		return nil, err
+	}
+	if region != nil {
+		env.Region = *region
+	}
+	if desc != nil {
+		env.Description = *desc
+	}
+	if createdBy != nil {
+		env.CreatedBy = *createdBy
 	}
 	if len(configJSON) > 0 {
 		if err := json.Unmarshal(configJSON, &env.Config); err != nil {
@@ -1443,9 +1470,17 @@ LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
 	for rows.Next() {
 		var tmpl Template
 		var contentJSON []byte
+		// description / created_by 列可空，用指针接收避免 NULL 扫描失败
+		var desc, createdBy *string
 		if err := rows.Scan(&tmpl.TemplateID, &tmpl.TemplateCode, &tmpl.TemplateName, &tmpl.TemplateType,
-			&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &tmpl.Description, &tmpl.CreatedBy, &tmpl.GMTUpdate); err != nil {
+			&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &desc, &createdBy, &tmpl.GMTUpdate); err != nil {
 			return nil, 0, err
+		}
+		if desc != nil {
+			tmpl.Description = *desc
+		}
+		if createdBy != nil {
+			tmpl.CreatedBy = *createdBy
 		}
 		if len(contentJSON) > 0 {
 			_ = json.Unmarshal(contentJSON, &tmpl.Content)
@@ -1462,16 +1497,24 @@ func (s *Service) GetTemplate(ctx context.Context, templateID, userID string) (*
 	}
 	var tmpl Template
 	var contentJSON []byte
+	// description / created_by 列可空，用指针接收避免 NULL 扫描失败
+	var desc, createdBy *string
 	err := s.pool.QueryRow(ctx, `
 SELECT template_id, template_code, template_name, template_type, content, user_id, is_builtin, status, description, created_by, gmt_update
 FROM finv_quant_template WHERE template_id = $1 AND (user_id = 'system' OR user_id = $2)`, templateID, userID).Scan(
 		&tmpl.TemplateID, &tmpl.TemplateCode, &tmpl.TemplateName, &tmpl.TemplateType,
-		&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &tmpl.Description, &tmpl.CreatedBy, &tmpl.GMTUpdate)
+		&contentJSON, &tmpl.UserID, &tmpl.IsBuiltin, &tmpl.Status, &desc, &createdBy, &tmpl.GMTUpdate)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("模板不存在: %s", templateID)
 		}
 		return nil, err
+	}
+	if desc != nil {
+		tmpl.Description = *desc
+	}
+	if createdBy != nil {
+		tmpl.CreatedBy = *createdBy
 	}
 	if len(contentJSON) > 0 {
 		_ = json.Unmarshal(contentJSON, &tmpl.Content)
@@ -1572,11 +1615,22 @@ type rowScanner interface {
 func scanStrategy(row rowScanner) (Strategy, error) {
 	var st Strategy
 	var defJSON []byte
+	// description / secu_code / created_by 列可空（种子或历史数据可能为 NULL），用指针接收
+	var desc, secuCode, createdBy *string
 	err := row.Scan(&st.StrategyID, &st.StrategyCode, &st.StrategyName, &st.StrategyType,
-		&st.Description, &defJSON, &st.DefinitionVersion, &st.DataPeriod, &st.SecuCode,
-		&st.UserID, &st.TemplateID, &st.AllowBacktest, &st.Status, &st.CreatedBy, &st.GMTUpdate)
+		&desc, &defJSON, &st.DefinitionVersion, &st.DataPeriod, &secuCode,
+		&st.UserID, &st.TemplateID, &st.AllowBacktest, &st.Status, &createdBy, &st.GMTUpdate)
 	if err != nil {
 		return st, err
+	}
+	if desc != nil {
+		st.Description = *desc
+	}
+	if secuCode != nil {
+		st.SecuCode = *secuCode
+	}
+	if createdBy != nil {
+		st.CreatedBy = *createdBy
 	}
 	if err := json.Unmarshal(defJSON, &st.Definition); err != nil {
 		return st, fmt.Errorf("策略定义解析失败: %w", err)
@@ -1588,15 +1642,26 @@ func scanRun(row rowScanner) (Run, error) {
 	var r Run
 	var defJSON, accJSON, envJSON, optsJSON, reportJSON []byte
 	var startedAt, finishedAt *time.Time
+	// error_message / env_id / created_by 列可空（markRun 空错误写 NULL），用指针接收避免 NULL 扫描失败
+	var envID, errMsg, createdBy *string
 	err := row.Scan(&r.RunID, &r.RunNo, &r.UserID, &r.StrategyID, &r.StrategyCode, &r.StrategyName, &defJSON,
 		&r.AccountID, &r.AccountCode, &r.AccountName, &accJSON,
-		&r.EnvID, &envJSON,
+		&envID, &envJSON,
 		&r.SecuCode, &r.MarketCode, &r.Period, &r.ReportPrecision,
 		&r.StartTS, &r.EndTS, &r.StartDate, &r.EndDate, &optsJSON,
-		&r.Status, &r.Progress, &r.ErrorMessage, &reportJSON,
-		&startedAt, &finishedAt, &r.CreatedBy, &r.GMTUpdate)
+		&r.Status, &r.Progress, &errMsg, &reportJSON,
+		&startedAt, &finishedAt, &createdBy, &r.GMTUpdate)
 	if err != nil {
 		return r, err
+	}
+	if envID != nil {
+		r.EnvID = *envID
+	}
+	if errMsg != nil {
+		r.ErrorMessage = *errMsg
+	}
+	if createdBy != nil {
+		r.CreatedBy = *createdBy
 	}
 	if len(defJSON) > 0 {
 		if err := json.Unmarshal(defJSON, &r.StrategySnapshot); err != nil {
