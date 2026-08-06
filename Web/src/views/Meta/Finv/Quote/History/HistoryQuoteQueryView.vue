@@ -41,9 +41,14 @@ const days = ref(1) // 1 日 / 5 日
 const page = ref(1)
 const loading = ref(false)
 const error = ref('')
-const summary = ref('')
 const total = ref(0)
 const chartEl = ref<HTMLDivElement | null>(null)
+
+// 查询结果提示（snackbar 吐司，3 秒自动消失，替代常驻 alert）
+const toast = ref<{ text: string; visible: boolean }>({ text: '', visible: false })
+function showToast(text: string) {
+  toast.value = { text, visible: true }
+}
 
 let chart: echarts.ECharts | null = null
 
@@ -193,7 +198,6 @@ function computeBOLL(closes: (number | null)[], n: number, k: number): [(number 
 
 async function query() {
   error.value = ''
-  summary.value = ''
   // v-combobox 可能返回字符串（自由输入）或对象（从字典下拉选中 {title,value}），
   // 统一归一化为纯字符串 usc 代码，避免 .trim() 对非字符串报错
   const secuRaw = secuCode.value
@@ -235,7 +239,7 @@ async function query() {
         ? `${String(bars[0].date).slice(4)}-${String(bars[bars.length - 1].date).slice(4)}`
         : date.value
     const namePart = secuName.value.trim() ? `（${secuName.value.trim()}）` : ''
-    summary.value = `${data.secu_code ?? '?'}${namePart} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根 · 第 ${page.value}/${totalPages.value} 页`
+    showToast(`${data.secu_code ?? '?'}${namePart} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根 · 第 ${page.value}/${totalPages.value} 页`)
     await nextTick()
     if (bars.length) {
       renderChart(bars)
@@ -507,7 +511,6 @@ function renderChart(bars: QuoteBar[]) {
       </v-form>
 
       <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
-      <v-alert v-if="summary" type="info" class="mt-3" density="compact">{{ summary }}</v-alert>
     </v-card-text>
 
     <!-- 图表占满卡片可用宽度，左右不留空隙 -->
@@ -530,4 +533,13 @@ function renderChart(bars: QuoteBar[]) {
       </v-row>
     </v-card-text>
   </v-card>
+
+  <!-- 查询结果提示：3 秒自动消失 -->
+  <v-snackbar v-model="toast.visible" :timeout="3000" color="info" location="top" rounded="lg">
+    <v-icon icon="mdi-information-outline" class="mr-2" />
+    {{ toast.text }}
+    <template #actions>
+      <v-btn variant="text" icon="mdi-close" @click="toast.visible = false" />
+    </template>
+  </v-snackbar>
 </template>
