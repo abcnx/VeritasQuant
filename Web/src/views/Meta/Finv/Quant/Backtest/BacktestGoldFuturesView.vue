@@ -2,9 +2,30 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiGet, apiPost } from '../../../../../api'
-import { fmtDate, statusColor } from '../../../../../utils'
+import { fmtDate } from '../../../../../utils'
 
 const router = useRouter()
+
+// 任务状态 → ICON + 颜色（列表"状态"列用图标直观展示，替代文本）
+const statusMeta: Record<string, { icon: string; color: string; spin?: boolean }> = {
+  PENDING: { icon: 'mdi-clock-outline', color: 'grey' },
+  RUNNING: { icon: 'mdi-loading', color: 'primary', spin: true },
+  SUCCEEDED: { icon: 'mdi-check-circle', color: 'green' },
+  FAILED: { icon: 'mdi-close-circle', color: 'red' },
+  CANCELLED: { icon: 'mdi-cancel', color: 'orange' },
+}
+
+function statusIcon(s: string): string {
+  return statusMeta[s]?.icon ?? 'mdi-help-circle-outline'
+}
+
+function statusIconColor(s: string): string {
+  return statusMeta[s]?.color ?? 'grey'
+}
+
+function statusIconSpin(s: string): boolean {
+  return statusMeta[s]?.spin ?? false
+}
 
 interface StrategyOption {
   strategy_id: string
@@ -48,13 +69,14 @@ interface RunRow {
   created_by: string
 }
 
+// 回测任务列表仅展示最近 10 条（不分页）；后续扩展多标的时按 secu_code 过滤
+const runs = ref<RunRow[]>([])
+const runPage = ref(1)
+const runPageSize = ref(10)
+
 const strategies = ref<StrategyOption[]>([])
 const accounts = ref<AccountOption[]>([])
 const environments = ref<EnvOption[]>([])
-const runs = ref<RunRow[]>([])
-const runTotal = ref(0)
-const runPage = ref(1)
-const runPageSize = ref(10)
 
 const strategyId = ref('')
 const accountId = ref('')
@@ -111,11 +133,11 @@ async function loadOptions() {
 async function loadRuns() {
   loading.value = true
   try {
+    // 仅查询最近 10 条（page=1&pageSize=10，按 run_no 倒序）
     const data = await apiGet<{ total: number; list: RunRow[] }>(
-      `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&pageSize=${runPageSize.value}&secuCode=${encodeURIComponent(secuCode.value)}`,
+      `/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
     )
     runs.value = data.list ?? []
-    runTotal.value = data.total ?? 0
   } catch (e) {
     error.value = (e as Error).message
   } finally {
@@ -134,7 +156,7 @@ function syncPolling() {
     pollTimer = setInterval(async () => {
       try {
         const data = await apiGet<{ list: RunRow[] }>(
-          `/Meta/FinvQuant/Backtest/Run/List?page=${runPage.value}&pageSize=${runPageSize.value}&secuCode=${encodeURIComponent(secuCode.value)}`,
+          `/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
         )
         runs.value = data.list ?? []
         if (!hasActiveRuns()) syncPolling() // 全部结束后停止轮询
@@ -219,6 +241,17 @@ onBeforeUnmount(() => {
 })
 </script>
 
+<style scoped>
+/* RUNNING 状态图标旋转动画 */
+.spin {
+  animation: finv-icon-spin 1.2s linear infinite;
+}
+@keyframes finv-icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
 <template>
   <v-container fluid>
     <v-alert type="info" variant="tonal" density="compact" class="mb-3">
@@ -228,8 +261,8 @@ onBeforeUnmount(() => {
     </v-alert>
 
     <v-row>
-      <!-- 回测配置 -->
-      <v-col cols="12" md="5">
+      <!-- 回测条件配置（上） -->
+      <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center">
             <v-icon icon="mdi-tune-variant" class="mr-2" color="primary" />回测条件配置
@@ -315,11 +348,11 @@ onBeforeUnmount(() => {
         </v-card>
       </v-col>
 
-      <!-- 回测任务列表 -->
-      <v-col cols="12" md="7">
+      <!-- 回测任务列表（下，仅展示最近 10 条） -->
+      <v-col cols="12">
         <v-card>
           <v-card-title class="d-flex align-center">
-            <v-icon icon="mdi-history" class="mr-2" color="primary" />回测任务（{{ secuCode }}）
+            <v-icon icon="mdi-history" class="mr-2" color="primary" />回测任务（{{ secuCode }} · 最近 10 条）
             <v-spacer />
             <v-btn size="small" variant="tonal" prepend-icon="mdi-refresh" @click="loadRuns">刷新</v-btn>
           </v-card-title>
@@ -334,16 +367,22 @@ onBeforeUnmount(() => {
               { title: '区间', key: 'range', width: 190 },
               { title: '周期', key: 'period', width: 70 },
               { title: '精度', key: 'report_precision', width: 70 },
-              { title: '状态', key: 'status', width: 110 },
+              { title: '状态', key: 'status', width: 90 },
               { title: '进度', key: 'progress', width: 130 },
-              { title: '操作', key: 'actions', width: 110, sortable: false },
-            ]" :items="runs" :loading="loading" :items-length="runTotal" item-value="run_id"
-            @update:options="loadRuns">
+              { title: '操作', key: 'actions', width: 150, sortable: false },
+            ]" :items="runs" :loading="loading" item-value="run_id"
+            hide-default-footer :items-length="runs.length" @update:options="loadRuns">
             <template #item.range="{ item }">
               {{ fmtDate(item.start_date) }} ~ {{ fmtDate(item.end_date) }}
             </template>
             <template #item.status="{ item }">
-              <v-chip size="small" :color="statusColor(item.status)">{{ item.status }}</v-chip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <v-icon :icon="statusIcon(item.status)" :color="statusIconColor(item.status)"
+                    :class="statusIconSpin(item.status) ? 'spin' : ''" v-bind="props" />
+                </template>
+                <span>{{ item.status }}</span>
+              </v-tooltip>
               <div v-if="item.error_message" class="text-caption text-error mt-1">{{ item.error_message }}</div>
             </template>
             <template #item.progress="{ item }">
