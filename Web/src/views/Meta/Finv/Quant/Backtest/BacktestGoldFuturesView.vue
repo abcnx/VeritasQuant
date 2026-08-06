@@ -228,7 +228,20 @@ function viewReport(run: RunRow) {
   router.push({ path: '/Meta/Finv/Quant/Backtest/Analysis/Report', query: { runId: run.run_id } })
 }
 
+// 回测区间默认值：结束日期 = 上个月第一天；开始日期 = 结束日期往前推一年（12 个月前同日）
+function initDefaultDates() {
+  const now = new Date()
+  // 上个月第一天（如当前 2026-08-07 → 2026-07-01）
+  const end = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  // 开始日期 = 结束日期往前 12 个月（如 2026-07-01 → 2025-07-01）
+  const start = new Date(end.getFullYear(), end.getMonth() - 12, 1)
+  const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+  endDate.value = fmt(end)
+  startDate.value = fmt(start)
+}
+
 onMounted(async () => {
+  initDefaultDates()
   await loadOptions()
   await loadRuns()
 })
@@ -300,10 +313,10 @@ onBeforeUnmount(() => {
 
             <v-row>
               <v-col cols="6">
-                <v-text-field v-model="startDate" label="开始日期" type="date" hint="留空=行情最早日期" />
+                <v-text-field v-model="startDate" label="开始日期" type="date" hint="默认：结束日期前推一年" />
               </v-col>
               <v-col cols="6">
-                <v-text-field v-model="endDate" label="结束日期" type="date" hint="留空=行情最晚日期" />
+                <v-text-field v-model="endDate" label="结束日期" type="date" hint="默认：上个月第一天" />
               </v-col>
             </v-row>
 
