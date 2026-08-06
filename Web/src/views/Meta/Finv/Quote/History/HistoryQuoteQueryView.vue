@@ -87,7 +87,9 @@ const secuItems = computed(() =>
 
 // 证券代码输入变化：若命中字典项则回填证券名称，否则清空
 function onSecuCodeInput(val: unknown) {
-  const hit = securityOptions.value.find((o) => o.usc === val)
+  // v-combobox 可能返回字符串或对象 {title,value}，统一取字符串值对比
+  const s = typeof val === 'string' ? val : (val as { value?: string } | null | undefined)?.value ?? ''
+  const hit = securityOptions.value.find((o) => o.usc === s)
   secuName.value = hit ? hit.security_name_cn : ''
 }
 
@@ -158,7 +160,11 @@ function computeMA(closes: (number | null)[], n: number): (number | null)[] {
 async function query() {
   error.value = ''
   summary.value = ''
-  if (!secuCode.value.trim()) {
+  // v-combobox 可能返回字符串（自由输入）或对象（从字典下拉选中 {title,value}），
+  // 统一归一化为纯字符串 usc 代码，避免 .trim() 对非字符串报错
+  const secuRaw = secuCode.value
+  const secuStr = typeof secuRaw === 'string' ? secuRaw : (secuRaw as { value?: string } | null | undefined)?.value ?? ''
+  if (!secuStr.trim()) {
     error.value = '证券代码不能为空'
     return
   }
@@ -170,7 +176,7 @@ async function query() {
   loading.value = true
   try {
     const params = new URLSearchParams({
-      secu_code: secuCode.value.trim(),
+      secu_code: secuStr.trim(),
       date: date.value,
       period: period.value,
       days: String(days.value),

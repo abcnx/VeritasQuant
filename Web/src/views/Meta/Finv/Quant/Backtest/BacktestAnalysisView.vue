@@ -2,7 +2,28 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet, apiPost } from '../../../../../api'
-import { fmtDate, fmtNum, fmtPct, statusColor } from '../../../../../utils'
+import { fmtDate, fmtNum, fmtPct } from '../../../../../utils'
+
+// 任务状态 → ICON + 颜色（列表"状态"列用图标直观展示，替代文本，与黄金回测验证页一致）
+const statusMeta: Record<string, { icon: string; color: string; spin?: boolean }> = {
+  PENDING: { icon: 'mdi-clock-outline', color: 'grey' },
+  RUNNING: { icon: 'mdi-loading', color: 'primary', spin: true },
+  SUCCEEDED: { icon: 'mdi-check-circle', color: 'green' },
+  FAILED: { icon: 'mdi-close-circle', color: 'red' },
+  CANCELLED: { icon: 'mdi-cancel', color: 'orange' },
+}
+
+function statusIcon(s: string): string {
+  return statusMeta[s]?.icon ?? 'mdi-help-circle-outline'
+}
+
+function statusIconColor(s: string): string {
+  return statusMeta[s]?.color ?? 'grey'
+}
+
+function statusIconSpin(s: string): boolean {
+  return statusMeta[s]?.spin ?? false
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -208,10 +229,10 @@ onBeforeUnmount(() => {
           { title: '标的', key: 'secu_code', width: 100 },
           { title: '区间', key: 'range', width: 200 },
           { title: '周期/精度', key: 'period_prec', width: 110 },
-          { title: '状态', key: 'status', width: 120 },
+          { title: '状态', key: 'status', width: 70 },
           { title: '进度', key: 'progress', width: 130 },
           { title: '报告摘要', key: 'summary', width: 160 },
-          { title: '操作', key: 'actions', width: 120, sortable: false },
+          { title: '操作', key: 'actions', width: 100, sortable: false },
         ]" :items="runs" :items-length="runTotal" item-value="run_id"
         @update:options="loadRuns">
         <template #item.range="{ item }">
@@ -221,7 +242,13 @@ onBeforeUnmount(() => {
           <v-chip size="x-small">{{ item.period }} / {{ item.report_precision }}</v-chip>
         </template>
         <template #item.status="{ item }">
-          <v-chip size="small" :color="statusColor(item.status)">{{ item.status }}</v-chip>
+          <v-tooltip location="top">
+            <template #activator="{ props }">
+              <v-icon :icon="statusIcon(item.status)" :color="statusIconColor(item.status)"
+                :class="statusIconSpin(item.status) ? 'spin' : ''" v-bind="props" />
+            </template>
+            <span>{{ item.status }}</span>
+          </v-tooltip>
           <div v-if="item.error_message" class="text-caption text-error mt-1">{{ item.error_message }}</div>
         </template>
         <template #item.progress="{ item }">
@@ -245,8 +272,17 @@ onBeforeUnmount(() => {
             @click="cancelRun(item)">
             <v-icon icon="mdi-stop-circle-outline" size="18" />
           </v-btn>
-          <v-btn size="small" variant="text" color="primary" :disabled="item.status !== 'SUCCEEDED'"
-            @click="openRun(item)">查看报告</v-btn>
+          <!-- 查看报告：仅 SUCCEEDED 可点，ICON + hover 提示节省列宽 -->
+          <v-tooltip location="top">
+            <template #activator="{ props }">
+              <v-btn size="small" variant="text" :disabled="item.status !== 'SUCCEEDED'"
+                :class="item.status === 'SUCCEEDED' ? '' : 'opacity-40'" v-bind="props"
+                @click="openRun(item)">
+                <v-icon icon="mdi-file-chart-outline" size="18" color="primary" />
+              </v-btn>
+            </template>
+            <span>点击查看报告</span>
+          </v-tooltip>
           <!-- 删除任务：仅已结束任务可删（SUCCEEDED/FAILED/CANCELLED） -->
           <v-btn size="small" variant="text" color="error"
             :disabled="item.status === 'PENDING' || item.status === 'RUNNING'"
@@ -261,3 +297,14 @@ onBeforeUnmount(() => {
     </v-card>
   </v-container>
 </template>
+
+<style scoped>
+/* RUNNING 状态图标旋转动画 */
+.spin {
+  animation: finv-icon-spin 1.2s linear infinite;
+}
+@keyframes finv-icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
