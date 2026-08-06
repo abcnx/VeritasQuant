@@ -91,6 +91,16 @@ for /f "tokens=*" %%i in ('docker image inspect %IMG%:%CUR_TAG% --format "{{.Id}
 set "REMOTE_SHORT=!REMOTE_ID:~7,12!"
 echo   - 远端（最新）镜像 ID : !REMOTE_ID!（简写 !REMOTE_SHORT!）
 
+REM ---------- 识别镜像版本号（v{VERSION}-YYYYMMDDHHMM）与构建时间 ----------
+REM docker 无"列出远端 tag"命令，用 digest 匹配探测（见 resolve-image-version.ps1）：
+REM   探测候选 tag，命中 latest digest 即确认版本号；探测不到则退化显示构建时间。
+REM 实现：ps1 的 -Friendly 模式直接输出单行友好信息，cmd 仅透传显示（规避 cmd
+REM   多行解析 / for-f 变量 / 花括号 / 延迟展开等陷阱）。
+set "VER_FILE="
+for /f "tokens=*" %%v in ('type VERSION 2^>nul') do set "VER_FILE=%%v"
+if not defined VER_FILE set "VER_FILE=0.1.0"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& 'Deploy\resolve-image-version.ps1' -Image '%IMG%' -Version '%VER_FILE%' -Friendly"
+
 REM ---------- 3. 版本对比 ----------
 echo.
 echo [4/8] 版本对比 ...
