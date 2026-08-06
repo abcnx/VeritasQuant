@@ -168,7 +168,7 @@ onMounted(load)
         </template>
         <template #item.allow_backtest="{ item }">
           <v-switch :model-value="item.allow_backtest === '1'" density="compact" hide-details
-            @update:model-value="toggle(item)" />
+            :color="item.allow_backtest === '1' ? 'green' : 'grey'" @update:model-value="toggle(item)" />
         </template>
         <template #item.actions="{ item }">
           <v-btn size="small" variant="text" @click="openEdit(item)">编辑</v-btn>

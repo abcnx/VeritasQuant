@@ -192,7 +192,8 @@ onMounted(() => {
             <span v-else>-</span>
           </template>
           <template #item.allow_backtest="{ item }">
-            <v-switch :model-value="item.allow_backtest === '1'" density="compact" hide-details @update:model-value="toggleEnv(item)" />
+            <v-switch :model-value="item.allow_backtest === '1'" density="compact" hide-details
+              :color="item.allow_backtest === '1' ? 'green' : 'grey'" @update:model-value="toggleEnv(item)" />
           </template>
           <template #item.actions="{ item }">
             <v-btn size="small" variant="text" @click="openEnvEdit(item)">编辑</v-btn>
