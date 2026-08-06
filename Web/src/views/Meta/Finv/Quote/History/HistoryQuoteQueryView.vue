@@ -314,24 +314,23 @@ function renderChart(bars: QuoteBar[]) {
           ]
           if (bar.volume !== null && bar.volume !== undefined) rows.push(`成交量 ${Number(bar.volume).toLocaleString()}`)
           if (bar.turnover) rows.push(`成交额 ${Number(bar.turnover).toLocaleString()}`)
-          const maText = [5, 10, 20, 30]
+          // 均线：每个指标单独一行展示
+          const maVals = [5, 10, 20, 30]
             .map((n) => {
               const v = computeMA(closes, n)[index]
-              return v === null ? '' : `MA${n} ${v.toFixed(4)}`
+              return v === null ? null : `MA${n} ${v.toFixed(4)}`
             })
-            .filter(Boolean)
-            .join('&nbsp;&nbsp;')
-          if (maText) rows.push(maText)
-          // 布林带三条线值（与 legend 第二行一致）
-          const bollText = [
+            .filter((x): x is string => x !== null)
+          maVals.forEach((t) => rows.push(t))
+          // 布林带三条线值：每个指标单独一行展示
+          const bollVals = [
             { label: 'BOLL上轨', v: bollUp[index] },
             { label: 'BOLL中轨', v: bollMid[index] },
             { label: 'BOLL下轨', v: bollLow[index] },
           ]
-            .map((x) => (x.v === null ? '' : `${x.label} ${x.v.toFixed(4)}`))
-            .filter(Boolean)
-            .join('&nbsp;&nbsp;')
-          if (bollText) rows.push(bollText)
+            .map((x) => (x.v === null ? null : `${x.label} ${x.v.toFixed(4)}`))
+            .filter((x): x is string => x !== null)
+          bollVals.forEach((t) => rows.push(t))
           if (bar.remark) rows.push(`备注 ${bar.remark}`)
           return rows.join('<br/>')
         },
