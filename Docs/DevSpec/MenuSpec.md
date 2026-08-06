@@ -12,8 +12,12 @@
   - 黄金期货合约回测验证 → `Web/src/views/Meta/Finv/Quant/Backtest/BacktestGoldFuturesView.vue`；
   - 账户管理 → `Web/src/views/Meta/Finv/Quant/Account/AccountManageView.vue`；
   - 历史行情查询 → `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue`；
-  - 交易所信息维护 → `Web/src/views/Meta/Finv/Quote/Metadata/MetaExchangeView.vue`。
-- **本项目业务视图统一归入 `Web/src/views/Meta/Finv/` 下**：量化交易模块放 `Meta/Finv/Quant/`（Quant）按菜单/业务分层，行情/元数据模块放 `Meta/Finv/Quote/`（Quote）按业务分层；通用性视图（如 `DashboardView.vue`）可直接放在 `Web/src/views/` 根目录。
+  - 交易所信息维护 → `Web/src/views/Meta/Finv/MetaData/MetaExchangeView.vue`。
+- **本项目业务视图统一归入 `Web/src/views/Meta/Finv/` 下**，按**平级业务域**分层（各域互不从属，协同支撑量化平台）：
+  - **`Meta/Finv/Quant/`（Quant 量化交易）**：账户/资金/持仓/策略/回测等按菜单分层；
+  - **`Meta/Finv/Quote/`（Quote 行情）**：历史行情查询、历史行情数据导入等；
+  - **`Meta/Finv/MetaData/`（MetaData 元数据）**：交易所/市场/证券等业务元数据维护（与行情、量化都有关联，但不从属任一方）。
+- 通用性视图（如 `DashboardView.vue`）可直接放在 `Web/src/views/` 根目录。
 - 视图组件文件名使用大驼峰（PascalCase）并以 `View.vue` 结尾；必要时以模块前缀开头（如 `HistoryQuoteQueryView.vue`）避免同名歧义。
 - 每个菜单对应一个视图组件（如 `HistoryQuoteQueryView.vue`）。
 - 新增菜单时须在 `Web/src/App.vue` 的 `menuItems` 中登记：菜单 `key`（英文驼峰）、`title`（简体中文标题）、`icon`（mdi 图标）。
@@ -29,7 +33,8 @@
   - 策略管理 → `/Meta/Finv/Quant/Strategy`
   - 环境与模板管理 → `/Meta/Finv/Quant/EnvTemplate`
   - 实盘仿真验证 → `/Meta/Finv/Quant/Simulation/LiveSim`
-- **行情/元数据模块（Quote）**：路由统一加 **`/Meta/Finv/Quote/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/Quote/History/HistoryQuoteQuery`、`/Meta/Finv/Quote/Metadata/Exchange`）。
+- **行情模块（Quote）**：路由统一加 **`/Meta/Finv/Quote/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/Quote/History/HistoryQuoteQuery`）。
+- **元数据模块（MetaData）**：路由统一加 **`/Meta/Finv/MetaData/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/MetaData/Exchange`）。元数据独立于行情/量化（平级关联，不从属），路由与目录均置于 `Meta/Finv/MetaData/`。
 - **其他非 Finv 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/quote/query`）在维护时逐步迁移对齐。
 - **禁止**使用 `-`（连字符）、`_`（下划线）或全小写路径片段（如 `/meta/finvquant/backtest/analysis` 为违规写法）。
 - 路由在 `Web/src/router.ts` 的 `path` 与 `Web/src/App.vue` 的 `menuItems[].path` 中**两处必须一致**，且与 `Docs/Menu/Menus.md` 索引中的「路由」列保持一致。

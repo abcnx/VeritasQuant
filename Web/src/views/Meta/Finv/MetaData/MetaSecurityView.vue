@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { apiGet, apiPost } from '../../../../../api'
+import { apiGet, apiPost } from '../../../../api'
 
 // finv_security 证券代码行
 interface SecurityRow {

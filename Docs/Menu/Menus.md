@@ -43,9 +43,9 @@
 | 3 | 历史行情查询 | 二级叶子 | `quote-query` | `mdi-chart-line` | `/quote/query` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue` | `GET /API/V1/Quote/Query`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` | [HistoryQuote/HistoryQuoteQuery.md](HistoryQuote/HistoryQuoteQuery.md) |
 | 4 | 元数据管理 | 一级分组 | `metadata` | `mdi-database-cog` | — | — | — | — |
 | 5 | 业务元数据维护 | 二级分组 | `meta-maintenance` | `mdi-database-search` | — | — | — | — |
-| 6 | 交易所信息维护 | 三级叶子 | `meta-exchange` | `mdi-office-building` | `/meta/exchange` | `Web/src/views/Meta/Finv/Quote/Metadata/MetaExchangeView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle` | [Meta/MetaExchange.md](Meta/MetaExchange.md) |
-| 7 | 交易所下设市场信息维护 | 三级叶子 | `meta-market` | `mdi-chart-areaspline` | `/meta/market` | `Web/src/views/Meta/Finv/Quote/Metadata/MetaMarketView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Market/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Toggle` | [Meta/MetaMarket.md](Meta/MetaMarket.md) |
-| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/Meta/Finv/Quote/Metadata/MetaSecurityView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Security/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
+| 6 | 交易所信息维护 | 三级叶子 | `meta-exchange` | `mdi-office-building` | `/meta/exchange` | `Web/src/views/Meta/Finv/MetaData/MetaExchangeView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle` | [Meta/MetaExchange.md](Meta/MetaExchange.md) |
+| 7 | 交易所下设市场信息维护 | 三级叶子 | `meta-market` | `mdi-chart-areaspline` | `/meta/market` | `Web/src/views/Meta/Finv/MetaData/MetaMarketView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Market/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Toggle` | [Meta/MetaMarket.md](Meta/MetaMarket.md) |
+| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/Meta/Finv/MetaData/MetaSecurityView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Security/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
 | 9 | 历史行情数据导入 | 三级叶子 | `meta-import` | `mdi-database-import` | `/meta/import` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteImportView.vue` | `POST /API/V1/Quote/Import/Upload`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [HistoryQuote/HistoryQuoteImport.md](HistoryQuote/HistoryQuoteImport.md) |
 | 10 | 量化策略验证 | 一级分组 | `quant-backtest` | `mdi-flask-outline` | — | — | — | — |
 | 11 | 黄金期货合约回测验证 | 二级叶子 | `backtest-gold-futures` | `mdi-chart-bell-curve` | `/Meta/Finv/Quant/Backtest/GoldFutures` | `Web/src/views/Meta/Finv/Quant/Backtest/BacktestGoldFuturesView.vue` | `GET .../Backtest/Strategy/List`、`GET .../Backtest/Account/List`、`GET .../Backtest/Environment/List`、`POST .../Backtest/Run/Create`、`GET .../Backtest/Run/List` | [Backtest/BacktestGoldFutures.md](Backtest/BacktestGoldFutures.md) |
@@ -73,9 +73,9 @@
 |----------|----------------------------------|
 | `dashboard` | `DashboardView.vue` |
 | `quote-query` | `Meta/Finv/Quote/History/HistoryQuoteQueryView.vue` |
-| `meta-exchange` | `Meta/Finv/Quote/Metadata/MetaExchangeView.vue` |
-| `meta-market` | `Meta/Finv/Quote/Metadata/MetaMarketView.vue` |
-| `meta-security` | `Meta/Finv/Quote/Metadata/MetaSecurityView.vue` |
+| `meta-exchange` | `Meta/Finv/MetaData/MetaExchangeView.vue` |
+| `meta-market` | `Meta/Finv/MetaData/MetaMarketView.vue` |
+| `meta-security` | `Meta/Finv/MetaData/MetaSecurityView.vue` |
 | `meta-import` | `Meta/Finv/Quote/History/HistoryQuoteImportView.vue` |
 | `backtest-gold-futures` | `Meta/Finv/Quant/Backtest/BacktestGoldFuturesView.vue` |
 | `env-template` | `Meta/Finv/Quant/Backtest/EnvironmentTemplateView.vue` |
