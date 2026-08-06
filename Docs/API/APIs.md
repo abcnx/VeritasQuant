@@ -58,7 +58,7 @@
 ## 说明
 
 - 接口清单以 `internal/api/router.go` 中 `/API/V1` 路由组注册为准；新增接口须同步更新本索引及 [Docs/API/README.md](README.md) 端点索引。
-- 「详细文档」列指向对应接口文档（`Docs/API/xxx/XXXX.md`，见 [ApiSpec.md](../DevSpec/ApiSpec.md) 第 6 节）；暂无独立文档的接口以 `—` 标注。
+- 「详细文档」列指向对应接口文档（`Docs/API/xxx/XXXX.md`，见 [ApiSpec.md](../DevSpec/ApiSpec.md) 第 7 节）；暂无独立文档的接口以 `—` 标注。
 - 「已使用位置（业务菜单）」列与菜单文档中的接口引用互为索引（见 [MenuSpec.md](../DevSpec/MenuSpec.md) 第 3 节）；接口新增使用方或下线时须同步更新。
 - 通用探针/信息接口（health、version）不强制要求独立文档，但契约变更须同步本索引。
 
