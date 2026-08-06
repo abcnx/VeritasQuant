@@ -254,11 +254,22 @@ onBeforeUnmount(() => {
 
 <template>
   <v-container fluid>
-    <v-alert type="info" variant="tonal" density="compact" class="mb-3">
-      <v-icon icon="mdi-gold" class="mr-1" />黄金期货合约回测验证：基于已导入的 GCMain 黄金期货主连
-      2018~2026 分钟行情，选择策略与账户、配置回测条件后启动回测；任务完成后可查看收益分析报告。
-      通用引擎同样支持 ETF / 股票 / 场外基金 / 国内期货 / 美股期货 / 商品期货等任意已导入行情数据的证券。
-    </v-alert>
+    <!-- 操作引导条：用图标分步骤引导用户完成回测 -->
+    <v-card variant="tonal" color="primary" class="mb-3">
+      <v-card-text class="py-3 d-flex flex-wrap align-center ga-4">
+        <v-icon icon="mdi-gold" color="primary" />
+        <div class="text-body-2 font-weight-medium">
+          黄金期货回测：按下面 4 步快速验证策略
+        </div>
+        <v-divider vertical class="mx-2" />
+        <div class="d-flex flex-column ga-1">
+          <span class="text-caption text-medium-emphasis">① 选择策略 · ② 选择账户 · ③ 配置条件 · ④ 启动回测</span>
+          <span class="text-caption text-medium-emphasis">
+            任务完成后点击「查看报告」查看收益分析 · 引擎亦支持 ETF / 股票 / 期货等任意已导入行情
+          </span>
+        </div>
+      </v-card-text>
+    </v-card>
 
     <v-row>
       <!-- 回测条件配置（上） -->
