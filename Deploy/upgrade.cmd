@@ -68,12 +68,24 @@ docker ps --filter "name=redis" --format "    {{.Names}}: {{.Status}}"
 REM ---------- 2. 拉取远端镜像（幂等，获取最新版本信息） ----------
 echo.
 echo [3/8] 拉取远端镜像最新版本（%IMG%:%CUR_TAG%）...
-%COMPOSE_CMD% pull finvquant
-if errorlevel 1 (
-    echo [ERROR] 拉取远端镜像失败。请检查：ghcr.io 网络可达性 / Docker 登录状态
-    echo   - 若未登录 GHCR：docker login ghcr.io
+REM 网络波动容错：pull 强制联网检查远端 manifest，偶发 EOF/超时，
+REM 自动重试最多 3 次（每次间隔 5s）后再判失败。
+set /a PULL_TRY=0
+:pull_retry
+    set /a PULL_TRY+=1
+    if !PULL_TRY! gtr 1 (
+        echo   [重试] 第 !PULL_TRY!/3 次尝试拉取（网络波动时常见，自动重试）...
+        timeout /t 5 /nobreak >nul
+    )
+    %COMPOSE_CMD% pull finvquant
+    if not errorlevel 1 goto :pull_ok
+    if !PULL_TRY! lss 3 goto :pull_retry
+    echo [ERROR] 拉取远端镜像连续 3 次失败。
+    echo   - 网络问题：ghcr.io 不可达 / 网络波动（可用 docker pull %IMG%:%CUR_TAG% 手工重试）
+    echo   - 认证问题：需登录 GHCR（docker login ghcr.io）
+    echo   - 本地已有镜像时也可直接执行：docker compose -f Deploy\docker-compose.yml --env-file Deploy\.env up -d
     popd & exit /b 1
-)
+:pull_ok
 set "REMOTE_ID="
 for /f "tokens=*" %%i in ('docker image inspect %IMG%:%CUR_TAG% --format "{{.Id}}" 2^>nul') do set "REMOTE_ID=%%i"
 set "REMOTE_SHORT=!REMOTE_ID:~7,12!"

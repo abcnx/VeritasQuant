@@ -64,8 +64,20 @@ if "%DO_ENV%"=="1" (
 
 REM ---------- 2. 拉取镜像 ----------
 echo [3/5] 拉取镜像（ghcr.io/acanx/finvquant:!IMG_TAG!）...
-%COMPOSE_CMD% pull finvquant
-if errorlevel 1 (echo [ERROR] 拉取镜像失败，请检查 ghcr.io 网络可达性 & popd & exit /b 1)
+REM 网络波动容错：自动重试最多 3 次（每次间隔 5s）
+set /a PULL_TRY=0
+:pull_retry
+    set /a PULL_TRY+=1
+    if !PULL_TRY! gtr 1 (
+        echo   [重试] 第 !PULL_TRY!/3 次尝试拉取（网络波动时常见，自动重试）...
+        timeout /t 5 /nobreak >nul
+    )
+    %COMPOSE_CMD% pull finvquant
+    if not errorlevel 1 goto :pull_ok
+    if !PULL_TRY! lss 3 goto :pull_retry
+    echo [ERROR] 拉取镜像连续 3 次失败，请检查 ghcr.io 网络可达性
+    popd & exit /b 1
+:pull_ok
 echo [OK] 镜像已就绪。
 
 REM ---------- 3. 启动 compose（首次创建全部服务） ----------
