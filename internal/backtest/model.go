@@ -149,6 +149,19 @@ type RuleDef struct {
 	AllowedTimes []string `json:"allowed_times"` // 限定交易时间点（hhmmss 字符串，空=不限制）
 	MaxPerRun    int      `json:"max_per_run"`   // 整个回测最大触发次数（0=不限制）
 	Allow        bool     `json:"allow"`         // 规则开关（false=禁用该方向交易）
+	// 滑动窗口限制（分方向，滚动 N 自然日；覆盖 risk 全局对应项）
+	MaxPerWeek     int     `json:"max_per_week"`      // 滚动 7 自然日最大触发次数（0=不限制，缺省跟随 risk）
+	MaxPerMonth    int     `json:"max_per_month"`     // 滚动 30 自然日最大触发次数（0=不限制，缺省跟随 risk）
+	MaxFeePerWindow float64 `json:"max_fee_per_window"` // 滚动窗口内手续费上限（0=不限制，缺省跟随 risk）
+	FeeWindowDays  int     `json:"fee_window_days"`   // 费用窗口天数（0=缺省 30）
+}
+
+// BuilderDef 分批建仓（动态建仓策略）：买入信号未达目标仓位时分批加仓，而非满仓或拒绝。
+type BuilderDef struct {
+	Enabled             bool    `json:"enabled"`               // 是否启用分批建仓
+	TargetPositionPct   float64 `json:"target_position_pct"`   // 目标仓位占净资产 %（0=缺省 MaxPositionPct）
+	Tranches            int     `json:"tranches"`              // 分几批建仓（>=1，每批 = 目标仓位/份数）
+	TrancheIntervalBars int     `json:"tranche_interval_bars"` // 相邻批次最小间隔 bar 数（0=不限制）
 }
 
 // RiskDef 风控定义。
@@ -159,6 +172,14 @@ type RiskDef struct {
 	MaxPositions    int     `json:"max_positions"`      // 最大持仓数（单标的回测恒为 0/1）
 	MaxTradesPerDay int     `json:"max_trades_per_day"` // 每日最大成交笔数（0=不限制）
 	MinIntervalBars int     `json:"min_interval_bars"`  // 相邻交易最小间隔 bar 数（0=不限制）
+	// 分批建仓 / 分批减仓（动态建仓策略）
+	Builder        *BuilderDef `json:"builder,omitempty"` // 分批建仓配置（nil=不启用，保持满仓/清仓语义）
+	ReduceTranches int         `json:"reduce_tranches"`   // 卖出分批减仓份数（>=1；每批卖出 持仓/份数，最后一批清仓）
+	// 滑动窗口交易限制（全局，滚动 N 自然日；分方向可在 rules 覆盖）
+	MaxTradesPerWeek  int     `json:"max_trades_per_week"`   // 滚动 7 自然日成交笔数上限（0=不限制）
+	MaxTradesPerMonth int     `json:"max_trades_per_month"`  // 滚动 30 自然日成交笔数上限（0=不限制）
+	MaxFeePerWindow   float64 `json:"max_fee_per_window"`    // 滚动窗口内手续费上限（0=不限制）
+	FeeWindowDays     int     `json:"fee_window_days"`       // 费用窗口天数（0=缺省 30）
 }
 
 // CostDef 成本覆盖（任务级优先于账户）。

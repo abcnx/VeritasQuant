@@ -94,6 +94,30 @@ func validateStrategy(st *Strategy) error {
 	if def.Risk.MaxPositionPct < 0 || def.Risk.MaxPositionPct > 100 {
 		return fmt.Errorf("risk.max_position_pct 必须在 0~100 之间")
 	}
+	// 分批建仓校验
+	if b := def.Risk.Builder; b != nil {
+		if b.Tranches < 1 {
+			return fmt.Errorf("risk.builder.tranches（分批建仓份数）必须 >= 1")
+		}
+		if b.TargetPositionPct < 0 || b.TargetPositionPct > 100 {
+			return fmt.Errorf("risk.builder.target_position_pct 必须在 0~100 之间")
+		}
+		if b.TrancheIntervalBars < 0 {
+			return fmt.Errorf("risk.builder.tranche_interval_bars 不能为负数")
+		}
+	}
+	if def.Risk.ReduceTranches < 0 {
+		return fmt.Errorf("risk.reduce_tranches（分批减仓份数）不能为负数")
+	}
+	// 滑动窗口限制校验
+	if def.Risk.MaxTradesPerWeek < 0 || def.Risk.MaxTradesPerMonth < 0 || def.Risk.MaxFeePerWindow < 0 || def.Risk.FeeWindowDays < 0 {
+		return fmt.Errorf("risk.max_trades_per_week / max_trades_per_month / max_fee_per_window / fee_window_days 不能为负数")
+	}
+	for name, rule := range map[string]RuleDef{"buy": def.Rules.Buy, "sell": def.Rules.Sell} {
+		if rule.MaxPerWeek < 0 || rule.MaxPerMonth < 0 || rule.MaxFeePerWindow < 0 || rule.FeeWindowDays < 0 {
+			return fmt.Errorf("rules.%s 的 max_per_week / max_per_month / max_fee_per_window / fee_window_days 不能为负数", name)
+		}
+	}
 	return nil
 }
 

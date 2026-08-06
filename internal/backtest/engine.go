@@ -80,6 +80,23 @@ type dayCounters struct {
 	ruleRunTrades map[string]int // 规则整个回测触发次数
 	lastTradeBar  int            // 最近成交 bar 索引
 	curDate       int            // 当前日期（用于跨日重置）
+
+	// 滑动窗口计数（滚动 N 自然日，按成交 bar 的 date 判定）
+	weekDates   []int            // 近 7 日成交日期序列
+	monthDates  []int            // 近 30 日成交日期序列
+	ruleWeek    map[string][]int // 分方向：近 7 日触发日期
+	ruleMonth   map[string][]int // 分方向：近 30 日触发日期
+	feeWindows  []feeWinItem     // 滚动窗口手续费记录（date + 手续费金额）
+	ruleFees    map[string][]feeWinItem
+	builderBar  int              // 上次加仓 bar 索引（分批建仓间隔控制）
+	builderDate int              // 上次加仓日期
+	reduceRemain int             // 分批减仓剩余次数（开仓时置为 ReduceTranches，每次减仓递减）
+}
+
+// feeWinItem 滚动费用窗口单笔记录。
+type feeWinItem struct {
+	date int
+	fee  float64
 }
 
 // Run 执行回测。ctx 支持取消（任务取消/服务停机）；bars 为已按周期聚合、时间升序的行情。
@@ -108,6 +125,15 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		for _, s := range e.cfg.Environment.Config.TradingSessions {
 			envSessions = append(envSessions, [2]string{s.Start, s.End})
 		}
+	}
+	// 交易时段可读描述（拒绝原因文案用，如 "08:20-13:30"）
+	sessionDesc := "未配置"
+	if len(envSessions) > 0 {
+		parts := []string{}
+		for _, se := range envSessions {
+			parts = append(parts, se[0][:2]+":"+se[0][2:4]+"-"+se[1][:2]+":"+se[1][2:4])
+		}
+		sessionDesc = strings.Join(parts, "/")
 	}
 	envInSession := func(b Bar) bool {
 		if len(envSessions) == 0 {
@@ -209,7 +235,11 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 	dc := &dayCounters{
 		ruleTrades:    map[string]int{},
 		ruleRunTrades: map[string]int{},
+		ruleWeek:      map[string][]int{},
+		ruleMonth:     map[string][]int{},
+		ruleFees:      map[string][]feeWinItem{},
 		lastTradeBar:  -1,
+		builderBar:    -1,
 	}
 
 	result := &EngineResult{}
@@ -283,6 +313,14 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 			}
 		}
 		evalCtx.At = i
+
+		// 每根 bar 开头做跨日重置：每日计数（成交笔数/规则触发次数）按 bar 日期重置，
+		// 而非仅在成交时重置 —— 修复“某日达到每日上限后永久死锁、后续所有信号被拒”的问题。
+		if dc.curDate != b.Date {
+			dc.curDate = b.Date
+			dc.trades = 0
+			dc.ruleTrades = map[string]int{}
+		}
 
 		// ---------- 1. 执行上一 bar 收盘产生的挂单（当前 bar 开盘价成交，事件追踪更新） ----------
 		if pendingOrder != nil {
@@ -374,18 +412,18 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 		// ---------- 4. 下单（限制判定：仓位/时间点/环境时段/频率/次数，事件追踪登记拒绝原因） ----------
 		inSession := envInSession(b)
 		if buyHit {
-			if state.position > 0 {
-				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "已达最大持仓（当前版本单标的同时仅允许 1 个持仓）")
+			if builderReject := e.buyPositionReject(b, i, state, dc, def.Risk); builderReject != "" {
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, builderReject)
 			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在允许交易时间点内")
 			} else if !inSession {
-				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, "不在环境交易时段内")
+				e.recordReject(&eventTraces, ActionBuy, "买入信号", b,
+					fmt.Sprintf("当前bar时间 %s 不在环境交易时段（%s）内，非时段行情不产生交易", barTime, sessionDesc))
 			} else if reason := dc.ruleRejectReason(def.Rules.Buy, "buy", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionBuy, "买入信号", b, reason)
 			} else if fillMode == FillCurrentClose {
 				// CURRENT_CLOSE 撮合：当前 bar 收盘价立即成交（近似撮合，非默认）
-				dc.ruleTrades["buy"]++
-				dc.ruleRunTrades["buy"]++
+				dc.recordRuleTrigger("buy", b.Date)
 				fillPrice := b.Close * (1 + slippage/100)
 				tradeSeq, executed, rejectReason := e.fill(ActionBuy, fillPrice, b, i, state, dc, &trades,
 					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
@@ -406,27 +444,26 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 					ev.RejectReason = rejectReason
 				}
 			} else {
-				dc.ruleTrades["buy"]++
-				dc.ruleRunTrades["buy"]++
+				dc.recordRuleTrigger("buy", b.Date)
 				evIdx := e.newEvent(&eventTraces, ActionBuy, "买入信号", b)
 				pendingOrder = &pendingOrderT{action: ActionBuy, slippageSign: 1, signal: "买入信号", eventIdx: evIdx, triggerBar: i}
 			}
 		}
 		if sellHit {
 			if state.position <= 0 {
-				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "无持仓可卖")
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "当前无持仓，卖出信号无法执行（空仓状态）")
 			} else if len(allowedTimes) > 0 && !allowedTimes[barTime] {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在允许交易时间点内")
 			} else if !inSession {
-				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, "不在环境交易时段内")
+				e.recordReject(&eventTraces, ActionSell, "卖出信号", b,
+					fmt.Sprintf("当前bar时间 %s 不在环境交易时段（%s）内，非时段行情不产生交易", barTime, sessionDesc))
 			} else if envRules.tPlus > 0 && state.entryDate == b.Date {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, fmt.Sprintf("T+%d 交收限制（当日买入不可卖出）", envRules.tPlus))
 			} else if reason := dc.ruleRejectReason(def.Rules.Sell, "sell", maxTradesPerDay, i, def.Risk); reason != "" {
 				e.recordReject(&eventTraces, ActionSell, "卖出信号", b, reason)
 			} else if fillMode == FillCurrentClose {
 				// CURRENT_CLOSE 撮合：当前 bar 收盘价立即成交
-				dc.ruleTrades["sell"]++
-				dc.ruleRunTrades["sell"]++
+				dc.recordRuleTrigger("sell", b.Date)
 				fillPrice := b.Close * (1 - slippage/100)
 				tradeSeq, executed, rejectReason := e.fill(ActionSell, fillPrice, b, i, state, dc, &trades,
 					&cashflows, &positionLogs, commission, &totalFee, signalDetail,
@@ -447,8 +484,7 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 					ev.RejectReason = rejectReason
 				}
 			} else {
-				dc.ruleTrades["sell"]++
-				dc.ruleRunTrades["sell"]++
+				dc.recordRuleTrigger("sell", b.Date)
 				evIdx := e.newEvent(&eventTraces, ActionSell, "卖出信号", b)
 				pendingOrder = &pendingOrderT{action: ActionSell, slippageSign: -1, signal: "卖出信号", eventIdx: evIdx, triggerBar: i}
 			}
@@ -549,8 +585,74 @@ func (e *Engine) Run(ctx context.Context, bars []Bar) (*EngineResult, error) {
 func buyRuleAllowed(def StrategyDefinition) bool  { return def.Rules.Buy.Allow }
 func sellRuleAllowed(def StrategyDefinition) bool { return def.Rules.Sell.Allow }
 
+// daysFromDate 将 yyyymmdd 转为自 epoch 起的天序数（跨月/年边界也可做日期差比较）。
+func daysFromDate(date int) int64 {
+	year := date / 10000
+	month := (date / 100) % 100
+	day := date % 100
+	t := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	return t.Unix() / 86400
+}
+
+// countWithinWindow 统计日期序列中落在近 N 个自然日（含当前日）内的条数。
+func countWithinWindow(dates []int, curDate int, days int) int {
+	if days <= 0 || len(dates) == 0 {
+		return 0
+	}
+	bound := daysFromDate(curDate) - int64(days-1)
+	n := 0
+	for _, d := range dates {
+		if daysFromDate(d) >= bound {
+			n++
+		}
+	}
+	return n
+}
+
+// sumFeeWithinWindow 统计滚动窗口内手续费累计。
+func sumFeeWithinWindow(items []feeWinItem, curDate int, days int) float64 {
+	if days <= 0 || len(items) == 0 {
+		return 0
+	}
+	bound := daysFromDate(curDate) - int64(days-1)
+	var sum float64
+	for _, it := range items {
+		if daysFromDate(it.date) >= bound {
+			sum += it.fee
+		}
+	}
+	return sum
+}
+
+// recordRuleTrigger 记录规则触发（当日/全回测/滚动窗口），触发即计数（与 MaxPerDay/MaxPerRun 语义一致）。
+func (dc *dayCounters) recordRuleTrigger(key string, date int) {
+	dc.ruleTrades[key]++
+	dc.ruleRunTrades[key]++
+	dc.ruleWeek[key] = append(dc.ruleWeek[key], date)
+	dc.ruleMonth[key] = append(dc.ruleMonth[key], date)
+}
+
+// windowRejectReason 检查风险级滑动窗口限制（成交笔数周/月、手续费窗口），返回拒绝原因（空=允许）。
+func (dc *dayCounters) windowRejectReason(risk RiskDef, curDate int) string {
+	if risk.MaxTradesPerWeek > 0 && countWithinWindow(dc.weekDates, curDate, 7) >= risk.MaxTradesPerWeek {
+		return fmt.Sprintf("近7日成交已达上限（%d 笔）", risk.MaxTradesPerWeek)
+	}
+	if risk.MaxTradesPerMonth > 0 && countWithinWindow(dc.monthDates, curDate, 30) >= risk.MaxTradesPerMonth {
+		return fmt.Sprintf("近30日成交已达上限（%d 笔）", risk.MaxTradesPerMonth)
+	}
+	feeDays := risk.FeeWindowDays
+	if feeDays <= 0 {
+		feeDays = 30
+	}
+	if risk.MaxFeePerWindow > 0 && sumFeeWithinWindow(dc.feeWindows, curDate, feeDays) >= risk.MaxFeePerWindow {
+		return fmt.Sprintf("近%d日手续费已达上限（%.2f）", feeDays, risk.MaxFeePerWindow)
+	}
+	return ""
+}
+
 // ruleRejectReason 检查规则限制并返回拒绝原因（空串=允许）。
-// 限制维度：规则每日触发次数 / 规则全回测触发次数 / 全局每日成交笔数 / 最小交易间隔。
+// 限制维度：规则每日触发次数 / 规则全回测触发次数 / 全局每日成交笔数 / 最小交易间隔 /
+// 滑动窗口（规则级周/月触发次数，风险级周/月成交笔数与手续费窗口）。
 func (dc *dayCounters) ruleRejectReason(rule RuleDef, key string, maxTradesPerDay, barIdx int, risk RiskDef) string {
 	if rule.MaxPerDay > 0 && dc.ruleTrades[key] >= rule.MaxPerDay {
 		return fmt.Sprintf("超过规则每日最大触发次数（%d 次）", rule.MaxPerDay)
@@ -559,10 +661,67 @@ func (dc *dayCounters) ruleRejectReason(rule RuleDef, key string, maxTradesPerDa
 		return fmt.Sprintf("超过规则回测总触发次数（%d 次）", rule.MaxPerRun)
 	}
 	if maxTradesPerDay > 0 && dc.trades >= maxTradesPerDay {
-		return fmt.Sprintf("超过每日最大成交笔数（%d 笔）", maxTradesPerDay)
+		return fmt.Sprintf("今日已达成交笔数上限（%d 笔），可提高 max_trades_per_day 或在任务级覆盖", maxTradesPerDay)
 	}
 	if risk.MinIntervalBars > 0 && dc.lastTradeBar >= 0 && barIdx-dc.lastTradeBar < risk.MinIntervalBars {
 		return fmt.Sprintf("未满足最小交易间隔（%d bar）", risk.MinIntervalBars)
+	}
+	// 规则级滑动窗口（分方向，覆盖风险级）
+	curDate := dc.curDate
+	maxW := rule.MaxPerWeek
+	if maxW > 0 && countWithinWindow(dc.ruleWeek[key], curDate, 7) >= maxW {
+		return fmt.Sprintf("近7日%s触发已达上限（%d 次）", key, maxW)
+	}
+	maxM := rule.MaxPerMonth
+	if maxM > 0 && countWithinWindow(dc.ruleMonth[key], curDate, 30) >= maxM {
+		return fmt.Sprintf("近30日%s触发已达上限（%d 次）", key, maxM)
+	}
+	if rule.MaxFeePerWindow > 0 {
+		feeDays := rule.FeeWindowDays
+		if feeDays <= 0 {
+			feeDays = 30
+		}
+		if sumFeeWithinWindow(dc.ruleFees[key], curDate, feeDays) >= rule.MaxFeePerWindow {
+			return fmt.Sprintf("近%d日%s手续费已达上限（%.2f）", feeDays, key, rule.MaxFeePerWindow)
+		}
+	}
+	return dc.windowRejectReason(risk, curDate)
+}
+
+// buyPositionReject 检查买入方向是否因持仓/建仓进度被拒绝（空串=允许下单）。
+//   - 未启用分批建仓：持仓>0 即拒绝（单标的单持仓语义，原逻辑）；
+//   - 启用分批建仓：持仓未达目标仓位时允许加仓；已达目标仓位时拒绝。
+//   - 相邻批次间隔（tranche_interval_bars）未满足时拒绝。
+func (e *Engine) buyPositionReject(b Bar, barIdx int, state *accountState, dc *dayCounters, risk RiskDef) string {
+	builder := risk.Builder
+	if builder == nil || !builder.Enabled {
+		if state.position > 0 {
+			return "已达最大持仓（当前版本单标的同时仅允许 1 个持仓）"
+		}
+		return ""
+	}
+	if state.position <= 0 {
+		// 空仓：允许首笔建仓（间隔限制仅对已有加仓记录生效）
+		return ""
+	}
+	// 相邻批次最小间隔
+	if builder.TrancheIntervalBars > 0 && dc.builderBar >= 0 && barIdx-dc.builderBar < builder.TrancheIntervalBars {
+		return fmt.Sprintf("未满足分批建仓最小间隔（%d bar）", builder.TrancheIntervalBars)
+	}
+	// 已达目标仓位：计算目标持仓价值并对比当前持仓价值
+	targetPct := builder.TargetPositionPct
+	if targetPct <= 0 {
+		targetPct = risk.MaxPositionPct
+	}
+	if targetPct <= 0 {
+		targetPct = 100
+	}
+	multiplier := e.environmentRules().multiplier
+	equity := equityAt(b, state, multiplier)
+	curVal := state.position * b.Close * multiplier
+	targetVal := equity * targetPct / 100
+	if curVal >= targetVal {
+		return fmt.Sprintf("已达目标持仓上限（当前持仓 %.4f，目标仓位 %.0f%% = %.2f）", state.position, targetPct, targetVal)
 	}
 	return ""
 }
@@ -713,7 +872,16 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 
 	switch action {
 	case ActionBuy:
-		qty = e.buyQuantity(b, state, price, def.Rules.Buy, commission, marginRate, multiplier)
+		// 分批建仓：每批按「目标仓位/份数」固定档位推进（未达目标时分批加仓）；
+		// 未启用则保持原数量模式（满仓/百分比等）。
+		if bd, ok := e.builderDef(); ok && bd.Enabled {
+			qty = e.builderAddQty(bd, state, price, def.Risk, commission, marginRate, multiplier)
+			if qty <= 0 {
+				return 0, false, "已达目标持仓上限（分批建仓目标仓位已达成）"
+			}
+		} else {
+			qty = e.buyQuantity(b, state, price, def.Rules.Buy, commission, marginRate, multiplier)
+		}
 		if qty <= 0 {
 			return 0, false, "资金不足（可用资金无法覆盖委托金额）"
 		}
@@ -735,10 +903,25 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		state.avgCost = (state.position*state.avgCost + qty*price) / newPos
 		state.position = newPos
 		state.entryDate = b.Date
+		dc.builderBar = barIdx
+		dc.builderDate = b.Date
+		// 空仓开新仓时重置分批减仓次数（配合 ReduceTranches）
+		if posBefore <= 0 && def.Risk.ReduceTranches > 1 {
+			dc.reduceRemain = def.Risk.ReduceTranches
+		}
 	case ActionSell:
-		qty = e.sellQuantity(b, state, price, def.Rules.Sell, multiplier)
+		// 分批减仓：每批卖出 持仓/剩余次数，最后一批清仓；未启用则按原数量模式（清仓/百分比等）
+		if def.Risk.ReduceTranches > 1 {
+			if dc.reduceRemain <= 0 {
+				dc.reduceRemain = def.Risk.ReduceTranches
+			}
+			qty = e.reduceQty(state, price, dc.reduceRemain, multiplier)
+			dc.reduceRemain--
+		} else {
+			qty = e.sellQuantity(b, state, price, def.Rules.Sell, multiplier)
+		}
 		if qty <= 0 {
-			return 0, false, "无持仓可卖"
+			return 0, false, "当前无持仓，卖出信号无法执行（空仓状态）"
 		}
 		amount = qty * price * multiplier
 		fee = amount * commission
@@ -764,11 +947,27 @@ func (e *Engine) fill(action string, price float64, b Bar, barIdx int, state *ac
 		if signalDetail != nil {
 			signalDetail[signal]++
 		}
-		state.position = 0
-		state.avgCost = 0
+		state.position -= qty
+		if state.position < 1e-9 {
+			state.position = 0
+			state.avgCost = 0
+		}
 	}
 
 	*totalFee += fee
+	// 滑动窗口记录（成交级）：风险级周/月成交日期、手续费窗口（按自然日滚动）
+	dc.weekDates = append(dc.weekDates, b.Date)
+	dc.monthDates = append(dc.monthDates, b.Date)
+	dc.feeWindows = append(dc.feeWindows, feeWinItem{date: b.Date, fee: fee})
+	// 规则级手续费窗口（分方向）：规则触发已由 recordRuleTrigger 记入 ruleWeek/ruleMonth，
+	// 但手续费只在成交时产生，故在此按方向补充记录（供 rules.max_fee_per_window 生效）
+	key := ""
+	if action == ActionBuy {
+		key = "buy"
+	} else {
+		key = "sell"
+	}
+	dc.ruleFees[key] = append(dc.ruleFees[key], feeWinItem{date: b.Date, fee: fee})
 	trade := Trade{
 		TS:            b.TS,
 		Date:          b.Date,
@@ -925,6 +1124,73 @@ func (e *Engine) sellQuantity(b Bar, state *accountState, price float64, rule Ru
 	default: // ALL 清仓
 		return pos
 	}
+}
+
+// builderDef 返回启用的分批建仓配置（nil 表示未启用）。
+func (e *Engine) builderDef() (*BuilderDef, bool) {
+	b := e.cfg.Definition.Risk.Builder
+	if b == nil || !b.Enabled {
+		return nil, false
+	}
+	return b, true
+}
+
+// builderAddQty 计算分批建仓数量：以「目标仓位价值 / 份数」作为每档固定买入额，
+// 买入后当前持仓价值不得超过目标仓位。返回本次建仓数量。
+func (e *Engine) builderAddQty(b *BuilderDef, state *accountState, price float64, risk RiskDef,
+	commission, marginRate, multiplier float64) float64 {
+	if multiplier <= 0 {
+		multiplier = 1
+	}
+	targetPct := b.TargetPositionPct
+	if targetPct <= 0 {
+		targetPct = risk.MaxPositionPct
+	}
+	if targetPct <= 0 {
+		targetPct = 100
+	}
+	tranches := b.Tranches
+	if tranches < 1 {
+		tranches = 1
+	}
+	// 当前净资产（现金 + 当前持仓市值）；买价近似现价，直接用 price 计算
+	curVal := state.position * price * multiplier
+	equity := state.cash + curVal
+	targetVal := equity * targetPct / 100
+	// 每档固定金额
+	trancheVal := targetVal / float64(tranches)
+	// 若当前持仓已接近目标，仅买入差额（避免超配）
+	want := trancheVal
+	if targetVal-curVal < want {
+		want = targetVal - curVal
+	}
+	if want <= 0 {
+		return 0
+	}
+	// 可用资金封顶（含手续费预留）
+	available := state.cash
+	if commission > 0 {
+		available = state.cash / (1 + commission)
+	}
+	qty := want / (price * multiplier * marginRate)
+	maxQty := floorQty(available / (price * multiplier * marginRate))
+	if qty > maxQty {
+		qty = maxQty
+	}
+	return floorQty(qty)
+}
+
+// reduceQty 计算分批减仓数量：每批卖出 持仓/剩余次数（最后一笔清仓，余数由最后一次全出）。返回本次卖出数量。
+func (e *Engine) reduceQty(state *accountState, price float64, remain int, multiplier float64) float64 {
+	pos := state.position
+	if pos <= 0 || remain <= 1 {
+		return pos
+	}
+	per := floorQty(pos / float64(remain))
+	if per <= 0 {
+		return pos
+	}
+	return per
 }
 
 // floorQty 数量向下取整（保留 6 位小数，兼容股票整数股/期货手数）。

@@ -2,6 +2,7 @@ package backtest
 
 import (
 	"context"
+	"strings"
 	"testing"
 )
 
@@ -57,7 +58,7 @@ func TestEngineEnvironmentSessions(t *testing.T) {
 		if ev.ExecStatus == "FILLED" {
 			inSessionFilled++
 		}
-		if ev.ExecStatus == "REJECTED" && ev.RejectReason == "不在环境交易时段内" {
+		if ev.ExecStatus == "REJECTED" && strings.Contains(ev.RejectReason, "不在环境交易时段") {
 			sessionRejected++
 		}
 	}
@@ -67,7 +68,16 @@ func TestEngineEnvironmentSessions(t *testing.T) {
 	if sessionRejected == 0 {
 		t.Error("非环境交易时段内的信号应被拒绝并登记原因")
 	}
-	if result.Report.EventStats == nil || result.Report.EventStats.RejectReasons["不在环境交易时段内"] == 0 {
+	if result.Report.EventStats == nil {
+		t.Fatal("事件统计为空")
+	}
+	found := false
+	for reason, cnt := range result.Report.EventStats.RejectReasons {
+		if strings.Contains(reason, "不在环境交易时段") && cnt > 0 {
+			found = true
+		}
+	}
+	if !found {
 		t.Error("报告拒绝原因分布应包含「不在环境交易时段内」")
 	}
 }
