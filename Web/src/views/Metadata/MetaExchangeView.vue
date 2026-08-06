@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { apiGet, apiPost } from '../api'
+import { apiGet, apiPost } from '../../api'
 
 // finv_exchange 交易所/市场字典行
 interface ExchangeRow {

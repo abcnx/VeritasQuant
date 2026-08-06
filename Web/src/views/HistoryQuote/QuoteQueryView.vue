@@ -2,7 +2,7 @@
 import * as echarts from 'echarts'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import { apiGet } from '../api'
+import { apiGet } from '../../api'
 
 interface QuoteBar {
   date: number

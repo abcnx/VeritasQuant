@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { apiGet, apiPost } from '../api'
+import { apiGet, apiPost } from '../../../api'
 
 // 回测账户行
 interface AccountRow {
