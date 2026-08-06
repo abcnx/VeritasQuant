@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { apiGet, apiPost } from '../../../api'
-import { fmtDate, statusColor } from '../../../utils'
+import { apiGet, apiPost } from '../../../../../api'
+import { fmtDate, statusColor } from '../../../../../utils'
 
 const router = useRouter()
 
@@ -203,7 +203,7 @@ async function cancelRun(run: RunRow) {
 }
 
 function viewReport(run: RunRow) {
-  router.push({ path: '/Meta/FinvQuant/Backtest/Analysis/Report', query: { runId: run.run_id } })
+  router.push({ path: '/Meta/Finv/Quant/Backtest/Analysis/Report', query: { runId: run.run_id } })
 }
 
 onMounted(async () => {

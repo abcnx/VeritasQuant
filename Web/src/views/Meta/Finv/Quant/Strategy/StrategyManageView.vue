@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { apiGet, apiPost } from '../../../api'
+import { apiGet, apiPost } from '../../../../../api'
 
 interface StrategyRow {
   strategy_id: string

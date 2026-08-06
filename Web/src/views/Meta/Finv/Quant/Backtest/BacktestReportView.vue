@@ -2,8 +2,8 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import { apiGet } from '../../../api'
-import { fmtDate, fmtNum, fmtPct, fmtTime } from '../../../utils'
+import { apiGet } from '../../../../../api'
+import { fmtDate, fmtNum, fmtPct, fmtTime } from '../../../../../utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -494,7 +494,7 @@ onBeforeUnmount(() => {
     <v-alert v-if="error" type="error" dismissible class="mb-3">
       {{ error }}
       <template v-if="route.query.runId">
-        <v-btn size="small" variant="text" color="error" class="ml-2" @click="router.push('/Meta/FinvQuant/Backtest/Analysis')">
+        <v-btn size="small" variant="text" color="error" class="ml-2" @click="router.push('/Meta/Finv/Quant/Backtest/Analysis')">
           返回任务列表
         </v-btn>
       </template>
@@ -512,7 +512,7 @@ onBeforeUnmount(() => {
       <v-card class="mb-3">
         <v-card-title class="pb-0 d-flex align-center flex-wrap">
           <v-btn size="small" variant="text" prepend-icon="mdi-arrow-left" class="mr-2"
-            @click="router.push('/Meta/FinvQuant/Backtest/Analysis')">任务列表</v-btn>
+            @click="router.push('/Meta/Finv/Quant/Backtest/Analysis')">任务列表</v-btn>
           <v-icon icon="mdi-file-chart" class="mr-2" color="primary" />
           投资策略回测收益分析报告
           <v-chip size="small" class="ml-2">{{ report.secu_code }}</v-chip>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { apiGet } from '../../api'
+import { apiGet } from '../../../../../api'
 
 // ---------------------------------------------------------------------------
 // 历史行情数据导入：证券选择双策略

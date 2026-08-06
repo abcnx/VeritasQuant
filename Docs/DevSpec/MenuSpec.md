@@ -7,13 +7,13 @@
 ## 1. 菜单新增
 
 - **前端视图组件统一存放于 `Web/src/views/` 目录下**，并**按照业务模块层级放在对应的子目录中**（每级目录使用大驼峰 PascalCase 命名），例如：
-  - 策略管理菜单 → `Web/src/views/FinvQuant/Strategy/StrategyManageView.vue`；
-  - 回测分析菜单 → `Web/src/views/FinvQuant/Backtest/BacktestAnalysisView.vue`；
-  - 黄金期货合约回测验证 → `Web/src/views/FinvQuant/Backtest/BacktestGoldFuturesView.vue`；
-  - 账户管理 → `Web/src/views/FinvQuant/Account/AccountManageView.vue`；
-  - 历史行情查询 → `Web/src/views/Quote/History/HistoryQuoteQueryView.vue`；
-  - 交易所信息维护 → `Web/src/views/Meta/Exchange/MetaExchangeView.vue`。
-- 本项目下业务视图基本属于 **FinvQuant 量化模块**，统一存放于 `Web/src/views/FinvQuant/` 下按菜单/业务分层；通用性视图（如 `DashboardView.vue`）可直接放在 `Web/src/views/` 根目录。
+  - 策略管理菜单 → `Web/src/views/Meta/Finv/Quant/Strategy/StrategyManageView.vue`；
+  - 回测分析菜单 → `Web/src/views/Meta/Finv/Quant/Backtest/BacktestAnalysisView.vue`；
+  - 黄金期货合约回测验证 → `Web/src/views/Meta/Finv/Quant/Backtest/BacktestGoldFuturesView.vue`；
+  - 账户管理 → `Web/src/views/Meta/Finv/Quant/Account/AccountManageView.vue`；
+  - 历史行情查询 → `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue`；
+  - 交易所信息维护 → `Web/src/views/Meta/Finv/Quote/Metadata/MetaExchangeView.vue`。
+- **本项目业务视图统一归入 `Web/src/views/Meta/Finv/` 下**：量化交易模块放 `Meta/Finv/Quant/`（Quant）按菜单/业务分层，行情/元数据模块放 `Meta/Finv/Quote/`（Quote）按业务分层；通用性视图（如 `DashboardView.vue`）可直接放在 `Web/src/views/` 根目录。
 - 视图组件文件名使用大驼峰（PascalCase）并以 `View.vue` 结尾；必要时以模块前缀开头（如 `HistoryQuoteQueryView.vue`）避免同名歧义。
 - 每个菜单对应一个视图组件（如 `HistoryQuoteQueryView.vue`）。
 - 新增菜单时须在 `Web/src/App.vue` 的 `menuItems` 中登记：菜单 `key`（英文驼峰）、`title`（简体中文标题）、`icon`（mdi 图标）。
@@ -22,14 +22,15 @@
 ### 1.1 菜单路由路径命名规范（强制）
 
 - **所有前端菜单路由路径统一使用大驼峰（PascalCase）命名**：路径每段以大写字母开头、其余小写，段间用 `/` 分隔，不得使用小驼峰、下划线或全小写。
-- **FinvQuant 量化回测模块**：路由必须以 **`/Meta/FinvQuant/`** 为前缀，其后每段采用大驼峰，例如：
-  - 黄金期货合约回测验证 → `/Meta/FinvQuant/Backtest/GoldFutures`
-  - 回测分析 → `/Meta/FinvQuant/Backtest/Analysis`
-  - 投资策略回测收益分析报告 → `/Meta/FinvQuant/Backtest/Analysis/Report`
-  - 策略管理 → `/Meta/FinvQuant/Strategy`
-  - 环境与模板管理 → `/Meta/FinvQuant/EnvTemplate`
-  - 实盘仿真验证 → `/Meta/FinvQuant/Simulation/LiveSim`
-- **非 FinvQuant 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/quote/query`）在维护时逐步迁移对齐。
+- **量化交易模块（Quant）**：路由必须以 **`/Meta/Finv/Quant/`** 为前缀，其后每段采用大驼峰，例如：
+  - 黄金期货合约回测验证 → `/Meta/Finv/Quant/Backtest/GoldFutures`
+  - 回测分析 → `/Meta/Finv/Quant/Backtest/Analysis`
+  - 投资策略回测收益分析报告 → `/Meta/Finv/Quant/Backtest/Analysis/Report`
+  - 策略管理 → `/Meta/Finv/Quant/Strategy`
+  - 环境与模板管理 → `/Meta/Finv/Quant/EnvTemplate`
+  - 实盘仿真验证 → `/Meta/Finv/Quant/Simulation/LiveSim`
+- **行情/元数据模块（Quote）**：路由统一加 **`/Meta/Finv/Quote/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/Quote/History/HistoryQuoteQuery`、`/Meta/Finv/Quote/Metadata/Exchange`）。
+- **其他非 Finv 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/quote/query`）在维护时逐步迁移对齐。
 - **禁止**使用 `-`（连字符）、`_`（下划线）或全小写路径片段（如 `/meta/finvquant/backtest/analysis` 为违规写法）。
 - 路由在 `Web/src/router.ts` 的 `path` 与 `Web/src/App.vue` 的 `menuItems[].path` 中**两处必须一致**，且与 `Docs/Menu/Menus.md` 索引中的「路由」列保持一致。
 - 后端 API 接口路径前缀保持 `/API/V1/Meta/FinvQuant/...`（大驼峰），前端路由与其保持同一前缀体系（见 `Docs/DevSpec/ApiSpec.md`）。

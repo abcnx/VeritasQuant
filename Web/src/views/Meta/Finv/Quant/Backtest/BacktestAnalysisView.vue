@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGet, apiPost } from '../../../api'
-import { fmtDate, fmtNum, fmtPct, statusColor } from '../../../utils'
+import { apiGet, apiPost } from '../../../../../api'
+import { fmtDate, fmtNum, fmtPct, statusColor } from '../../../../../utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,7 +125,7 @@ async function cancelRun(run: RunRow) {
 // 点击 SUCCEEDED 任务 → 跳转独立报告页
 function openRun(run: RunRow) {
   if (run.status !== 'SUCCEEDED') return
-  router.push({ path: '/Meta/FinvQuant/Backtest/Analysis/Report', query: { runId: run.run_id } })
+  router.push({ path: '/Meta/Finv/Quant/Backtest/Analysis/Report', query: { runId: run.run_id } })
 }
 
 onMounted(async () => {
@@ -133,7 +133,7 @@ onMounted(async () => {
   // 深链 ?runId=：直接跳转报告页
   const q = route.query.runId as string | undefined
   if (q) {
-    router.replace({ path: '/Meta/FinvQuant/Backtest/Analysis/Report', query: { runId: q } })
+    router.replace({ path: '/Meta/Finv/Quant/Backtest/Analysis/Report', query: { runId: q } })
   }
 })
 
