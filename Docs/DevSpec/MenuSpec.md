@@ -31,7 +31,9 @@
   - 回测分析 → `/Meta/Finv/Quant/Backtest/Analysis`
   - 投资策略回测收益分析报告 → `/Meta/Finv/Quant/Backtest/Analysis/Report`
   - 策略管理 → `/Meta/Finv/Quant/Strategy`
-  - 环境与模板管理 → `/Meta/Finv/Quant/EnvTemplate`
+  - 配置管理 → `/Meta/Finv/Quant/Config`
+  - 环境管理 → `/Meta/Finv/Quant/Environment`
+  - 模板管理 → `/Meta/Finv/Quant/Template`
   - 实盘仿真验证 → `/Meta/Finv/Quant/Simulation/LiveSim`
 - **行情模块（Quote）**：路由统一加 **`/Meta/Finv/Quote/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/Quote/History/HistoryQuoteQuery`）。
 - **元数据模块（MetaData）**：路由统一加 **`/Meta/Finv/MetaData/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/MetaData/Exchange`）。元数据独立于行情/量化（平级关联，不从属），路由与目录均置于 `Meta/Finv/MetaData/`。

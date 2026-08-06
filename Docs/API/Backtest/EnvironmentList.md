@@ -71,5 +71,5 @@
 
 | 业务菜单 | 菜单文档 | 使用接口 |
 |----------|----------|----------|
-| 环境与模板管理 | [Docs/Menu/Backtest/EnvironmentTemplate.md](../../Menu/Backtest/EnvironmentTemplate.md) | List / Get / Save / Toggle / Delete |
+| 环境管理 | [Docs/Menu/Backtest/EnvironmentManage.md](../../Menu/Backtest/EnvironmentManage.md) | List / Get / Save / Toggle / Delete |
 | 黄金期货合约回测验证 | [Docs/Menu/Backtest/BacktestGoldFutures.md](../../Menu/Backtest/BacktestGoldFutures.md) | List（环境下拉） |

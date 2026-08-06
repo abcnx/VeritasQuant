@@ -58,5 +58,5 @@
 
 | 业务菜单 | 菜单文档 | 使用接口 |
 |----------|----------|----------|
-| 环境与模板管理 | [Docs/Menu/Backtest/EnvironmentTemplate.md](../../Menu/Backtest/EnvironmentTemplate.md) | List / Get / Save / Delete |
+| 模板管理 | [Docs/Menu/Backtest/TemplateManage.md](../../Menu/Backtest/TemplateManage.md) | List / Get / Save / Delete |
 | 策略管理 | [Docs/Menu/Backtest/StrategyManage.md](../../Menu/Backtest/StrategyManage.md) | List（templateType=STRATEGY 载入策略模板） |

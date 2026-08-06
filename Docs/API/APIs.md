@@ -45,15 +45,15 @@
 | 34 | GET | `/API/V1/Meta/FinvQuant/Backtest/Run/Cashflows` | 资金流水明细（⑨链路追踪） | [Backtest/RunCashflows.md](Backtest/RunCashflows.md) | 回测分析（同上） |
 | 35 | GET | `/API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs` | 持仓变化明细（⑨链路追踪） | [Backtest/RunPositionLogs.md](Backtest/RunPositionLogs.md) | 回测分析（同上） |
 | 36 | GET | `/API/V1/Meta/FinvQuant/Backtest/Run/EventTraces` | 事件追踪（触发原因/成交结果/委托耗时/未成交原因） | [Backtest/RunEventTraces.md](Backtest/RunEventTraces.md) | 回测分析（同上） |
-| 37 | GET | `/API/V1/Meta/FinvQuant/Backtest/Environment/List` | 分页查询回测环境（多类型×地区市场） | [Backtest/EnvironmentList.md](Backtest/EnvironmentList.md) | 环境与模板管理（[Backtest/EnvironmentTemplate.md](../Menu/Backtest/EnvironmentTemplate.md)）、黄金期货合约回测验证（同上） |
-| 38 | GET | `/API/V1/Meta/FinvQuant/Backtest/Environment/Get` | 查询环境详情 | [Backtest/EnvironmentGet.md](Backtest/EnvironmentGet.md) | 环境与模板管理（同上） |
-| 39 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Save` | 新增/修改环境 | [Backtest/EnvironmentSave.md](Backtest/EnvironmentSave.md) | 环境与模板管理（同上） |
-| 40 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Toggle` | 切换环境回测开关 | [Backtest/EnvironmentToggle.md](Backtest/EnvironmentToggle.md) | 环境与模板管理（同上） |
-| 41 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Delete` | 删除环境（已关联任务禁止） | [Backtest/EnvironmentDelete.md](Backtest/EnvironmentDelete.md) | 环境与模板管理（同上） |
-| 42 | GET | `/API/V1/Meta/FinvQuant/Backtest/Template/List` | 分页查询模板（策略/账户/环境） | [Backtest/TemplateList.md](Backtest/TemplateList.md) | 环境与模板管理（同上） |
-| 43 | GET | `/API/V1/Meta/FinvQuant/Backtest/Template/Get` | 查询模板详情 | [Backtest/TemplateGet.md](Backtest/TemplateGet.md) | 环境与模板管理（同上） |
-| 44 | POST | `/API/V1/Meta/FinvQuant/Backtest/Template/Save` | 新增/修改模板 | [Backtest/TemplateSave.md](Backtest/TemplateSave.md) | 环境与模板管理（同上） |
-| 45 | POST | `/API/V1/Meta/FinvQuant/Backtest/Template/Delete` | 删除模板（内置禁止） | [Backtest/TemplateDelete.md](Backtest/TemplateDelete.md) | 环境与模板管理（同上） |
+| 37 | GET | `/API/V1/Meta/FinvQuant/Backtest/Environment/List` | 分页查询回测环境（多类型×地区市场） | [Backtest/EnvironmentList.md](Backtest/EnvironmentList.md) | 环境管理（[Backtest/EnvironmentManage.md](../Menu/Backtest/EnvironmentManage.md)）、黄金期货合约回测验证（同上） |
+| 38 | GET | `/API/V1/Meta/FinvQuant/Backtest/Environment/Get` | 查询环境详情 | [Backtest/EnvironmentGet.md](Backtest/EnvironmentGet.md) | 环境管理（同上） |
+| 39 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Save` | 新增/修改环境 | [Backtest/EnvironmentSave.md](Backtest/EnvironmentSave.md) | 环境管理（同上） |
+| 40 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Toggle` | 切换环境回测开关 | [Backtest/EnvironmentToggle.md](Backtest/EnvironmentToggle.md) | 环境管理（同上） |
+| 41 | POST | `/API/V1/Meta/FinvQuant/Backtest/Environment/Delete` | 删除环境（已关联任务禁止） | [Backtest/EnvironmentDelete.md](Backtest/EnvironmentDelete.md) | 环境管理（同上） |
+| 42 | GET | `/API/V1/Meta/FinvQuant/Backtest/Template/List` | 分页查询模板（策略/账户/环境） | [Backtest/TemplateList.md](Backtest/TemplateList.md) | 模板管理（[Backtest/TemplateManage.md](../Menu/Backtest/TemplateManage.md)） |
+| 43 | GET | `/API/V1/Meta/FinvQuant/Backtest/Template/Get` | 查询模板详情 | [Backtest/TemplateGet.md](Backtest/TemplateGet.md) | 模板管理（同上） |
+| 44 | POST | `/API/V1/Meta/FinvQuant/Backtest/Template/Save` | 新增/修改模板 | [Backtest/TemplateSave.md](Backtest/TemplateSave.md) | 模板管理（同上） |
+| 45 | POST | `/API/V1/Meta/FinvQuant/Backtest/Template/Delete` | 删除模板（内置禁止） | [Backtest/TemplateDelete.md](Backtest/TemplateDelete.md) | 模板管理（同上） |
 
 ## 说明
 

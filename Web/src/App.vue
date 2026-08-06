@@ -47,20 +47,24 @@ const menuItems: (MenuLeaf | MenuGroup)[] = [
       },
     ],
   },
-  // 量化策略验证 → 黄金期货合约回测验证 / 环境与模板管理
+  // 配置管理 / 环境管理 / 模板管理（元数据管理之后、量化策略验证之前）
+  { key: 'config-manage', title: '配置管理', icon: 'mdi-cog-outline', path: '/Meta/Finv/Quant/Config' },
+  { key: 'environment', title: '环境管理', icon: 'mdi-application-cog-outline', path: '/Meta/Finv/Quant/Environment' },
+  { key: 'template', title: '模板管理', icon: 'mdi-content-copy', path: '/Meta/Finv/Quant/Template' },
+  // 账户管理 / 资金管理 / 持仓管理（模板管理之后、量化策略验证之前）
+  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/Meta/Finv/Quant/Account' },
+  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/Meta/Finv/Quant/Fund' },
+  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/Meta/Finv/Quant/Position' },
+  // 量化策略验证 → 黄金期货合约回测验证
   {
     key: 'quant-backtest',
     title: '量化策略验证',
     icon: 'mdi-flask-outline',
     children: [
       { key: 'backtest-gold-futures', title: '黄金期货合约回测验证', icon: 'mdi-chart-bell-curve', path: '/Meta/Finv/Quant/Backtest/GoldFutures' },
-      { key: 'env-template', title: '环境与模板管理', icon: 'mdi-application-cog-outline', path: '/Meta/Finv/Quant/EnvTemplate' },
     ],
   },
-  // 账户 / 资金 / 持仓 / 策略 / 回测分析（通用量化回测）
-  { key: 'account', title: '账户管理', icon: 'mdi-account-cog-outline', path: '/Meta/Finv/Quant/Account' },
-  { key: 'fund', title: '资金管理', icon: 'mdi-cash-multiple', path: '/Meta/Finv/Quant/Fund' },
-  { key: 'position', title: '持仓管理', icon: 'mdi-briefcase-variant-outline', path: '/Meta/Finv/Quant/Position' },
+  // 策略管理 / 回测分析（通用量化回测）
   { key: 'strategy', title: '策略管理', icon: 'mdi-sitemap-outline', path: '/Meta/Finv/Quant/Strategy' },
   { key: 'backtest-analysis', title: '回测分析', icon: 'mdi-chart-timeline-variant', path: '/Meta/Finv/Quant/Backtest/Analysis' },
   // 仿真 / 模拟盘 / 实盘（规划中）
