@@ -227,16 +227,21 @@ onBeforeUnmount(() => {
           { title: '策略', key: 'strategy_name' },
           { title: '账户', key: 'account_name', width: 140 },
           { title: '标的', key: 'secu_code', width: 100 },
-          { title: '区间', key: 'range', width: 200 },
+          { title: '区间', key: 'range', width: 110 },
           { title: '周期/精度', key: 'period_prec', width: 110 },
           { title: '状态', key: 'status', width: 70 },
           { title: '进度', key: 'progress', width: 130 },
-          { title: '报告摘要', key: 'summary', width: 160 },
+          { title: '报告摘要', key: 'summary', width: 150 },
           { title: '操作', key: 'actions', width: 100, sortable: false },
         ]" :items="runs" :items-length="runTotal" item-value="run_id"
         @update:options="loadRuns">
         <template #item.range="{ item }">
-          {{ fmtDate(item.start_date) }} ~ {{ fmtDate(item.end_date) }}
+          <!-- 区间三行展示：开始日期 / ~ / 结束日期，避免单行占用过宽 -->
+          <div class="d-flex flex-column align-center" style="line-height: 1.25">
+            <span class="text-caption">{{ fmtDate(item.start_date) }}</span>
+            <span class="text-caption text-medium-emphasis">~</span>
+            <span class="text-caption">{{ fmtDate(item.end_date) }}</span>
+          </div>
         </template>
         <template #item.period_prec="{ item }">
           <v-chip size="x-small">{{ item.period }} / {{ item.report_precision }}</v-chip>
@@ -258,11 +263,16 @@ onBeforeUnmount(() => {
         </template>
         <template #item.summary="{ item }">
           <template v-if="item.status === 'SUCCEEDED' && item.report">
-            <div class="text-caption">期末 {{ fmtNum(item.report.final_equity) }}</div>
-            <div class="text-caption" :class="item.report.total_return_pct >= 0 ? 'text-success' : 'text-error'">
+            <div class="text-caption text-truncate" style="line-height: 1.4">
+              期末 <span class="font-weight-medium">{{ fmtNum(item.report.final_equity) }}</span>
+            </div>
+            <div class="text-caption text-truncate" style="line-height: 1.4"
+              :class="item.report.total_return_pct >= 0 ? 'text-success' : 'text-error'">
               收益率 {{ fmtPct(item.report.total_return_pct) }}
             </div>
-            <div class="text-caption">{{ item.report.trade_count }} 笔</div>
+            <div class="text-caption text-truncate" style="line-height: 1.4">
+              {{ item.report.trade_count }} 笔成交
+            </div>
           </template>
           <span v-else class="text-caption text-medium-emphasis">-</span>
         </template>
