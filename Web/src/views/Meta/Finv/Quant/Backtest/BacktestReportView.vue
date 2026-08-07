@@ -977,37 +977,37 @@ onBeforeUnmount(() => {
             <v-icon icon="mdi-account-cog-outline" size="small" class="mr-1" />① 策略信息
           </div>
           <template v-if="hasStrategyDef">
-            <div class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">策略</span>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略</span>
               <span class="text-body-2">{{ run?.strategy_name }}{{ run?.strategy_code ? `（${run?.strategy_code}）` : '' }}</span>
             </div>
-            <div class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">策略类型</span>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略类型</span>
               <span class="text-body-2">{{ strategyTypeName(run?.strategy_snapshot?.strategy_type) }}</span>
             </div>
-            <div class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">策略描述</span>
-              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ primaryStrategyDesc }}</span>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略描述</span>
+              <span class="text-body-2">{{ primaryStrategyDesc }}</span>
             </div>
-            <div v-if="strategyDescNote" class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">当前策略说明</span>
-              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ strategyDescNote.text }}</span>
+            <div v-if="strategyDescNote" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">当前策略说明</span>
+              <span class="text-body-2">{{ strategyDescNote.text }}</span>
             </div>
-            <div class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">数据配置</span>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">数据配置</span>
               <span class="text-body-2">{{ dataConfigText(run?.strategy_snapshot?.data) }}</span>
             </div>
-            <div v-if="indicators.length" class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">指标</span>
-              <span class="text-body-2 text-right ml-4 d-flex flex-wrap justify-end ga-1">
+            <div v-if="indicators.length" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">指标</span>
+              <span class="text-body-2 d-flex flex-wrap ga-1">
                 <v-chip v-for="ind in indicators" :key="ind.id ?? ind.type ?? indText(ind)" size="x-small" variant="outlined">
                   {{ indText(ind) }}
                 </v-chip>
               </span>
             </div>
-            <div class="d-flex justify-space-between py-1">
-              <span class="text-caption text-medium-emphasis">买卖信号</span>
-              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ signalText(run?.strategy_snapshot?.signals) }}</span>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">买卖信号</span>
+              <span class="text-body-2">{{ signalText(run?.strategy_snapshot?.signals) }}</span>
             </div>
           </template>
           <v-alert v-else density="compact" type="info" variant="tonal">
@@ -1016,69 +1016,69 @@ onBeforeUnmount(() => {
 
           <v-row class="mt-2">
             <!-- ② 标的与市场 -->
-            <v-col cols="12" md="6">
+            <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
                 <v-icon icon="mdi-chart-box-outline" size="small" class="mr-1" />② 标的与市场
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">标的代码</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">标的代码</span>
                 <span class="text-body-2">{{ run?.secu_code || '-' }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">市场代码</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">市场代码</span>
                 <span class="text-body-2">{{ run?.market_code ? fmtNum(run?.market_code, 0) : '-' }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">数据周期</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">数据周期</span>
                 <span class="text-body-2">{{ periodName(run?.period) }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">报告精度</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">报告精度</span>
                 <span class="text-body-2">{{ report.report_precision || '-' }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">回测区间</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">回测区间</span>
                 <span class="text-body-2">{{ fmtDate(run?.start_date) }} ~ {{ fmtDate(run?.end_date) }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">K线数量</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">K线数量</span>
                 <span class="text-body-2">{{ fmtNum(report.bar_count, 0) }} 根</span>
               </div>
             </v-col>
 
             <!-- ③ 账户配置 -->
-            <v-col cols="12" md="6">
+            <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
                 <v-icon icon="mdi-bank-outline" size="small" class="mr-1" />③ 账户配置
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">账户</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">账户</span>
                 <span class="text-body-2">{{ accountText }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">初始资金</span>
-                <span class="text-body-2 d-flex align-center justify-end">
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">初始资金</span>
+                <span class="text-body-2 d-flex align-center">
                   {{ fmtNum(effectiveCapital) }}
                   <v-chip v-if="options.initial_capital != null" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
                 </span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">手续费率</span>
-                <span class="text-body-2 d-flex align-center justify-end">
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">手续费率</span>
+                <span class="text-body-2 d-flex align-center">
                   {{ pctRatio(effectiveCommission) }}
                   <v-chip v-if="commissionOverridden" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
                 </span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">滑点</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">滑点</span>
                 <span class="text-body-2">{{ pctRatio(effectiveSlippage) }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">保证金模式</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">保证金模式</span>
                 <span class="text-body-2">{{ marginModeName(run?.account_snapshot?.margin_mode) }}{{ run?.account_snapshot?.margin_rate ? `（${pctRatio(run?.account_snapshot.margin_rate)}）` : '' }}</span>
               </div>
-              <div class="d-flex justify-space-between py-1">
-                <span class="text-caption text-medium-emphasis">计价币种</span>
+              <div class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">计价币种</span>
                 <span class="text-body-2">{{ run?.account_snapshot?.currency_type || '-' }}</span>
               </div>
             </v-col>
@@ -1086,38 +1086,38 @@ onBeforeUnmount(() => {
 
           <v-row>
             <!-- ④ 环境配置 -->
-            <v-col cols="12" md="6">
+            <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
                 <v-icon icon="mdi-server-outline" size="small" class="mr-1" />④ 环境配置
               </div>
               <template v-if="env">
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">环境</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">环境</span>
                   <span class="text-body-2">{{ env.env_name }}{{ env.env_code ? `（${env.env_code}）` : '' }}</span>
                 </div>
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">环境类型</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">环境类型</span>
                   <span class="text-body-2">{{ envTypeName(env.env_type) }}</span>
                 </div>
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">地区</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">地区</span>
                   <span class="text-body-2">{{ env.region || '-' }}</span>
                 </div>
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">交易时段</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">交易时段</span>
                   <span class="text-body-2">{{ sessionsFmt(env.config?.trading_sessions) }}</span>
                 </div>
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">撮合模式</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">撮合模式</span>
                   <span class="text-body-2">{{ fillModeName(env.config?.fill_mode ?? run?.strategy_snapshot?.data?.fill_mode) }}</span>
                 </div>
-                <div class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">币种</span>
+                <div class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">币种</span>
                   <span class="text-body-2">{{ env.config?.currency || '-' }}</span>
                 </div>
-                <div v-if="env.description" class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">环境说明</span>
-                  <span class="text-body-2 text-right ml-4" style="max-width: 70%">{{ env.description }}</span>
+                <div v-if="env.description" class="d-flex align-center py-1">
+                  <span class="text-caption text-medium-emphasis kv-label">环境说明</span>
+                  <span class="text-body-2">{{ env.description }}</span>
                 </div>
               </template>
               <v-alert v-else density="compact" type="info" variant="tonal">
@@ -1131,39 +1131,27 @@ onBeforeUnmount(() => {
             <v-icon icon="mdi-list-status" size="small" class="mr-1" />⑤ 交易规则与限制
           </div>
           <template v-if="hasStrategyDef">
-            <v-row>
-              <v-col cols="12" md="4">
-                <div class="text-caption font-weight-bold mb-1">买入规则</div>
-                <div v-for="(kv, i) in ruleKV(snapRules?.buy)" :key="'buy-' + i" class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
-                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
-                </div>
-              </v-col>
-              <v-col cols="12" md="4">
-                <div class="text-caption font-weight-bold mb-1">卖出规则</div>
-                <div v-for="(kv, i) in ruleKV(snapRules?.sell)" :key="'sell-' + i" class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
-                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
-                </div>
-              </v-col>
-              <v-col cols="12" md="4">
-                <div class="text-caption font-weight-bold mb-1">风控与频率限制</div>
-                <div v-for="(kv, i) in riskKV(run?.strategy_snapshot?.risk)" :key="'risk-' + i" class="d-flex justify-space-between py-1">
-                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
-                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
-                </div>
-              </v-col>
-            </v-row>
-            <div v-if="envRules.length" class="mt-1">
+            <div class="text-caption font-weight-bold mb-1">买入规则</div>
+            <div v-for="(kv, i) in ruleKV(snapRules?.buy)" :key="'buy-' + i" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">{{ kv.label }}</span>
+              <span class="text-body-2">{{ kv.value }}</span>
+            </div>
+            <div class="text-caption font-weight-bold mb-1 mt-2">卖出规则</div>
+            <div v-for="(kv, i) in ruleKV(snapRules?.sell)" :key="'sell-' + i" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">{{ kv.label }}</span>
+              <span class="text-body-2">{{ kv.value }}</span>
+            </div>
+            <div class="text-caption font-weight-bold mb-1 mt-2">风控与频率限制</div>
+            <div v-for="(kv, i) in riskKV(run?.strategy_snapshot?.risk)" :key="'risk-' + i" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">{{ kv.label }}</span>
+              <span class="text-body-2">{{ kv.value }}</span>
+            </div>
+            <div v-if="envRules.length" class="mt-2">
               <div class="text-caption font-weight-bold mb-1">环境交易规则（T+N / 涨跌停 / 精度）</div>
-              <v-row>
-                <v-col v-for="(kv, i) in envRules" :key="'envrule-' + i" cols="6" md="4">
-                  <div class="d-flex justify-space-between py-1">
-                    <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
-                    <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
-                  </div>
-                </v-col>
-              </v-row>
+              <div v-for="(kv, i) in envRules" :key="'envrule-' + i" class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">{{ kv.label }}</span>
+                <span class="text-body-2">{{ kv.value }}</span>
+              </div>
             </div>
           </template>
           <v-alert v-else density="compact" type="info" variant="tonal">
@@ -1553,3 +1541,12 @@ onBeforeUnmount(() => {
     </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+/* 回测背景信息卡片：label 固定宽度，value 紧跟左对齐 */
+.kv-label {
+  min-width: 96px;
+  flex-shrink: 0;
+  padding-right: 8px;
+}
+</style>
