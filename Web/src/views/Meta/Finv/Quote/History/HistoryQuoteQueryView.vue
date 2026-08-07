@@ -30,19 +30,22 @@ const COLOR_DOWN = '#14b143'
 const MA_COLORS = ['#f6c343', '#3b8ff7', '#c56cf0', '#2fb28a'] // MA5 / MA10 / MA20 / MA30
 const BOLL_COLORS = ['#ff8c69', '#ffffff', '#7ec8e3'] // 上轨 / 中轨 / 下轨（布林带）
 
-const PAGE_SIZE = 240 // 每页条数（约全天 4 小时交易时段的分钟线数）
-
 const secuCode = ref('NVDA') // 证券代码（usc key），默认 NVDA
 const secuName = ref('') // 证券名称（security_name_cn），选中字典项后回填，便于确认
 const dateInput = ref<string | null>(null) // 日历选择的日期（yyyy-MM-dd）
 const dateMenu = ref(false)
 const period = ref('Min')
 const days = ref(1) // 1 日 / 5 日
-const page = ref(1)
 const loading = ref(false)
 const error = ref('')
 const total = ref(0)
 const chartEl = ref<HTMLDivElement | null>(null)
+
+// 图表自适应：容器尺寸变化（导航栏折叠/展开、窗口缩放）时调用 chart.resize()
+let resizeObserver: ResizeObserver | null = null
+function resizeChart() {
+  chart?.resize()
+}
 
 // 查询结果提示（snackbar 吐司，3 秒自动消失，替代常驻 alert）
 const toast = ref<{ text: string; visible: boolean }>({ text: '', visible: false })
@@ -80,9 +83,6 @@ function onDatePicked(v: unknown) {
 
 // 提交给后端的交易日期（yyyymmdd 纯数字，8 位）
 const date = computed(() => (dateInput.value ? dateInput.value.replace(/-/g, '') : ''))
-// 每页实际加载条数（5 日模式放大到 PAGE_SIZE*days，保证一页装下全部 N 日数据）
-const pageSizeEff = computed(() => PAGE_SIZE * days.value)
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSizeEff.value)))
 
 // 证券下拉选项（usc:security_name_cn 作为展示文本，value 为 usc）
 const securityOptions = ref<SecurityOption[]>([])
@@ -101,9 +101,9 @@ function onSecuCodeInput(val: unknown) {
   secuName.value = hit ? hit.security_name_cn : ''
 }
 
-// 查询条件变化时回到第 1 页（不自动触发查询，由用户点击“查询”）
+// 查询条件变化（证券/日期/天数/周期）自动触发查询，无需手动点“查询”
 watch([secuCode, dateInput, days, period], () => {
-  page.value = 1
+  query()
 })
 
 onMounted(async () => {
@@ -115,11 +115,22 @@ onMounted(async () => {
     // 字典加载失败不阻塞查询（仍可手动输入证券代码）
     securityOptions.value = []
   }
+  // 图表自适应：监听容器尺寸变化（导航栏折叠/展开、窗口缩放）
+  if (chartEl.value && 'ResizeObserver' in window) {
+    resizeObserver = new ResizeObserver(() => resizeChart())
+    resizeObserver.observe(chartEl.value)
+  }
+  window.addEventListener('resize', resizeChart)
 })
 
 onBeforeUnmount(() => {
   chart?.dispose()
   chart = null
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+  window.removeEventListener('resize', resizeChart)
 })
 
 function formatTime(time: number): string {
@@ -237,15 +248,12 @@ async function query() {
 
   loading.value = true
   try {
+    // 按日期 + N 日回溯查询（服务端转为 ts 范围返回全部记录，不分页）
     const params = new URLSearchParams({
       secu_code: secuStr.trim(),
       date: date.value,
       period: period.value,
       days: String(days.value),
-      page: String(page.value),
-      // 5 日模式需一次加载全部 N 日数据（每页 240 根×N 日），否则第一页只有首日数据，
-      // 5 日线无法完整展示
-      page_size: String(PAGE_SIZE * days.value),
     })
     // 选中字典项时回传证券名称（security_name_cn），便于服务端与前端确认证券
     if (secuName.value.trim()) {
@@ -265,7 +273,7 @@ async function query() {
         ? `${String(bars[0].date).slice(4)}-${String(bars[bars.length - 1].date).slice(4)}`
         : date.value
     const namePart = secuName.value.trim() ? `（${secuName.value.trim()}）` : ''
-    showToast(`${data.secu_code ?? '?'}${namePart} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根 · 第 ${page.value}/${totalPages.value} 页`)
+    showToast(`${data.secu_code ?? '?'}${namePart} ${rangeText} ${data.period ?? 'Min'} · ${days.value}日 · 共 ${total.value} 根`)
     await nextTick()
     if (bars.length) {
       renderChart(bars)
@@ -556,16 +564,7 @@ function renderChart(bars: QuoteBar[]) {
     <v-card-text class="pt-0">
       <v-row align="center" justify="space-between" dense>
         <v-col cols="auto" class="text-body-2 text-medium-emphasis">
-          每页 {{ pageSizeEff }} 根 · 共 {{ total }} 根
-        </v-col>
-        <v-col cols="auto">
-          <v-pagination
-            v-model="page"
-            :length="totalPages"
-            :total-visible="7"
-            density="compact"
-            @update:model-value="query"
-          />
+          共 {{ total }} 根 · 滚轮/拖拽平移查看
         </v-col>
       </v-row>
     </v-card-text>
