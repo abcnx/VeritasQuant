@@ -186,6 +186,17 @@ function formatDateDash(d: string | number | null | undefined): string {
   return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
 }
 
+// 万分位分组（中文读数习惯，每 4 位一组）：12345678 -> 1234,5678；保留小数
+function formatGroup4(v: number | null | undefined): string {
+  if (v === null || v === undefined || !Number.isFinite(v)) return '—'
+  const s = String(v)
+  const neg = s.startsWith('-') ? '-' : ''
+  const body = neg ? s.slice(1) : s
+  const [int, dec] = body.split('.')
+  const grouped = int.replace(/\B(?=(\d{4})+(?!\d))/g, ',')
+  return dec !== undefined ? neg + grouped + '.' + dec : neg + grouped
+}
+
 function formatAxisLabel(bar: QuoteBar): string {
   const hm = formatTime(bar.time).slice(0, 5)
   if (days.value > 1 && bar.date) {
@@ -475,8 +486,8 @@ function renderChart(bars: QuoteBar[]) {
             row('涨跌额', bar.change ? `<span style="color:${upColor}">${bar.change}</span>` : '—'),
             row('涨跌幅', bar.change_pct ? `<span style="color:${upColor}">${Number(bar.change_pct).toFixed(2)}%</span>` : '—'),
           ]
-          if (bar.volume !== null && bar.volume !== undefined) rows.push(row('成交量', Number(bar.volume).toLocaleString()))
-          if (bar.turnover) rows.push(row('成交额', Number(bar.turnover).toLocaleString()))
+          if (bar.volume !== null && bar.volume !== undefined) rows.push(row('成交量', formatGroup4(Number(bar.volume))))
+          if (bar.turnover) rows.push(row('成交额', formatGroup4(Number(bar.turnover))))
           // 均线：每个指标单独一行展示
           MA_CONFIGS.forEach((c) => {
             const v = computeMA(closes, c.n)[index]
