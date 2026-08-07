@@ -344,11 +344,15 @@ function renderChart(bars: QuoteBar[]) {
             bar.change && bar.change_pct
               ? `<span style="color:${up ? COLOR_UP : COLOR_DOWN}">${bar.change}（${Number(bar.change_pct).toFixed(2)}%）</span>`
               : '—'
+          // 每个指标单独一行展示（开盘/收盘/最高/最低/涨跌额/涨跌幅）
           const rows: string[] = [
             `<b>${bar.date} ${formatTime(bar.time)}</b>`,
-            `开盘 ${price(bar.open)}&nbsp;&nbsp;&nbsp;收盘 <span style="color:${up ? COLOR_UP : COLOR_DOWN}">${price(bar.close)}</span>`,
-            `最高 ${price(bar.high)}&nbsp;&nbsp;&nbsp;最低 ${price(bar.low)}`,
-            `涨跌 ${changeText}`,
+            `开盘 ${price(bar.open)}`,
+            `收盘 <span style="color:${up ? COLOR_UP : COLOR_DOWN}">${price(bar.close)}</span>`,
+            `最高 ${price(bar.high)}`,
+            `最低 ${price(bar.low)}`,
+            `涨跌额 ${changeText}`,
+            `涨跌幅 ${bar.change_pct ? `<span style="color:${up ? COLOR_UP : COLOR_DOWN}">${Number(bar.change_pct).toFixed(2)}%</span>` : '—'}`,
           ]
           if (bar.volume !== null && bar.volume !== undefined) rows.push(`成交量 ${Number(bar.volume).toLocaleString()}`)
           if (bar.turnover) rows.push(`成交额 ${Number(bar.turnover).toLocaleString()}`)
@@ -369,7 +373,6 @@ function renderChart(bars: QuoteBar[]) {
             .map((x) => (x.v === null ? null : `${x.label} ${x.v.toFixed(4)}`))
             .filter((x): x is string => x !== null)
           bollVals.forEach((t) => rows.push(t))
-          if (bar.remark) rows.push(`备注 ${bar.remark}`)
           return rows.join('<br/>')
         },
       },
