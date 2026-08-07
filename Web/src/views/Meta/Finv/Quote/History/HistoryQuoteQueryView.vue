@@ -80,7 +80,9 @@ function onDatePicked(v: unknown) {
 
 // 提交给后端的交易日期（yyyymmdd 纯数字，8 位）
 const date = computed(() => (dateInput.value ? dateInput.value.replace(/-/g, '') : ''))
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
+// 每页实际加载条数（5 日模式放大到 PAGE_SIZE*days，保证一页装下全部 N 日数据）
+const pageSizeEff = computed(() => PAGE_SIZE * days.value)
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSizeEff.value)))
 
 // 证券下拉选项（usc:security_name_cn 作为展示文本，value 为 usc）
 const securityOptions = ref<SecurityOption[]>([])
@@ -132,6 +134,28 @@ function formatAxisLabel(bar: QuoteBar): string {
     return `${d.slice(4, 6)}/${d.slice(6, 8)} ${hm}`
   }
   return hm
+}
+
+// 判断某根 bar 的时间是否为整点刻度（time 的分钟部分为 00）
+function isHourMark(time: number): boolean {
+  return time % 10000 === 0
+}
+
+// x 轴刻度显示策略：
+//   - 1 日模式：每个整点（0/1/2...23）显示时刻（如 08:00），其余隐藏；
+//   - 5 日模式：只在 0 点显示日期（MM/DD），4/8/12/16/20 点显示时刻刻度，其余隐藏
+function xAxisLabelFor(bar: QuoteBar): string {
+  if (!isHourMark(bar.time)) return ''
+  const hour = Math.floor(bar.time / 10000)
+  if (days.value > 1) {
+    if (hour === 0) {
+      const d = String(bar.date)
+      return `${d.slice(4, 6)}/${d.slice(6, 8)}`
+    }
+    if ([4, 8, 12, 16, 20].includes(hour)) return String(hour).padStart(2, '0') + ':00'
+    return ''
+  }
+  return String(hour).padStart(2, '0') + ':00'
 }
 
 function toNum(v: string | null | undefined): number | null {
@@ -219,7 +243,9 @@ async function query() {
       period: period.value,
       days: String(days.value),
       page: String(page.value),
-      page_size: String(PAGE_SIZE),
+      // 5 日模式需一次加载全部 N 日数据（每页 240 根×N 日），否则第一页只有首日数据，
+      // 5 日线无法完整展示
+      page_size: String(PAGE_SIZE * days.value),
     })
     // 选中字典项时回传证券名称（security_name_cn），便于服务端与前端确认证券
     if (secuName.value.trim()) {
@@ -362,8 +388,8 @@ function renderChart(bars: QuoteBar[]) {
         },
       ],
       grid: [
-        { left: 8, right: 56, top: 32, height: '58%' },
-        { left: 8, right: 56, top: '72%', height: '17%' },
+        { left: 64, right: 8, top: 32, height: '58%' },
+        { left: 64, right: 8, top: '72%', height: '17%' },
       ],
       xAxis: [
         {
@@ -372,7 +398,17 @@ function renderChart(bars: QuoteBar[]) {
           boundaryGap: true,
           axisLine: { lineStyle: { color: '#3a3a3a' } },
           axisTick: { show: false },
-          axisLabel: { color: '#aaa', fontSize: 11, hideOverlap: true },
+          // 整点刻度：1 日模式标整点，5 日模式 0 点标日期 + 4/8/12/16/20 点标时刻
+          axisLabel: {
+            color: '#aaa',
+            fontSize: 11,
+            hideOverlap: true,
+            formatter: (val: string) => {
+              const idx = labels.indexOf(val)
+              if (idx < 0 || idx >= bars.length) return ''
+              return xAxisLabelFor(bars[idx])
+            },
+          },
         },
         {
           type: 'category',
@@ -386,8 +422,9 @@ function renderChart(bars: QuoteBar[]) {
       yAxis: [
         {
           scale: true,
-          position: 'right',
-          axisLabel: { color: '#aaa', fontSize: 11 },
+          position: 'left',
+          // 价格轴左侧展示，去除千分位（直接数值格式）
+          axisLabel: { color: '#aaa', fontSize: 11, formatter: (v: number) => String(v) },
           axisLine: { show: false },
           axisTick: { show: false },
           splitLine: { lineStyle: { color: '#333333' } },
@@ -519,7 +556,7 @@ function renderChart(bars: QuoteBar[]) {
     <v-card-text class="pt-0">
       <v-row align="center" justify="space-between" dense>
         <v-col cols="auto" class="text-body-2 text-medium-emphasis">
-          每页 {{ PAGE_SIZE }} 根 · 共 {{ total }} 根
+          每页 {{ pageSizeEff }} 根 · 共 {{ total }} 根
         </v-col>
         <v-col cols="auto">
           <v-pagination
