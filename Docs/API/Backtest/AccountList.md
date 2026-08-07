@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Account/List — 分页查询账户
+# GET /API/V1/Meta/Finv/Quant/Backtest/Account/List — 分页查询账户
 
 分页查询回测账户（支持关键字与回测开关过滤，按用户隔离；含多用户 user_id / 多子账户 group_id）。
 
@@ -7,7 +7,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Account/List`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Account/List`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

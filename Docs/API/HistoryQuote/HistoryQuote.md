@@ -1,29 +1,30 @@
-# GET /API/V1/Quote/Query — 历史行情查询
+# GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery — 历史行情查询
 
 按**证券代码 + 时间范围**查询分钟级 K 线数据（周期目前仅支持 1 分钟 `Min`，其他周期暂不支持）。返回时间范围内**全部记录**（不分页），适配 A 股 / 港股 / 美股 / 24h 电子盘等单日数据量不同的市场（如 GCMain 全天约 2181 根分钟线）。
 
 支持两种时间范围指定方式：
-- **推荐**：`start_ts` / `end_ts`（UTC 秒，前端拖动窗口时直接调整）；
+- **推荐**：`startTs` / `endTs`（UTC 秒，前端拖动窗口时直接调整）；
 - **兼容**：`date` + `days`（服务端内部换算为 ts 范围）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Quote/Query`
+- **路径**：`/API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`
 
-### Query 参数
+### Query 参数（URL 查询参数遵循小驼峰规范，见 ApiSpec §3）
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `secu_code` | string | ✅ | 证券代码（如 `GCMain` / `518880` / `NVDA`） |
-| `secu_name` | string | 可选 | 证券名称（如 `英伟达`）；前端从 finv_security 字典选中后回传，服务端原样回显，便于确认证券 |
-| `start_ts` | int | 二选一 | 查询起始时间（UTC 秒）；与 `end_ts` 成对使用（闭区间） |
-| `end_ts` | int | 二选一 | 查询结束时间（UTC 秒）；与 `start_ts` 成对使用（闭区间） |
+| `secuCode` | string | ✅ | 证券代码（如 `GCMain` / `518880` / `NVDA`） |
+| `secuName` | string | 可选 | 证券名称（如 `英伟达`）；前端从 finv_security 字典选中后回传，服务端原样回显，便于确认证券 |
+| `startTs` | int | 二选一 | 查询起始时间（UTC 秒）；与 `endTs` 成对使用（闭区间） |
+| `endTs` | int | 二选一 | 查询结束时间（UTC 秒）；与 `startTs` 成对使用（闭区间） |
 | `date` | int | 二选一 | 交易日期（`yyyymmdd`）；回溯截止日，与 `days` 配合转 ts 范围 |
 | `days` | int | 可选 | 回溯自然日数（配合 `date`，默认 `1`；如 `5` = 截止日往前 5 天连续范围；上限 `30`） |
 | `period` | string | 可选 | 周期，目前仅支持 `Min`（1 分钟，默认） |
 
-> `start_ts`/`end_ts` 与 `date`/`days` 二选一；同时提供时优先 `start_ts`/`end_ts`。
+> `startTs`/`endTs` 与 `date`/`days` 二选一；同时提供时优先 `startTs`/`endTs`。
+> 兼容旧 snake_case 参数（`secu_code`/`secu_name`/`start_ts`/`end_ts`），新调用方请使用小驼峰。
 
 ## 响应
 
@@ -94,13 +95,13 @@
 
 ```bash
 # 方式一：按 ts 范围（UTC 秒，单日 2026-07-16 全天）
-curl "http://localhost:16001/API/V1/Quote/Query?secu_code=GCMain&period=Min&start_ts=1784160000&end_ts=1784246399"
+curl "http://localhost:16001/API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery?secuCode=GCMain&period=Min&startTs=1784160000&endTs=1784246399"
 
 # 方式二：按日期 + 回溯（单日，截止 2026-07-16）
-curl "http://localhost:16001/API/V1/Quote/Query?secu_code=GCMain&date=20260716&period=Min"
+curl "http://localhost:16001/API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery?secuCode=GCMain&date=20260716&period=Min"
 
 # 方式二：按日期 + 回溯 5 日（截止 2026-07-16，往前 5 天连续范围）
-curl "http://localhost:16001/API/V1/Quote/Query?secu_code=GCMain&date=20260716&period=Min&days=5"
+curl "http://localhost:16001/API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery?secuCode=GCMain&date=20260716&period=Min&days=5"
 ```
 
 ## 说明

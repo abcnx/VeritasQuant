@@ -230,7 +230,7 @@ async function loadReport(runId: string) {
   try {
     // 先拿任务信息（run_no / strategy_name），再并行加载报告与明细
     const r = await apiGet<{ run_id: string; run_no: number; strategy_name: string; status: string }>(
-      `/Meta/FinvQuant/Backtest/Run/Get?runId=${encodeURIComponent(runId)}`,
+      `/Meta/Finv/Quant/Backtest/Run/Get?runId=${encodeURIComponent(runId)}`,
     )
     if (r.status !== 'SUCCEEDED') {
       error.value = `任务当前状态为 ${r.status ?? '未知'}，仅 SUCCEEDED 任务可查看报告`
@@ -238,12 +238,12 @@ async function loadReport(runId: string) {
     }
     run.value = r
     const [rep, eq, tr, cf, pl, ev] = await Promise.all([
-      apiGet<Report>(`/Meta/FinvQuant/Backtest/Run/Report?runId=${runId}`),
-      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?runId=${runId}&page=1&pageSize=5000`),
-      apiGet<{ total: number; list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?runId=${runId}&page=1&pageSize=${tradePageSize.value}`),
-      apiGet<{ list: CashflowRow[] }>(`/Meta/FinvQuant/Backtest/Run/Cashflows?runId=${runId}&page=1&pageSize=1000`),
-      apiGet<{ list: PositionLogRow[] }>(`/Meta/FinvQuant/Backtest/Run/PositionLogs?runId=${runId}&page=1&pageSize=1000`),
-      apiGet<{ list: EventTraceRow[] }>(`/Meta/FinvQuant/Backtest/Run/EventTraces?runId=${runId}&page=1&pageSize=1000`),
+      apiGet<Report>(`/Meta/Finv/Quant/Backtest/Run/Report?runId=${runId}`),
+      apiGet<{ list: EquityPoint[] }>(`/Meta/Finv/Quant/Backtest/Run/Equity?runId=${runId}&page=1&pageSize=5000`),
+      apiGet<{ total: number; list: TradeRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Trades?runId=${runId}&page=1&pageSize=${tradePageSize.value}`),
+      apiGet<{ list: CashflowRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=${runId}&page=1&pageSize=1000`),
+      apiGet<{ list: PositionLogRow[] }>(`/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=${runId}&page=1&pageSize=1000`),
+      apiGet<{ list: EventTraceRow[] }>(`/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=${runId}&page=1&pageSize=1000`),
     ])
     report.value = rep
     equity.value = eq.list ?? []
@@ -376,7 +376,7 @@ async function loadTradesPage() {
   if (!run.value) return
   try {
     const tr = await apiGet<{ total: number; list: TradeRow[] }>(
-      `/Meta/FinvQuant/Backtest/Run/Trades?runId=${run.value.run_id}&page=${tradePage.value}&pageSize=${tradePageSize.value}`,
+      `/Meta/Finv/Quant/Backtest/Run/Trades?runId=${run.value.run_id}&page=${tradePage.value}&pageSize=${tradePageSize.value}`,
     )
     trades.value = tr.list ?? []
     tradeTotal.value = tr.total ?? 0

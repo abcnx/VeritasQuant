@@ -336,7 +336,7 @@ async function submitImport() {
 
   importing.value = true
   try {
-    const response = await fetch('/API/V1/Quote/Import/Upload', { method: 'POST', body: form })
+    const response = await fetch('/API/V1/Meta/Finv/Quant/Quote/Import/Upload', { method: 'POST', body: form })
     const body = await response.json()
     if (body.code !== 0) {
       error.value = body.message || '导入失败'

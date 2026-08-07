@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Template/Get — 查询模板详情
+# GET /API/V1/Meta/Finv/Quant/Backtest/Template/Get — 查询模板详情
 
 按模板 ID 查询模板详情（含 content JSON 内容）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Template/Get?templateId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Template/Get?templateId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

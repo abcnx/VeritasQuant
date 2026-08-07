@@ -27,7 +27,7 @@ const router = createRouter({
     { path: '/', redirect: '/dashboard' },
     { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { title: '仪表盘' } },
     // 历史行情 → 历史行情查询
-    { path: '/quote/query', name: 'quote-query', component: QuoteQueryView, meta: { title: '历史行情查询' } },
+    { path: '/Meta/Finv/Quote/History/HistoryQuoteQuery', name: 'quote-query', component: QuoteQueryView, meta: { title: '历史行情查询' } },
     // 元数据管理 → 业务元数据维护 → 四个子菜单
     { path: '/meta/exchange', name: 'meta-exchange', component: MetaExchangeView, meta: { title: '交易所信息维护' } },
     { path: '/meta/market', name: 'meta-market', component: MetaMarketView, meta: { title: '交易所下设市场信息维护' } },

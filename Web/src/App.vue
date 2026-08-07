@@ -26,7 +26,7 @@ const menuItems: (MenuLeaf | MenuGroup)[] = [
     title: '历史行情',
     icon: 'mdi-chart-box',
     children: [
-      { key: 'quote-query', title: '历史行情查询', icon: 'mdi-chart-line', path: '/quote/query' },
+      { key: 'quote-query', title: '历史行情查询', icon: 'mdi-chart-line', path: '/Meta/Finv/Quote/History/HistoryQuoteQuery' },
     ],
   },
   {

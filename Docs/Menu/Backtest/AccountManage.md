@@ -35,7 +35,7 @@
 
 ## 4. 处理逻辑
 
-- **保存**：`POST /API/V1/Meta/FinvQuant/Backtest/Account/Save`；
+- **保存**：`POST /API/V1/Meta/Finv/Quant/Backtest/Account/Save`；
   服务端校验：account_code 唯一、初始资金 > 0、手续费/滑点 ≥ 0、margin_mode ∈ {FULL, FUTURES}；
 - **多用户/多子账户**：`user_id`（默认 default）隔离，`group_id` 分组（主账户 = 分组根，子账户通过 group_id 关联）；
 - **回测开关**：账户 allow_backtest='0' 时，回测任务创建被拒绝；
@@ -50,7 +50,7 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Save` | [AccountSave.md](../../API/Backtest/AccountSave.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Toggle` | [AccountToggle.md](../../API/Backtest/AccountToggle.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Account/Delete` | [AccountDelete.md](../../API/Backtest/AccountDelete.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Account/Save` | [AccountSave.md](../../API/Backtest/AccountSave.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Account/Toggle` | [AccountToggle.md](../../API/Backtest/AccountToggle.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Account/Delete` | [AccountDelete.md](../../API/Backtest/AccountDelete.md) |

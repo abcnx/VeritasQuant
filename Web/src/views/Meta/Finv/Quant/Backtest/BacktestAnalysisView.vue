@@ -96,7 +96,7 @@ async function loadRuns() {
     if (statusFilter.value) params.set('status', statusFilter.value)
     if (secuFilter.value) params.set('secuCode', secuFilter.value)
     if (keyword.value) params.set('keyword', keyword.value)
-    const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
+    const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/Finv/Quant/Backtest/Run/List?${params.toString()}`)
     runs.value = data.list ?? []
     runTotal.value = data.total ?? 0
   } catch (e) {
@@ -120,7 +120,7 @@ function syncPolling() {
         if (statusFilter.value) params.set('status', statusFilter.value)
         if (secuFilter.value) params.set('secuCode', secuFilter.value)
         if (keyword.value) params.set('keyword', keyword.value)
-        const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/FinvQuant/Backtest/Run/List?${params.toString()}`)
+        const data = await apiGet<{ total: number; list: RunRow[] }>(`/Meta/Finv/Quant/Backtest/Run/List?${params.toString()}`)
         runs.value = data.list ?? []
         runTotal.value = data.total ?? 0
         if (!runs.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')) syncPolling()
@@ -135,7 +135,7 @@ async function cancelRun(run: RunRow) {
   if (!confirm(`确认取消回测任务 #${run.run_no}？`)) return
   cancelling.value = run.run_id
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Run/Cancel', { run_id: run.run_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Run/Cancel', { run_id: run.run_id })
     await loadRuns()
   } catch (e) {
     error.value = (e as Error).message
@@ -149,7 +149,7 @@ async function deleteRun(run: RunRow) {
   const msg = `确认删除回测任务 #${run.run_no}？\n将删除该任务的净值曲线/成交/资金流水/持仓/事件追踪等全部记录（不可恢复）。\n策略、账户、环境、模板保留不受影响。`
   if (!confirm(msg)) return
   try {
-    const res = await apiPost<{ del_task_id: string }>('/Meta/FinvQuant/Backtest/Run/Delete', { run_id: run.run_id })
+    const res = await apiPost<{ del_task_id: string }>('/Meta/Finv/Quant/Backtest/Run/Delete', { run_id: run.run_id })
     message.value = `删除任务已提交（${res.del_task_id}），后台异步执行中`
     // 跳转到删除任务管理页查看进度与日志
     router.push({ path: '/Meta/Finv/Quant/Backtest/RunDeleteTasks' })

@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows — 查询资金流水明细（⑨链路追踪）
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/Cashflows — 查询资金流水明细（⑨链路追踪）
 
 分页查询回测任务的资金流水明细（⑨-1）：初始注入（INITIAL_DEPOSIT）/ 买入付款（BUY_PAY）/
 卖出收款（SELL_RECEIVE）/ 手续费（FEE）/ 保证金占用（MARGIN_HOLD）/ 释放（MARGIN_RELEASE），
@@ -7,7 +7,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Cashflows?runId=xxx&page=1&pageSize=1000`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=xxx&page=1&pageSize=1000`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

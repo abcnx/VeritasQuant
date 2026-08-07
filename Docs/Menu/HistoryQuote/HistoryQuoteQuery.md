@@ -10,7 +10,7 @@
 - **菜单名称**：历史行情查询
 - **菜单 key**：`quote-query`
 - **菜单图标**：`mdi-chart-line`
-- **URL 路由**：`/quote/query`
+- **URL 路由**：`/Meta/Finv/Quote/History/HistoryQuoteQuery`
 - **对应视图组件**：`Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue`
 
 ## 2. 业务功能概述
@@ -56,23 +56,23 @@
 
 ### 4.2 证券代码下拉字典
 
-- 页面加载时请求 `GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` 获取**启用状态**证券列表（`usc` + `security_name_cn`）。
+- 页面加载时请求 `GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options` 获取**启用状态**证券列表（`usc` + `security_name_cn`）。
 - 下拉选项展示格式：`usc:security_name_cn`（如 `GCMain:黄金期货主连`）；选中后自动回填证券名称 `secu_name`。
 - 字典加载失败不阻塞使用（仍可手动输入证券代码查询）。
 
 ### 4.3 请求与响应处理
 
-- **请求**：`GET /API/V1/Quote/Query`，Query 参数如下：
+- **请求**：`GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`，Query 参数如下：
 
 | 参数 | 取值 | 说明 |
 |------|------|------|
-| `secu_code` | 用户输入 / 下拉选中的 usc | 证券代码（key） |
-| `secu_name` | 下拉选中的 security_name_cn | 证券名称（可选，便于确认证券是否选对） |
+| `secuCode` | 用户输入 / 下拉选中的 usc | 证券代码（key） |
+| `secuName` | 下拉选中的 security_name_cn | 证券名称（可选，便于确认证券是否选对） |
 | `date` | `yyyymmdd` | 交易日期（回溯截止日），**纯 8 位数字** |
 | `period` | `Min` | 周期 |
 | `days` | `1` / `5` | 回溯自然日数 |
 
-> 前端传 `date`+`days`，服务端内部换算为 ts 时间范围（UTC 秒）查询；也支持直接传 `start_ts`/`end_ts`。
+> 前端传 `date`+`days`，服务端内部换算为 ts 时间范围（UTC 秒）查询；也支持直接传 `startTs`/`endTs`（URL 查询参数遵循小驼峰，见 ApiSpec §3）。
 
 - **响应处理**：
   - `body.code !== 0` → 展示 `body.message` 为错误提示。

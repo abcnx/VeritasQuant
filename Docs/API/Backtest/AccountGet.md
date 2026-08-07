@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Account/Get — 查询账户详情
+# GET /API/V1/Meta/Finv/Quant/Backtest/Account/Get — 查询账户详情
 
 按账户 ID 查询回测账户详情。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Account/Get?accountId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Account/Get?accountId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

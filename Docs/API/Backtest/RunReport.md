@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/Report — 查询回测报告（汇总指标）
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/Report — 查询回测报告（汇总指标）
 
 查询回测任务的汇总收益报告（仅 SUCCEEDED 任务可查）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Report?runId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Report?runId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

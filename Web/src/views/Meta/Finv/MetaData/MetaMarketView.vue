@@ -41,7 +41,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: MarketRow[] }>(
-      `/Meta/FinvQuant/Metadata/Market/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/Finv/Quant/Metadata/Market/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -84,7 +84,7 @@ async function save() {
     return
   }
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Market/Save', {
+    await apiPost('/Meta/Finv/Quant/Metadata/Market/Save', {
       market_code: form.value.market_code,
       market_flag: form.value.market_flag.trim(),
       market_abbr: form.value.market_abbr.trim(),
@@ -104,7 +104,7 @@ async function toggle(row: MarketRow) {
   error.value = ''
   const next = row.flag_enable === '1' ? '0' : '1'
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Market/Toggle', { market_code: row.market_code, flag_enable: next })
+    await apiPost('/Meta/Finv/Quant/Metadata/Market/Toggle', { market_code: row.market_code, flag_enable: next })
     row.flag_enable = next
     message.value = `已${next === '1' ? '启用' : '禁用'}市场 ${row.market_code}`
   } catch (e) {

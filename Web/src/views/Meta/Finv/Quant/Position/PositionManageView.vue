@@ -49,7 +49,7 @@ const chartEl = ref<HTMLDivElement | null>(null)
 async function loadRuns() {
   try {
     const data = await apiGet<{ list: RunRow[] }>(
-      '/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=100&status=SUCCEEDED',
+      '/Meta/Finv/Quant/Backtest/Run/List?page=1&pageSize=100&status=SUCCEEDED',
     )
     runs.value = data.list ?? []
   } catch (e) {
@@ -65,8 +65,8 @@ async function loadPosition() {
   chart = null
   try {
     const [eq, tr] = await Promise.all([
-      apiGet<{ list: EquityPoint[] }>(`/Meta/FinvQuant/Backtest/Run/Equity?runId=${runId.value}&page=1&pageSize=5000`),
-      apiGet<{ list: TradeRow[] }>(`/Meta/FinvQuant/Backtest/Run/Trades?runId=${runId.value}&page=1&pageSize=500`),
+      apiGet<{ list: EquityPoint[] }>(`/Meta/Finv/Quant/Backtest/Run/Equity?runId=${runId.value}&page=1&pageSize=5000`),
+      apiGet<{ list: TradeRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Trades?runId=${runId.value}&page=1&pageSize=500`),
     ])
     points.value = eq.list ?? []
     trades.value = tr.list ?? []

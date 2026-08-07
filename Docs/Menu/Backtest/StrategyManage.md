@@ -39,7 +39,7 @@
   `signals`（买卖信号表达式）/ `rules`（数量模式与限制）/ `risk`（风控）/ `cost`（成本覆盖），
   模型规范见 [BacktestStrategySpec.md](../../DevSpec/BacktestStrategySpec.md)；
 - **表达式引擎**：支持 `cross_up/cross_down/ref/highest/lowest/abs` 与比较、AND/OR/NOT，保存时编译校验，语法错误立即返回；
-- **保存**：`POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Save`（definition 为 JSON 对象，可携带 template_id 记录来源）；
+- **保存**：`POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Save`（definition 为 JSON 对象，可携带 template_id 记录来源）；
 - **模板**：优先从 `GET .../Template/List?templateType=STRATEGY` 加载（内置 TPL-STRAT-DUALMA/RSI/BOLL/MACD + 用户自定义），模板接口不可用时回退本地内置 4 模板；点击「载入模板」填充 JSON 编辑区。
 
 ## 5. 注意事项
@@ -52,8 +52,8 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List` | [StrategyList.md](../../API/Backtest/StrategyList.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Save` | [StrategySave.md](../../API/Backtest/StrategySave.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Toggle` | [StrategyToggle.md](../../API/Backtest/StrategyToggle.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Delete` | [StrategyDelete.md](../../API/Backtest/StrategyDelete.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Template/List` | [TemplateList.md](../../API/Backtest/TemplateList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/List` | [StrategyList.md](../../API/Backtest/StrategyList.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Save` | [StrategySave.md](../../API/Backtest/StrategySave.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Toggle` | [StrategyToggle.md](../../API/Backtest/StrategyToggle.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Delete` | [StrategyDelete.md](../../API/Backtest/StrategyDelete.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Template/List` | [TemplateList.md](../../API/Backtest/TemplateList.md) |

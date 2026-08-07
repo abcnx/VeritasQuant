@@ -166,7 +166,7 @@ const templateOptions = computed(() => {
 async function loadTemplates() {
   try {
     const data = await apiGet<{ list: { template_id: string; template_code: string; template_name: string; content: Record<string, unknown> }[] }>(
-      '/Meta/FinvQuant/Backtest/Template/List?page=1&pageSize=100&templateType=STRATEGY',
+      '/Meta/Finv/Quant/Backtest/Template/List?page=1&pageSize=100&templateType=STRATEGY',
     )
     apiTemplates.value = data.list ?? []
   } catch {
@@ -180,7 +180,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: StrategyRow[] }>(
-      `/Meta/FinvQuant/Backtest/Strategy/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/Finv/Quant/Backtest/Strategy/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -243,7 +243,7 @@ async function save() {
   }
   defError.value = ''
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Save', { ...form.value, definition })
+    await apiPost('/Meta/Finv/Quant/Backtest/Strategy/Save', { ...form.value, definition })
     message.value = '保存成功'
     dialog.value = false
     await load()
@@ -254,7 +254,7 @@ async function save() {
 
 async function toggle(row: StrategyRow) {
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Toggle', {
+    await apiPost('/Meta/Finv/Quant/Backtest/Strategy/Toggle', {
       strategy_id: row.strategy_id,
       allow_backtest: row.allow_backtest === '1' ? '0' : '1',
     })
@@ -267,7 +267,7 @@ async function toggle(row: StrategyRow) {
 async function remove(row: StrategyRow) {
   if (!confirm(`确认删除策略「${row.strategy_name}」？`)) return
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Strategy/Delete', { strategy_id: row.strategy_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Strategy/Delete', { strategy_id: row.strategy_id })
     message.value = '删除成功'
     await load()
   } catch (e) {

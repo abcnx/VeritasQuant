@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces — 查询事件追踪（⑨链路追踪）
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/EventTraces — 查询事件追踪（⑨链路追踪）
 
 分页查询回测任务的事件追踪明细（⑨-3）：触发原因（买入信号/卖出信号/止损/止盈）、
 成交结果（FILLED/REJECTED/EXPIRED/PENDING）、委托耗时（bar 数·秒）、未成交原因（10 类）。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/EventTraces?runId=xxx&page=1&pageSize=1000`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=xxx&page=1&pageSize=1000`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

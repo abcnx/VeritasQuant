@@ -12,7 +12,7 @@
 ## 2. API 路径
 
 - 服务端 API 路径统一使用大写 `/API/V1/` 前缀（例如 `GET /API/V1/health/live`），不使用 `/api/v1/`。
-- **端点路径段使用 PascalCase**（例如 `POST /API/V1/Quote/Import/Upload`），不使用小写 snake 风格（例如 `/imports/upload`）；资源/模块名首字母大写，层级用 `/` 分隔。
+- **端点路径段使用 PascalCase**（例如 `POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload`），不使用小写 snake 风格（例如 `/imports/upload`）；资源/模块名首字母大写，层级用 `/` 分隔。
 - 前端开发代理与生产反代的路径前缀必须与之一致（`/API`）。
 
 ## 3. URL 查询参数命名
@@ -60,7 +60,7 @@ API 契约测试必须覆盖：
 
 - 文档位置通常在 `Docs/API/xxx/XXXX.md`（按业务模块建目录，文档名与端点资源对应）；
 - 文档须包含：请求方法、请求路径、Query 参数（**按第 3 节小驼峰规范**列出）、请求体（JSON，snake_case）、响应示例、错误码、已使用位置登记；
-- 参考示例：[`Docs/API/HistoryQuote/HistoryQuote.md`](../API/HistoryQuote/HistoryQuote.md)（对应 `GET /API/V1/Quote/Query`）。
+- 参考示例：[`Docs/API/HistoryQuote/HistoryQuote.md`](../API/HistoryQuote/HistoryQuote.md)（对应 `GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`）。
 
 ### 7.4 索引登记
 

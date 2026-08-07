@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Template/Delete — 删除模板
+# POST /API/V1/Meta/Finv/Quant/Backtest/Template/Delete — 删除模板
 
 删除模板；内置模板（is_builtin='1'）禁止删除（返回 409 / 4009）。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Template/Delete`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Template/Delete`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

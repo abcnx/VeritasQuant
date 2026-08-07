@@ -74,7 +74,7 @@ async function loadArchives() {
   try {
     const params = new URLSearchParams({ page: String(archivePage.value), pageSize: String(archivePageSize.value) })
     if (archiveRunId.value) params.set('runId', archiveRunId.value)
-    const data = await apiGet<{ total: number; list: RunArchiveRow[] }>(`/Meta/FinvQuant/Backtest/Run/DeleteTask/Archives?${params.toString()}`)
+    const data = await apiGet<{ total: number; list: RunArchiveRow[] }>(`/Meta/Finv/Quant/Backtest/Run/DeleteTask/Archives?${params.toString()}`)
     archives.value = data.list ?? []
     archiveTotal.value = data.total ?? 0
   } catch (e) {
@@ -120,7 +120,7 @@ async function load() {
     const params = new URLSearchParams({ page: String(page.value), pageSize: String(pageSize.value) })
     if (statusFilter.value) params.set('status', statusFilter.value)
     if (runIdFilter.value) params.set('runId', runIdFilter.value)
-    const data = await apiGet<{ total: number; list: DelTaskRow[] }>(`/Meta/FinvQuant/Backtest/Run/DeleteTask/List?${params.toString()}`)
+    const data = await apiGet<{ total: number; list: DelTaskRow[] }>(`/Meta/Finv/Quant/Backtest/Run/DeleteTask/List?${params.toString()}`)
     rows.value = data.list ?? []
     total.value = data.total ?? 0
   } catch (e) {
@@ -142,7 +142,7 @@ function syncPolling() {
         const params = new URLSearchParams({ page: String(page.value), pageSize: String(pageSize.value) })
         if (statusFilter.value) params.set('status', statusFilter.value)
         if (runIdFilter.value) params.set('runId', runIdFilter.value)
-        const data = await apiGet<{ total: number; list: DelTaskRow[] }>(`/Meta/FinvQuant/Backtest/Run/DeleteTask/List?${params.toString()}`)
+        const data = await apiGet<{ total: number; list: DelTaskRow[] }>(`/Meta/Finv/Quant/Backtest/Run/DeleteTask/List?${params.toString()}`)
         rows.value = data.list ?? []
         total.value = data.total ?? 0
         if (!rows.value.some((r) => r.status === 'PENDING' || r.status === 'RUNNING')) syncPolling()
@@ -159,7 +159,7 @@ async function viewLogs(task: DelTaskRow) {
   logLoading.value = true
   logs.value = []
   try {
-    const data = await apiGet<{ list: DelLogRow[] }>(`/Meta/FinvQuant/Backtest/Run/DeleteTask/Logs?delTaskId=${task.del_task_id}`)
+    const data = await apiGet<{ list: DelLogRow[] }>(`/Meta/Finv/Quant/Backtest/Run/DeleteTask/Logs?delTaskId=${task.del_task_id}`)
     logs.value = data.list ?? []
   } catch (e) {
     error.value = (e as Error).message
@@ -171,7 +171,7 @@ async function viewLogs(task: DelTaskRow) {
 async function retry(task: DelTaskRow) {
   if (!confirm(`确认重试删除任务 ${task.del_task_id.slice(0, 8)}...？将重新提交删除该回测任务。`)) return
   try {
-    const res = await apiPost<{ del_task_id: string }>('/Meta/FinvQuant/Backtest/Run/DeleteTask/Retry', { del_task_id: task.del_task_id })
+    const res = await apiPost<{ del_task_id: string }>('/Meta/Finv/Quant/Backtest/Run/DeleteTask/Retry', { del_task_id: task.del_task_id })
     message.value = `已重新提交删除任务（${res.del_task_id}）`
     await load()
   } catch (e) {

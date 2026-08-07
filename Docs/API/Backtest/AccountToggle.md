@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Account/Toggle — 切换账户回测开关
+# POST /API/V1/Meta/Finv/Quant/Backtest/Account/Toggle — 切换账户回测开关
 
 切换账户回测开关（allow_backtest `0`/`1`）；关闭后回测任务创建被拒绝。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Account/Toggle`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Account/Toggle`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

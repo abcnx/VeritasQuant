@@ -39,7 +39,7 @@ async function loadTemplates() {
   try {
     const q = new URLSearchParams({ page: String(tmplPage.value), pageSize: String(tmplPageSize.value) })
     if (tmplTypeFilter.value) q.set('templateType', tmplTypeFilter.value)
-    const data = await apiGet<{ total: number; list: TemplateRow[] }>(`/Meta/FinvQuant/Backtest/Template/List?${q.toString()}`)
+    const data = await apiGet<{ total: number; list: TemplateRow[] }>(`/Meta/Finv/Quant/Backtest/Template/List?${q.toString()}`)
     tmpls.value = data.list ?? []
     tmplTotal.value = data.total ?? 0
   } catch (e) {
@@ -60,7 +60,7 @@ async function openTmplEdit(row: TemplateRow) {
   tmplEditing.value = true
   // 通过 Template/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
   try {
-    const detail = await apiGet<TemplateRow>(`/Meta/FinvQuant/Backtest/Template/Get?templateId=${row.template_id}`)
+    const detail = await apiGet<TemplateRow>(`/Meta/Finv/Quant/Backtest/Template/Get?templateId=${row.template_id}`)
     tmplForm.value = { ...(detail ?? row), content: JSON.parse(JSON.stringify((detail ?? row).content ?? {})) }
   } catch (e) {
     error.value = (e as Error).message
@@ -78,7 +78,7 @@ async function saveTmpl() {
     return
   }
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Template/Save', tmplForm.value)
+    await apiPost('/Meta/Finv/Quant/Backtest/Template/Save', tmplForm.value)
     message.value = '模板保存成功'
     tmplDialog.value = false
     await loadTemplates()
@@ -90,7 +90,7 @@ async function saveTmpl() {
 async function removeTmpl(row: TemplateRow) {
   if (!confirm(`确认删除模板「${row.template_name}」？`)) return
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Template/Delete', { template_id: row.template_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Template/Delete', { template_id: row.template_id })
     message.value = '模板删除成功'
     await loadTemplates()
   } catch (e) {

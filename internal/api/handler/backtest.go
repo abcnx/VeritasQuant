@@ -73,7 +73,7 @@ func NewBacktest(service *backtest.Service) *Backtest {
 // 策略管理
 // ---------------------------------------------------------------------
 
-// ListStrategies GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List
+// ListStrategies GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/List
 func (h *Backtest) ListStrategies(c *gin.Context) {
 	list, total, err := h.service.ListStrategies(c.Request.Context(),
 		parseBTPager(c), c.Query("keyword"), c.Query("allowBacktest"), btUserID(c))
@@ -84,7 +84,7 @@ func (h *Backtest) ListStrategies(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetStrategy GET /API/V1/Meta/FinvQuant/Backtest/Strategy/Get?strategyId=xxx
+// GetStrategy GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/Get?strategyId=xxx
 func (h *Backtest) GetStrategy(c *gin.Context) {
 	id, ok := btIDQuery(c, "strategyId")
 	if !ok {
@@ -98,7 +98,7 @@ func (h *Backtest) GetStrategy(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": st})
 }
 
-// SaveStrategy POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Save
+// SaveStrategy POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Save
 func (h *Backtest) SaveStrategy(c *gin.Context) {
 	var st backtest.Strategy
 	if err := c.ShouldBindJSON(&st); err != nil {
@@ -113,7 +113,7 @@ func (h *Backtest) SaveStrategy(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"strategy_id": id}})
 }
 
-// ToggleStrategy POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Toggle
+// ToggleStrategy POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Toggle
 func (h *Backtest) ToggleStrategy(c *gin.Context) {
 	var req struct {
 		StrategyID    string `json:"strategy_id"`
@@ -135,7 +135,7 @@ func (h *Backtest) ToggleStrategy(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "切换成功"})
 }
 
-// DeleteStrategy POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Delete
+// DeleteStrategy POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Delete
 func (h *Backtest) DeleteStrategy(c *gin.Context) {
 	var req struct {
 		StrategyID string `json:"strategy_id"`
@@ -160,7 +160,7 @@ func (h *Backtest) DeleteStrategy(c *gin.Context) {
 // 账户管理
 // ---------------------------------------------------------------------
 
-// ListAccounts GET /API/V1/Meta/FinvQuant/Backtest/Account/List
+// ListAccounts GET /API/V1/Meta/Finv/Quant/Backtest/Account/List
 func (h *Backtest) ListAccounts(c *gin.Context) {
 	list, total, err := h.service.ListAccounts(c.Request.Context(),
 		parseBTPager(c), c.Query("keyword"), c.Query("allowBacktest"), btUserID(c))
@@ -171,7 +171,7 @@ func (h *Backtest) ListAccounts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetAccount GET /API/V1/Meta/FinvQuant/Backtest/Account/Get?accountId=xxx
+// GetAccount GET /API/V1/Meta/Finv/Quant/Backtest/Account/Get?accountId=xxx
 func (h *Backtest) GetAccount(c *gin.Context) {
 	id, ok := btIDQuery(c, "accountId")
 	if !ok {
@@ -185,7 +185,7 @@ func (h *Backtest) GetAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": acc})
 }
 
-// SaveAccount POST /API/V1/Meta/FinvQuant/Backtest/Account/Save
+// SaveAccount POST /API/V1/Meta/Finv/Quant/Backtest/Account/Save
 func (h *Backtest) SaveAccount(c *gin.Context) {
 	var acc backtest.Account
 	if err := c.ShouldBindJSON(&acc); err != nil {
@@ -200,7 +200,7 @@ func (h *Backtest) SaveAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"account_id": id}})
 }
 
-// ToggleAccount POST /API/V1/Meta/FinvQuant/Backtest/Account/Toggle
+// ToggleAccount POST /API/V1/Meta/Finv/Quant/Backtest/Account/Toggle
 func (h *Backtest) ToggleAccount(c *gin.Context) {
 	var req struct {
 		AccountID     string `json:"account_id"`
@@ -222,7 +222,7 @@ func (h *Backtest) ToggleAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "切换成功"})
 }
 
-// DeleteAccount POST /API/V1/Meta/FinvQuant/Backtest/Account/Delete
+// DeleteAccount POST /API/V1/Meta/Finv/Quant/Backtest/Account/Delete
 func (h *Backtest) DeleteAccount(c *gin.Context) {
 	var req struct {
 		AccountID string `json:"account_id"`
@@ -247,7 +247,7 @@ func (h *Backtest) DeleteAccount(c *gin.Context) {
 // 回测任务
 // ---------------------------------------------------------------------
 
-// CreateRun POST /API/V1/Meta/FinvQuant/Backtest/Run/Create
+// CreateRun POST /API/V1/Meta/Finv/Quant/Backtest/Run/Create
 func (h *Backtest) CreateRun(c *gin.Context) {
 	var req backtest.CreateRunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -262,7 +262,7 @@ func (h *Backtest) CreateRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "回测任务已创建并启动", "data": run})
 }
 
-// ListRuns GET /API/V1/Meta/FinvQuant/Backtest/Run/List
+// ListRuns GET /API/V1/Meta/Finv/Quant/Backtest/Run/List
 func (h *Backtest) ListRuns(c *gin.Context) {
 	q := backtest.RunListQuery{
 		Pager:      parseBTPager(c),
@@ -279,7 +279,7 @@ func (h *Backtest) ListRuns(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetRun GET /API/V1/Meta/FinvQuant/Backtest/Run/Get?runId=xxx
+// GetRun GET /API/V1/Meta/Finv/Quant/Backtest/Run/Get?runId=xxx
 func (h *Backtest) GetRun(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -293,7 +293,7 @@ func (h *Backtest) GetRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": run})
 }
 
-// CancelRun POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel
+// CancelRun POST /API/V1/Meta/Finv/Quant/Backtest/Run/Cancel
 func (h *Backtest) CancelRun(c *gin.Context) {
 	var req struct {
 		RunID  string `json:"run_id"`
@@ -314,7 +314,7 @@ func (h *Backtest) CancelRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "取消请求已受理"})
 }
 
-// DeleteRun POST /API/V1/Meta/FinvQuant/Backtest/Run/Delete
+// DeleteRun POST /API/V1/Meta/Finv/Quant/Backtest/Run/Delete
 // 提交回测任务删除任务（异步执行），删除任务及其关联明细，策略/账户/环境/模板保留。
 func (h *Backtest) DeleteRun(c *gin.Context) {
 	var req struct {
@@ -337,7 +337,7 @@ func (h *Backtest) DeleteRun(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "删除任务已提交", "data": gin.H{"del_task_id": delTaskID}})
 }
 
-// ListRunDelTasks GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/List?status=&runId=&page=&pageSize=
+// ListRunDelTasks GET /API/V1/Meta/Finv/Quant/Backtest/Run/DeleteTask/List?status=&runId=&page=&pageSize=
 func (h *Backtest) ListRunDelTasks(c *gin.Context) {
 	q := backtest.DelTaskListQuery{
 		Pager:  parseBTPager(c),
@@ -352,7 +352,7 @@ func (h *Backtest) ListRunDelTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListRunDelLogs GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Logs?delTaskId=xxx
+// ListRunDelLogs GET /API/V1/Meta/Finv/Quant/Backtest/Run/DeleteTask/Logs?delTaskId=xxx
 func (h *Backtest) ListRunDelLogs(c *gin.Context) {
 	id, ok := btIDQuery(c, "delTaskId")
 	if !ok {
@@ -366,7 +366,7 @@ func (h *Backtest) ListRunDelLogs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"list": list}})
 }
 
-// RetryRunDelete POST /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Retry
+// RetryRunDelete POST /API/V1/Meta/Finv/Quant/Backtest/Run/DeleteTask/Retry
 func (h *Backtest) RetryRunDelete(c *gin.Context) {
 	var req struct {
 		DelTaskID string `json:"del_task_id"`
@@ -388,7 +388,7 @@ func (h *Backtest) RetryRunDelete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "删除任务已重新提交", "data": gin.H{"del_task_id": delTaskID}})
 }
 
-// ListRunArchives GET /API/V1/Meta/FinvQuant/Backtest/Run/DeleteTask/Archives?runId=&page=&pageSize=
+// ListRunArchives GET /API/V1/Meta/Finv/Quant/Backtest/Run/DeleteTask/Archives?runId=&page=&pageSize=
 // 查询已删除任务归档（"曾经存在的证明"：失败/已结束任务被删后执行记录留痕）。
 func (h *Backtest) ListRunArchives(c *gin.Context) {
 	list, total, err := h.service.ListRunArchives(c.Request.Context(), parseBTPager(c), c.Query("runId"))
@@ -399,7 +399,7 @@ func (h *Backtest) ListRunArchives(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetReport GET /API/V1/Meta/FinvQuant/Backtest/Run/Report?runId=xxx
+// GetReport GET /API/V1/Meta/Finv/Quant/Backtest/Run/Report?runId=xxx
 func (h *Backtest) GetReport(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -413,7 +413,7 @@ func (h *Backtest) GetReport(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": report})
 }
 
-// ListEquity GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=xxx&page=&pageSize=
+// ListEquity GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity?runId=xxx&page=&pageSize=
 func (h *Backtest) ListEquity(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -427,7 +427,7 @@ func (h *Backtest) ListEquity(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListTrades GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades?runId=xxx&page=&pageSize=
+// ListTrades GET /API/V1/Meta/Finv/Quant/Backtest/Run/Trades?runId=xxx&page=&pageSize=
 func (h *Backtest) ListTrades(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -441,7 +441,7 @@ func (h *Backtest) ListTrades(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListCashflows GET /API/V1/Meta/FinvQuant/Backtest/Run/Cashflows?runId=xxx&page=&pageSize=
+// ListCashflows GET /API/V1/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=xxx&page=&pageSize=
 func (h *Backtest) ListCashflows(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -455,7 +455,7 @@ func (h *Backtest) ListCashflows(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListPositionLogs GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs?runId=xxx&page=&pageSize=
+// ListPositionLogs GET /API/V1/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=xxx&page=&pageSize=
 func (h *Backtest) ListPositionLogs(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -469,7 +469,7 @@ func (h *Backtest) ListPositionLogs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// ListEventTraces GET /API/V1/Meta/FinvQuant/Backtest/Run/EventTraces?runId=xxx&page=&pageSize=
+// ListEventTraces GET /API/V1/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=xxx&page=&pageSize=
 func (h *Backtest) ListEventTraces(c *gin.Context) {
 	id, ok := btIDQuery(c, "runId")
 	if !ok {
@@ -487,7 +487,7 @@ func (h *Backtest) ListEventTraces(c *gin.Context) {
 // 环境管理
 // ---------------------------------------------------------------------
 
-// ListEnvironments GET /API/V1/Meta/FinvQuant/Backtest/Environment/List
+// ListEnvironments GET /API/V1/Meta/Finv/Quant/Backtest/Environment/List
 func (h *Backtest) ListEnvironments(c *gin.Context) {
 	list, total, err := h.service.ListEnvironments(c.Request.Context(),
 		parseBTPager(c), btUserID(c), c.Query("envType"), c.Query("keyword"))
@@ -498,7 +498,7 @@ func (h *Backtest) ListEnvironments(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetEnvironment GET /API/V1/Meta/FinvQuant/Backtest/Environment/Get?envId=xxx
+// GetEnvironment GET /API/V1/Meta/Finv/Quant/Backtest/Environment/Get?envId=xxx
 func (h *Backtest) GetEnvironment(c *gin.Context) {
 	id, ok := btIDQuery(c, "envId")
 	if !ok {
@@ -512,7 +512,7 @@ func (h *Backtest) GetEnvironment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": env})
 }
 
-// SaveEnvironment POST /API/V1/Meta/FinvQuant/Backtest/Environment/Save
+// SaveEnvironment POST /API/V1/Meta/Finv/Quant/Backtest/Environment/Save
 func (h *Backtest) SaveEnvironment(c *gin.Context) {
 	var env backtest.Environment
 	if err := c.ShouldBindJSON(&env); err != nil {
@@ -527,7 +527,7 @@ func (h *Backtest) SaveEnvironment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"env_id": id}})
 }
 
-// ToggleEnvironment POST /API/V1/Meta/FinvQuant/Backtest/Environment/Toggle
+// ToggleEnvironment POST /API/V1/Meta/Finv/Quant/Backtest/Environment/Toggle
 func (h *Backtest) ToggleEnvironment(c *gin.Context) {
 	var req struct {
 		EnvID         string `json:"env_id"`
@@ -549,7 +549,7 @@ func (h *Backtest) ToggleEnvironment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "切换成功"})
 }
 
-// DeleteEnvironment POST /API/V1/Meta/FinvQuant/Backtest/Environment/Delete
+// DeleteEnvironment POST /API/V1/Meta/Finv/Quant/Backtest/Environment/Delete
 func (h *Backtest) DeleteEnvironment(c *gin.Context) {
 	var req struct {
 		EnvID  string `json:"env_id"`
@@ -574,7 +574,7 @@ func (h *Backtest) DeleteEnvironment(c *gin.Context) {
 // 模板管理
 // ---------------------------------------------------------------------
 
-// ListTemplates GET /API/V1/Meta/FinvQuant/Backtest/Template/List
+// ListTemplates GET /API/V1/Meta/Finv/Quant/Backtest/Template/List
 func (h *Backtest) ListTemplates(c *gin.Context) {
 	list, total, err := h.service.ListTemplates(c.Request.Context(),
 		parseBTPager(c), btUserID(c), c.Query("templateType"), c.Query("keyword"))
@@ -585,7 +585,7 @@ func (h *Backtest) ListTemplates(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": gin.H{"total": total, "list": list}})
 }
 
-// GetTemplate GET /API/V1/Meta/FinvQuant/Backtest/Template/Get?templateId=xxx
+// GetTemplate GET /API/V1/Meta/Finv/Quant/Backtest/Template/Get?templateId=xxx
 func (h *Backtest) GetTemplate(c *gin.Context) {
 	id, ok := btIDQuery(c, "templateId")
 	if !ok {
@@ -599,7 +599,7 @@ func (h *Backtest) GetTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询完成", "data": tmpl})
 }
 
-// SaveTemplate POST /API/V1/Meta/FinvQuant/Backtest/Template/Save
+// SaveTemplate POST /API/V1/Meta/Finv/Quant/Backtest/Template/Save
 func (h *Backtest) SaveTemplate(c *gin.Context) {
 	var tmpl backtest.Template
 	if err := c.ShouldBindJSON(&tmpl); err != nil {
@@ -614,7 +614,7 @@ func (h *Backtest) SaveTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "保存成功", "data": gin.H{"template_id": id}})
 }
 
-// DeleteTemplate POST /API/V1/Meta/FinvQuant/Backtest/Template/Delete
+// DeleteTemplate POST /API/V1/Meta/Finv/Quant/Backtest/Template/Delete
 func (h *Backtest) DeleteTemplate(c *gin.Context) {
 	var req struct {
 		TemplateID string `json:"template_id"`

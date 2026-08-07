@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity — 查询净值曲线数据
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity — 查询净值曲线数据
 
 按报告精度（Day/Hour/Min）逐点返回净值曲线：余额（cash）、总资产（equity=现金+持仓市值）、
 持仓金额（position_value）、持仓数量（position_qty）、累计收益额（profit）、
@@ -7,7 +7,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=xxx&page=1&pageSize=5000`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Equity?runId=xxx&page=1&pageSize=5000`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

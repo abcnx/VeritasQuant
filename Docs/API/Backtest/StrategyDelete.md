@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Delete — 删除策略
+# POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Delete — 删除策略
 
 删除策略；策略已关联回测任务时禁止删除（返回 409 / 4009，可改为禁用）。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Strategy/Delete`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Strategy/Delete`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

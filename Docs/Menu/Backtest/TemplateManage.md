@@ -43,7 +43,7 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Template/List` | [TemplateList.md](../../API/Backtest/TemplateList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Template/Get` | [TemplateGet.md](../../API/Backtest/TemplateGet.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Save` | [TemplateSave.md](../../API/Backtest/TemplateSave.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Template/Delete` | [TemplateDelete.md](../../API/Backtest/TemplateDelete.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Template/List` | [TemplateList.md](../../API/Backtest/TemplateList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Template/Get` | [TemplateGet.md](../../API/Backtest/TemplateGet.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Template/Save` | [TemplateSave.md](../../API/Backtest/TemplateSave.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Template/Delete` | [TemplateDelete.md](../../API/Backtest/TemplateDelete.md) |

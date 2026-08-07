@@ -249,17 +249,18 @@ async function query() {
   loading.value = true
   try {
     // 按日期 + N 日回溯查询（服务端转为 ts 范围返回全部记录，不分页）
+    // URL 查询参数遵循小驼峰规范（ApiSpec §3）
     const params = new URLSearchParams({
-      secu_code: secuStr.trim(),
+      secuCode: secuStr.trim(),
       date: date.value,
       period: period.value,
       days: String(days.value),
     })
     // 选中字典项时回传证券名称（security_name_cn），便于服务端与前端确认证券
     if (secuName.value.trim()) {
-      params.set('secu_name', secuName.value.trim())
+      params.set('secuName', secuName.value.trim())
     }
-    const response = await fetch(`/API/V1/Quote/Query?${params}`)
+    const response = await fetch(`/API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery?${params}`)
     const body = await response.json()
     if (body.code !== 0) {
       error.value = body.message || '查询失败'

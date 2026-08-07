@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/List — 分页查询回测任务
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/List — 分页查询回测任务
 
 分页查询回测任务（支持状态 / 标的 / 策略过滤，按用户隔离），含进度与失败原因、报告摘要与快照。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/List`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/List`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

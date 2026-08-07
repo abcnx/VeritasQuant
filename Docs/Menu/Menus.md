@@ -9,7 +9,7 @@
 ```
 仪表盘（/dashboard）
 历史行情（分组）
-  └─ 历史行情查询（/quote/query）
+  └─ 历史行情查询（/Meta/Finv/Quote/History/HistoryQuoteQuery）
 元数据管理（分组）
   └─ 业务元数据维护（二级分组）
       ├─ 交易所信息维护（/meta/exchange）
@@ -34,7 +34,7 @@
 
 > 每个叶子菜单对应独立 URL 路由路径（见 `Web/src/router.ts`）；侧边导航支持两级分组展开。
 > **路径规范**：量化交易模块菜单/路由统一加 `Meta/Finv/Quant/` 前缀，**路径各段使用大驼峰（PascalCase）**（如 `/Meta/Finv/Quant/Backtest/GoldFutures`），
-> 与后端 `/API/V1/Meta/FinvQuant/Backtest/**` 接口路径保持同一前缀体系。
+> 与后端 `/API/V1/Meta/Finv/Quant/Backtest/**` 接口路径保持同一前缀体系。
 
 ## 菜单清单
 
@@ -42,13 +42,13 @@
 |---|----------|------|-----|------|------|--------------|----------------|----------|
 | 1 | 仪表盘 | 一级叶子 | `dashboard` | `mdi-view-dashboard` | `/dashboard` | `Web/src/views/DashboardView.vue` | `GET /API/V1/health/live`（存活探针） | — |
 | 2 | 历史行情 | 一级分组 | `history-quote` | `mdi-chart-box` | — | — | — | — |
-| 3 | 历史行情查询 | 二级叶子 | `quote-query` | `mdi-chart-line` | `/quote/query` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue` | `GET /API/V1/Quote/Query`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` | [HistoryQuote/HistoryQuoteQuery.md](HistoryQuote/HistoryQuoteQuery.md) |
+| 3 | 历史行情查询 | 二级叶子 | `quote-query` | `mdi-chart-line` | `/Meta/Finv/Quote/History/HistoryQuoteQuery` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue` | `GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options` | [HistoryQuote/HistoryQuoteQuery.md](HistoryQuote/HistoryQuoteQuery.md) |
 | 4 | 元数据管理 | 一级分组 | `metadata` | `mdi-database-cog` | — | — | — | — |
 | 5 | 业务元数据维护 | 二级分组 | `meta-maintenance` | `mdi-database-search` | — | — | — | — |
-| 6 | 交易所信息维护 | 三级叶子 | `meta-exchange` | `mdi-office-building` | `/meta/exchange` | `Web/src/views/Meta/Finv/MetaData/MetaExchangeView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Exchange/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Exchange/Toggle` | [Meta/MetaExchange.md](Meta/MetaExchange.md) |
-| 7 | 交易所下设市场信息维护 | 三级叶子 | `meta-market` | `mdi-chart-areaspline` | `/meta/market` | `Web/src/views/Meta/Finv/MetaData/MetaMarketView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Market/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Market/Toggle` | [Meta/MetaMarket.md](Meta/MetaMarket.md) |
-| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/Meta/Finv/MetaData/MetaSecurityView.vue` | `GET /API/V1/Meta/FinvQuant/Metadata/Security/List`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Save`、`POST /API/V1/Meta/FinvQuant/Metadata/Security/Toggle`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
-| 9 | 历史行情数据导入 | 三级叶子 | `meta-import` | `mdi-database-import` | `/meta/import` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteImportView.vue` | `POST /API/V1/Quote/Import/Upload`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | [HistoryQuote/HistoryQuoteImport.md](HistoryQuote/HistoryQuoteImport.md) |
+| 6 | 交易所信息维护 | 三级叶子 | `meta-exchange` | `mdi-office-building` | `/meta/exchange` | `Web/src/views/Meta/Finv/MetaData/MetaExchangeView.vue` | `GET /API/V1/Meta/Finv/Quant/Metadata/Exchange/List`、`POST /API/V1/Meta/Finv/Quant/Metadata/Exchange/Save`、`POST /API/V1/Meta/Finv/Quant/Metadata/Exchange/Toggle` | [Meta/MetaExchange.md](Meta/MetaExchange.md) |
+| 7 | 交易所下设市场信息维护 | 三级叶子 | `meta-market` | `mdi-chart-areaspline` | `/meta/market` | `Web/src/views/Meta/Finv/MetaData/MetaMarketView.vue` | `GET /API/V1/Meta/Finv/Quant/Metadata/Market/List`、`POST /API/V1/Meta/Finv/Quant/Metadata/Market/Save`、`POST /API/V1/Meta/Finv/Quant/Metadata/Market/Toggle` | [Meta/MetaMarket.md](Meta/MetaMarket.md) |
+| 8 | 规范证券信息维护 | 三级叶子 | `meta-security` | `mdi-tag-multiple` | `/meta/security` | `Web/src/views/Meta/Finv/MetaData/MetaSecurityView.vue` | `GET /API/V1/Meta/Finv/Quant/Metadata/Security/List`、`POST /API/V1/Meta/Finv/Quant/Metadata/Security/Save`、`POST /API/V1/Meta/Finv/Quant/Metadata/Security/Toggle`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Lookup` | [Meta/MetaSecurity.md](Meta/MetaSecurity.md) |
+| 9 | 历史行情数据导入 | 三级叶子 | `meta-import` | `mdi-database-import` | `/meta/import` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteImportView.vue` | `POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Lookup` | [HistoryQuote/HistoryQuoteImport.md](HistoryQuote/HistoryQuoteImport.md) |
 | 10 | 配置管理 | 一级叶子 | `config-manage` | `mdi-cog-outline` | `/Meta/Finv/Quant/Config` | `Web/src/views/Meta/Finv/Quant/Backtest/ConfigManageView.vue` | —（规划中） | — |
 | 11 | 环境管理 | 一级叶子 | `environment` | `mdi-application-cog-outline` | `/Meta/Finv/Quant/Environment` | `Web/src/views/Meta/Finv/Quant/Backtest/EnvironmentView.vue` | `GET/POST .../Backtest/Environment/*` | [Backtest/EnvironmentManage.md](Backtest/EnvironmentManage.md) |
 | 12 | 模板管理 | 一级叶子 | `template` | `mdi-content-copy` | `/Meta/Finv/Quant/Template` | `Web/src/views/Meta/Finv/Quant/Backtest/TemplateView.vue` | `GET/POST .../Backtest/Template/*` | [Backtest/TemplateManage.md](Backtest/TemplateManage.md) |

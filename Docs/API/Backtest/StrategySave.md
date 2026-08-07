@@ -1,4 +1,4 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Save — 新增/修改策略
+# POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Save — 新增/修改策略
 
 新增或修改结构化回测策略；`strategy_id` 为空则新增（自动生成 UUID），非空则 UPDATE。
 保存时服务端对 definition 做结构校验与信号表达式编译校验（标识符交叉校验）。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Strategy/Save`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Strategy/Save`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

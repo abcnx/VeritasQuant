@@ -3,7 +3,7 @@
 > 所属：FinvQuant 前端菜单 · 存放：`Docs/Menu/HistoryQuote/`
 > 菜单层级：元数据管理 → 业务元数据维护 → **历史行情数据导入**
 > 路由：`/meta/import`（name `meta-import`）· 视图：`Web/src/views/QuoteImportView.vue`
-> 关联 API：`POST /API/V1/Quote/Import/Upload`（[ImportsUpload.md](../../API/HistoryQuote/ImportsUpload.md)）、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Options`、`GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup`（[MetaSecurity.md](../../API/Meta/MetaSecurity.md)）
+> 关联 API：`POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload`（[ImportsUpload.md](../../API/HistoryQuote/ImportsUpload.md)）、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Lookup`（[MetaSecurity.md](../../API/Meta/MetaSecurity.md)）
 
 ## 功能概述
 
@@ -46,6 +46,6 @@
 
 | API | 用途 |
 |-----|------|
-| `POST /API/V1/Quote/Import/Upload` | 上传 MVSV 文件并导入 |
-| `GET /API/V1/Meta/FinvQuant/Metadata/Security/Options` | 证券代码下拉字典 |
-| `GET /API/V1/Meta/FinvQuant/Metadata/Security/Lookup` | 策略 1 自动带出 / 策略 2 自动匹配 |
+| `POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload` | 上传 MVSV 文件并导入 |
+| `GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options` | 证券代码下拉字典 |
+| `GET /API/V1/Meta/Finv/Quant/Metadata/Security/Lookup` | 策略 1 自动带出 / 策略 2 自动匹配 |

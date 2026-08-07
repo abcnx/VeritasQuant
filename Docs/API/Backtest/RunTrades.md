@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades — 查询成交记录
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/Trades — 查询成交记录
 
 分页查询回测任务的成交记录（时间/方向/价格/数量/金额/手续费/平仓盈亏/成交后持仓与现金/触发信号/引擎内序号 seq）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Trades?runId=xxx&page=1&pageSize=500`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Trades?runId=xxx&page=1&pageSize=500`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

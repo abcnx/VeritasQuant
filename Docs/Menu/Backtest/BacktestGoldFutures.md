@@ -48,10 +48,10 @@
 
 | 步骤 | 接口 |
 |------|------|
-| 加载下拉选项 | `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List`、`.../Account/List`、`.../Environment/List` |
-| 启动回测 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create`（含 strategy_id/account_id/env_id/secu_code/区间/周期/精度/options） |
-| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?secuCode=GCMain`（RUNNING/PENDING 时每 5s 轮询） |
-| 取消任务 | `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel`（RUNNING/PENDING 可取消） |
+| 加载下拉选项 | `GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/List`、`.../Account/List`、`.../Environment/List` |
+| 启动回测 | `POST /API/V1/Meta/Finv/Quant/Backtest/Run/Create`（含 strategy_id/account_id/env_id/secu_code/区间/周期/精度/options） |
+| 任务列表 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List?secuCode=GCMain`（RUNNING/PENDING 时每 5s 轮询） |
+| 取消任务 | `POST /API/V1/Meta/Finv/Quant/Backtest/Run/Cancel`（RUNNING/PENDING 可取消） |
 
 ### 4.3 后端处理（Run/Create）
 
@@ -71,10 +71,10 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List` | [StrategyList.md](../../API/Backtest/StrategyList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Environment/List` | [EnvironmentList.md](../../API/Backtest/EnvironmentList.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Create` | [RunCreate.md](../../API/Backtest/RunCreate.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Get` | [RunGet.md](../../API/Backtest/RunGet.md) |
-| `POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel` | [RunCancel.md](../../API/Backtest/RunCancel.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/List` | [StrategyList.md](../../API/Backtest/StrategyList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Account/List` | [AccountList.md](../../API/Backtest/AccountList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Environment/List` | [EnvironmentList.md](../../API/Backtest/EnvironmentList.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Run/Create` | [RunCreate.md](../../API/Backtest/RunCreate.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Get` | [RunGet.md](../../API/Backtest/RunGet.md) |
+| `POST /API/V1/Meta/Finv/Quant/Backtest/Run/Cancel` | [RunCancel.md](../../API/Backtest/RunCancel.md) |

@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Run/Cancel — 取消回测任务
+# POST /API/V1/Meta/Finv/Quant/Backtest/Run/Cancel — 取消回测任务
 
 取消运行中的回测任务（仅 PENDING/RUNNING 可取消），取消后状态置为 CANCELLED。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Cancel`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Cancel`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

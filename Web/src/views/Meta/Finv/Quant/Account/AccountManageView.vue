@@ -51,7 +51,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: AccountRow[] }>(
-      `/Meta/FinvQuant/Backtest/Account/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/Finv/Quant/Backtest/Account/List?page=${page.value}&pageSize=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -77,7 +77,7 @@ async function openEdit(row: AccountRow) {
   editing.value = true
   // 通过 Account/Get 拉取最新详情（评审：Get 端点此前未被前端调用，已登记为已使用）
   try {
-    const detail = await apiGet<AccountRow>(`/Meta/FinvQuant/Backtest/Account/Get?accountId=${row.account_id}`)
+    const detail = await apiGet<AccountRow>(`/Meta/Finv/Quant/Backtest/Account/Get?accountId=${row.account_id}`)
     form.value = { ...(detail ?? row) }
   } catch (e) {
     error.value = (e as Error).message
@@ -89,7 +89,7 @@ async function openEdit(row: AccountRow) {
 async function save() {
   error.value = ''
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Account/Save', form.value)
+    await apiPost('/Meta/Finv/Quant/Backtest/Account/Save', form.value)
     message.value = '保存成功'
     dialog.value = false
     await load()
@@ -100,7 +100,7 @@ async function save() {
 
 async function toggle(row: AccountRow) {
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Account/Toggle', {
+    await apiPost('/Meta/Finv/Quant/Backtest/Account/Toggle', {
       account_id: row.account_id,
       allow_backtest: row.allow_backtest === '1' ? '0' : '1',
     })
@@ -113,7 +113,7 @@ async function toggle(row: AccountRow) {
 async function remove(row: AccountRow) {
   if (!confirm(`确认删除账户「${row.account_name}」？`)) return
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Account/Delete', { account_id: row.account_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Account/Delete', { account_id: row.account_id })
     message.value = '删除成功'
     await load()
   } catch (e) {

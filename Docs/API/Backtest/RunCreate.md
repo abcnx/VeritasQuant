@@ -1,4 +1,4 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Run/Create — 创建并启动回测任务
+# POST /API/V1/Meta/Finv/Quant/Backtest/Run/Create — 创建并启动回测任务
 
 创建回测任务（策略快照 + 账户快照 + 环境快照 + 标的区间 + 回测配置），校验通过后**异步执行**，
 返回任务初始状态（PENDING/RUNNING），前端轮询 `Run/Get` / `Run/List` 查看进度与结果。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Create`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Create`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

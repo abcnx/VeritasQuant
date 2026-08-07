@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Strategy/Get — 查询策略详情
+# GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/Get — 查询策略详情
 
 按策略 ID 查询结构化回测策略详情（含 definition JSON 定义）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Strategy/Get?strategyId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Strategy/Get?strategyId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

@@ -1,4 +1,4 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Account/Save — 新增/修改账户
+# POST /API/V1/Meta/Finv/Quant/Backtest/Account/Save — 新增/修改账户
 
 新增或修改回测账户；`account_id` 为空则新增（自动生成 UUID），非空则 UPDATE。
 服务端校验：account_code 唯一、初始资金 > 0、手续费/滑点 ≥ 0、margin_mode ∈ {FULL, FUTURES}。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Account/Save`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Account/Save`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

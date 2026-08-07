@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Environment/List — 分页查询环境
+# GET /API/V1/Meta/Finv/Quant/Backtest/Environment/List — 分页查询环境
 
 分页查询回测环境（BACKTEST/PAPER/SIMULATION/LIVE × 地区市场），支持类型过滤；
 `system` 内置环境全局可见，列表返回 system + 当前用户环境。
@@ -9,7 +9,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Environment/List`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Environment/List`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

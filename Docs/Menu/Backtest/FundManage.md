@@ -34,8 +34,8 @@
 
 | 数据 | 接口 |
 |------|------|
-| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?status=SUCCEEDED&page=1&pageSize=100` |
-| 资金曲线 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=&page=1&pageSize=5000` |
+| 任务列表 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List?status=SUCCEEDED&page=1&pageSize=100` |
+| 资金曲线 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity?runId=&page=1&pageSize=5000` |
 
 - 资金曲线：`equity`（总资产=现金+持仓市值）与 `cash`（现金）双线；
 - x 轴标签按报告精度生成（Day=日期，Min/Hour=日期+时间）。
@@ -49,5 +49,5 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity` | [RunEquity.md](../../API/Backtest/RunEquity.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity` | [RunEquity.md](../../API/Backtest/RunEquity.md) |

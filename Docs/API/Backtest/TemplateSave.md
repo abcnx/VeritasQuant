@@ -1,4 +1,4 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Template/Save — 新增/修改模板
+# POST /API/V1/Meta/Finv/Quant/Backtest/Template/Save — 新增/修改模板
 
 新增或修改模板；`template_id` 为空则新增（自动生成 UUID），非空则 UPDATE。
 服务端强制 `is_builtin='0'`（防伪造内置标识）。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Template/Save`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Template/Save`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

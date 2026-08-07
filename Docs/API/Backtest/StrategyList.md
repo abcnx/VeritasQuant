@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Strategy/List — 分页查询策略
+# GET /API/V1/Meta/Finv/Quant/Backtest/Strategy/List — 分页查询策略
 
 分页查询结构化回测策略（支持关键字与回测开关过滤，按用户隔离）。
 
@@ -8,7 +8,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Strategy/List`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Strategy/List`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

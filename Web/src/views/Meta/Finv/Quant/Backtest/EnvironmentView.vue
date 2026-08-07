@@ -63,7 +63,7 @@ async function loadEnvs() {
   try {
     const q = new URLSearchParams({ page: String(envPage.value), pageSize: String(envPageSize.value) })
     if (envTypeFilter.value) q.set('envType', envTypeFilter.value)
-    const data = await apiGet<{ total: number; list: EnvRow[] }>(`/Meta/FinvQuant/Backtest/Environment/List?${q.toString()}`)
+    const data = await apiGet<{ total: number; list: EnvRow[] }>(`/Meta/Finv/Quant/Backtest/Environment/List?${q.toString()}`)
     envs.value = data.list ?? []
     envTotal.value = data.total ?? 0
   } catch (e) {
@@ -84,7 +84,7 @@ async function openEnvEdit(row: EnvRow) {
   envEditing.value = true
   // 通过 Environment/Get 拉取最新详情（评审：Get 端点此前未被前端调用）
   try {
-    const detail = await apiGet<EnvRow>(`/Meta/FinvQuant/Backtest/Environment/Get?envId=${row.env_id}`)
+    const detail = await apiGet<EnvRow>(`/Meta/Finv/Quant/Backtest/Environment/Get?envId=${row.env_id}`)
     envForm.value = { ...(detail ?? row), config: JSON.parse(JSON.stringify((detail ?? row).config ?? {})) }
   } catch (e) {
     showToast((e as Error).message, 'error')
@@ -102,7 +102,7 @@ async function saveEnv() {
     return
   }
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Environment/Save', envForm.value)
+    await apiPost('/Meta/Finv/Quant/Backtest/Environment/Save', envForm.value)
     showToast('环境保存成功')
     envDialog.value = false
     await loadEnvs()
@@ -113,7 +113,7 @@ async function saveEnv() {
 
 async function toggleEnv(row: EnvRow) {
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Environment/Toggle', { env_id: row.env_id, allow_backtest: row.allow_backtest === '1' ? '0' : '1' })
+    await apiPost('/Meta/Finv/Quant/Backtest/Environment/Toggle', { env_id: row.env_id, allow_backtest: row.allow_backtest === '1' ? '0' : '1' })
     await loadEnvs()
   } catch (e) {
     showToast((e as Error).message, 'error')
@@ -123,7 +123,7 @@ async function toggleEnv(row: EnvRow) {
 async function removeEnv(row: EnvRow) {
   if (!confirm(`确认删除环境「${row.env_name}」？`)) return
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Environment/Delete', { env_id: row.env_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Environment/Delete', { env_id: row.env_id })
     showToast('环境删除成功')
     await loadEnvs()
   } catch (e) {

@@ -48,25 +48,26 @@ func NewRouter(deps *Deps) *gin.Engine {
 		apiGroup.GET("/health/live", health.Live)
 		apiGroup.GET("/health/ready", health.Ready)
 		apiGroup.GET("/version", version.Info)
-		apiGroup.POST("/Quote/Import/Upload", quoteImport.Upload)
-		apiGroup.GET("/Quote/Query", quoteQuery.Query)
+		// 历史行情：导入 / 查询（统一 /Meta/Finv/Quant/Quote/ 前缀，与前端路由对应）
+		apiGroup.POST("/Meta/Finv/Quant/Quote/Import/Upload", quoteImport.Upload)
+		apiGroup.GET("/Meta/Finv/Quant/Quote/History/QuoteQuery", quoteQuery.Query)
 
 		// 元数据管理：交易所 / 市场 / 证券字典维护
-		apiGroup.GET("/Meta/FinvQuant/Metadata/Exchange/List", metaHandler.ListExchanges)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Exchange/Save", metaHandler.SaveExchange)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Exchange/Toggle", metaHandler.ToggleExchange)
-		apiGroup.GET("/Meta/FinvQuant/Metadata/Market/List", metaHandler.ListMarkets)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Market/Save", metaHandler.SaveMarket)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Market/Toggle", metaHandler.ToggleMarket)
-		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/List", metaHandler.ListSecurities)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Security/Save", metaHandler.SaveSecurity)
-		apiGroup.POST("/Meta/FinvQuant/Metadata/Security/Toggle", metaHandler.ToggleSecurity)
-		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/Options", metaHandler.SecurityOptions)
-		apiGroup.GET("/Meta/FinvQuant/Metadata/Security/Lookup", metaHandler.LookupSecurity)
+		apiGroup.GET("/Meta/Finv/Quant/Metadata/Exchange/List", metaHandler.ListExchanges)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Exchange/Save", metaHandler.SaveExchange)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Exchange/Toggle", metaHandler.ToggleExchange)
+		apiGroup.GET("/Meta/Finv/Quant/Metadata/Market/List", metaHandler.ListMarkets)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Market/Save", metaHandler.SaveMarket)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Market/Toggle", metaHandler.ToggleMarket)
+		apiGroup.GET("/Meta/Finv/Quant/Metadata/Security/List", metaHandler.ListSecurities)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Security/Save", metaHandler.SaveSecurity)
+		apiGroup.POST("/Meta/Finv/Quant/Metadata/Security/Toggle", metaHandler.ToggleSecurity)
+		apiGroup.GET("/Meta/Finv/Quant/Metadata/Security/Options", metaHandler.SecurityOptions)
+		apiGroup.GET("/Meta/Finv/Quant/Metadata/Security/Lookup", metaHandler.LookupSecurity)
 
 		// 通用量化回测：策略 / 账户 / 任务 / 报告 / 链路追踪 / 环境 / 模板
-		// （路径前缀规范：/API/V1/Meta/FinvQuant/Backtest/**）
-		bt := apiGroup.Group("/Meta/FinvQuant/Backtest")
+		// （路径前缀规范：/API/V1/Meta/Finv/Quant/Backtest/**）
+		bt := apiGroup.Group("/Meta/Finv/Quant/Backtest")
 		{
 			bt.GET("/Strategy/List", backtestHandler.ListStrategies)
 			bt.GET("/Strategy/Get", backtestHandler.GetStrategy)

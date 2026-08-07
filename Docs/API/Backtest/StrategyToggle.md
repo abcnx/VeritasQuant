@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Strategy/Toggle — 切换策略回测开关
+# POST /API/V1/Meta/Finv/Quant/Backtest/Strategy/Toggle — 切换策略回测开关
 
 切换策略回测开关（allow_backtest `0`/`1`）；关闭后回测页不可选该策略。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Strategy/Toggle`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Strategy/Toggle`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

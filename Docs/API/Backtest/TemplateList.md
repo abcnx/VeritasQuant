@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Template/List — 分页查询模板
+# GET /API/V1/Meta/Finv/Quant/Backtest/Template/List — 分页查询模板
 
 分页查询模板（策略/账户/环境三类，STRATEGY/ACCOUNT/ENVIRONMENT），支持类型过滤；
 内置模板（is_builtin=1，user_id='system'）全局可见且禁止删除。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Template/List`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Template/List`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

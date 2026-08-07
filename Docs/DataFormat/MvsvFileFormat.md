@@ -3,7 +3,7 @@
 > 所属：FinvQuant 数据格式 · 存放：`Docs/DataFormat/`
 > 适用范围：**所有向 FinvQuant 导入历史行情的导出程序**（脚本/服务/工具）必须按本规范生成 MVSV-1 文件。
 > 服务端解析实现：`internal/mvsv/parser.go`（本规范与该实现严格一致，如有差异以代码为准）。
-> 导入接口：`POST /API/V1/Quote/Import/Upload`（见 [ImportsUpload.md](../API/HistoryQuote/ImportsUpload.md)）。
+> 导入接口：`POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload`（见 [ImportsUpload.md](../API/HistoryQuote/ImportsUpload.md)）。
 
 ---
 

@@ -47,7 +47,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: ExchangeRow[] }>(
-      `/Meta/FinvQuant/Metadata/Exchange/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/Finv/Quant/Metadata/Exchange/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -93,7 +93,7 @@ async function save() {
     return
   }
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Exchange/Save', {
+    await apiPost('/Meta/Finv/Quant/Metadata/Exchange/Save', {
       exchange_code: form.value.exchange_code,
       exchange_flag: form.value.exchange_flag.trim(),
       exchange_abbr: form.value.exchange_abbr.trim(),
@@ -116,7 +116,7 @@ async function toggle(row: ExchangeRow) {
   error.value = ''
   const next = row.flag_enable === '1' ? '0' : '1'
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Exchange/Toggle', { exchange_code: row.exchange_code, flag_enable: next })
+    await apiPost('/Meta/Finv/Quant/Metadata/Exchange/Toggle', { exchange_code: row.exchange_code, flag_enable: next })
     row.flag_enable = next
     message.value = `已${next === '1' ? '启用' : '禁用'}交易所 ${row.exchange_code}`
   } catch (e) {

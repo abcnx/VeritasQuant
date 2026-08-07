@@ -1,4 +1,4 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Environment/Save — 新增/修改环境
+# POST /API/V1/Meta/Finv/Quant/Backtest/Environment/Save — 新增/修改环境
 
 新增或修改回测环境；`env_id` 为空则新增（自动生成 UUID），非空则 UPDATE。
 服务端校验：trading_sessions 起止需 6 位 hhmmss、tick_size ≥ 0。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Environment/Save`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Environment/Save`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

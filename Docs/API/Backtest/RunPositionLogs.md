@@ -1,4 +1,4 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs — 查询持仓变化明细（⑨链路追踪）
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/PositionLogs — 查询持仓变化明细（⑨链路追踪）
 
 分页查询回测任务的持仓变化明细（⑨-2）：开仓（OPEN）/ 加仓（ADD）/ 减仓（REDUCE）/ 平仓（CLOSE），
 含变动前后数量与加权成本、关联成交与触发信号。
@@ -6,7 +6,7 @@
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/PositionLogs?runId=xxx&page=1&pageSize=1000`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=xxx&page=1&pageSize=1000`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

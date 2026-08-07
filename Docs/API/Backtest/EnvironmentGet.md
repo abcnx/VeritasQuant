@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Environment/Get — 查询环境详情
+# GET /API/V1/Meta/Finv/Quant/Backtest/Environment/Get — 查询环境详情
 
 按环境 ID 查询回测环境详情（含 config JSON 配置）。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Environment/Get?envId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Environment/Get?envId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

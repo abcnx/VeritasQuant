@@ -22,39 +22,53 @@ func NewQuoteQuery(service *quote.Service) *QuoteQuery {
 }
 
 // Query 处理 GET /API/V1/Quote/Query：
-// 按证券代码 + ts 时间范围（start_ts/end_ts，UTC 秒）查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
+// 按证券代码 + ts 时间范围（startTs/endTs，UTC 秒）查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
 // 返回时间范围内全部记录（不分页，适配 A 股/港股/美股/24h 电子盘单日数据量差异）。
+// URL 查询参数遵循小驼峰规范（secuCode/secuName/startTs/endTs）；兼容旧 snake_case 参数。
 func (h *QuoteQuery) Query(c *gin.Context) {
-	secuCode := c.Query("secu_code")
-	secuName := c.Query("secu_name") // 证券名称（可选，前端从 usc 字典选中后回传，便于确认证券）
+	secuCode := c.Query("secuCode")
+	if secuCode == "" {
+		secuCode = c.Query("secu_code") // 兼容旧参数
+	}
+	secuName := c.Query("secuName") // 证券名称（可选，前端从 usc 字典选中后回传，便于确认证券）
+	if secuName == "" {
+		secuName = c.Query("secu_name")
+	}
 	period := c.Query("period")
 	if period == "" {
 		period = "Min"
 	}
 
 	if secuCode == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "secu_code 不能为空"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "secuCode 不能为空"})
 		return
 	}
 
-	// ts 范围：优先 start_ts/end_ts（前端已把日期+N日换算为 UTC 秒）；
+	// ts 范围：优先 startTs/endTs（前端已把日期+N日换算为 UTC 秒）；
 	// 兼容旧参数 date（yyyymmdd）+ days（回溯 N 个自然日）→ 转 ts 范围。
 	var startTS, endTS int64
-	if st := c.Query("start_ts"); st != "" {
+	st := c.Query("startTs")
+	if st == "" {
+		st = c.Query("start_ts") // 兼容旧参数
+	}
+	if st != "" {
 		var err error
 		startTS, err = strconv.ParseInt(st, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "start_ts 必须为整数"})
+			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "startTs 必须为整数"})
 			return
 		}
-		et := c.Query("end_ts")
+		et := c.Query("endTs")
 		if et == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "缺少 end_ts"})
+			et = c.Query("end_ts")
+		}
+		if et == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "缺少 endTs"})
 			return
 		}
 		endTS, err = strconv.ParseInt(et, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "end_ts 必须为整数"})
+			c.JSON(http.StatusBadRequest, gin.H{"code": 4001, "message": "endTs 必须为整数"})
 			return
 		}
 	} else {

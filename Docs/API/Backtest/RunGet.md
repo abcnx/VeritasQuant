@@ -1,11 +1,11 @@
-# GET /API/V1/Meta/FinvQuant/Backtest/Run/Get — 查询任务详情
+# GET /API/V1/Meta/Finv/Quant/Backtest/Run/Get — 查询任务详情
 
 按任务 ID 查询回测任务详情（含策略/账户/环境快照与报告摘要），供深链加载与进度轮询。
 
 ## 请求
 
 - **方法**：`GET`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Run/Get?runId=xxx`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Run/Get?runId=xxx`
 
 ### Query 参数（URL 查询参数统一小驼峰 camelCase）
 

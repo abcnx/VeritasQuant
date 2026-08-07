@@ -37,10 +37,10 @@
   - 实盘仿真验证 → `/Meta/Finv/Quant/Simulation/LiveSim`
 - **行情模块（Quote）**：路由统一加 **`/Meta/Finv/Quote/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/Quote/History/HistoryQuoteQuery`）。
 - **元数据模块（MetaData）**：路由统一加 **`/Meta/Finv/MetaData/`** 前缀，其后每段采用大驼峰（如 `/Meta/Finv/MetaData/Exchange`）。元数据独立于行情/量化（平级关联，不从属），路由与目录均置于 `Meta/Finv/MetaData/`。
-- **其他非 Finv 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/quote/query`）在维护时逐步迁移对齐。
+- **其他非 Finv 模块**：路由路径同样遵循大驼峰命名（如 `/Meta/Exchange`、`/Quote/Query`），不在此路径层级中引入下划线或小写片段；存量小写路由（如 `/dashboard`、`/meta/exchange`）在维护时逐步迁移对齐。
 - **禁止**使用 `-`（连字符）、`_`（下划线）或全小写路径片段（如 `/meta/finvquant/backtest/analysis` 为违规写法）。
 - 路由在 `Web/src/router.ts` 的 `path` 与 `Web/src/App.vue` 的 `menuItems[].path` 中**两处必须一致**，且与 `Docs/Menu/Menus.md` 索引中的「路由」列保持一致。
-- 后端 API 接口路径前缀保持 `/API/V1/Meta/FinvQuant/...`（大驼峰），前端路由与其保持同一前缀体系（见 `Docs/DevSpec/ApiSpec.md`）。
+- 后端 API 接口路径前缀保持 `/API/V1/Meta/Finv/Quant/...`（大驼峰），前端路由与其保持同一前缀体系（见 `Docs/DevSpec/ApiSpec.md`）。
 
 ## 2. 菜单文档
 
@@ -77,5 +77,5 @@
 | 处理逻辑 | 前端交互逻辑与后端处理链路（含请求参数、响应处理） |
 | 注意事项 | 常见问题、限制与排查提示 |
 
-- **业务菜单中使用到的后端 API 接口，须在业务菜单对应的文档中添加对应的 API 接口或接口文档引用**：逐一列出菜单调用的接口路径（如 `GET /API/V1/Quote/Query`）并链接到对应接口文档（`Docs/API/xxx/XXXX.md`），便于定位后端契约与排查问题。
+- **业务菜单中使用到的后端 API 接口，须在业务菜单对应的文档中添加对应的 API 接口或接口文档引用**：逐一列出菜单调用的接口路径（如 `GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`）并链接到对应接口文档（`Docs/API/xxx/XXXX.md`），便于定位后端契约与排查问题。
 - 菜单文档中的接口引用与 API 文档中的「已使用位置登记」（见 [ApiSpec.md](ApiSpec.md) 第 7.5 节）形成双向索引，接口文档登记使用方、菜单文档登记所用接口，须保持一致。

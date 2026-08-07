@@ -108,9 +108,9 @@ function hasActiveRuns(): boolean {
 async function loadOptions() {
   try {
     const [s, a, e] = await Promise.all([
-      apiGet<{ list: StrategyOption[] }>('/Meta/FinvQuant/Backtest/Strategy/List?page=1&pageSize=100&allowBacktest=1'),
-      apiGet<{ list: AccountOption[] }>('/Meta/FinvQuant/Backtest/Account/List?page=1&pageSize=100&allowBacktest=1'),
-      apiGet<{ list: EnvOption[] }>('/Meta/FinvQuant/Backtest/Environment/List?page=1&pageSize=100&envType=BACKTEST'),
+      apiGet<{ list: StrategyOption[] }>('/Meta/Finv/Quant/Backtest/Strategy/List?page=1&pageSize=100&allowBacktest=1'),
+      apiGet<{ list: AccountOption[] }>('/Meta/Finv/Quant/Backtest/Account/List?page=1&pageSize=100&allowBacktest=1'),
+      apiGet<{ list: EnvOption[] }>('/Meta/Finv/Quant/Backtest/Environment/List?page=1&pageSize=100&envType=BACKTEST'),
     ])
     strategies.value = s.list ?? []
     accounts.value = a.list ?? []
@@ -135,7 +135,7 @@ async function loadRuns() {
   try {
     // 仅查询最近 10 条（page=1&pageSize=10，按 run_no 倒序）
     const data = await apiGet<{ total: number; list: RunRow[] }>(
-      `/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
+      `/Meta/Finv/Quant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
     )
     runs.value = data.list ?? []
   } catch (e) {
@@ -156,7 +156,7 @@ function syncPolling() {
     pollTimer = setInterval(async () => {
       try {
         const data = await apiGet<{ list: RunRow[] }>(
-          `/Meta/FinvQuant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
+          `/Meta/Finv/Quant/Backtest/Run/List?page=1&pageSize=10&secuCode=${encodeURIComponent(secuCode.value)}`,
         )
         runs.value = data.list ?? []
         if (!hasActiveRuns()) syncPolling() // 全部结束后停止轮询
@@ -190,7 +190,7 @@ async function startBacktest() {
     if (allowedTimes.value.trim()) {
       options.allowed_times = allowedTimes.value.split(/[,，\s]+/).filter(Boolean)
     }
-    const run = await apiPost<RunRow>('/Meta/FinvQuant/Backtest/Run/Create', {
+    const run = await apiPost<RunRow>('/Meta/Finv/Quant/Backtest/Run/Create', {
       strategy_id: strategyId.value,
       account_id: accountId.value,
       env_id: envId.value || undefined,
@@ -214,7 +214,7 @@ async function cancelRun(run: RunRow) {
   if (!confirm(`确认取消回测任务 #${run.run_no}？`)) return
   cancelling.value = run.run_id
   try {
-    await apiPost('/Meta/FinvQuant/Backtest/Run/Cancel', { run_id: run.run_id })
+    await apiPost('/Meta/Finv/Quant/Backtest/Run/Cancel', { run_id: run.run_id })
     message.value = `任务 #${run.run_no} 取消请求已受理`
     await loadRuns()
   } catch (e) {

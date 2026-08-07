@@ -1,11 +1,11 @@
-# POST /API/V1/Meta/FinvQuant/Backtest/Environment/Toggle — 切换环境回测开关
+# POST /API/V1/Meta/Finv/Quant/Backtest/Environment/Toggle — 切换环境回测开关
 
 切换环境回测开关（allow_backtest `0`/`1`）。
 
 ## 请求
 
 - **方法**：`POST`
-- **路径**：`/API/V1/Meta/FinvQuant/Backtest/Environment/Toggle`
+- **路径**：`/API/V1/Meta/Finv/Quant/Backtest/Environment/Toggle`
 
 ### 请求体（JSON，wire 字段 snake_case）
 

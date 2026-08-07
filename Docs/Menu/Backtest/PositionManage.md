@@ -33,9 +33,9 @@
 
 | 数据 | 接口 |
 |------|------|
-| 任务列表 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/List?status=SUCCEEDED&page=1&pageSize=100` |
-| 持仓曲线 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity?runId=&page=1&pageSize=5000` |
-| 开平仓记录 | `GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades?runId=&page=1&pageSize=500` |
+| 任务列表 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List?status=SUCCEEDED&page=1&pageSize=100` |
+| 持仓曲线 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity?runId=&page=1&pageSize=5000` |
+| 开平仓记录 | `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Trades?runId=&page=1&pageSize=500` |
 
 - 持仓曲线：`position_value`（持仓市值）与 `position_qty`（持仓数量）双轴；
 - x 轴标签按报告精度生成（Day=日期，Min/Hour=日期+时间）。
@@ -49,6 +49,6 @@
 
 | 接口 | 接口文档 |
 |------|----------|
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Equity` | [RunEquity.md](../../API/Backtest/RunEquity.md) |
-| `GET /API/V1/Meta/FinvQuant/Backtest/Run/Trades` | [RunTrades.md](../../API/Backtest/RunTrades.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/List` | [RunList.md](../../API/Backtest/RunList.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Equity` | [RunEquity.md](../../API/Backtest/RunEquity.md) |
+| `GET /API/V1/Meta/Finv/Quant/Backtest/Run/Trades` | [RunTrades.md](../../API/Backtest/RunTrades.md) |
