@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as echarts from 'echarts'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 import { apiGet } from '../../../../../api'
 
@@ -27,8 +27,21 @@ interface SecurityOption {
 // 富途牛牛风格配色：红涨绿跌 + 均线黄/蓝/紫/青
 const COLOR_UP = '#ef232a'
 const COLOR_DOWN = '#14b143'
-const MA_COLORS = ['#f6c343', '#3b8ff7', '#c56cf0', '#2fb28a'] // MA5 / MA10 / MA20 / MA30
-const BOLL_COLORS = ['#ff8c69', '#ffffff', '#7ec8e3'] // 上轨 / 中轨 / 下轨（布林带）
+// 均线周期与配色（MA5 / MA10 / MA20 / MA60 / MA120 / MA250）
+const MA_CONFIGS: { n: number; color: string }[] = [
+  { n: 5, color: '#f6c343' },   // MA5  黄
+  { n: 10, color: '#3b8ff7' },  // MA10 蓝
+  { n: 20, color: '#c56cf0' },  // MA20 紫
+  { n: 60, color: '#2fb28a' },  // MA60 青
+  { n: 120, color: '#f49f0a' }, // MA120 橙
+  { n: 250, color: '#e05cb4' }, // MA250 粉
+]
+// 布林带三条线名称与配色：上轨 / 中轨 / 下轨
+const BOLL_SERIES = [
+  { name: 'BOLL上轨', color: '#ff8c69' },
+  { name: 'BOLL中轨', color: '#ffffff' },
+  { name: 'BOLL下轨', color: '#7ec8e3' },
+]
 
 const secuCode = ref('NVDA') // 证券代码（usc key），默认 NVDA
 const secuName = ref('') // 证券名称（security_name_cn），选中字典项后回填，便于确认
@@ -40,6 +53,22 @@ const loading = ref(false)
 const error = ref('')
 const total = ref(0)
 const chartEl = ref<HTMLDivElement | null>(null)
+
+// 各序列显隐状态（仅随用户手动点击图例变化，查询切换不重置）。
+// 默认：K线显示；均线全部隐藏；布林带全部隐藏。见 renderChart 的 legend.selected。
+const seriesVisible = reactive<Record<string, boolean>>({
+  K线: true,
+  ...Object.fromEntries(MA_CONFIGS.map((c) => [`MA${c.n}`, false])),
+  ...Object.fromEntries(BOLL_SERIES.map((b) => [b.name, false])),
+})
+const groupToggles = reactive<Record<string, boolean>>({ 均线: false, 布林: false }) // 组总开关状态
+const maNames = MA_CONFIGS.map((c) => `MA${c.n}`)
+const bollNames = BOLL_SERIES.map((b) => b.name)
+
+// 组内各成员是否全部显示
+function groupAllShown(names: string[]): boolean {
+  return names.every((n) => seriesVisible[n])
+}
 
 // 图表自适应：容器尺寸变化（导航栏折叠/展开、窗口缩放）时调用 chart.resize()
 let resizeObserver: ResizeObserver | null = null
@@ -138,6 +167,25 @@ function formatTime(time: number): string {
   return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4, 6)}`
 }
 
+// 本地时区信息（如 UTC+8 / GMT+08:00），用于 tooltip 第一行日期时间的时区标注
+function timezoneLabel(): string {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'
+  const offMin = -new Date().getTimezoneOffset()
+  const sign = offMin >= 0 ? '+' : '-'
+  const abs = Math.abs(offMin)
+  const hh = String(Math.floor(abs / 60)).padStart(2, '0')
+  const mm = String(abs % 60).padStart(2, '0')
+  return `${tz} (UTC${sign}${hh}:${mm})`
+}
+const TZ_LABEL = timezoneLabel() // 模块级常量：一次计算，避免频繁调用
+
+// 日期格式化为 yyyy-MM-dd（输入为 8 位数字 yyyymmdd）
+function formatDateDash(d: string | number | null | undefined): string {
+  const s = String(d ?? '')
+  if (!/^\d{8}$/.test(s)) return '—'
+  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
+}
+
 function formatAxisLabel(bar: QuoteBar): string {
   const hm = formatTime(bar.time).slice(0, 5)
   if (days.value > 1 && bar.date) {
@@ -231,6 +279,49 @@ function computeBOLL(closes: (number | null)[], n: number, k: number): [(number 
   return [upper, mid, lower]
 }
 
+// 三行图例配置：第一行 K线；第二行 均线总开关 + MA5/10/20/60/120/250；
+// 第三行 布林总开关 + 上/中/下轨。总开关选中态由 groupToggles 驱动，成员由 seriesVisible 驱动。
+function renderLegendOption() {
+  return [
+    {
+      top: 4,
+      left: 108,
+      itemWidth: 14,
+      itemHeight: 8,
+      icon: 'roundRect',
+      textStyle: { fontSize: 11, color: '#ccc' },
+      data: ['K线'],
+      selected: { K线: seriesVisible.K线 },
+    },
+    {
+      top: 20,
+      left: 108,
+      itemWidth: 14,
+      itemHeight: 8,
+      icon: 'roundRect',
+      textStyle: { fontSize: 11, color: '#ccc' },
+      data: ['均线', ...maNames],
+      selected: {
+        均线: groupToggles.均线,
+        ...Object.fromEntries(maNames.map((n) => [n, seriesVisible[n]])),
+      },
+    },
+    {
+      top: 36,
+      left: 108,
+      itemWidth: 14,
+      itemHeight: 8,
+      icon: 'roundRect',
+      textStyle: { fontSize: 11, color: '#ccc' },
+      data: ['布林', ...bollNames],
+      selected: {
+        布林: groupToggles.布林,
+        ...Object.fromEntries(bollNames.map((n) => [n, seriesVisible[n]])),
+      },
+    },
+  ]
+}
+
 async function query() {
   error.value = ''
   // v-combobox 可能返回字符串（自由输入）或对象（从字典下拉选中 {title,value}），
@@ -292,6 +383,33 @@ function renderChart(bars: QuoteBar[]) {
   if (!chartEl.value) return
   if (!chart) {
     chart = echarts.init(chartEl.value)
+    // 图例点击：同步用户手动调整到 seriesVisible / groupToggles，查询切换时保持
+    chart.on('legendselectchanged', (e: unknown) => {
+      const ev = e as { name?: string; selected?: Record<string, boolean> }
+      const sel = ev.selected ?? {}
+      const toggledName = ev.name ?? ''
+      const updateName = (n: string) => {
+        if (n in seriesVisible && typeof sel[n] === 'boolean') seriesVisible[n] = sel[n]
+      }
+      if (toggledName === '均线') {
+        // 均线总开关：一键全部显示/隐藏；成员跟随
+        const next = sel['均线'] === true
+        maNames.forEach((n) => (seriesVisible[n] = next))
+        groupToggles.均线 = next
+      } else if (toggledName === '布林') {
+        // 布林总开关：一键全部显示/隐藏；成员跟随
+        const next = sel['布林'] === true
+        bollNames.forEach((n) => (seriesVisible[n] = next))
+        groupToggles.布林 = next
+      } else {
+        // 普通成员：只切换该成员；若成员全开/全关则联动总开关状态
+        updateName(toggledName)
+        if (maNames.includes(toggledName)) groupToggles.均线 = groupAllShown(maNames)
+        else if (bollNames.includes(toggledName)) groupToggles.布林 = groupAllShown(bollNames)
+      }
+      // 重绘，让 legend 总开关与成员显隐保持一致（merge 模式，仅更新 legend 不重置 series）
+      chart?.setOption({ legend: renderLegendOption() })
+    })
   }
 
   const labels = bars.map((b) => formatAxisLabel(b))
@@ -303,23 +421,24 @@ function renderChart(bars: QuoteBar[]) {
   ])
   const volumes = bars.map((b) => b.volume ?? 0)
   const closes = bars.map((b) => toNum(b.close))
-  const maSeries = [5, 10, 20, 30].map((n, idx) => ({
-    name: `MA${n}`,
+  // 均线序列（MA5/10/20/60/120/250），显隐由 seriesVisible 控制
+  const maSeries = MA_CONFIGS.map((c) => ({
+    name: `MA${c.n}`,
     type: 'line' as const,
-    data: computeMA(closes, n),
+    data: computeMA(closes, c.n),
     smooth: true,
     showSymbol: false,
     connectNulls: false,
-    lineStyle: { width: 1.1, color: MA_COLORS[idx] },
+    lineStyle: { width: 1.1, color: c.color },
     emphasis: { disabled: true },
     z: 3,
   }))
   // 布林带三条线（20 周期，2 倍标准差）：上轨 / 中轨 / 下轨
   const [bollUp, bollMid, bollLow] = computeBOLL(closes, 20, 2)
   const bollSeries = [
-    { name: 'BOLL上轨', type: 'line' as const, data: bollUp, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[0] }, emphasis: { disabled: true }, z: 2 },
-    { name: 'BOLL中轨', type: 'line' as const, data: bollMid, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[1] }, emphasis: { disabled: true }, z: 2 },
-    { name: 'BOLL下轨', type: 'line' as const, data: bollLow, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_COLORS[2] }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[0].name, type: 'line' as const, data: bollUp, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[0].color }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[1].name, type: 'line' as const, data: bollMid, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[1].color }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[2].name, type: 'line' as const, data: bollLow, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[2].color }, emphasis: { disabled: true }, z: 2 },
   ]
 
   chart.setOption(
@@ -341,66 +460,44 @@ function renderChart(bars: QuoteBar[]) {
           if (!bar) return ''
           const price = (v: string | null) => (v !== null && v !== undefined ? Number(v).toFixed(4) : '—')
           const up = (toNum(bar.close) ?? 0) >= (toNum(bar.open) ?? 0)
-          const changeText =
-            bar.change && bar.change_pct
-              ? `<span style="color:${up ? COLOR_UP : COLOR_DOWN}">${bar.change}（${Number(bar.change_pct).toFixed(2)}%）</span>`
-              : '—'
-          // 每个指标单独一行展示（开盘/收盘/最高/最低/涨跌额/涨跌幅）
+          const upColor = up ? COLOR_UP : COLOR_DOWN
+          // 两列布局：第一列指标名，第二列值右对齐，确保各行数值纵向对齐
+          const row = (label: string, valueHtml: string) =>
+            `<tr><td style="padding:1px 14px 1px 0">${label}</td><td style="text-align:right">${valueHtml}</td></tr>`
           const rows: string[] = [
-            `<b>${bar.date} ${formatTime(bar.time)}</b>`,
-            `开盘 ${price(bar.open)}`,
-            `收盘 <span style="color:${up ? COLOR_UP : COLOR_DOWN}">${price(bar.close)}</span>`,
-            `最高 ${price(bar.high)}`,
-            `最低 ${price(bar.low)}`,
-            `涨跌额 ${changeText}`,
-            `涨跌幅 ${bar.change_pct ? `<span style="color:${up ? COLOR_UP : COLOR_DOWN}">${Number(bar.change_pct).toFixed(2)}%</span>` : '—'}`,
+            // 第一行：yyyy-MM-dd HH:mm:ss + 时区（跨两列加粗标题）
+            `<tr><td colspan="2" style="padding-bottom:4px"><b>${formatDateDash(bar.date)} ${formatTime(bar.time)} ${TZ_LABEL}</b></td></tr>`,
+            row('开盘', price(bar.open)),
+            row('收盘', `<span style="color:${upColor}">${price(bar.close)}</span>`),
+            row('最高', price(bar.high)),
+            row('最低', price(bar.low)),
+            // 涨跌额不再重复展示括号中的涨跌幅（下方已有独立涨跌幅行）
+            row('涨跌额', bar.change ? `<span style="color:${upColor}">${bar.change}</span>` : '—'),
+            row('涨跌幅', bar.change_pct ? `<span style="color:${upColor}">${Number(bar.change_pct).toFixed(2)}%</span>` : '—'),
           ]
-          if (bar.volume !== null && bar.volume !== undefined) rows.push(`成交量 ${Number(bar.volume).toLocaleString()}`)
-          if (bar.turnover) rows.push(`成交额 ${Number(bar.turnover).toLocaleString()}`)
+          if (bar.volume !== null && bar.volume !== undefined) rows.push(row('成交量', Number(bar.volume).toLocaleString()))
+          if (bar.turnover) rows.push(row('成交额', Number(bar.turnover).toLocaleString()))
           // 均线：每个指标单独一行展示
-          const maVals = [5, 10, 20, 30]
-            .map((n) => {
-              const v = computeMA(closes, n)[index]
-              return v === null ? null : `MA${n} ${v.toFixed(4)}`
-            })
-            .filter((x): x is string => x !== null)
-          maVals.forEach((t) => rows.push(t))
+          MA_CONFIGS.forEach((c) => {
+            const v = computeMA(closes, c.n)[index]
+            if (v !== null) rows.push(row(`MA${c.n}`, v.toFixed(4)))
+          })
           // 布林带三条线值：每个指标单独一行展示
           const bollVals = [
-            { label: 'BOLL上轨', v: bollUp[index] },
-            { label: 'BOLL中轨', v: bollMid[index] },
-            { label: 'BOLL下轨', v: bollLow[index] },
+            { label: BOLL_SERIES[0].name, v: bollUp[index] },
+            { label: BOLL_SERIES[1].name, v: bollMid[index] },
+            { label: BOLL_SERIES[2].name, v: bollLow[index] },
           ]
-            .map((x) => (x.v === null ? null : `${x.label} ${x.v.toFixed(4)}`))
-            .filter((x): x is string => x !== null)
-          bollVals.forEach((t) => rows.push(t))
-          return rows.join('<br/>')
+          bollVals.forEach((x) => {
+            if (x.v !== null) rows.push(row(x.label, x.v.toFixed(4)))
+          })
+          return `<table style="border-collapse:collapse">${rows.join('')}</table>`
         },
       },
-      legend: [
-        {
-          // 第一行：K 线 + 均线
-          top: 4,
-          left: 8,
-          itemWidth: 14,
-          itemHeight: 8,
-          icon: 'roundRect',
-          textStyle: { fontSize: 11, color: '#ccc' },
-          data: ['K线', 'MA5', 'MA10', 'MA20', 'MA30'],
-        },
-        {
-          // 第二行：布林带（上/中/下轨），支持点击显隐
-          top: 20,
-          left: 8,
-          itemWidth: 14,
-          itemHeight: 8,
-          icon: 'roundRect',
-          textStyle: { fontSize: 11, color: '#ccc' },
-          data: ['BOLL上轨', 'BOLL中轨', 'BOLL下轨'],
-        },
-      ],
+      // 三行图例：K线 / 均线(总开关+6条) / 布林(总开关+3轨)。总开关与成员显隐联动。
+      legend: renderLegendOption(),
       grid: [
-        { left: 64, right: 8, top: 32, height: '58%' },
+        { left: 64, right: 8, top: 58, height: '55%' },
         { left: 64, right: 8, top: '72%', height: '17%' },
       ],
       xAxis: [
@@ -466,7 +563,7 @@ function renderChart(bars: QuoteBar[]) {
         ...maSeries,
         ...bollSeries,
         {
-          name: '成交量',
+          name: 'K线', // 与 K 线图同名：图例点击「K线」同时控制 K 线与成交量显隐
           type: 'bar',
           xAxisIndex: 1,
           yAxisIndex: 1,
