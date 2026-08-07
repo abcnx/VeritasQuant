@@ -19,6 +19,10 @@ RUN npm run build
 # ---- 阶段 2：Go 服务端构建（TARGETPLATFORM=目标架构，按平台编译）----
 FROM --platform=$TARGETPLATFORM golang:1.25.3-alpine AS builder
 
+# Go 模块代理（默认官方源；国内/受限网络可 --build-arg GOPROXY=https://goproxy.cn,direct 加速）
+ARG GOPROXY=https://proxy.golang.org,direct
+ENV GOPROXY=${GOPROXY}
+
 WORKDIR /app
 
 COPY go.mod go.sum ./

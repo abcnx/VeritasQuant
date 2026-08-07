@@ -43,9 +43,9 @@ const BOLL_SERIES = [
   { name: 'BOLL下轨', color: '#7ec8e3' },
 ]
 
-const secuCode = ref('NVDA') // 证券代码（usc key），默认 NVDA
+const secuCode = ref('GCMain') // 证券代码（usc key），默认 GCMain
 const secuName = ref('') // 证券名称（security_name_cn），选中字典项后回填，便于确认
-const dateInput = ref<string | null>(null) // 日历选择的日期（yyyy-MM-dd）
+const dateInput = ref<string | null>('2026-05-12') // 日历选择的日期（yyyy-MM-dd），默认 2026-05-12
 const dateMenu = ref(false)
 const period = ref('Min')
 const days = ref(1) // 1 日 / 5 日
@@ -64,6 +64,9 @@ const seriesVisible = reactive<Record<string, boolean>>({
 const groupToggles = reactive<Record<string, boolean>>({ 均线: false, 布林: false }) // 组总开关状态
 const maNames = MA_CONFIGS.map((c) => `MA${c.n}`)
 const bollNames = BOLL_SERIES.map((b) => b.name)
+
+// 最近一次查询渲染的 K 线数据，供图例点击后按当前显隐状态重绘（保留用户 dataZoom 缩放区间）
+let lastBars: QuoteBar[] = []
 
 // 组内各成员是否全部显示
 function groupAllShown(names: string[]): boolean {
@@ -150,6 +153,8 @@ onMounted(async () => {
     resizeObserver.observe(chartEl.value)
   }
   window.addEventListener('resize', resizeChart)
+  // 打开页面即按默认证券/日期自动查询一次（GCMain · 2026-05-12）
+  query()
 })
 
 onBeforeUnmount(() => {
@@ -390,8 +395,12 @@ async function query() {
   }
 }
 
-function renderChart(bars: QuoteBar[]) {
+function renderChart(bars: QuoteBar[], preserveZoom = false) {
   if (!chartEl.value) return
+  lastBars = bars
+  // 图例点击触发的重绘（preserveZoom）保留用户缩放区间；新查询则重置为全量
+  const zoomRaw = preserveZoom ? ((chart?.getOption().dataZoom ?? []) as Array<{ start?: number; end?: number }>) : []
+  const prevZoom = zoomRaw[0]?.start != null ? { start: zoomRaw[0].start, end: zoomRaw[0].end } : null
   if (!chart) {
     chart = echarts.init(chartEl.value)
     // 图例点击：同步用户手动调整到 seriesVisible / groupToggles，查询切换时保持
@@ -403,12 +412,12 @@ function renderChart(bars: QuoteBar[]) {
         if (n in seriesVisible && typeof sel[n] === 'boolean') seriesVisible[n] = sel[n]
       }
       if (toggledName === '均线') {
-        // 均线总开关：一键全部显示/隐藏；成员跟随
+        // 均线总开关：占位 series 使其成为真实 series，点击可正常翻转选中态；一键全部显示/隐藏，成员跟随
         const next = sel['均线'] === true
         maNames.forEach((n) => (seriesVisible[n] = next))
         groupToggles.均线 = next
       } else if (toggledName === '布林') {
-        // 布林总开关：一键全部显示/隐藏；成员跟随
+        // 布林总开关：占位 series 保证可翻转；一键全部显示/隐藏，成员跟随
         const next = sel['布林'] === true
         bollNames.forEach((n) => (seriesVisible[n] = next))
         groupToggles.布林 = next
@@ -418,8 +427,9 @@ function renderChart(bars: QuoteBar[]) {
         if (maNames.includes(toggledName)) groupToggles.均线 = groupAllShown(maNames)
         else if (bollNames.includes(toggledName)) groupToggles.布林 = groupAllShown(bollNames)
       }
-      // 重绘，让 legend 总开关与成员显隐保持一致（merge 模式，仅更新 legend 不重置 series）
-      chart?.setOption({ legend: renderLegendOption() })
+      // 重绘：series/legend 按当前显隐状态重建（notMerge），保留 dataZoom 缩放区间。
+      // 不能只 setOption 更新 legend——ECharts 在 dispatchAction 点击流程后不会重算 series 显隐
+      renderChart(lastBars, true)
     })
   }
 
@@ -440,16 +450,19 @@ function renderChart(bars: QuoteBar[]) {
     smooth: true,
     showSymbol: false,
     connectNulls: false,
+    // 顶层 color 与 lineStyle.color 同源：图例 icon 与图中线颜色必须一致
+    color: c.color,
     lineStyle: { width: 1.1, color: c.color },
     emphasis: { disabled: true },
     z: 3,
   }))
   // 布林带三条线（20 周期，2 倍标准差）：上轨 / 中轨 / 下轨
   const [bollUp, bollMid, bollLow] = computeBOLL(closes, 20, 2)
+  // 顶层 color 与 lineStyle.color 同源：图例 icon 与图中线颜色必须一致
   const bollSeries = [
-    { name: BOLL_SERIES[0].name, type: 'line' as const, data: bollUp, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[0].color }, emphasis: { disabled: true }, z: 2 },
-    { name: BOLL_SERIES[1].name, type: 'line' as const, data: bollMid, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[1].color }, emphasis: { disabled: true }, z: 2 },
-    { name: BOLL_SERIES[2].name, type: 'line' as const, data: bollLow, smooth: true, showSymbol: false, connectNulls: false, lineStyle: { width: 1, color: BOLL_SERIES[2].color }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[0].name, type: 'line' as const, data: bollUp, smooth: true, showSymbol: false, connectNulls: false, color: BOLL_SERIES[0].color, lineStyle: { width: 1, color: BOLL_SERIES[0].color }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[1].name, type: 'line' as const, data: bollMid, smooth: true, showSymbol: false, connectNulls: false, color: BOLL_SERIES[1].color, lineStyle: { width: 1, color: BOLL_SERIES[1].color }, emphasis: { disabled: true }, z: 2 },
+    { name: BOLL_SERIES[2].name, type: 'line' as const, data: bollLow, smooth: true, showSymbol: false, connectNulls: false, color: BOLL_SERIES[2].color, lineStyle: { width: 1, color: BOLL_SERIES[2].color }, emphasis: { disabled: true }, z: 2 },
   ]
 
   chart.setOption(
@@ -472,12 +485,14 @@ function renderChart(bars: QuoteBar[]) {
           const price = (v: string | null) => (v !== null && v !== undefined ? Number(v).toFixed(4) : '—')
           const up = (toNum(bar.close) ?? 0) >= (toNum(bar.open) ?? 0)
           const upColor = up ? COLOR_UP : COLOR_DOWN
-          // 两列布局：第一列指标名，第二列值右对齐，确保各行数值纵向对齐
+          // 两列布局：第一列指标名，第二列值左对齐
           const row = (label: string, valueHtml: string) =>
-            `<tr><td style="padding:1px 14px 1px 0">${label}</td><td style="text-align:right">${valueHtml}</td></tr>`
+            `<tr><td style="padding:1px 14px 1px 0">${label}</td><td style="text-align:left">${valueHtml}</td></tr>`
           const rows: string[] = [
-            // 第一行：yyyy-MM-dd HH:mm:ss + 时区（跨两列加粗标题）
-            `<tr><td colspan="2" style="padding-bottom:4px"><b>${formatDateDash(bar.date)} ${formatTime(bar.time)} ${TZ_LABEL}</b></td></tr>`,
+            // 第一行：yyyy-MM-dd HH:mm:ss（跨两列加粗标题）
+            `<tr><td colspan="2" style="padding-bottom:2px"><b>${formatDateDash(bar.date)} ${formatTime(bar.time)}</b></td></tr>`,
+            // 第二行：时区标注单独成行（灰色小号），避免与日期时间同行撑宽悬浮框
+            `<tr><td colspan="2" style="padding-bottom:4px;color:#999;font-size:11px">${TZ_LABEL}</td></tr>`,
             row('开盘', price(bar.open)),
             row('收盘', `<span style="color:${upColor}">${price(bar.close)}</span>`),
             row('最高', price(bar.high)),
@@ -560,6 +575,10 @@ function renderChart(bars: QuoteBar[]) {
       ],
       dataZoom: [{ type: 'inside', xAxisIndex: [0, 1], start: 0, end: 100 }],
       series: [
+        // 占位 series（隐藏且无数据）：让「均线」「布林」成为真实 series，
+        // ECharts 才会渲染这两个总开关图例项，点击才能正常翻转其选中态
+        { name: '均线', type: 'line', data: [], silent: true, tooltip: { show: false }, legendHoverLink: false, itemStyle: { color: '#aaa' }, emphasis: { disabled: true }, z: -10 },
+        { name: '布林', type: 'line', data: [], silent: true, tooltip: { show: false }, legendHoverLink: false, itemStyle: { color: '#aaa' }, emphasis: { disabled: true }, z: -10 },
         {
           name: 'K线',
           type: 'candlestick',
@@ -593,6 +612,8 @@ function renderChart(bars: QuoteBar[]) {
     },
     true,
   )
+  // 图例点击重绘时保留用户缩放区间（dataZoom 不因显隐切换重置）
+  if (prevZoom && chart) chart.setOption({ dataZoom: [{ start: prevZoom.start, end: prevZoom.end }] })
 }
 </script>
 
