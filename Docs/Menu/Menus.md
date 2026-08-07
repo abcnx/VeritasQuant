@@ -40,7 +40,7 @@
 
 | # | 菜单名称 | 层级 | key | 图标 | 路由 | 对应视图组件 | 使用的后端接口 | 菜单文档 |
 |---|----------|------|-----|------|------|--------------|----------------|----------|
-| 1 | 仪表盘 | 一级叶子 | `dashboard` | `mdi-view-dashboard` | `/dashboard` | `Web/src/views/DashboardView.vue` | `GET /API/V1/health/live`（存活探针） | — |
+| 1 | 仪表盘 | 一级叶子 | `dashboard` | `mdi-view-dashboard` | `/dashboard` | `Web/src/views/DashboardView.vue` | `GET /API/V1/Health/Live`（存活探针） | — |
 | 2 | 历史行情 | 一级分组 | `history-quote` | `mdi-chart-box` | — | — | — | — |
 | 3 | 历史行情查询 | 二级叶子 | `quote-query` | `mdi-chart-line` | `/Meta/Finv/Quote/History/HistoryQuoteQuery` | `Web/src/views/Meta/Finv/Quote/History/HistoryQuoteQueryView.vue` | `GET /API/V1/Meta/Finv/Quant/Quote/History/QuoteQuery`、`GET /API/V1/Meta/Finv/Quant/Metadata/Security/Options` | [HistoryQuote/HistoryQuoteQuery.md](HistoryQuote/HistoryQuoteQuery.md) |
 | 4 | 元数据管理 | 一级分组 | `metadata` | `mdi-database-cog` | — | — | — | — |

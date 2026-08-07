@@ -115,9 +115,9 @@ echo [OK] 全部服务健康。
 echo.
 echo 验证部署结果 ...
 echo   - 服务端版本接口：
-curl -s http://localhost:16001/API/V1/version 2>nul & echo.
+curl -s http://localhost:16001/API/V1/Version 2>nul & echo.
 echo   - 存活探针：
-curl -s http://localhost:16001/API/V1/health/live 2>nul & echo.
+curl -s http://localhost:16001/API/V1/Health/Live 2>nul & echo.
 echo   - 容器状态：
 docker ps --filter "name=finvquant" --filter "name=postgres" --filter "name=redis" --format "  {{.Names}}: {{.Status}}"
 echo   - 数据库迁移记录（最新 3 条）：
@@ -127,7 +127,7 @@ echo.
 echo ============================================================
 echo   部署完成！
 echo   - 前端控制台：http://localhost:16002
-echo   - 服务端 API ：http://localhost:16001/API/V1/health/live
+echo   - 服务端 API ：http://localhost:16001/API/V1/Health/Live
 echo   - 日常升级：Deploy\upgrade.cmd
 echo ============================================================
 echo.

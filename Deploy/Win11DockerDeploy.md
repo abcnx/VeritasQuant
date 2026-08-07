@@ -107,12 +107,12 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps
 | 验证项 | 地址/命令 | 预期 |
 |--------|-----------|------|
 | 前端控制台 | http://localhost:16002 | 页面可打开 |
-| 服务端存活 | http://localhost:16001/API/V1/health/live | 返回 200 |
-| 服务端就绪 | http://localhost:16001/API/V1/health/ready | 返回 200（含 PG/Redis 连通检查） |
-| 服务端版本 | http://localhost:16001/API/V1/version | 返回版本号 |
+| 服务端存活 | http://localhost:16001/API/V1/Health/Live | 返回 200 |
+| 服务端就绪 | http://localhost:16001/API/V1/Health/Ready | 返回 200（含 PG/Redis 连通检查） |
+| 服务端版本 | http://localhost:16001/API/V1/Version | 返回版本号 |
 | 容器健康 | `docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env ps` | 三个服务 `healthy` |
 
-> 首次启动 `finvquant` 会执行数据库迁移（创建 `schema_version` 表及业务表），约数秒；迁移完成前 `/health/ready` 可能不通过，稍等重试即可。
+> 首次启动 `finvquant` 会执行数据库迁移（创建 `schema_version` 表及业务表），约数秒；迁移完成前 `/Health/Ready` 可能不通过，稍等重试即可。
 
 ## 7. 数据持久化与备份
 

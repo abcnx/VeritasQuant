@@ -16,7 +16,7 @@
 
 ```powershell
 # 方式一：服务端版本接口
-Invoke-WebRequest http://localhost:16001/API/V1/version
+Invoke-WebRequest http://localhost:16001/API/V1/Version
 # 方式二：查看容器使用的镜像
 docker inspect finvquant --format '{{.Image}}'
 ```
@@ -101,12 +101,12 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs --tail=5
 
 | 验证项 | 地址/命令 | 预期 |
 |--------|-----------|------|
-| 服务端版本 | http://localhost:16001/API/V1/version | 返回新版本号 |
-| 存活/就绪 | http://localhost:16001/API/V1/health/live 与 /ready | 200 |
+| 服务端版本 | http://localhost:16001/API/V1/Version | 返回新版本号 |
+| 存活/就绪 | http://localhost:16001/API/V1/Health/Live 与 /Ready | 200 |
 | 前端 | http://localhost:16002 | 可打开 |
 | 迁移记录 | `docker exec fq-postgres psql -U finvquant -d finvquant -c "SELECT version FROM schema_version ORDER BY version;"` | 包含本次新增的版本号 |
 
-> 升级后首次启动会自动执行数据库迁移（默认超时 30 秒），期间 `/health/ready` 短暂不通过属正常；若迁移失败，`finvquant` 会启动失败并退出，见 [6. 常见问题](#6-常见问题)。
+> 升级后首次启动会自动执行数据库迁移（默认超时 30 秒），期间 `/Health/Ready` 短暂不通过属正常；若迁移失败，`finvquant` 会启动失败并退出，见 [6. 常见问题](#6-常见问题)。
 
 ## 4. 数据库自动迁移说明
 

@@ -11,7 +11,7 @@
 
 ## 2. API 路径
 
-- 服务端 API 路径统一使用大写 `/API/V1/` 前缀（例如 `GET /API/V1/health/live`），不使用 `/api/v1/`。
+- 服务端 API 路径统一使用大写 `/API/V1/` 前缀（例如 `GET /API/V1/Health/Live`），不使用 `/api/v1/`。
 - **端点路径段使用 PascalCase**（例如 `POST /API/V1/Meta/Finv/Quant/Quote/Import/Upload`），不使用小写 snake 风格（例如 `/imports/upload`）；资源/模块名首字母大写，层级用 `/` 分隔。
 - 前端开发代理与生产反代的路径前缀必须与之一致（`/API`）。
 

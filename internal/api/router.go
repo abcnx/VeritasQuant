@@ -45,9 +45,9 @@ func NewRouter(deps *Deps) *gin.Engine {
 
 	apiGroup := router.Group("/API/V1")
 	{
-		apiGroup.GET("/health/live", health.Live)
-		apiGroup.GET("/health/ready", health.Ready)
-		apiGroup.GET("/version", version.Info)
+		apiGroup.GET("/Health/Live", health.Live)
+		apiGroup.GET("/Health/Ready", health.Ready)
+		apiGroup.GET("/Version", version.Info)
 		// 历史行情：导入 / 查询（统一 /Meta/Finv/Quant/Quote/ 前缀，与前端路由对应）
 		apiGroup.POST("/Meta/Finv/Quant/Quote/Import/Upload", quoteImport.Upload)
 		apiGroup.GET("/Meta/Finv/Quant/Quote/History/QuoteQuery", quoteQuery.Query)
