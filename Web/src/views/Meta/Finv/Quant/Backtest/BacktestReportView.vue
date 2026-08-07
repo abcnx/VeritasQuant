@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { apiGet } from '../../../../../api'
@@ -137,7 +137,173 @@ interface EventTraceRow {
   trade_id: number
 }
 
-const run = ref<{ run_id: string; run_no: number; strategy_name: string } | null>(null)
+// ---------------------------------------------------------------------
+// 回测背景信息类型（Run/Get 返回完整 Run 对象；strategy_snapshot 为 StrategyDefinition 序列化）
+// ---------------------------------------------------------------------
+
+interface StrategySnapshot {
+  version?: string
+  strategy_type?: string
+  description?: string
+  universe?: { securities?: string[] }
+  data?: { period?: string; price_field?: string; warmup_bars?: number; fill_mode?: string }
+  indicators?: IndicatorDef[]
+  signals?: { buy?: string; sell?: string }
+  rules?: { buy?: RuleDef; sell?: RuleDef }
+  risk?: RiskDef
+  cost?: CostDef
+}
+
+interface IndicatorDef {
+  id?: string
+  type?: string
+  params?: Record<string, unknown>
+}
+
+interface RuleDef {
+  action?: string
+  quantity_type?: string // ALL_IN/ALL/FIXED/PERCENT/AMOUNT
+  quantity?: number
+  max_per_day?: number
+  allowed_times?: string[] // hhmmss 字符串
+  max_per_run?: number
+  allow?: boolean
+  max_per_week?: number
+  max_per_month?: number
+  max_fee_per_window?: number
+  fee_window_days?: number
+}
+
+interface BuilderDef {
+  enabled?: boolean
+  target_position_pct?: number
+  tranches?: number
+  tranche_interval_bars?: number
+}
+
+interface RiskDef {
+  stop_loss_pct?: number
+  take_profit_pct?: number
+  max_position_pct?: number
+  max_positions?: number
+  max_trades_per_day?: number
+  min_interval_bars?: number
+  builder?: BuilderDef | null
+  reduce_tranches?: number
+  max_trades_per_week?: number
+  max_trades_per_month?: number
+  max_fee_per_window?: number
+  fee_window_days?: number
+}
+
+interface CostDef {
+  commission_rate?: number // 比值（0.0003 = 0.03%）
+  slippage_pct?: number
+}
+
+interface AccountSnapshot {
+  account_id: string
+  account_code: string
+  account_name: string
+  user_id: string
+  group_id?: string | null
+  initial_capital: number
+  currency_type: string
+  commission_rate: number
+  slippage_pct: number
+  margin_mode: string // FULL/FUTURES
+  margin_rate: number
+}
+
+interface EnvironmentConfig {
+  trading_sessions?: { start: string; end: string }[]
+  trading_rules?: {
+    t_plus?: number
+    tick_size?: number
+    contract_multiplier?: number
+    limit_up_pct?: number
+    limit_down_pct?: number
+  }
+  cost?: CostDef
+  fill_mode?: string
+  currency?: string
+  preferences?: Record<string, unknown>
+}
+
+interface EnvironmentSnapshot {
+  env_id: string
+  env_code: string
+  env_name: string
+  env_type: string // BACKTEST/PAPER/SIMULATION/LIVE
+  region: string
+  market_code: number
+  config: EnvironmentConfig
+  user_id: string
+  is_default: string
+  allow_backtest: string
+  status: string
+  description: string
+}
+
+interface RunOptions {
+  enable_backtest?: boolean
+  report_precision?: string
+  initial_capital?: number | null
+  commission_rate?: number | null
+  slippage_pct?: number | null
+  max_trades_per_day?: number | null
+  allowed_times?: string[]
+}
+
+interface RunDetail {
+  run_id: string
+  run_no: number
+  user_id: string
+  strategy_id: string
+  strategy_code: string
+  strategy_name: string
+  strategy_snapshot: StrategySnapshot
+  account_id: string
+  account_code: string
+  account_name: string
+  account_snapshot: AccountSnapshot
+  env_id: string
+  environment_snapshot: EnvironmentSnapshot | null
+  secu_code: string
+  market_code: number
+  period: string
+  report_precision: string
+  start_ts: number
+  end_ts: number
+  start_date: number
+  end_date: number
+  options: RunOptions
+  status: string
+  progress: number
+  error_message: string
+  started_at?: string | null
+  finished_at?: string | null
+  created_by: string
+}
+
+interface StrategyDetail {
+  strategy_id: string
+  strategy_code: string
+  strategy_name: string
+  strategy_type: string
+  description: string
+  definition: Record<string, unknown>
+  definition_version: number
+  data_period: string
+  secu_code: string
+  template_id?: string | null
+  allow_backtest: string
+  status: string
+  created_by: string
+}
+
+const run = ref<RunDetail | null>(null)
+const strategyDetail = ref<StrategyDetail | null>(null)
 const report = ref<Report | null>(null)
 const equity = ref<EquityPoint[]>([])
 const trades = ref<TradeRow[]>([])
@@ -217,19 +383,295 @@ function rejectReasonHint(reason: string): string {
   return ''
 }
 
+// ---------------------------------------------------------------------
+// 回测背景信息：可读化函数与计算属性
+// ---------------------------------------------------------------------
+
+interface KV {
+  label: string
+  value: string
+}
+
+/** 数量方式中文名 */
+function quantityTypeName(t: string | undefined): string {
+  return { ALL_IN: '全部可用资金', ALL: '全部清仓', FIXED: '固定数量', PERCENT: '可用资金百分比', AMOUNT: '固定金额' }[t ?? ''] ?? (t ?? '-')
+}
+
+/** 保证金模式中文名 */
+function marginModeName(m: string | undefined): string {
+  return { FULL: '全额保证金', FUTURES: '期货保证金' }[m ?? ''] ?? (m ?? '-')
+}
+
+/** 环境类型中文名 */
+function envTypeName(t: string | undefined): string {
+  return { BACKTEST: '回测', PAPER: '模拟盘', SIMULATION: '仿真', LIVE: '实盘' }[t ?? ''] ?? (t ?? '-')
+}
+
+/** 撮合模式中文名 */
+function fillModeName(f: string | undefined): string {
+  return { NEXT_BAR_OPEN: '下一Bar开盘价成交（无未来函数）', CURRENT_CLOSE: '当前Bar收盘价成交（近似）' }[f ?? ''] ?? (f ?? '-')
+}
+
+/** 数据周期中文名 */
+function periodName(p: string | undefined): string {
+  return { Min: '分钟', Hour: '小时', Day: '日线' }[p ?? ''] ?? (p ?? '-')
+}
+
+/** 策略类型中文名 */
+function strategyTypeName(t: string | undefined): string {
+  return { RULE_BASED: '规则驱动' }[t ?? ''] ?? (t ?? '-')
+}
+
+/** hhmmss 字符串 → HH:mm:ss（如 '093000' → '09:30:00'） */
+function hhmmssFmt(s: string | undefined): string {
+  if (!s) return '-'
+  const t = s.padStart(6, '0')
+  return `${t.slice(0, 2)}:${t.slice(2, 4)}:${t.slice(4, 6)}`
+}
+
+/** 单段交易时段 → '09:30-15:00' */
+function sessionFmt(start: string, end: string): string {
+  return `${(start || '').slice(0, 2)}:${(start || '').slice(2, 4)}-${(end || '').slice(0, 2)}:${(end || '').slice(2, 4)}`
+}
+
+/** 交易时段数组 → '09:30-15:00 / 21:00-02:30'；空=不限制 */
+function sessionsFmt(sessions: { start: string; end: string }[] | undefined): string {
+  if (!sessions?.length) return '不限制（全天）'
+  return sessions.map((s) => sessionFmt(s.start, s.end)).join(' / ')
+}
+
+/** 比值 → 百分比（commission_rate/slippage/margin_rate，0.0003 → '0.03%'） */
+function pctRatio(r: number | undefined): string {
+  if (r === undefined || r === null || Number.isNaN(r)) return '-'
+  return `${(r * 100).toFixed(2)}%`
+}
+
+/** 频次限制 → '3 次'；0 或空 → '不限制' */
+function limitText(n: number | undefined): string {
+  if (n === undefined || n === null || n === 0) return '不限制'
+  return `${fmtNum(n, 0)} 次`
+}
+
+/** 数量方式完整描述（含数量值） */
+function quantityText(r: RuleDef | undefined): string {
+  const t = r?.quantity_type
+  if (!t) return '-'
+  switch (t) {
+    case 'FIXED': return `${quantityTypeName(t)} ${fmtNum(r.quantity, 0)} 手`
+    case 'PERCENT': return `${quantityTypeName(t)} ${fmtNum(r.quantity)}%`
+    case 'AMOUNT': return `${quantityTypeName(t)} ${fmtNum(r.quantity)}`
+    default: return quantityTypeName(t)
+  }
+}
+
+/** 窗口手续费上限 → '55000（30 日窗口）'；0 或空 → '不限制' */
+function feeWindowText(v: number | undefined, days: number | undefined): string {
+  if (v === undefined || v === null || v === 0) return '不限制'
+  return `${fmtNum(v)}（${days || 30} 日窗口）`
+}
+
+/** 单个指标概览：'MA(ma_fast, window=5, field=close)' */
+function indText(ind: IndicatorDef): string {
+  const p = ind.params ?? {}
+  const pText = Object.entries(p).map(([k, v]) => `${k}=${v}`).join(', ')
+  return `${ind.type ?? '?'}${ind.id ? `(${ind.id}${pText ? ', ' + pText : ''})` : pText ? `(${pText})` : ''}`
+}
+
+/** 买卖信号表达式一行 */
+function signalText(signals: { buy?: string; sell?: string } | undefined): string {
+  if (!signals) return '（未设置）'
+  const parts: string[] = []
+  if (signals.buy) parts.push(`买入: ${signals.buy}`)
+  if (signals.sell) parts.push(`卖出: ${signals.sell}`)
+  return parts.length ? parts.join(' | ') : '（未设置）'
+}
+
+/** ① 数据配置一行：'Min / close / 预热30bar / 下一Bar开盘价成交' */
+function dataConfigText(d: StrategySnapshot['data'] | undefined): string {
+  if (!d) return '-'
+  return [
+    d.period ? periodName(d.period) : '',
+    d.price_field ? `字段 ${d.price_field}` : '',
+    d.warmup_bars ? `预热 ${d.warmup_bars} bar` : '',
+    d.fill_mode ? fillModeName(d.fill_mode) : '',
+  ].filter(Boolean).join(' / ') || '-'
+}
+
+// ---- 计算属性（模板薄化） ----
+
+const options = computed<RunOptions>(() => run.value?.options ?? {})
+const env = computed<EnvironmentSnapshot | null>(() => run.value?.environment_snapshot ?? null)
+const snapRules = computed<{ buy?: RuleDef; sell?: RuleDef } | undefined>(() => run.value?.strategy_snapshot?.rules)
+const indicators = computed<IndicatorDef[]>(() => run.value?.strategy_snapshot?.indicators ?? [])
+const hasStrategyDef = computed<boolean>(() => !!run.value?.strategy_snapshot && Object.keys(run.value.strategy_snapshot).length > 0)
+
+// 策略描述：快照 description 为主，空则回退当前策略说明
+const primaryStrategyDesc = computed<string>(() => {
+  const snap = (run.value?.strategy_snapshot?.description ?? '').trim()
+  if (snap) return snap
+  return (strategyDetail.value?.description ?? '').trim() || '（未填写策略说明）'
+})
+
+// 当前说明与快照不一致时提示
+const strategyDescNote = computed<{ label: string; text: string } | null>(() => {
+  const snap = (run.value?.strategy_snapshot?.description ?? '').trim()
+  const cur = (strategyDetail.value?.description ?? '').trim()
+  if (!snap || !cur || snap === cur) return null
+  return { label: '策略当前说明与回测快照不同', text: cur }
+})
+
+const accountText = computed<string>(() => {
+  const a = run.value?.account_snapshot
+  if (!a?.account_name) return '-'
+  return `${a.account_name}${a.account_code ? `（${a.account_code}）` : ''}`
+})
+
+// 成本生效值（覆盖链：环境 > 任务 options > 策略 definition.cost > 账户）
+const effectiveCommission = computed<number | undefined>(() => {
+  const envCost = env.value?.config?.cost?.commission_rate
+  if (envCost) return envCost
+  if (options.value.commission_rate != null) return options.value.commission_rate
+  const stratCost = run.value?.strategy_snapshot?.cost?.commission_rate
+  if (stratCost) return stratCost
+  return run.value?.account_snapshot?.commission_rate || undefined
+})
+const effectiveSlippage = computed<number | undefined>(() => {
+  const envSlip = env.value?.config?.cost?.slippage_pct
+  if (envSlip) return envSlip
+  if (options.value.slippage_pct != null) return options.value.slippage_pct
+  const stratSlip = run.value?.strategy_snapshot?.cost?.slippage_pct
+  if (stratSlip) return stratSlip
+  return run.value?.account_snapshot?.slippage_pct || undefined
+})
+const effectiveCapital = computed<number | undefined>(() => {
+  if (options.value.initial_capital != null) return options.value.initial_capital
+  return run.value?.account_snapshot?.initial_capital || undefined
+})
+const commissionOverridden = computed<boolean>(() => options.value.commission_rate != null)
+
+const envRules = computed<KV[]>(() => envRulesKV(env.value?.config?.trading_rules))
+
+// ---- 键值行生成（模板与 CSV 共用） ----
+
+/** 买入/卖出规则块 → KV 行 */
+function ruleKV(r: RuleDef | undefined): KV[] {
+  const opts = options.value
+  const rows: KV[] = []
+  rows.push({ label: '方向开关', value: r?.allow === false ? '禁用' : '启用' })
+  rows.push({ label: '数量方式', value: quantityText(r) })
+  rows.push({ label: '每日最大触发', value: limitText(r?.max_per_day) })
+  rows.push({ label: '整轮回测最大触发', value: limitText(r?.max_per_run) })
+  // 限定交易时间点：任务级覆盖优先（引擎对 buy/sell 合并生效）
+  const allowed = opts.allowed_times?.length ? opts.allowed_times : r?.allowed_times
+  const allowedText = allowed?.length ? allowed.map(hhmmssFmt).join('、') : '不限制'
+  rows.push({ label: '限定交易时间点', value: allowedText + (opts.allowed_times?.length ? '（任务覆盖）' : '') })
+  rows.push({ label: '近7日最大触发', value: limitText(r?.max_per_week) })
+  rows.push({ label: '近30日最大触发', value: limitText(r?.max_per_month) })
+  rows.push({ label: '窗口手续费上限', value: feeWindowText(r?.max_fee_per_window, r?.fee_window_days) })
+  return rows
+}
+
+/** 风控块 → KV 行 */
+function riskKV(risk: RiskDef | undefined): KV[] {
+  const opts = options.value
+  const rows: KV[] = []
+  rows.push({ label: '止损', value: risk?.stop_loss_pct ? fmtPct(risk.stop_loss_pct) : '未设置' })
+  rows.push({ label: '止盈', value: risk?.take_profit_pct ? fmtPct(risk.take_profit_pct) : '未设置' })
+  rows.push({ label: '单标的仓位上限', value: risk?.max_position_pct ? fmtPct(risk.max_position_pct) : '100%' })
+  rows.push({ label: '最大持仓数', value: risk?.max_positions ? `${fmtNum(risk.max_positions, 0)} 个` : '不限制' })
+  const maxTrades = opts.max_trades_per_day != null ? opts.max_trades_per_day : risk?.max_trades_per_day
+  rows.push({ label: '每日最大成交笔数', value: limitText(maxTrades) + (opts.max_trades_per_day != null ? '（任务覆盖）' : '') })
+  rows.push({ label: '最小交易间隔', value: risk?.min_interval_bars ? `${fmtNum(risk.min_interval_bars, 0)} bar` : '不限制' })
+  const b = risk?.builder
+  rows.push({
+    label: '分批建仓',
+    value: b?.enabled
+      ? `启用：目标仓位 ${fmtPct(b.target_position_pct ?? 0)}，分 ${b.tranches ?? 1} 批，间隔 ${b.tranche_interval_bars ?? 0} bar`
+      : '不启用',
+  })
+  rows.push({ label: '分批减仓份数', value: risk?.reduce_tranches ? `${fmtNum(risk.reduce_tranches, 0)} 份` : '1 份（一次性清仓）' })
+  rows.push({ label: '近7日成交上限', value: limitText(risk?.max_trades_per_week) })
+  rows.push({ label: '近30日成交上限', value: limitText(risk?.max_trades_per_month) })
+  rows.push({ label: '窗口手续费上限', value: feeWindowText(risk?.max_fee_per_window, risk?.fee_window_days) })
+  return rows
+}
+
+/** 环境交易规则 → KV 行 */
+function envRulesKV(rules: EnvironmentConfig['trading_rules'] | undefined): KV[] {
+  if (!rules) return []
+  const rows: KV[] = []
+  rows.push({ label: 'T+N 交收', value: rules.t_plus ? `T+${rules.t_plus}` : 'T+0' })
+  rows.push({ label: '最小变动价位', value: rules.tick_size ? fmtNum(rules.tick_size) : '-' })
+  rows.push({ label: '合约乘数', value: rules.contract_multiplier ? fmtNum(rules.contract_multiplier, 0) : '-' })
+  rows.push({ label: '涨停幅度', value: rules.limit_up_pct ? fmtPct(rules.limit_up_pct) : '无限制' })
+  rows.push({ label: '跌停幅度', value: rules.limit_down_pct ? fmtPct(rules.limit_down_pct) : '无限制' })
+  return rows
+}
+
+/** 汇总全部背景信息为 KV 行（供 CSV 导出） */
+function backgroundKV(): KV[] {
+  const rows: KV[] = []
+  const snap = run.value?.strategy_snapshot
+  const acc = run.value?.account_snapshot
+  const envSnap = env.value
+  // ① 策略
+  rows.push({ label: '策略', value: `${run.value?.strategy_name ?? ''}${run.value?.strategy_code ? `（${run.value.strategy_code}）` : ''}` })
+  rows.push({ label: '策略类型', value: strategyTypeName(snap?.strategy_type) })
+  rows.push({ label: '策略描述', value: primaryStrategyDesc.value })
+  if (strategyDescNote.value?.text) rows.push({ label: '当前策略说明', value: strategyDescNote.value.text })
+  rows.push({ label: '数据配置', value: dataConfigText(snap?.data) })
+  rows.push({ label: '指标', value: snap?.indicators?.length ? snap.indicators.map(indText).join(' | ') : '未配置指标' })
+  rows.push({ label: '买卖信号', value: signalText(snap?.signals) })
+  // ② 标的与市场
+  rows.push({ label: '标的代码', value: run.value?.secu_code ?? '-' })
+  rows.push({ label: '市场代码', value: run.value?.market_code ? fmtNum(run.value.market_code, 0) : '-' })
+  rows.push({ label: '数据周期', value: periodName(run.value?.period) })
+  rows.push({ label: '报告精度', value: report.value?.report_precision ?? '-' })
+  rows.push({ label: '回测区间', value: `${fmtDate(run.value?.start_date)} ~ ${fmtDate(run.value?.end_date)}` })
+  rows.push({ label: 'K线数量', value: report.value?.bar_count ? `${fmtNum(report.value.bar_count, 0)} 根` : '-' })
+  // ③ 账户
+  rows.push({ label: '账户', value: accountText.value })
+  rows.push({ label: '初始资金', value: fmtNum(effectiveCapital.value) + (options.value.initial_capital != null ? '（任务覆盖）' : '') })
+  rows.push({ label: '手续费率', value: pctRatio(effectiveCommission.value) + (commissionOverridden.value ? '（任务覆盖）' : '') })
+  rows.push({ label: '滑点', value: pctRatio(effectiveSlippage.value) })
+  rows.push({ label: '保证金模式', value: marginModeName(acc?.margin_mode) + (acc?.margin_rate ? `（${pctRatio(acc.margin_rate)}）` : '') })
+  rows.push({ label: '计价币种', value: acc?.currency_type ?? '-' })
+  // ④ 环境
+  if (envSnap) {
+    rows.push({ label: '环境', value: `${envSnap.env_name}${envSnap.env_code ? `（${envSnap.env_code}）` : ''}` })
+    rows.push({ label: '环境类型', value: envTypeName(envSnap.env_type) })
+    rows.push({ label: '地区', value: envSnap.region || '-' })
+    rows.push({ label: '交易时段', value: sessionsFmt(envSnap.config?.trading_sessions) })
+    rows.push({ label: '撮合模式', value: fillModeName(envSnap.config?.fill_mode ?? snap?.data?.fill_mode) })
+    rows.push({ label: '环境币种', value: envSnap.config?.currency ?? '-' })
+    if (envSnap.description) rows.push({ label: '环境说明', value: envSnap.description })
+  } else {
+    rows.push({ label: '环境', value: '未启用环境（按策略/账户配置运行）' })
+  }
+  // ⑤ 交易规则与限制
+  for (const dir of ['buy', 'sell'] as const) {
+    const dn = dir === 'buy' ? '买入' : '卖出'
+    for (const kv of ruleKV(snap?.rules?.[dir])) rows.push({ label: `${dn}·${kv.label}`, value: kv.value })
+  }
+  for (const kv of riskKV(snap?.risk)) rows.push({ label: `风控·${kv.label}`, value: kv.value })
+  for (const kv of envRulesKV(envSnap?.config?.trading_rules)) rows.push({ label: `环境·${kv.label}`, value: kv.value })
+  return rows
+}
+
 async function loadReport(runId: string) {
   loading.value = true
   error.value = ''
   disposeCharts()
   report.value = null
+  strategyDetail.value = null
   equity.value = []
   trades.value = []
   cashflows.value = []
   positionLogs.value = []
   eventTraces.value = []
   try {
-    // 先拿任务信息（run_no / strategy_name），再并行加载报告与明细
-    const r = await apiGet<{ run_id: string; run_no: number; strategy_name: string; status: string }>(
+    // 先拿任务完整信息（含策略/账户/环境快照），再并行加载报告与明细
+    const r = await apiGet<RunDetail>(
       `/Meta/Finv/Quant/Backtest/Run/Get?runId=${encodeURIComponent(runId)}`,
     )
     if (r.status !== 'SUCCEEDED') {
@@ -237,13 +679,17 @@ async function loadReport(runId: string) {
       return
     }
     run.value = r
-    const [rep, eq, tr, cf, pl, ev] = await Promise.all([
+    const [rep, eq, tr, cf, pl, ev, st] = await Promise.all([
       apiGet<Report>(`/Meta/Finv/Quant/Backtest/Run/Report?runId=${runId}`),
       apiGet<{ list: EquityPoint[] }>(`/Meta/Finv/Quant/Backtest/Run/Equity?runId=${runId}&page=1&pageSize=5000`),
       apiGet<{ total: number; list: TradeRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Trades?runId=${runId}&page=1&pageSize=${tradePageSize.value}`),
       apiGet<{ list: CashflowRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=${runId}&page=1&pageSize=1000`),
       apiGet<{ list: PositionLogRow[] }>(`/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=${runId}&page=1&pageSize=1000`),
       apiGet<{ list: EventTraceRow[] }>(`/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=${runId}&page=1&pageSize=1000`),
+      // 策略当前说明（Strategy/Get，失败不阻塞报告）
+      r.strategy_id
+        ? apiGet<StrategyDetail>(`/Meta/Finv/Quant/Backtest/Strategy/Get?strategyId=${encodeURIComponent(r.strategy_id)}`).catch(() => null)
+        : Promise.resolve(null),
     ])
     report.value = rep
     equity.value = eq.list ?? []
@@ -252,6 +698,7 @@ async function loadReport(runId: string) {
     cashflows.value = cf.list ?? []
     positionLogs.value = pl.list ?? []
     eventTraces.value = ev.list ?? []
+    strategyDetail.value = st
     await nextTick()
     renderCharts()
   } catch (e) {
@@ -401,6 +848,7 @@ function downloadBlob(filename: string, content: string, mime: string) {
 function exportJSON() {
   const payload = {
     run: run.value,
+    strategy_detail: strategyDetail.value,
     report: report.value,
     equity_points: equity.value,
     trades: trades.value,
@@ -436,7 +884,14 @@ function exportCSV() {
       lines.push(`${csvEscape(k)},${csvEscape(v)}`)
     }
   }
-  // 2) 未成交原因分布
+  // 2) 回测背景信息（字段,值）
+  hr()
+  lines.push('== 回测背景 ==')
+  lines.push('字段,值')
+  for (const kv of backgroundKV()) {
+    lines.push(`${csvEscape(kv.label)},${csvEscape(kv.value)}`)
+  }
+  // 3) 未成交原因分布
   if (report.value?.event_stats?.reject_reasons) {
     hr()
     lines.push('== 未成交原因分布 ==')
@@ -445,21 +900,21 @@ function exportCSV() {
       lines.push(`${csvEscape(reason)},${cnt},${csvEscape(rejectReasonHint(reason))}`)
     }
   }
-  // 3) 成交记录
+  // 4) 成交记录
   hr()
   lines.push('== 成交记录 ==')
   lines.push('序号,时间,方向,价格,数量,金额,手续费,盈亏,持仓后,信号')
   for (const t of trades.value) {
     lines.push([t.seq, `${fmtDate(t.date)} ${fmtTime(t.time)}`, t.action, t.price, t.qty, t.amount, t.fee, t.profit, t.position_after, t.signal].map(csvEscape).join(','))
   }
-  // 4) 持仓变化
+  // 5) 持仓变化
   hr()
   lines.push('== 持仓变化明细 ==')
   lines.push('序号,时间,动作,价格,数量,持仓前,持仓后,成本前,成本后,备注')
   for (const p of positionLogs.value) {
     lines.push([p.seq, `${fmtDate(p.date)} ${fmtTime(p.time)}`, p.action, p.price, p.qty, p.position_before, p.position_after, p.avg_cost_before, p.avg_cost_after, p.remark].map(csvEscape).join(','))
   }
-  // 5) 事件追踪
+  // 6) 事件追踪
   hr()
   lines.push('== 事件追踪 ==')
   lines.push('序号,方向,触发原因,触发时间,结果,未成交原因')
@@ -508,6 +963,215 @@ onBeforeUnmount(() => {
     </v-card>
 
     <template v-if="report">
+      <!-- 回测背景信息（平铺展开，5 小节） -->
+      <v-card class="mb-3">
+        <v-card-title class="pb-0 d-flex align-center flex-wrap">
+          <v-icon icon="mdi-clipboard-text-clock-outline" class="mr-2" color="primary" />
+          回测背景信息
+          <v-chip v-if="strategyDescNote" size="small" color="warning" variant="tonal" class="ml-2"
+            prepend-icon="mdi-alert">{{ strategyDescNote.label }}</v-chip>
+        </v-card-title>
+        <v-card-text>
+          <!-- ① 策略信息 -->
+          <div class="text-subtitle-2 font-weight-bold mb-1">
+            <v-icon icon="mdi-account-cog-outline" size="small" class="mr-1" />① 策略信息
+          </div>
+          <template v-if="hasStrategyDef">
+            <div class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">策略</span>
+              <span class="text-body-2">{{ run?.strategy_name }}{{ run?.strategy_code ? `（${run?.strategy_code}）` : '' }}</span>
+            </div>
+            <div class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">策略类型</span>
+              <span class="text-body-2">{{ strategyTypeName(run?.strategy_snapshot?.strategy_type) }}</span>
+            </div>
+            <div class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">策略描述</span>
+              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ primaryStrategyDesc }}</span>
+            </div>
+            <div v-if="strategyDescNote" class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">当前策略说明</span>
+              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ strategyDescNote.text }}</span>
+            </div>
+            <div class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">数据配置</span>
+              <span class="text-body-2">{{ dataConfigText(run?.strategy_snapshot?.data) }}</span>
+            </div>
+            <div v-if="indicators.length" class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">指标</span>
+              <span class="text-body-2 text-right ml-4 d-flex flex-wrap justify-end ga-1">
+                <v-chip v-for="ind in indicators" :key="ind.id ?? ind.type ?? indText(ind)" size="x-small" variant="outlined">
+                  {{ indText(ind) }}
+                </v-chip>
+              </span>
+            </div>
+            <div class="d-flex justify-space-between py-1">
+              <span class="text-caption text-medium-emphasis">买卖信号</span>
+              <span class="text-body-2 text-right ml-4" style="max-width: 78%">{{ signalText(run?.strategy_snapshot?.signals) }}</span>
+            </div>
+          </template>
+          <v-alert v-else density="compact" type="info" variant="tonal">
+            本次回测未记录策略定义快照（策略可能已删除或定义为空），仅展示任务与报告信息。
+          </v-alert>
+
+          <v-row class="mt-2">
+            <!-- ② 标的与市场 -->
+            <v-col cols="12" md="6">
+              <div class="text-subtitle-2 font-weight-bold mb-1">
+                <v-icon icon="mdi-chart-box-outline" size="small" class="mr-1" />② 标的与市场
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">标的代码</span>
+                <span class="text-body-2">{{ run?.secu_code || '-' }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">市场代码</span>
+                <span class="text-body-2">{{ run?.market_code ? fmtNum(run?.market_code, 0) : '-' }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">数据周期</span>
+                <span class="text-body-2">{{ periodName(run?.period) }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">报告精度</span>
+                <span class="text-body-2">{{ report.report_precision || '-' }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">回测区间</span>
+                <span class="text-body-2">{{ fmtDate(run?.start_date) }} ~ {{ fmtDate(run?.end_date) }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">K线数量</span>
+                <span class="text-body-2">{{ fmtNum(report.bar_count, 0) }} 根</span>
+              </div>
+            </v-col>
+
+            <!-- ③ 账户配置 -->
+            <v-col cols="12" md="6">
+              <div class="text-subtitle-2 font-weight-bold mb-1">
+                <v-icon icon="mdi-bank-outline" size="small" class="mr-1" />③ 账户配置
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">账户</span>
+                <span class="text-body-2">{{ accountText }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">初始资金</span>
+                <span class="text-body-2 d-flex align-center justify-end">
+                  {{ fmtNum(effectiveCapital) }}
+                  <v-chip v-if="options.initial_capital != null" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
+                </span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">手续费率</span>
+                <span class="text-body-2 d-flex align-center justify-end">
+                  {{ pctRatio(effectiveCommission) }}
+                  <v-chip v-if="commissionOverridden" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
+                </span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">滑点</span>
+                <span class="text-body-2">{{ pctRatio(effectiveSlippage) }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">保证金模式</span>
+                <span class="text-body-2">{{ marginModeName(run?.account_snapshot?.margin_mode) }}{{ run?.account_snapshot?.margin_rate ? `（${pctRatio(run?.account_snapshot.margin_rate)}）` : '' }}</span>
+              </div>
+              <div class="d-flex justify-space-between py-1">
+                <span class="text-caption text-medium-emphasis">计价币种</span>
+                <span class="text-body-2">{{ run?.account_snapshot?.currency_type || '-' }}</span>
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <!-- ④ 环境配置 -->
+            <v-col cols="12" md="6">
+              <div class="text-subtitle-2 font-weight-bold mb-1">
+                <v-icon icon="mdi-server-outline" size="small" class="mr-1" />④ 环境配置
+              </div>
+              <template v-if="env">
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">环境</span>
+                  <span class="text-body-2">{{ env.env_name }}{{ env.env_code ? `（${env.env_code}）` : '' }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">环境类型</span>
+                  <span class="text-body-2">{{ envTypeName(env.env_type) }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">地区</span>
+                  <span class="text-body-2">{{ env.region || '-' }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">交易时段</span>
+                  <span class="text-body-2">{{ sessionsFmt(env.config?.trading_sessions) }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">撮合模式</span>
+                  <span class="text-body-2">{{ fillModeName(env.config?.fill_mode ?? run?.strategy_snapshot?.data?.fill_mode) }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">币种</span>
+                  <span class="text-body-2">{{ env.config?.currency || '-' }}</span>
+                </div>
+                <div v-if="env.description" class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">环境说明</span>
+                  <span class="text-body-2 text-right ml-4" style="max-width: 70%">{{ env.description }}</span>
+                </div>
+              </template>
+              <v-alert v-else density="compact" type="info" variant="tonal">
+                本次回测未记录环境快照，按策略/账户配置运行。
+              </v-alert>
+            </v-col>
+          </v-row>
+
+          <!-- ⑤ 交易规则与限制 -->
+          <div class="text-subtitle-2 font-weight-bold mt-1 mb-1">
+            <v-icon icon="mdi-list-status" size="small" class="mr-1" />⑤ 交易规则与限制
+          </div>
+          <template v-if="hasStrategyDef">
+            <v-row>
+              <v-col cols="12" md="4">
+                <div class="text-caption font-weight-bold mb-1">买入规则</div>
+                <div v-for="(kv, i) in ruleKV(snapRules?.buy)" :key="'buy-' + i" class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
+                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
+                </div>
+              </v-col>
+              <v-col cols="12" md="4">
+                <div class="text-caption font-weight-bold mb-1">卖出规则</div>
+                <div v-for="(kv, i) in ruleKV(snapRules?.sell)" :key="'sell-' + i" class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
+                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
+                </div>
+              </v-col>
+              <v-col cols="12" md="4">
+                <div class="text-caption font-weight-bold mb-1">风控与频率限制</div>
+                <div v-for="(kv, i) in riskKV(run?.strategy_snapshot?.risk)" :key="'risk-' + i" class="d-flex justify-space-between py-1">
+                  <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
+                  <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
+                </div>
+              </v-col>
+            </v-row>
+            <div v-if="envRules.length" class="mt-1">
+              <div class="text-caption font-weight-bold mb-1">环境交易规则（T+N / 涨跌停 / 精度）</div>
+              <v-row>
+                <v-col v-for="(kv, i) in envRules" :key="'envrule-' + i" cols="6" md="4">
+                  <div class="d-flex justify-space-between py-1">
+                    <span class="text-caption text-medium-emphasis">{{ kv.label }}</span>
+                    <span class="text-body-2 text-right ml-2">{{ kv.value }}</span>
+                  </div>
+                </v-col>
+              </v-row>
+            </div>
+          </template>
+          <v-alert v-else density="compact" type="info" variant="tonal">
+            无策略定义快照，无法展示交易规则与限制。
+          </v-alert>
+        </v-card-text>
+      </v-card>
+
       <!-- 返回 + 报告头 -->
       <v-card class="mb-3">
         <v-card-title class="pb-0 d-flex align-center flex-wrap">
