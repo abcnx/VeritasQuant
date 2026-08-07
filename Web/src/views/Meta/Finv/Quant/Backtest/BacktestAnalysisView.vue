@@ -85,6 +85,11 @@ const message = ref('')
 const cancelling = ref('')
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
+// K 线周期 / 报告精度可读化（与报告页保持一致）
+function periodName(p: string | undefined): string {
+  return { Min: '分钟', Hour: '小时', Day: '日线' }[p ?? ''] ?? (p ?? '-')
+}
+
 async function loadRuns() {
   loading.value = true
   error.value = ''
@@ -228,11 +233,12 @@ onBeforeUnmount(() => {
           { title: '账户', key: 'account_name', width: 140 },
           { title: '标的', key: 'secu_code', width: 100 },
           { title: '区间', key: 'range', width: 110 },
-          { title: '周期/精度', key: 'period_prec', width: 110 },
+          { title: '周期', key: 'period', width: 80 },
+          { title: '精度', key: 'report_precision', width: 80 },
           { title: '状态', key: 'status', width: 70 },
           { title: '进度', key: 'progress', width: 130 },
           { title: '报告摘要', key: 'summary', width: 150 },
-          { title: '操作', key: 'actions', width: 100, sortable: false },
+          { title: '操作', key: 'actions', width: 132, sortable: false },
         ]" :items="runs" :items-length="runTotal" item-value="run_id"
         @update:options="loadRuns">
         <template #item.range="{ item }">
@@ -243,8 +249,11 @@ onBeforeUnmount(() => {
             <span class="text-caption">{{ fmtDate(item.end_date) }}</span>
           </div>
         </template>
-        <template #item.period_prec="{ item }">
-          <v-chip size="x-small">{{ item.period }} / {{ item.report_precision }}</v-chip>
+        <template #item.period="{ item }">
+          <v-chip size="x-small">{{ periodName(item.period) }}</v-chip>
+        </template>
+        <template #item.report_precision="{ item }">
+          <v-chip size="x-small" variant="tonal">{{ periodName(item.report_precision) }}</v-chip>
         </template>
         <template #item.status="{ item }">
           <v-tooltip location="top">
@@ -277,29 +286,32 @@ onBeforeUnmount(() => {
           <span v-else class="text-caption text-medium-emphasis">-</span>
         </template>
         <template #item.actions="{ item }">
-          <v-btn v-if="item.status === 'PENDING' || item.status === 'RUNNING'" size="small" variant="text"
-            color="warning" :loading="cancelling === item.run_id" title="取消任务"
-            @click="cancelRun(item)">
-            <v-icon icon="mdi-stop-circle-outline" size="18" />
-          </v-btn>
-          <!-- 查看报告：仅 SUCCEEDED 可点，ICON + hover 提示节省列宽 -->
-          <v-tooltip location="top">
-            <template #activator="{ props }">
-              <v-btn size="small" variant="text" :disabled="item.status !== 'SUCCEEDED'"
-                :class="item.status === 'SUCCEEDED' ? '' : 'opacity-40'" v-bind="props"
-                @click="openRun(item)">
-                <v-icon icon="mdi-file-chart-outline" size="18" color="primary" />
-              </v-btn>
-            </template>
-            <span>点击查看报告</span>
-          </v-tooltip>
-          <!-- 删除任务：仅已结束任务可删（SUCCEEDED/FAILED/CANCELLED） -->
-          <v-btn size="small" variant="text" color="error"
-            :disabled="item.status === 'PENDING' || item.status === 'RUNNING'"
-            title="删除任务及其全部明细（异步）"
-            @click="deleteRun(item)">
-            <v-icon icon="mdi-delete-outline" size="18" />
-          </v-btn>
+          <!-- d-flex 默认 flex-wrap:nowrap，强制操作图标水平一行，避免列窄时被挤成上下排列 -->
+          <div class="d-flex align-center flex-nowrap ga-1">
+            <v-btn v-if="item.status === 'PENDING' || item.status === 'RUNNING'" size="small" variant="text"
+              color="warning" :loading="cancelling === item.run_id" title="取消任务"
+              @click="cancelRun(item)">
+              <v-icon icon="mdi-stop-circle-outline" size="18" />
+            </v-btn>
+            <!-- 查看报告：仅 SUCCEEDED 可点，ICON + hover 提示节省列宽 -->
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn size="small" variant="text" :disabled="item.status !== 'SUCCEEDED'"
+                  :class="item.status === 'SUCCEEDED' ? '' : 'opacity-40'" v-bind="props"
+                  @click="openRun(item)">
+                  <v-icon icon="mdi-file-chart-outline" size="18" color="primary" />
+                </v-btn>
+              </template>
+              <span>点击查看报告</span>
+            </v-tooltip>
+            <!-- 删除任务：仅已结束任务可删（SUCCEEDED/FAILED/CANCELLED） -->
+            <v-btn size="small" variant="text" color="error"
+              :disabled="item.status === 'PENDING' || item.status === 'RUNNING'"
+              title="删除任务及其全部明细（异步）"
+              @click="deleteRun(item)">
+              <v-icon icon="mdi-delete-outline" size="18" />
+            </v-btn>
+          </div>
         </template>
       </v-data-table-server>
       <v-pagination v-model="page" :length="Math.max(1, Math.ceil(runTotal / pageSize))" density="compact"

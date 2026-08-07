@@ -366,7 +366,8 @@ onBeforeUnmount(() => {
             <v-divider class="my-3" />
             <v-row align="center">
               <v-col cols="auto">
-                <v-switch v-model="enableBacktest" color="primary" hide-details
+                <v-switch v-model="enableBacktest" density="compact" hide-details
+                  :color="enableBacktest ? 'green' : 'grey'"
                   :label="enableBacktest ? '回测开关：已开启' : '回测开关：已关闭'" />
               </v-col>
               <v-spacer />

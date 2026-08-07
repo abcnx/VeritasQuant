@@ -306,27 +306,64 @@ const run = ref<RunDetail | null>(null)
 const strategyDetail = ref<StrategyDetail | null>(null)
 const report = ref<Report | null>(null)
 const equity = ref<EquityPoint[]>([])
+// 成交记录（服务端分页）
 const trades = ref<TradeRow[]>([])
 const tradeTotal = ref(0)
 const tradePage = ref(1)
 const tradePageSize = ref(20)
+// 资金流水（服务端分页）
 const cashflows = ref<CashflowRow[]>([])
+const cashflowTotal = ref(0)
+const cashflowPage = ref(1)
+const cashflowPageSize = ref(20)
+// 持仓变化（服务端分页）
 const positionLogs = ref<PositionLogRow[]>([])
+const positionLogTotal = ref(0)
+const positionLogPage = ref(1)
+const positionLogPageSize = ref(20)
+// 事件追踪（服务端分页）
 const eventTraces = ref<EventTraceRow[]>([])
-const traceTab = ref('trades')
+const eventTraceTotal = ref(0)
+const eventTracePage = ref(1)
+const eventTracePageSize = ref(20)
 const loading = ref(false)
 const error = ref('')
 
 const charts: { chart: echarts.ECharts; key: string }[] = []
+const chartTitles: Record<string, string> = {
+  equity: '总资产曲线',
+  cash: '现金曲线',
+  positionValue: '持仓市值曲线',
+  roi: '投资收益率曲线',
+  profit: '累计收益额曲线',
+  positionQty: '持仓数量变化曲线',
+}
 const chartEls: Record<string, HTMLDivElement | null> = {
   equity: null,
+  cash: null,
+  positionValue: null,
   roi: null,
   profit: null,
-  position: null,
+  positionQty: null,
 }
 // 图表 DOM 绑定（Vue 函数 ref：:ref="el => setChartRef('equity', el)"）
+// 用 ResizeObserver 监听容器尺寸变化（折叠侧边导航 / 窗口缩放时 canvas 自动跟随宽度）
+const chartROs = new Map<string, ResizeObserver>()
 function setChartRef(key: string, el: unknown) {
-  chartEls[key] = el as HTMLDivElement | null
+  const dom = el as HTMLDivElement | null
+  chartEls[key] = dom
+  chartROs.get(key)?.disconnect()
+  chartROs.delete(key)
+  if (!dom) return
+  const ro = new ResizeObserver(() => {
+    charts.find((c) => c.key === key)?.chart.resize()
+  })
+  ro.observe(dom)
+  chartROs.set(key, ro)
+}
+function disposeChartObservers() {
+  chartROs.forEach((ro) => ro.disconnect())
+  chartROs.clear()
 }
 // 全屏放大
 const fullscreenKey = ref('')
@@ -336,6 +373,17 @@ const fullscreenChartEl = ref<HTMLDivElement | null>(null)
 function fmtDateTimeLocal(d: number | undefined, t: number | undefined): string {
   if (!d) return '-'
   return `${fmtDate(d)} ${fmtTime(t)}`
+}
+
+/** 指标数值万分位格式化：≥1万 显示 X.XX万；小于 1万 直接显示原始数值（不做千分位） */
+function fmtWan(v: number | undefined | null): string {
+  if (v === undefined || v === null || Number.isNaN(v)) return '-'
+  const n = Number(v)
+  if (Math.abs(n) >= 10000) {
+    const w = n / 10000
+    return `${Number.isInteger(w) ? w.toFixed(0) : w.toFixed(2)}万`
+  }
+  return String(Math.round(n * 100) / 100)
 }
 
 function flowTypeName(t: string): string {
@@ -470,31 +518,65 @@ function feeWindowText(v: number | undefined, days: number | undefined): string 
   return `${fmtNum(v)}（${days || 30} 日窗口）`
 }
 
-/** 单个指标概览：'MA(ma_fast, window=5, field=close)' */
-function indText(ind: IndicatorDef): string {
-  const p = ind.params ?? {}
-  const pText = Object.entries(p).map(([k, v]) => `${k}=${v}`).join(', ')
-  return `${ind.type ?? '?'}${ind.id ? `(${ind.id}${pText ? ', ' + pText : ''})` : pText ? `(${pText})` : ''}`
-}
-
-/** 买卖信号表达式一行 */
-function signalText(signals: { buy?: string; sell?: string } | undefined): string {
-  if (!signals) return '（未设置）'
-  const parts: string[] = []
-  if (signals.buy) parts.push(`买入: ${signals.buy}`)
-  if (signals.sell) parts.push(`卖出: ${signals.sell}`)
-  return parts.length ? parts.join(' | ') : '（未设置）'
-}
-
-/** ① 数据配置一行：'Min / close / 预热30bar / 下一Bar开盘价成交' */
+/** ① 数据配置一行（读者友好）：'K线周期：分钟；信号字段：收盘价；指标预热：30 根K线' */
 function dataConfigText(d: StrategySnapshot['data'] | undefined): string {
   if (!d) return '-'
-  return [
-    d.period ? periodName(d.period) : '',
-    d.price_field ? `字段 ${d.price_field}` : '',
-    d.warmup_bars ? `预热 ${d.warmup_bars} bar` : '',
-    d.fill_mode ? fillModeName(d.fill_mode) : '',
-  ].filter(Boolean).join(' / ') || '-'
+  const parts: string[] = []
+  if (d.period) parts.push(`K线周期：${periodName(d.period)}`)
+  if (d.price_field) parts.push(`信号字段：${priceFieldName(d.price_field)}`)
+  if (d.warmup_bars) parts.push(`指标预热：${d.warmup_bars} 根K线`)
+  return parts.join('，') || '-'
+}
+
+/** 买卖信号转述为中文（读者友好）：'买入信号：MA5 上穿 MA20；卖出信号：MA5 下穿 MA20' */
+function signalExplainText(signals: { buy?: string; sell?: string } | undefined): string {
+  if (!signals) return '（未设置）'
+  const parts: string[] = []
+  if (signals.buy) parts.push(`买入信号：${signalExplain(signals.buy)}`)
+  if (signals.sell) parts.push(`卖出信号：${signalExplain(signals.sell)}`)
+  return parts.length ? parts.join('；') : '（未设置）'
+}
+
+/** 指标短名：'MA5'、'EMA20'（type + window 参数），用于信号转述 */
+function indShort(ind: IndicatorDef): string {
+  const w = ind.params?.window
+  return `${ind.type ?? '?'}${w ? String(w) : ''}`
+}
+
+/** 指标 chip 展示：'MA（5 周期）'（不展示价格字段，避免中英文混杂） */
+function indChipText(ind: IndicatorDef): string {
+  const w = ind.params?.window
+  return `${ind.type ?? '?'}${w ? `（${w} 周期）` : ''}`
+}
+
+/** 价格字段中文名：close → 收盘价 */
+function priceFieldName(f: string | undefined): string {
+  return { open: '开盘价', high: '最高价', low: '最低价', close: '收盘价' }[f ?? ''] ?? (f ?? '-')
+}
+
+/** 信号表达式转述为中文：cross_up(ma_fast, ma_slow) → 'MA5 上穿 MA20' */
+function signalExplain(sig: string): string {
+  const inds = indicators.value
+  const name = (id: string) => {
+    const ind = inds.find((i) => i.id === id)
+    return ind ? indShort(ind) : id
+  }
+  const up = sig.match(/^cross_up\(\s*([\w]+)\s*,\s*([\w]+)\s*\)$/)
+  if (up) return `${name(up[1])} 上穿 ${name(up[2])}`
+  const down = sig.match(/^cross_down\(\s*([\w]+)\s*,\s*([\w]+)\s*\)$/)
+  if (down) return `${name(down[1])} 下穿 ${name(down[2])}`
+  const gt = sig.match(/^(.+?)\s*>\s*(.+)$/)
+  if (gt) return `${gt[1].trim()} 大于 ${gt[2].trim()}`
+  const lt = sig.match(/^(.+?)\s*<\s*(.+)$/)
+  if (lt) return `${lt[1].trim()} 小于 ${lt[2].trim()}`
+  return sig
+}
+
+/** 撮合模式展开说明（给普通用户看） */
+function fillModeExplain(f: string | undefined): string {
+  if (f === 'NEXT_BAR_OPEN') return '信号在当根K线收盘确认后触发，委托挂入下一根K线并按开盘价成交，全程不引用未来数据，结果贴近实盘可执行性。'
+  if (f === 'CURRENT_CLOSE') return '信号触发即按当根K线收盘价近似成交，速度更快，但属于近似撮合，存在轻微前视偏差。'
+  return fillModeName(f)
 }
 
 // ---- 计算属性（模板薄化） ----
@@ -518,6 +600,31 @@ const strategyDescNote = computed<{ label: string; text: string } | null>(() => 
   const cur = (strategyDetail.value?.description ?? '').trim()
   if (!snap || !cur || snap === cur) return null
   return { label: '策略当前说明与回测快照不同', text: cur }
+})
+
+/** 策略概览：把信号/建仓/风控加工成普通用户能读懂的通俗介绍 */
+const strategyOverview = computed<string>(() => {
+  const snap = run.value?.strategy_snapshot
+  if (!snap) return ''
+  const parts: string[] = []
+  const sig = snap.signals
+  if (sig?.buy) parts.push(`买入信号：${signalExplain(sig.buy)}`)
+  if (sig?.sell) parts.push(`卖出信号：${signalExplain(sig.sell)}`)
+  const rb = snap.rules?.buy
+  if (rb?.quantity_type) parts.push(`单次买入：${quantityText(rb)}`)
+  const risk = snap.risk
+  const b = risk?.builder
+  if (b?.enabled) {
+    parts.push(`分批建仓：分 ${b.tranches ?? 1} 批建仓，目标仓位 ${fmtPct(b.target_position_pct ?? 0)}，批间隔 ${b.tranche_interval_bars ?? 0} 根K线`)
+  }
+  if (risk?.reduce_tranches && risk.reduce_tranches > 1) parts.push(`分批减仓：分 ${risk.reduce_tranches} 批卖出`)
+  if (risk?.stop_loss_pct) parts.push(`单笔止损 ${fmtPct(risk.stop_loss_pct)}`)
+  if (risk?.take_profit_pct) parts.push(`止盈 ${fmtPct(risk.take_profit_pct)}`)
+  const maxTrades = options.value.max_trades_per_day != null ? options.value.max_trades_per_day : risk?.max_trades_per_day
+  if (maxTrades) parts.push(`每日成交上限 ${maxTrades} 笔`)
+  if (risk?.max_trades_per_week) parts.push(`近7日成交上限 ${risk.max_trades_per_week} 笔`)
+  if (risk?.max_trades_per_month) parts.push(`近30日成交上限 ${risk.max_trades_per_month} 笔`)
+  return parts.length ? parts.join('；') + '。' : ''
 })
 
 const accountText = computed<string>(() => {
@@ -548,6 +655,95 @@ const effectiveCapital = computed<number | undefined>(() => {
   return run.value?.account_snapshot?.initial_capital || undefined
 })
 const commissionOverridden = computed<boolean>(() => options.value.commission_rate != null)
+
+// ---- 指标卡片（统一风格，按语义分组） ----
+interface MetricCard {
+  label: string
+  value: string
+  color: string // 卡片 tonal 色（正绿负红或组内统一色）
+}
+interface MetricGroup {
+  title: string
+  icon: string
+  color: string
+  items: MetricCard[]
+}
+
+const metricGroups = computed<MetricGroup[]>(() => {
+  const r = report.value
+  if (!r) return []
+  const sign = (v: number) => (v > 0 ? 'green' : v < 0 ? 'red' : 'grey')
+  return [
+    {
+      title: '收益指标', icon: 'mdi-trending-up', color: 'green',
+      items: [
+        { label: '总收益额', value: fmtWan(r.total_profit), color: sign(r.total_profit) },
+        { label: '到期收益率', value: fmtPct(r.total_return_pct), color: sign(r.total_return_pct) },
+        { label: '年化收益率', value: fmtPct(r.annual_return_pct), color: sign(r.annual_return_pct) },
+        { label: '最佳单期收益', value: fmtPct(r.best_day_pct), color: sign(r.best_day_pct) },
+        { label: '最差单期收益', value: fmtPct(r.worst_day_pct), color: sign(r.worst_day_pct) },
+        { label: '盈利期数', value: `${r.profit_days} 期`, color: 'green' },
+        { label: '亏损期数', value: `${r.loss_days} 期`, color: 'red' },
+      ],
+    },
+    {
+      title: '风险指标', icon: 'mdi-shield-alert-outline', color: 'orange',
+      items: [
+        { label: '最大回撤', value: fmtPct(r.max_drawdown_pct), color: 'orange' },
+        { label: '夏普比率', value: fmtNum(r.sharpe_ratio), color: 'orange' },
+        { label: '年化波动率', value: fmtPct(r.volatility_pct), color: 'orange' },
+        { label: '盈亏比', value: fmtNum(r.profit_factor), color: 'orange' },
+      ],
+    },
+    {
+      title: '交易指标', icon: 'mdi-swap-horizontal', color: 'blue',
+      items: [
+        { label: '交易笔数', value: `${fmtNum(r.trade_count, 0)} 笔`, color: 'blue' },
+        { label: '买入笔数', value: `${r.buy_count} 笔`, color: 'blue' },
+        { label: '卖出笔数', value: `${r.sell_count} 笔`, color: 'blue' },
+        { label: '盈利平仓', value: `${r.win_count} 笔`, color: 'blue' },
+        { label: '亏损平仓', value: `${r.loss_count} 笔`, color: 'blue' },
+        { label: '胜率', value: fmtPct(r.win_rate_pct), color: 'blue' },
+        { label: '持仓天数', value: `${fmtNum(r.invested_days, 0)} 天`, color: 'blue' },
+      ],
+    },
+    {
+      title: '资金指标', icon: 'mdi-cash-multiple', color: 'cyan',
+      items: [
+        { label: '初始启动资金', value: fmtWan(r.initial_capital), color: 'cyan' },
+        { label: '期末总资产', value: fmtWan(r.final_equity), color: 'cyan' },
+        { label: '最大投入', value: fmtWan(r.max_invested), color: 'cyan' },
+        { label: '平均投入', value: fmtWan(r.avg_invested), color: 'cyan' },
+        { label: '手续费总额', value: fmtWan(r.total_fee), color: 'cyan' },
+      ],
+    },
+  ]
+})
+
+/** 风控复盘：从事件触发原因聚合止损/止盈/信号触发次数 */
+const riskReview = computed(() => {
+  const es = report.value?.event_stats
+  const tr = es?.trigger_reasons ?? {}
+  const count = (k: string) => tr[k] ?? 0
+  const covered = ['止损', '止盈', '买入信号', '卖出信号']
+  const other = Object.keys(tr).filter((k) => !covered.includes(k)).reduce((a, k) => a + (tr[k] ?? 0), 0)
+  return {
+    stopLoss: count('止损'),
+    takeProfit: count('止盈'),
+    buySignal: count('买入信号'),
+    sellSignal: count('卖出信号'),
+    other,
+    total: es?.trigger_count ?? 0,
+  }
+})
+
+// 未成交原因分布：按次数从高到低排序（[原因, 次数] 元组数组）
+const sortedRejectReasons = computed<[string, number][]>(() => {
+  const rr = report.value?.event_stats?.reject_reasons ?? {}
+  return Object.entries(rr)
+    .map(([reason, cnt]) => [reason, cnt] as [string, number])
+    .sort((a, b) => b[1] - a[1])
+})
 
 const envRules = computed<KV[]>(() => envRulesKV(env.value?.config?.trading_rules))
 
@@ -620,8 +816,8 @@ function backgroundKV(): KV[] {
   rows.push({ label: '策略描述', value: primaryStrategyDesc.value })
   if (strategyDescNote.value?.text) rows.push({ label: '当前策略说明', value: strategyDescNote.value.text })
   rows.push({ label: '数据配置', value: dataConfigText(snap?.data) })
-  rows.push({ label: '指标', value: snap?.indicators?.length ? snap.indicators.map(indText).join(' | ') : '未配置指标' })
-  rows.push({ label: '买卖信号', value: signalText(snap?.signals) })
+  rows.push({ label: '指标', value: snap?.indicators?.length ? snap.indicators.map(indChipText).join(' | ') : '未配置指标' })
+  rows.push({ label: '买卖信号', value: signalExplainText(snap?.signals) })
   // ② 标的与市场
   rows.push({ label: '标的代码', value: run.value?.secu_code ?? '-' })
   rows.push({ label: '市场代码', value: run.value?.market_code ? fmtNum(run.value.market_code, 0) : '-' })
@@ -631,7 +827,7 @@ function backgroundKV(): KV[] {
   rows.push({ label: 'K线数量', value: report.value?.bar_count ? `${fmtNum(report.value.bar_count, 0)} 根` : '-' })
   // ③ 账户
   rows.push({ label: '账户', value: accountText.value })
-  rows.push({ label: '初始资金', value: fmtNum(effectiveCapital.value) + (options.value.initial_capital != null ? '（任务覆盖）' : '') })
+  rows.push({ label: '初始资金', value: fmtWan(effectiveCapital.value) + (options.value.initial_capital != null ? '（任务覆盖：本次回测在任务上单独指定了初始资金，覆盖了策略/账户的默认值）' : '') })
   rows.push({ label: '手续费率', value: pctRatio(effectiveCommission.value) + (commissionOverridden.value ? '（任务覆盖）' : '') })
   rows.push({ label: '滑点', value: pctRatio(effectiveSlippage.value) })
   rows.push({ label: '保证金模式', value: marginModeName(acc?.margin_mode) + (acc?.margin_rate ? `（${pctRatio(acc.margin_rate)}）` : '') })
@@ -642,7 +838,7 @@ function backgroundKV(): KV[] {
     rows.push({ label: '环境类型', value: envTypeName(envSnap.env_type) })
     rows.push({ label: '地区', value: envSnap.region || '-' })
     rows.push({ label: '交易时段', value: sessionsFmt(envSnap.config?.trading_sessions) })
-    rows.push({ label: '撮合模式', value: fillModeName(envSnap.config?.fill_mode ?? snap?.data?.fill_mode) })
+    rows.push({ label: '撮合模式', value: fillModeExplain(envSnap.config?.fill_mode ?? snap?.data?.fill_mode) })
     rows.push({ label: '环境币种', value: envSnap.config?.currency ?? '-' })
     if (envSnap.description) rows.push({ label: '环境说明', value: envSnap.description })
   } else {
@@ -656,6 +852,22 @@ function backgroundKV(): KV[] {
   for (const kv of riskKV(snap?.risk)) rows.push({ label: `风控·${kv.label}`, value: kv.value })
   for (const kv of envRulesKV(envSnap?.config?.trading_rules)) rows.push({ label: `环境·${kv.label}`, value: kv.value })
   return rows
+}
+
+/** 拉取全量净值点（Equity 接口单页上限 5000，循环翻页直至 total，上限保护 20000 点） */
+async function loadAllEquity(runId: string): Promise<EquityPoint[]> {
+  const all: EquityPoint[] = []
+  let page = 1
+  let total = Infinity
+  while (all.length < total && page <= 5) {
+    const r = await apiGet<{ total: number; list: EquityPoint[] }>(
+      `/Meta/Finv/Quant/Backtest/Run/Equity?runId=${runId}&page=${page}&pageSize=5000`,
+    )
+    all.push(...(r.list ?? []))
+    total = r.total ?? all.length
+    page++
+  }
+  return all
 }
 
 async function loadReport(runId: string) {
@@ -681,23 +893,26 @@ async function loadReport(runId: string) {
     run.value = r
     const [rep, eq, tr, cf, pl, ev, st] = await Promise.all([
       apiGet<Report>(`/Meta/Finv/Quant/Backtest/Run/Report?runId=${runId}`),
-      apiGet<{ list: EquityPoint[] }>(`/Meta/Finv/Quant/Backtest/Run/Equity?runId=${runId}&page=1&pageSize=5000`),
+      loadAllEquity(runId),
       apiGet<{ total: number; list: TradeRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Trades?runId=${runId}&page=1&pageSize=${tradePageSize.value}`),
-      apiGet<{ list: CashflowRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=${runId}&page=1&pageSize=1000`),
-      apiGet<{ list: PositionLogRow[] }>(`/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=${runId}&page=1&pageSize=1000`),
-      apiGet<{ list: EventTraceRow[] }>(`/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=${runId}&page=1&pageSize=1000`),
+      apiGet<{ total: number; list: CashflowRow[] }>(`/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=${runId}&page=1&pageSize=${cashflowPageSize.value}`),
+      apiGet<{ total: number; list: PositionLogRow[] }>(`/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=${runId}&page=1&pageSize=${positionLogPageSize.value}`),
+      apiGet<{ total: number; list: EventTraceRow[] }>(`/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=${runId}&page=1&pageSize=${eventTracePageSize.value}`),
       // 策略当前说明（Strategy/Get，失败不阻塞报告）
       r.strategy_id
         ? apiGet<StrategyDetail>(`/Meta/Finv/Quant/Backtest/Strategy/Get?strategyId=${encodeURIComponent(r.strategy_id)}`).catch(() => null)
         : Promise.resolve(null),
     ])
     report.value = rep
-    equity.value = eq.list ?? []
+    equity.value = eq
     trades.value = tr.list ?? []
     tradeTotal.value = tr.total ?? 0
     cashflows.value = cf.list ?? []
+    cashflowTotal.value = cf.total ?? 0
     positionLogs.value = pl.list ?? []
+    positionLogTotal.value = pl.total ?? 0
     eventTraces.value = ev.list ?? []
+    eventTraceTotal.value = ev.total ?? 0
     strategyDetail.value = st
     await nextTick()
     renderCharts()
@@ -732,51 +947,119 @@ function mkChart(key: string, el: HTMLDivElement | null): echarts.ECharts | null
 function renderCharts() {
   if (!equity.value.length) return
   const labels = xLabels()
-  const base = (title: string, unit: string) => ({
-    title: { text: title, left: 12, textStyle: { fontSize: 14, fontWeight: 600 } },
+  // 刻度自适应：按容器宽度算显示密度，按回测跨度选刻度精度，文字不重叠
+  const hostW = chartEls.equity?.clientWidth ?? 800
+  const maxTicks = Math.max(4, Math.floor(hostW / 76))
+  const tickStep = Math.max(1, Math.ceil(labels.length / maxTicks))
+  const ts0 = equity.value[0]?.ts ?? 0
+  const ts1 = equity.value[equity.value.length - 1]?.ts ?? 0
+  const spanDays = Math.max(1, (ts1 - ts0) / 86400)
+  // 每年首个数据点的索引：跨年时在该刻度强制标注年份（不依赖 1 月数据是否存在）
+  const yearStartIdx = new Map<number, number>()
+  labels.forEach((l, i) => {
+    const y = Number(l.slice(0, 4))
+    if (!Number.isNaN(y) && !yearStartIdx.has(y)) yearStartIdx.set(y, i)
+  })
+  const yearStartIndexes = new Set(yearStartIdx.values())
+  // 候选刻度 = tickStep 均匀跳显 + 每年首个刻度（升序合并去重）
+  const stepIdx: number[] = []
+  for (let i = 0; i < labels.length; i += tickStep) stepIdx.push(i)
+  const candidates = [...new Set([...stepIdx, ...yearStartIndexes])].sort((a, b) => a - b)
+  // 两两间隔不小于 tickStep；年份刻度与前一均匀刻度间距不足时，替换掉前一个刻度以保证年份一定显示
+  const shownSet = new Set<number>()
+  let lastShown = -Infinity
+  let lastWasYearStart = false
+  for (const i of candidates) {
+    const isYearStart = yearStartIndexes.has(i)
+    if (i - lastShown >= tickStep) {
+      shownSet.add(i)
+      lastShown = i
+      lastWasYearStart = isYearStart
+    } else if (isYearStart && !lastWasYearStart) {
+      shownSet.delete(lastShown)
+      shownSet.add(i)
+      lastShown = i
+      lastWasYearStart = true
+    }
+  }
+  // 年份/月份/日期分开标注：跨年大跨度单行年份；跨月“年份\n月份”两行；短跨度“月-日\n时间”两行
+  const fmtTick = (v: string, index: number): string => {
+    const d = v.slice(0, 10)
+    const t = v.slice(10).trim()
+    if (spanDays >= 1000) return d.slice(0, 4) // 大跨度：单行年份
+    if (spanDays >= 300) {
+      // 中跨度：年份只在新一年的首个刻度标注一次，其余刻度只显示月份；两行标注“月份在上、年份在下”
+      const m = d.slice(5, 7)
+      return yearStartIndexes.has(index) ? `${m}\n${d.slice(0, 4)}` : m
+    }
+    return `${d.slice(5, 7)}-${d.slice(8, 10)}${t ? '\n' + t : ''}` // 短跨度：月-日/时间两行
+  }
+  // 网格线统一为细淡色
+  const gridLine = { color: 'rgba(128,128,128,0.18)', width: 0.5 }
+  const base = (unit: string) => ({
+    // 图表内部不再绘制标题（卡片标题已展示，避免两处重复）
     tooltip: { trigger: 'axis' },
-    grid: { left: 70, right: 20, top: 48, bottom: 28 },
-    xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 10 } },
-    yAxis: { type: 'value', scale: true, name: unit },
-  })
-
-  // ① 账户余额曲线（总资产 + 现金）
-  const c1 = mkChart('equity', chartEls.equity)
-  c1?.setOption({
-    ...base('① 账户余额（总资产=现金+持仓市值）', report.value?.report_precision ?? ''),
-    legend: { data: ['总资产', '现金'], top: 4, right: 12 },
-    series: [
-      { name: '总资产', type: 'line', data: equity.value.map((p) => p.equity), showSymbol: false, lineStyle: { width: 2 }, itemStyle: { color: '#1565c0' } },
-      { name: '现金', type: 'line', data: equity.value.map((p) => p.cash), showSymbol: false, lineStyle: { width: 1, type: 'dashed' }, itemStyle: { color: '#90a4ae' } },
+    grid: { left: 70, right: 20, top: 40, bottom: 64 },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      // 竖直网格线（x 轴刻度对应的竖线）
+      splitLine: { show: true, lineStyle: gridLine },
+      axisTick: { show: true, lineStyle: { color: 'rgba(128,128,128,0.4)' } },
+      axisLabel: {
+        fontSize: 10,
+        lineHeight: 13,
+        // 每年首个刻度强制显示年份，其余按 tickStep 跳显；间隔已保证不重叠，无需 hideOverlap 二次过滤
+        interval: (index: number) => shownSet.has(index),
+        formatter: (v: string, index: number) => fmtTick(v, index),
+      },
+    },
+    yAxis: {
+      type: 'value', scale: true, name: unit,
+      // 水平网格线：细淡色
+      splitLine: { lineStyle: gridLine },
+      // 刻度值不做千分位/缩写，直接展示原始数值
+      axisLabel: { formatter: (v: number) => String(v) },
+    },
+    dataZoom: [
+      { type: 'inside', xAxisIndex: 0 },
+      {
+        type: 'slider', xAxisIndex: 0, height: 16, bottom: 6, start: 0, end: 100,
+        // 滑块调暗，避免过亮
+        borderColor: 'rgba(128,128,128,0.25)',
+        backgroundColor: 'rgba(128,128,128,0.05)',
+        fillerColor: 'rgba(110,130,180,0.15)',
+        selectedDataBackground: { lineStyle: { color: 'rgba(110,130,180,0.35)' }, areaStyle: { color: 'rgba(110,130,180,0.06)' } },
+        dataBackground: { lineStyle: { color: 'rgba(128,128,128,0.3)' }, areaStyle: { color: 'rgba(128,128,128,0.04)' } },
+        handleStyle: { borderColor: 'rgba(128,128,128,0.4)' },
+        moveHandleStyle: { color: 'rgba(128,128,128,0.22)' },
+        textStyle: { color: 'rgba(128,128,128,0.7)', fontSize: 10 },
+      },
     ],
   })
-
-  // ② 投资收益率曲线
-  const c2 = mkChart('roi', chartEls.roi)
-  c2?.setOption({
-    ...base('② 投资收益率（%）', '%'),
-    series: [
-      { name: '收益率', type: 'line', data: equity.value.map((p) => p.roi), showSymbol: false, lineStyle: { width: 2 }, itemStyle: { color: '#2e7d32' }, areaStyle: { opacity: 0.08 } },
-    ],
-  })
-
-  // ③ 投资收益额曲线
-  const c3 = mkChart('profit', chartEls.profit)
-  c3?.setOption({
-    ...base('③ 累计收益额', ''),
-    series: [
-      { name: '收益额', type: 'line', data: equity.value.map((p) => p.profit), showSymbol: false, lineStyle: { width: 2 }, itemStyle: { color: '#ef6c00' }, areaStyle: { opacity: 0.08 } },
-    ],
-  })
-
-  // ⑦ 持仓金额曲线
-  const c4 = mkChart('position', chartEls.position)
-  c4?.setOption({
-    ...base('⑦ 账户持仓金额', ''),
-    series: [
-      { name: '持仓市值', type: 'line', data: equity.value.map((p) => p.position_value), showSymbol: false, lineStyle: { width: 2 }, itemStyle: { color: '#6a1b9a' }, areaStyle: { opacity: 0.08 } },
-    ],
-  })
+  const mk = (key: string, title: string, unit: string, color: string, area: boolean, field: keyof EquityPoint) => {
+    const c = mkChart(key, chartEls[key])
+    c?.setOption({
+      ...base(unit),
+      series: [{
+        name: title,
+        type: 'line',
+        data: equity.value.map((p) => (p[field] == null ? null : Number(p[field]))),
+        showSymbol: false,
+        // 线宽减小到原来的 70%（2 → 1.4）
+        lineStyle: { width: 1.4 },
+        itemStyle: { color },
+        areaStyle: area ? { opacity: 0.06 } : undefined,
+      }],
+    })
+  }
+  // 账户余额拆分为 3 张独立曲线 + 收益/持仓数量（标题无序号）
+  mk('equity', '总资产曲线', '', '#1565c0', false, 'equity')
+  mk('cash', '现金曲线', '', '#90a4ae', false, 'cash')
+  mk('positionValue', '持仓市值曲线', '', '#6a1b9a', true, 'position_value')
+  mk('roi', '投资收益率曲线', '%', '#2e7d32', true, 'roi')
+  mk('profit', '累计收益额曲线', '', '#ef6c00', true, 'profit')
+  mk('positionQty', '持仓数量变化曲线', '份', '#00838f', false, 'position_qty')
 }
 
 // 全屏放大：复用主图表配置渲染到 dialog 内
@@ -817,6 +1100,7 @@ function disposeCharts() {
 
 function resizeCharts() {
   charts.forEach((c) => c.chart.resize())
+  fullscreenChart?.resize()
 }
 
 async function loadTradesPage() {
@@ -832,6 +1116,98 @@ async function loadTradesPage() {
   }
 }
 
+async function loadCashflowPage() {
+  if (!run.value) return
+  try {
+    const cf = await apiGet<{ total: number; list: CashflowRow[] }>(
+      `/Meta/Finv/Quant/Backtest/Run/Cashflows?runId=${run.value.run_id}&page=${cashflowPage.value}&pageSize=${cashflowPageSize.value}`,
+    )
+    cashflows.value = cf.list ?? []
+    cashflowTotal.value = cf.total ?? 0
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+async function loadPositionLogPage() {
+  if (!run.value) return
+  try {
+    const pl = await apiGet<{ total: number; list: PositionLogRow[] }>(
+      `/Meta/Finv/Quant/Backtest/Run/PositionLogs?runId=${run.value.run_id}&page=${positionLogPage.value}&pageSize=${positionLogPageSize.value}`,
+    )
+    positionLogs.value = pl.list ?? []
+    positionLogTotal.value = pl.total ?? 0
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+async function loadEventTracePage() {
+  if (!run.value) return
+  try {
+    const ev = await apiGet<{ total: number; list: EventTraceRow[] }>(
+      `/Meta/Finv/Quant/Backtest/Run/EventTraces?runId=${run.value.run_id}&page=${eventTracePage.value}&pageSize=${eventTracePageSize.value}`,
+    )
+    eventTraces.value = ev.list ?? []
+    eventTraceTotal.value = ev.total ?? 0
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+// ---- 明细表头（4 张独立表格，v-data-table-server 服务端分页） ----
+const cashflowHeaders = [
+  { title: '序号', key: 'seq', width: 60 },
+  { title: '时间', key: 'timeText', width: 158 },
+  { title: '类型', key: 'flow_type', width: 104 },
+  { title: '金额', key: 'amount', width: 148 },
+  { title: '变动前现金', key: 'cash_before', width: 148 },
+  { title: '变动后现金', key: 'cash_after', width: 148 },
+  { title: '关联成交', key: 'trade_id', width: 96 },
+  // 备注列限宽，避免在 fixed 布局下独占剩余宽度把其他列挤窄
+  { title: '备注', key: 'remark', width: 220 },
+]
+const positionLogHeaders = [
+  { title: '序号', key: 'seq', width: 60 },
+  { title: '时间', key: 'timeText', width: 158 },
+  { title: '动作', key: 'action', width: 80 },
+  { title: '价格', key: 'price', width: 120 },
+  { title: '变动数量', key: 'qty', width: 120 },
+  { title: '持仓前', key: 'position_before', width: 120 },
+  { title: '持仓后', key: 'position_after', width: 120 },
+  { title: '成本前', key: 'avg_cost_before', width: 120 },
+  { title: '成本后', key: 'avg_cost_after', width: 120 },
+  { title: '关联成交', key: 'trade_id', width: 96 },
+  // 备注列限宽，避免在 fixed 布局下独占剩余宽度把其他列挤窄
+  { title: '备注', key: 'remark', width: 200 },
+]
+const tradeHeaders = [
+  { title: '序号', key: 'seq', width: 70 },
+  { title: '时间', key: 'timeText', width: 170 },
+  { title: '方向', key: 'action', width: 80 },
+  { title: '价格', key: 'price', width: 100 },
+  { title: '数量', key: 'qty', width: 100 },
+  { title: '金额', key: 'amount', width: 120 },
+  { title: '手续费', key: 'fee', width: 100 },
+  { title: '盈亏', key: 'profit', width: 110 },
+  { title: '持仓后', key: 'position_after', width: 100 },
+  { title: '信号', key: 'signal' },
+  { title: '备注', key: 'remark', width: 110 },
+]
+const eventTraceHeaders = [
+  { title: '序号', key: 'seq', width: 70 },
+  { title: '方向', key: 'action', width: 80 },
+  { title: '触发原因', key: 'trigger_reason' },
+  { title: '触发时间', key: 'trigger_date', width: 160 },
+  { title: '委托下单时间', key: 'order_date', width: 160 },
+  { title: '结果', key: 'exec_status', width: 90 },
+  { title: '成交时间', key: 'exec_date', width: 160 },
+  { title: '委托耗时', key: 'latency', width: 110 },
+  { title: '存活时间', key: 'alive', width: 90 },
+  { title: '未成交原因', key: 'reject_reason' },
+  { title: '关联成交', key: 'trade_id', width: 90 },
+]
+
 // ---------------------------------------------------------------------
 // 导出（需求：报告底部结构化数据导出 JSON / CSV）
 // ---------------------------------------------------------------------
@@ -845,16 +1221,49 @@ function downloadBlob(filename: string, content: string, mime: string) {
   URL.revokeObjectURL(url)
 }
 
-function exportJSON() {
+/** 拉取全量明细（4 张表，循环翻页直至 total），供导出使用（当前页 ref 只含一页） */
+async function fetchAllDetails(): Promise<{
+  trades: TradeRow[]
+  cashflows: CashflowRow[]
+  positionLogs: PositionLogRow[]
+  eventTraces: EventTraceRow[]
+}> {
+  const runId = run.value?.run_id
+  if (!runId) return { trades: [], cashflows: [], positionLogs: [], eventTraces: [] }
+  const pageOf = async <T>(path: string): Promise<T[]> => {
+    const all: T[] = []
+    let page = 1
+    let total = Infinity
+    while (all.length < total && page <= 20) {
+      const r = await apiGet<{ total: number; list: T[] }>(
+        `/Meta/Finv/Quant/Backtest/Run/${path}?runId=${runId}&page=${page}&pageSize=5000`,
+      )
+      all.push(...(r.list ?? []))
+      total = r.total ?? all.length
+      page++
+    }
+    return all
+  }
+  const [trades, cashflows, positionLogs, eventTraces] = await Promise.all([
+    pageOf<TradeRow>('Trades'),
+    pageOf<CashflowRow>('Cashflows'),
+    pageOf<PositionLogRow>('PositionLogs'),
+    pageOf<EventTraceRow>('EventTraces'),
+  ])
+  return { trades, cashflows, positionLogs, eventTraces }
+}
+
+async function exportJSON() {
+  const all = await fetchAllDetails()
   const payload = {
     run: run.value,
     strategy_detail: strategyDetail.value,
     report: report.value,
     equity_points: equity.value,
-    trades: trades.value,
-    cashflows: cashflows.value,
-    position_logs: positionLogs.value,
-    event_traces: eventTraces.value,
+    trades: all.trades,
+    cashflows: all.cashflows,
+    position_logs: all.positionLogs,
+    event_traces: all.eventTraces,
   }
   downloadBlob(`finvquant_report_${run.value?.run_no ?? 'run'}_${Date.now()}.json`, JSON.stringify(payload, null, 2), 'application/json')
 }
@@ -867,7 +1276,8 @@ function csvEscape(v: unknown): string {
   return s
 }
 
-function exportCSV() {
+async function exportCSV() {
+  const all = await fetchAllDetails()
   const lines: string[] = []
   const hr = () => lines.push('')
   // 1) 任务与报告主指标（key,value）
@@ -900,25 +1310,32 @@ function exportCSV() {
       lines.push(`${csvEscape(reason)},${cnt},${csvEscape(rejectReasonHint(reason))}`)
     }
   }
-  // 4) 成交记录
+  // 4) 资金流水明细
   hr()
-  lines.push('== 成交记录 ==')
-  lines.push('序号,时间,方向,价格,数量,金额,手续费,盈亏,持仓后,信号')
-  for (const t of trades.value) {
-    lines.push([t.seq, `${fmtDate(t.date)} ${fmtTime(t.time)}`, t.action, t.price, t.qty, t.amount, t.fee, t.profit, t.position_after, t.signal].map(csvEscape).join(','))
+  lines.push('== 资金流水明细 ==')
+  lines.push('序号,时间,类型,金额,变动前现金,变动后现金,关联成交,备注')
+  for (const cf of all.cashflows) {
+    lines.push([cf.seq, `${fmtDate(cf.date)} ${fmtTime(cf.time)}`, flowTypeName(cf.flow_type), cf.amount, cf.cash_before, cf.cash_after, cf.trade_id ? '#' + cf.trade_id : '', cf.remark].map(csvEscape).join(','))
   }
-  // 5) 持仓变化
+  // 5) 持仓变化明细
   hr()
   lines.push('== 持仓变化明细 ==')
   lines.push('序号,时间,动作,价格,数量,持仓前,持仓后,成本前,成本后,备注')
-  for (const p of positionLogs.value) {
+  for (const p of all.positionLogs) {
     lines.push([p.seq, `${fmtDate(p.date)} ${fmtTime(p.time)}`, p.action, p.price, p.qty, p.position_before, p.position_after, p.avg_cost_before, p.avg_cost_after, p.remark].map(csvEscape).join(','))
   }
-  // 6) 事件追踪
+  // 6) 成交记录
+  hr()
+  lines.push('== 成交记录 ==')
+  lines.push('序号,时间,方向,价格,数量,金额,手续费,盈亏,持仓后,信号')
+  for (const t of all.trades) {
+    lines.push([t.seq, `${fmtDate(t.date)} ${fmtTime(t.time)}`, t.action, t.price, t.qty, t.amount, t.fee, t.profit, t.position_after, t.signal].map(csvEscape).join(','))
+  }
+  // 7) 事件追踪
   hr()
   lines.push('== 事件追踪 ==')
   lines.push('序号,方向,触发原因,触发时间,结果,未成交原因')
-  for (const ev of eventTraces.value) {
+  for (const ev of all.eventTraces) {
     lines.push([ev.seq, ev.action, ev.trigger_reason, `${fmtDate(ev.trigger_date)} ${fmtTime(ev.trigger_time)}`, ev.exec_status, ev.reject_reason || ''].map(csvEscape).join(','))
   }
   downloadBlob(`finvquant_report_${run.value?.run_no ?? 'run'}_${Date.now()}.csv`, lines.join('\n'), 'text/csv')
@@ -936,6 +1353,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resizeCharts)
+  disposeChartObservers()
   disposeCharts()
   if (fullscreenChart) {
     fullscreenChart.dispose()
@@ -963,6 +1381,21 @@ onBeforeUnmount(() => {
     </v-card>
 
     <template v-if="report">
+      <!-- 返回按钮：独立贴边展示，不与标题同行 -->
+      <v-btn size="small" icon="mdi-arrow-left" variant="tonal" color="primary" class="mb-2"
+        title="返回任务列表" @click="router.push('/Meta/Finv/Quant/Backtest/Analysis')" />
+
+      <!-- 报告头：大标题独立一行（标的/周期/区间等字段在下方「回测背景信息」中展示，顶部不重复） -->
+      <v-card class="mb-3">
+        <v-card-title class="text-h5 font-weight-bold d-flex align-center flex-wrap">
+          <v-icon icon="mdi-file-chart" class="mr-2" color="primary" />
+          投资策略回测收益分析报告
+          <span v-if="run?.run_no || run?.run_id" class="text-body-1 text-medium-emphasis ml-2">
+            （{{ run.run_no || run.run_id }}）
+          </span>
+        </v-card-title>
+      </v-card>
+
       <!-- 回测背景信息（平铺展开，5 小节） -->
       <v-card class="mb-3">
         <v-card-title class="pb-0 d-flex align-center flex-wrap">
@@ -972,53 +1405,11 @@ onBeforeUnmount(() => {
             prepend-icon="mdi-alert">{{ strategyDescNote.label }}</v-chip>
         </v-card-title>
         <v-card-text>
-          <!-- ① 策略信息 -->
-          <div class="text-subtitle-2 font-weight-bold mb-1">
-            <v-icon icon="mdi-account-cog-outline" size="small" class="mr-1" />① 策略信息
-          </div>
-          <template v-if="hasStrategyDef">
-            <div class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">策略</span>
-              <span class="text-body-2">{{ run?.strategy_name }}{{ run?.strategy_code ? `（${run?.strategy_code}）` : '' }}</span>
-            </div>
-            <div class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">策略类型</span>
-              <span class="text-body-2">{{ strategyTypeName(run?.strategy_snapshot?.strategy_type) }}</span>
-            </div>
-            <div class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">策略描述</span>
-              <span class="text-body-2">{{ primaryStrategyDesc }}</span>
-            </div>
-            <div v-if="strategyDescNote" class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">当前策略说明</span>
-              <span class="text-body-2">{{ strategyDescNote.text }}</span>
-            </div>
-            <div class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">数据配置</span>
-              <span class="text-body-2">{{ dataConfigText(run?.strategy_snapshot?.data) }}</span>
-            </div>
-            <div v-if="indicators.length" class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">指标</span>
-              <span class="text-body-2 d-flex flex-wrap ga-1">
-                <v-chip v-for="ind in indicators" :key="ind.id ?? ind.type ?? indText(ind)" size="x-small" variant="outlined">
-                  {{ indText(ind) }}
-                </v-chip>
-              </span>
-            </div>
-            <div class="d-flex align-center py-1">
-              <span class="text-caption text-medium-emphasis kv-label">买卖信号</span>
-              <span class="text-body-2">{{ signalText(run?.strategy_snapshot?.signals) }}</span>
-            </div>
-          </template>
-          <v-alert v-else density="compact" type="info" variant="tonal">
-            本次回测未记录策略定义快照（策略可能已删除或定义为空），仅展示任务与报告信息。
-          </v-alert>
-
           <v-row class="mt-2">
             <!-- ② 标的与市场 -->
             <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
-                <v-icon icon="mdi-chart-box-outline" size="small" class="mr-1" />② 标的与市场
+                <v-icon icon="mdi-chart-box-outline" size="small" class="mr-1" />标的与市场
               </div>
               <div class="d-flex align-center py-1">
                 <span class="text-caption text-medium-emphasis kv-label">标的代码</span>
@@ -1049,7 +1440,7 @@ onBeforeUnmount(() => {
             <!-- ③ 账户配置 -->
             <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
-                <v-icon icon="mdi-bank-outline" size="small" class="mr-1" />③ 账户配置
+                <v-icon icon="mdi-bank-outline" size="small" class="mr-1" />账户配置
               </div>
               <div class="d-flex align-center py-1">
                 <span class="text-caption text-medium-emphasis kv-label">账户</span>
@@ -1058,9 +1449,13 @@ onBeforeUnmount(() => {
               <div class="d-flex align-center py-1">
                 <span class="text-caption text-medium-emphasis kv-label">初始资金</span>
                 <span class="text-body-2 d-flex align-center">
-                  {{ fmtNum(effectiveCapital) }}
+                  {{ fmtWan(effectiveCapital) }}
                   <v-chip v-if="options.initial_capital != null" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
                 </span>
+              </div>
+              <div v-if="options.initial_capital != null" class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">说明</span>
+                <span class="text-body-2 text-medium-emphasis">任务配置中单独指定了初始资金，优先于策略/账户默认值参与本轮回测。</span>
               </div>
               <div class="d-flex align-center py-1">
                 <span class="text-caption text-medium-emphasis kv-label">手续费率</span>
@@ -1068,6 +1463,10 @@ onBeforeUnmount(() => {
                   {{ pctRatio(effectiveCommission) }}
                   <v-chip v-if="commissionOverridden" size="x-small" color="primary" variant="tonal" class="ml-1">任务覆盖</v-chip>
                 </span>
+              </div>
+              <div v-if="commissionOverridden" class="d-flex align-center py-1">
+                <span class="text-caption text-medium-emphasis kv-label">说明</span>
+                <span class="text-body-2 text-medium-emphasis">任务配置中单独指定了手续费率，优先于策略/账户默认值参与本轮回测。</span>
               </div>
               <div class="d-flex align-center py-1">
                 <span class="text-caption text-medium-emphasis kv-label">滑点</span>
@@ -1088,7 +1487,7 @@ onBeforeUnmount(() => {
             <!-- ④ 环境配置 -->
             <v-col cols="12">
               <div class="text-subtitle-2 font-weight-bold mb-1">
-                <v-icon icon="mdi-server-outline" size="small" class="mr-1" />④ 环境配置
+                <v-icon icon="mdi-server-outline" size="small" class="mr-1" />环境配置
               </div>
               <template v-if="env">
                 <div class="d-flex align-center py-1">
@@ -1109,7 +1508,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="d-flex align-center py-1">
                   <span class="text-caption text-medium-emphasis kv-label">撮合模式</span>
-                  <span class="text-body-2">{{ fillModeName(env.config?.fill_mode ?? run?.strategy_snapshot?.data?.fill_mode) }}</span>
+                  <span class="text-body-2">{{ fillModeExplain(env.config?.fill_mode ?? run?.strategy_snapshot?.data?.fill_mode) }}</span>
                 </div>
                 <div class="d-flex align-center py-1">
                   <span class="text-caption text-medium-emphasis kv-label">币种</span>
@@ -1128,7 +1527,7 @@ onBeforeUnmount(() => {
 
           <!-- ⑤ 交易规则与限制 -->
           <div class="text-subtitle-2 font-weight-bold mt-1 mb-1">
-            <v-icon icon="mdi-list-status" size="small" class="mr-1" />⑤ 交易规则与限制
+            <v-icon icon="mdi-list-status" size="small" class="mr-1" />交易规则与限制
           </div>
           <template v-if="hasStrategyDef">
             <div class="text-caption font-weight-bold mb-1">买入规则</div>
@@ -1157,158 +1556,61 @@ onBeforeUnmount(() => {
           <v-alert v-else density="compact" type="info" variant="tonal">
             无策略定义快照，无法展示交易规则与限制。
           </v-alert>
+
+          <!-- 策略信息（放背景信息最后展示） -->
+          <div class="text-subtitle-2 font-weight-bold mt-3 mb-1">
+            <v-icon icon="mdi-account-cog-outline" size="small" class="mr-1" />策略信息
+          </div>
+          <template v-if="hasStrategyDef">
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略</span>
+              <span class="text-body-2">{{ run?.strategy_name }}{{ run?.strategy_code ? `（${run?.strategy_code}）` : '' }}</span>
+            </div>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略类型</span>
+              <span class="text-body-2">{{ strategyTypeName(run?.strategy_snapshot?.strategy_type) }}</span>
+            </div>
+            <div v-if="strategyOverview" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略概览</span>
+              <span class="text-body-2">{{ strategyOverview }}</span>
+            </div>
+            <div v-if="primaryStrategyDesc && primaryStrategyDesc !== strategyOverview" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">策略原始说明</span>
+              <span class="text-body-2 text-medium-emphasis">{{ primaryStrategyDesc }}</span>
+            </div>
+            <div v-if="strategyDescNote" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">当前策略说明</span>
+              <span class="text-body-2">{{ strategyDescNote.text }}</span>
+            </div>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">数据配置</span>
+              <span class="text-body-2">{{ dataConfigText(run?.strategy_snapshot?.data) }}</span>
+            </div>
+            <div v-if="indicators.length" class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">指标</span>
+              <span class="text-body-2 d-flex flex-wrap ga-1">
+                <v-chip v-for="ind in indicators" :key="ind.id ?? ind.type ?? indChipText(ind)" size="x-small" variant="outlined">
+                  {{ indChipText(ind) }}
+                </v-chip>
+              </span>
+            </div>
+            <div class="d-flex align-center py-1">
+              <span class="text-caption text-medium-emphasis kv-label">买卖信号</span>
+              <span class="text-body-2">{{ signalExplainText(run?.strategy_snapshot?.signals) }}</span>
+            </div>
+          </template>
+          <v-alert v-else density="compact" type="info" variant="tonal">
+            本次回测未记录策略定义快照（策略可能已删除或定义为空），仅展示任务与报告信息。
+          </v-alert>
         </v-card-text>
       </v-card>
 
-      <!-- 返回 + 报告头 -->
-      <v-card class="mb-3">
-        <v-card-title class="pb-0 d-flex align-center flex-wrap">
-          <v-btn size="small" variant="text" prepend-icon="mdi-arrow-left" class="mr-2"
-            @click="router.push('/Meta/Finv/Quant/Backtest/Analysis')">任务列表</v-btn>
-          <v-icon icon="mdi-file-chart" class="mr-2" color="primary" />
-          投资策略回测收益分析报告
-          <v-chip size="small" class="ml-2">{{ report.secu_code }}</v-chip>
-          <v-chip size="small" class="ml-1">{{ report.period }} / {{ report.report_precision }}</v-chip>
-          <v-chip size="small" class="ml-1">{{ fmtDate(report.start_date) }} ~ {{ fmtDate(report.end_date) }}</v-chip>
-          <v-chip size="small" color="grey" class="ml-1">共 {{ fmtNum(report.bar_count, 0) }} 根K线</v-chip>
-          <v-spacer />
-          <v-btn size="small" color="primary" variant="tonal" prepend-icon="mdi-export" class="ml-2"
-            @click="exportJSON">导出 JSON</v-btn>
-          <v-btn size="small" color="teal" variant="tonal" prepend-icon="mdi-file-delimited" class="ml-2"
-            @click="exportCSV">导出 CSV</v-btn>
-        </v-card-title>
-        <v-card-text>
-          <!-- 核心指标 -->
-          <v-row>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="blue">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">期末总资产</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.final_equity) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" :color="report.total_profit >= 0 ? 'green' : 'red'">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">总收益额</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.total_profit) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" :color="report.total_return_pct >= 0 ? 'green' : 'red'">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">⑥ 到期收益率</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtPct(report.total_return_pct) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="teal">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">年化收益率</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtPct(report.annual_return_pct) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="orange">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">最大回撤</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtPct(report.max_drawdown_pct) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="purple">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">夏普比率</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.sharpe_ratio) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="indigo">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">胜率</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtPct(report.win_rate_pct) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="brown">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">盈亏比</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.profit_factor) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="cyan">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">④ 最大投入</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.max_invested) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="light-blue">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">⑤ 平均投入</div>
-                  <div class="text-h6 font-weight-bold">{{ fmtNum(report.avg_invested) }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="grey">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">持仓天数</div>
-                  <div class="text-h6 font-weight-bold">{{ report.invested_days }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="6" sm="4" md="3" lg="2">
-              <v-card variant="tonal" color="blue-grey">
-                <v-card-text class="pa-2 text-center">
-                  <div class="text-caption">交易笔数</div>
-                  <div class="text-h6 font-weight-bold">{{ report.trade_count }}</div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <v-row class="mt-1">
-            <v-col cols="12" md="6">
-              <v-table density="compact">
-                <tbody>
-                  <tr><td class="text-body-2">初始启动资金</td><td class="text-right">{{ fmtNum(report.initial_capital) }}</td></tr>
-                  <tr><td class="text-body-2">手续费总额</td><td class="text-right">{{ fmtNum(report.total_fee) }}</td></tr>
-                  <tr><td class="text-body-2">买入 / 卖出笔数</td><td class="text-right">{{ report.buy_count }} / {{ report.sell_count }}</td></tr>
-                  <tr><td class="text-body-2">盈利 / 亏损平仓</td><td class="text-right">{{ report.win_count }} / {{ report.loss_count }}</td></tr>
-                </tbody>
-              </v-table>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-table density="compact">
-                <tbody>
-                  <tr><td class="text-body-2">年化波动率</td><td class="text-right">{{ fmtPct(report.volatility_pct) }}</td></tr>
-                  <tr><td class="text-body-2">最佳 / 最差单期收益</td><td class="text-right">{{ fmtPct(report.best_day_pct) }} / {{ fmtPct(report.worst_day_pct) }}</td></tr>
-                  <tr><td class="text-body-2">盈利 / 亏损期数</td><td class="text-right">{{ report.profit_days }} / {{ report.loss_days }}</td></tr>
-                  <tr><td class="text-body-2">报告生成时间</td><td class="text-right">{{ report.generated_at?.replace('T', ' ').slice(0, 19) }}</td></tr>
-                </tbody>
-              </v-table>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-
-      <!-- 曲线图（全宽 + 放大/全屏） -->
+      <!-- 曲线图（全宽 + 放大/全屏；标题无序号） -->
       <v-row>
         <v-col cols="12">
           <v-card class="mb-3">
             <v-card-title class="text-subtitle-1 d-flex align-center">
-              <span class="flex-grow-1">① 账户余额曲线</span>
+              <span class="flex-grow-1">总资产曲线</span>
               <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('equity')" />
             </v-card-title>
             <v-card-text class="pt-0">
@@ -1319,7 +1621,29 @@ onBeforeUnmount(() => {
         <v-col cols="12">
           <v-card class="mb-3">
             <v-card-title class="text-subtitle-1 d-flex align-center">
-              <span class="flex-grow-1">② 投资收益率曲线</span>
+              <span class="flex-grow-1">现金曲线</span>
+              <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('cash')" />
+            </v-card-title>
+            <v-card-text class="pt-0">
+              <div :ref="el => setChartRef('cash', el)" style="height: 320px" />
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card class="mb-3">
+            <v-card-title class="text-subtitle-1 d-flex align-center">
+              <span class="flex-grow-1">持仓市值曲线</span>
+              <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('positionValue')" />
+            </v-card-title>
+            <v-card-text class="pt-0">
+              <div :ref="el => setChartRef('positionValue', el)" style="height: 320px" />
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12">
+          <v-card class="mb-3">
+            <v-card-title class="text-subtitle-1 d-flex align-center">
+              <span class="flex-grow-1">投资收益率曲线</span>
               <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('roi')" />
             </v-card-title>
             <v-card-text class="pt-0">
@@ -1330,7 +1654,7 @@ onBeforeUnmount(() => {
         <v-col cols="12">
           <v-card class="mb-3">
             <v-card-title class="text-subtitle-1 d-flex align-center">
-              <span class="flex-grow-1">③ 累计收益额曲线</span>
+              <span class="flex-grow-1">累计收益额曲线</span>
               <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('profit')" />
             </v-card-title>
             <v-card-text class="pt-0">
@@ -1341,196 +1665,240 @@ onBeforeUnmount(() => {
         <v-col cols="12">
           <v-card class="mb-3">
             <v-card-title class="text-subtitle-1 d-flex align-center">
-              <span class="flex-grow-1">⑦ 账户持仓金额曲线</span>
-              <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('position')" />
+              <span class="flex-grow-1">持仓数量变化曲线</span>
+              <v-btn size="small" variant="text" icon="mdi-fullscreen" title="放大/全屏" @click="openFullscreen('positionQty')" />
             </v-card-title>
             <v-card-text class="pt-0">
-              <div :ref="el => setChartRef('position', el)" style="height: 320px" />
+              <div :ref="el => setChartRef('positionQty', el)" style="height: 320px" />
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
 
-      <!-- 信号归因 + ⑨ 链路追踪统计 -->
+      <!-- 链路追踪明细：4 个独立表格按顺序排列（服务端分页） -->
       <v-card class="mb-3">
         <v-card-title class="text-subtitle-1">
-          <v-icon icon="mdi-sigma" class="mr-2" color="primary" />信号归因
+          <v-icon icon="mdi-cash-multiple" class="mr-2" color="primary" />资金流水明细（{{ cashflowTotal }}）
         </v-card-title>
-        <v-card-text v-if="report.trade_signal_detail && Object.keys(report.trade_signal_detail).length">
-          <v-chip v-for="(cnt, sig) in report.trade_signal_detail" :key="sig" class="mr-2 mb-1">
-            {{ sig }}：{{ cnt }} 笔
-          </v-chip>
-        </v-card-text>
+        <v-data-table-server v-model:page="cashflowPage" v-model:items-per-page="cashflowPageSize"
+          :headers="cashflowHeaders" :items="cashflows" :items-length="cashflowTotal" item-value="cashflow_id"
+          @update:options="loadCashflowPage" density="compact">
+          <template #item.timeText="{ item }">
+            {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
+          </template>
+          <template #item.flow_type="{ item }">
+            <v-chip size="x-small" :color="flowTypeColor(item.flow_type)">{{ flowTypeName(item.flow_type) }}</v-chip>
+          </template>
+          <template #item.amount="{ item }">
+            <span :class="item.amount < 0 ? 'text-error' : 'text-success'">{{ fmtWan(item.amount) }}</span>
+          </template>
+          <template #item.cash_before="{ item }">
+            <span>{{ fmtWan(item.cash_before) }}</span>
+          </template>
+          <template #item.cash_after="{ item }">
+            <span>{{ fmtWan(item.cash_after) }}</span>
+          </template>
+          <template #item.trade_id="{ item }">
+            <span>{{ item.trade_id ? '#' + item.trade_id : '-' }}</span>
+          </template>
+        </v-data-table-server>
       </v-card>
 
-      <!-- ⑨ 链路追踪统计（事件触发/成交/拒绝/委托耗时） -->
-      <v-card v-if="report.event_stats" class="mb-3">
+      <v-card class="mb-3">
         <v-card-title class="text-subtitle-1">
-          <v-icon icon="mdi-routes" class="mr-2" color="primary" />⑨ 链路追踪统计（事件触发 → 委托 → 成交/拒绝）
+          <v-icon icon="mdi-briefcase-variant-outline" class="mr-2" color="primary" />持仓变化明细（{{ positionLogTotal }}）
+        </v-card-title>
+        <v-data-table-server v-model:page="positionLogPage" v-model:items-per-page="positionLogPageSize"
+          :headers="positionLogHeaders" :items="positionLogs" :items-length="positionLogTotal" item-value="log_id"
+          @update:options="loadPositionLogPage" density="compact">
+          <template #item.timeText="{ item }">
+            {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
+          </template>
+          <template #item.action="{ item }">
+            <v-chip size="x-small" :color="posActionColor(item.action)">{{ posActionName(item.action) }}</v-chip>
+          </template>
+          <template #item.qty="{ item }">
+            <span :class="item.qty < 0 ? 'text-error' : 'text-success'">{{ fmtNum(item.qty, 4) }}</span>
+          </template>
+          <template #item.trade_id="{ item }">
+            <span>{{ item.trade_id ? '#' + item.trade_id : '-' }}</span>
+          </template>
+        </v-data-table-server>
+      </v-card>
+
+      <v-card class="mb-3">
+        <v-card-title class="text-subtitle-1">
+          <v-icon icon="mdi-swap-horizontal" class="mr-2" color="primary" />成交记录（{{ tradeTotal }}）
+        </v-card-title>
+        <v-data-table-server v-model:page="tradePage" v-model:items-per-page="tradePageSize"
+          :headers="tradeHeaders" :items="trades" :items-length="tradeTotal" item-value="trade_id"
+          @update:options="loadTradesPage" density="compact">
+          <template #item.timeText="{ item }">
+            {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
+          </template>
+          <template #item.action="{ item }">
+            <v-chip size="small" :color="item.action === 'BUY' ? 'red' : 'green'">
+              {{ item.action === 'BUY' ? '买入' : '卖出' }}
+            </v-chip>
+          </template>
+          <template #item.amount="{ item }">
+            <span>{{ fmtWan(item.amount) }}</span>
+          </template>
+          <template #item.fee="{ item }">
+            <span>{{ fmtWan(item.fee) }}</span>
+          </template>
+          <template #item.profit="{ item }">
+            <span :class="item.profit > 0 ? 'text-success' : item.profit < 0 ? 'text-error' : ''">
+              {{ fmtWan(item.profit) }}
+            </span>
+          </template>
+          <template #item.remark="{ item }">
+            <span class="text-caption">{{ item.remark || '-' }}</span>
+          </template>
+        </v-data-table-server>
+      </v-card>
+
+      <v-card class="mb-3">
+        <v-card-title class="text-subtitle-1">
+          <v-icon icon="mdi-routes" class="mr-2" color="primary" />回测期间交易事件回放（{{ eventTraceTotal }}）
+        </v-card-title>
+        <v-data-table-server v-model:page="eventTracePage" v-model:items-per-page="eventTracePageSize"
+          :headers="eventTraceHeaders" :items="eventTraces" :items-length="eventTraceTotal" item-value="event_id"
+          @update:options="loadEventTracePage" density="compact">
+          <template #item.action="{ item }">
+            <v-chip size="x-small" :color="item.action === 'BUY' ? 'red' : 'green'">{{ item.action === 'BUY' ? '买入' : '卖出' }}</v-chip>
+          </template>
+          <template #item.trigger_date="{ item }">
+            {{ fmtDateTimeLocal(item.trigger_date, item.trigger_time) }}
+          </template>
+          <template #item.order_date="{ item }">
+            {{ fmtDateTimeLocal(item.order_date, item.order_time) }}
+          </template>
+          <template #item.exec_status="{ item }">
+            <v-chip size="x-small" :color="execStatusColor(item.exec_status)">{{ execStatusName(item.exec_status) }}</v-chip>
+          </template>
+          <template #item.exec_date="{ item }">
+            {{ item.exec_status === 'FILLED' ? fmtDateTimeLocal(item.exec_date, item.exec_time) : '-' }}
+          </template>
+          <template #item.latency="{ item }">
+            {{ item.exec_status === 'FILLED' ? item.latency_bars + ' bar / ' + item.latency_sec + 's' : '-' }}
+          </template>
+          <template #item.alive="{ item }">
+            {{ item.exec_status !== 'PENDING' ? item.alive_sec + 's' : '-' }}
+          </template>
+          <template #item.reject_reason="{ item }">
+            <span class="text-error text-caption">{{ item.reject_reason || '-' }}</span>
+          </template>
+          <template #item.trade_id="{ item }">
+            <span>{{ item.trade_id ? '#' + item.trade_id : '-' }}</span>
+          </template>
+        </v-data-table-server>
+      </v-card>
+
+      <!-- 回测结果指标：按语义分组（收益 / 风险 / 交易 / 资金） -->
+      <v-card class="mb-3">
+        <v-card-title class="text-subtitle-1">
+          <v-icon icon="mdi-chart-donut" class="mr-2" color="primary" />回测结果评估指标
         </v-card-title>
         <v-card-text>
-          <v-row>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="blue"><v-card-text class="pa-2 text-center"><div class="text-caption">事件触发总数</div><div class="text-h6">{{ report.event_stats.trigger_count }}</div></v-card-text></v-card></v-col>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="green"><v-card-text class="pa-2 text-center"><div class="text-caption">成交事件</div><div class="text-h6">{{ report.event_stats.filled_count }}</div></v-card-text></v-card></v-col>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="red"><v-card-text class="pa-2 text-center"><div class="text-caption">拒绝事件</div><div class="text-h6">{{ report.event_stats.rejected_count }}</div></v-card-text></v-card></v-col>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="orange"><v-card-text class="pa-2 text-center"><div class="text-caption">过期事件</div><div class="text-h6">{{ report.event_stats.expired_count }}</div></v-card-text></v-card></v-col>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均委托耗时</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_bars, 2) }} bar</div></v-card-text></v-card></v-col>
-            <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均耗时（秒）</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_sec, 2) }} s</div></v-card-text></v-card></v-col>
-          </v-row>
-
-          <!-- 未成交原因分布：可读化（原因 + 计数 + 说明/建议） -->
-          <v-row v-if="report.event_stats.reject_reasons && Object.keys(report.event_stats.reject_reasons).length" class="mt-2">
-            <v-col cols="12">
-              <div class="text-subtitle-2 text-medium-emphasis mb-1">未成交原因分布（含解决建议）：</div>
-              <v-table density="compact">
-                <thead>
-                  <tr><th>未成交原因</th><th class="text-right" style="width: 110px">次数</th><th>说明 / 解决建议</th></tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(cnt, reason) in report.event_stats.reject_reasons" :key="reason">
-                    <td class="text-error text-body-2">{{ reason }}</td>
-                    <td class="text-right text-body-2 font-weight-bold">{{ cnt }}</td>
-                    <td class="text-caption text-medium-emphasis">{{ rejectReasonHint(reason) || '-' }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-col>
-          </v-row>
+          <template v-for="g in metricGroups" :key="g.title">
+            <div class="text-subtitle-2 font-weight-bold mb-1 mt-2 d-flex align-center">
+              <v-icon :icon="g.icon" size="small" class="mr-1" :color="g.color" />{{ g.title }}
+            </div>
+            <v-row>
+              <v-col v-for="m in g.items" :key="g.title + m.label" cols="6" sm="4" md="3" lg="2">
+                <v-card variant="tonal" :color="m.color">
+                  <v-card-text class="pa-2 text-center">
+                    <div class="text-caption text-truncate" :title="m.label">{{ m.label }}</div>
+                    <div class="text-h6 font-weight-bold text-truncate" :title="m.value">{{ m.value }}</div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </template>
         </v-card-text>
       </v-card>
 
-      <!-- ⑨ 链路追踪明细：成交记录 / 资金流水 / 持仓变化 / 事件追踪 -->
-      <v-card>
-        <v-tabs v-model="traceTab" color="primary">
-          <v-tab value="trades"><v-icon icon="mdi-swap-horizontal" class="mr-1" />成交记录（{{ report.trade_count }}）</v-tab>
-          <v-tab value="cashflows"><v-icon icon="mdi-cash-multiple" class="mr-1" />资金流水明细（{{ cashflows.length }}）</v-tab>
-          <v-tab value="positionLogs"><v-icon icon="mdi-briefcase-variant-outline" class="mr-1" />持仓变化明细（{{ positionLogs.length }}）</v-tab>
-          <v-tab value="eventTraces"><v-icon icon="mdi-routes" class="mr-1" />事件追踪（{{ eventTraces.length }}）</v-tab>
-        </v-tabs>
-        <v-window v-model="traceTab">
-          <!-- 成交记录 -->
-          <v-window-item value="trades">
-            <v-data-table-server v-model:page="tradePage" v-model:items-per-page="tradePageSize"
-              :headers="[
-                { title: '时间', key: 'timeText', width: 170 },
-                { title: '方向', key: 'action', width: 80 },
-                { title: '价格', key: 'price', width: 100 },
-                { title: '数量', key: 'qty', width: 100 },
-                { title: '金额', key: 'amount', width: 120 },
-                { title: '手续费', key: 'fee', width: 100 },
-                { title: '盈亏', key: 'profit', width: 110 },
-                { title: '持仓后', key: 'position_after', width: 100 },
-                { title: '信号', key: 'signal' },
-                { title: '备注', key: 'remark', width: 110 },
-              ]" :items="trades" :items-length="tradeTotal" item-value="trade_id"
-              @update:options="loadTradesPage">
-              <template #item.timeText="{ item }">
-                {{ fmtDate(item.date) }} {{ String(item.time).padStart(6, '0').slice(0, 2) }}:{{ String(item.time).padStart(6, '0').slice(2, 4) }}
-              </template>
-              <template #item.action="{ item }">
-                <v-chip size="small" :color="item.action === 'BUY' ? 'red' : 'green'">
-                  {{ item.action === 'BUY' ? '买入' : '卖出' }}
-                </v-chip>
-              </template>
-              <template #item.profit="{ item }">
-                <span :class="item.profit > 0 ? 'text-success' : item.profit < 0 ? 'text-error' : ''">
-                  {{ fmtNum(item.profit) }}
-                </span>
-              </template>
-              <template #item.remark="{ item }">
-                <span class="text-caption">{{ item.remark || '-' }}</span>
-              </template>
-            </v-data-table-server>
-          </v-window-item>
+      <!-- 回测复盘分析：信号归因 + 链路追踪统计 -->
+      <v-card class="mb-3">
+        <v-card-title class="text-subtitle-1">
+          <v-icon icon="mdi-file-chart-check-outline" class="mr-2" color="primary" />回测复盘分析
+        </v-card-title>
+        <v-card-text>
+          <!-- 信号归因 -->
+          <div v-if="report.trade_signal_detail && Object.keys(report.trade_signal_detail).length" class="mb-2">
+            <div class="text-subtitle-2 text-medium-emphasis mb-1">信号归因（各信号触发的实际成交笔数）：</div>
+            <v-chip v-for="(cnt, sig) in report.trade_signal_detail" :key="sig" class="mr-2 mb-1" label variant="tonal">
+              {{ signalExplain(sig) }}：{{ cnt }} 笔
+            </v-chip>
+          </div>
 
-          <!-- 资金流水明细 -->
-          <v-window-item value="cashflows">
-            <v-table density="compact">
-              <thead>
-                <tr><th>序号</th><th>时间</th><th>类型</th><th>金额</th><th>变动前现金</th><th>变动后现金</th><th>关联成交</th><th>备注</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="cf in cashflows" :key="cf.cashflow_id">
-                  <td>{{ cf.seq }}</td>
-                  <td>{{ fmtDate(cf.date) }} {{ String(cf.time).padStart(6, '0').slice(0, 2) }}:{{ String(cf.time).padStart(6, '0').slice(2, 4) }}</td>
-                  <td>
-                    <v-chip size="x-small" :color="flowTypeColor(cf.flow_type)">{{ flowTypeName(cf.flow_type) }}</v-chip>
-                  </td>
-                  <td :class="cf.amount < 0 ? 'text-error' : 'text-success'">{{ fmtNum(cf.amount) }}</td>
-                  <td>{{ fmtNum(cf.cash_before) }}</td>
-                  <td>{{ fmtNum(cf.cash_after) }}</td>
-                  <td>{{ cf.trade_id ? '#' + cf.trade_id : '-' }}</td>
-                  <td class="text-caption">{{ cf.remark }}</td>
-                </tr>
-                <tr v-if="!cashflows.length"><td colspan="8" class="text-center text-medium-emphasis py-4">暂无资金流水</td></tr>
-              </tbody>
-            </v-table>
-          </v-window-item>
+          <!-- 链路追踪统计（事件触发 → 委托 → 成交/拒绝） -->
+          <template v-if="report.event_stats">
+            <div class="text-subtitle-2 text-medium-emphasis mb-1 mt-2">链路追踪统计（事件触发 → 委托 → 成交/拒绝）：</div>
+            <v-row>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="blue"><v-card-text class="pa-2 text-center"><div class="text-caption">事件触发总数</div><div class="text-h6">{{ report.event_stats.trigger_count }}</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="green"><v-card-text class="pa-2 text-center"><div class="text-caption">成交事件</div><div class="text-h6">{{ report.event_stats.filled_count }}</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="red"><v-card-text class="pa-2 text-center"><div class="text-caption">拒绝事件</div><div class="text-h6">{{ report.event_stats.rejected_count }}</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="orange"><v-card-text class="pa-2 text-center"><div class="text-caption">过期事件</div><div class="text-h6">{{ report.event_stats.expired_count }}</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均委托耗时</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_bars, 2) }} bar</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">平均耗时（秒）</div><div class="text-h6">{{ fmtNum(report.event_stats.avg_latency_sec, 2) }} s</div></v-card-text></v-card></v-col>
+            </v-row>
 
-          <!-- 持仓变化明细 -->
-          <v-window-item value="positionLogs">
-            <v-table density="compact">
-              <thead>
-                <tr><th>序号</th><th>时间</th><th>动作</th><th>价格</th><th>变动数量</th><th>持仓前</th><th>持仓后</th><th>成本前</th><th>成本后</th><th>关联成交</th><th>备注</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="pl in positionLogs" :key="pl.log_id">
-                  <td>{{ pl.seq }}</td>
-                  <td>{{ fmtDate(pl.date) }} {{ String(pl.time).padStart(6, '0').slice(0, 2) }}:{{ String(pl.time).padStart(6, '0').slice(2, 4) }}</td>
-                  <td>
-                    <v-chip size="x-small" :color="posActionColor(pl.action)">{{ posActionName(pl.action) }}</v-chip>
-                  </td>
-                  <td>{{ fmtNum(pl.price) }}</td>
-                  <td :class="pl.qty < 0 ? 'text-error' : 'text-success'">{{ fmtNum(pl.qty, 4) }}</td>
-                  <td>{{ fmtNum(pl.position_before, 4) }}</td>
-                  <td>{{ fmtNum(pl.position_after, 4) }}</td>
-                  <td>{{ fmtNum(pl.avg_cost_before) }}</td>
-                  <td>{{ fmtNum(pl.avg_cost_after) }}</td>
-                  <td>{{ pl.trade_id ? '#' + pl.trade_id : '-' }}</td>
-                  <td class="text-caption">{{ pl.remark }}</td>
-                </tr>
-                <tr v-if="!positionLogs.length"><td colspan="11" class="text-center text-medium-emphasis py-4">暂无持仓变化</td></tr>
-              </tbody>
-            </v-table>
-          </v-window-item>
+            <!-- 未成交原因分布：可读化（原因 + 计数 + 说明/建议） -->
+            <v-row v-if="report.event_stats.reject_reasons && Object.keys(report.event_stats.reject_reasons).length" class="mt-2">
+              <v-col cols="12">
+                <div class="text-subtitle-2 text-medium-emphasis mb-1">未成交原因分布（含解决建议）：</div>
+                <v-table density="compact">
+                  <thead>
+                    <tr><th>未成交原因</th><th class="text-right" style="width: 110px">次数</th><th>说明 / 解决建议</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="[reason, cnt] in sortedRejectReasons" :key="reason">
+                      <td class="text-error text-body-2">{{ reason }}</td>
+                      <td class="text-right text-body-2 font-weight-bold">{{ cnt }}</td>
+                      <td class="text-caption text-medium-emphasis">{{ rejectReasonHint(reason) || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+            </v-row>
+          </template>
 
-          <!-- 事件追踪 -->
-          <v-window-item value="eventTraces">
-            <v-table density="compact">
-              <thead>
-                <tr><th>序号</th><th>方向</th><th>触发原因</th><th>触发时间</th><th>委托下单时间</th><th>结果</th><th>成交时间</th><th>委托耗时</th><th>存活时间</th><th>未成交原因</th><th>关联成交</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="ev in eventTraces" :key="ev.event_id">
-                  <td>{{ ev.seq }}</td>
-                  <td>
-                    <v-chip size="x-small" :color="ev.action === 'BUY' ? 'red' : 'green'">{{ ev.action === 'BUY' ? '买入' : '卖出' }}</v-chip>
-                  </td>
-                  <td>{{ ev.trigger_reason }}</td>
-                  <td>{{ fmtDateTimeLocal(ev.trigger_date, ev.trigger_time) }}</td>
-                  <td>{{ fmtDateTimeLocal(ev.order_date, ev.order_time) }}</td>
-                  <td>
-                    <v-chip size="x-small" :color="execStatusColor(ev.exec_status)">{{ execStatusName(ev.exec_status) }}</v-chip>
-                  </td>
-                  <td>{{ ev.exec_status === 'FILLED' ? fmtDateTimeLocal(ev.exec_date, ev.exec_time) : '-' }}</td>
-                  <td>{{ ev.exec_status === 'FILLED' ? ev.latency_bars + ' bar / ' + ev.latency_sec + 's' : '-' }}</td>
-                  <td>{{ ev.exec_status !== 'PENDING' ? ev.alive_sec + 's' : '-' }}</td>
-                  <td class="text-error text-caption">{{ ev.reject_reason || '-' }}</td>
-                  <td>{{ ev.trade_id ? '#' + ev.trade_id : '-' }}</td>
-                </tr>
-                <tr v-if="!eventTraces.length"><td colspan="11" class="text-center text-medium-emphasis py-4">暂无事件追踪记录</td></tr>
-              </tbody>
-            </v-table>
-          </v-window-item>
-        </v-window>
+          <!-- 风控复盘分析 -->
+          <template v-if="report.event_stats">
+            <div class="text-subtitle-2 text-medium-emphasis mb-1 mt-3">风控复盘分析（止损/止盈等风控条件的触发与执行情况）：</div>
+            <v-row>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="red"><v-card-text class="pa-2 text-center"><div class="text-caption">止损触发</div><div class="text-h6">{{ riskReview.stopLoss }} 次</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="teal"><v-card-text class="pa-2 text-center"><div class="text-caption">止盈触发</div><div class="text-h6">{{ riskReview.takeProfit }} 次</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="blue"><v-card-text class="pa-2 text-center"><div class="text-caption">买入信号触发</div><div class="text-h6">{{ riskReview.buySignal }} 次</div></v-card-text></v-card></v-col>
+              <v-col cols="6" sm="3" lg="2"><v-card variant="tonal" color="blue"><v-card-text class="pa-2 text-center"><div class="text-caption">卖出信号触发</div><div class="text-h6">{{ riskReview.sellSignal }} 次</div></v-card-text></v-card></v-col>
+              <v-col v-if="riskReview.other" cols="6" sm="3" lg="2"><v-card variant="tonal" color="grey"><v-card-text class="pa-2 text-center"><div class="text-caption">其他触发</div><div class="text-h6">{{ riskReview.other }} 次</div></v-card-text></v-card></v-col>
+            </v-row>
+            <div class="text-caption text-medium-emphasis mt-1">
+              本轮回测事件共触发 {{ riskReview.total }} 次：止损 {{ riskReview.stopLoss }} 次、止盈 {{ riskReview.takeProfit }} 次、买入信号 {{ riskReview.buySignal }} 次、卖出信号 {{ riskReview.sellSignal }} 次。
+              <template v-if="riskReview.stopLoss > 0">止损单在价格触及持仓成本下方止损位时按止损价离场，本轮回测共承担 {{ riskReview.stopLoss }} 次止损对应的价格回落。</template>
+              <template v-else>本轮回测未触发止损。</template>
+            </div>
+          </template>
+        </v-card-text>
       </v-card>
+
+      <!-- 报告生成时间 + 导出按钮（报告最底部，居中展示） -->
+      <div class="text-center text-caption text-medium-emphasis mb-1">
+        报告生成时间：{{ (report.generated_at ?? '').replace('T', ' ').slice(0, 19) }}
+      </div>
+      <div class="d-flex justify-center ga-2 mb-4">
+        <v-btn color="primary" variant="tonal" prepend-icon="mdi-export-variant" @click="exportJSON">导出 JSON</v-btn>
+        <v-btn color="teal" variant="tonal" prepend-icon="mdi-file-delimited" @click="exportCSV">导出 CSV</v-btn>
+      </div>
     </template>
 
     <!-- 图表全屏放大 Dialog -->
     <v-dialog v-model="fullscreenDialog" fullscreen transition="fade-transition">
       <v-card>
         <v-toolbar color="primary" density="comfortable">
-          <v-toolbar-title>图表放大：{{ fullscreenKey }}</v-toolbar-title>
+          <v-toolbar-title>图表放大：{{ chartTitles[fullscreenKey] ?? fullscreenKey }}</v-toolbar-title>
           <v-spacer />
           <v-btn icon="mdi-close" @click="closeFullscreen" title="关闭" />
         </v-toolbar>
@@ -1543,10 +1911,22 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* 回测背景信息卡片：label 固定宽度，value 紧跟左对齐 */
+/* 回测背景信息卡片：label 固定等宽，保证各行的第二列（描述/值）统一左对齐起点 */
 .kv-label {
-  min-width: 96px;
+  width: 128px;
   flex-shrink: 0;
   padding-right: 8px;
+}
+
+/* 明细表格：强制 table-layout fixed，使列按比例撑满整表宽度，
+   导航折叠后容器变宽时不再右侧留白（无宽度列的备注列吸收剩余空间） */
+:deep(.v-data-table .v-table__wrapper > table) {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* 明细表格分页器（每页条数 / 页码）整体居中展示 */
+:deep(.v-data-table .v-data-table-footer) {
+  justify-content: center;
 }
 </style>
