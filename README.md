@@ -1,13 +1,32 @@
 # FinvQuant
 
-![Release](https://img.shields.io/github/v/release/ACANX/FinvQuant?style=flat-square&label=Release&color=blue)
-![Tag](https://img.shields.io/github/v/tag/ACANX/FinvQuant?style=flat-square&label=Version)
-![CI](https://img.shields.io/github/actions/workflow/status/ACANX/FinvQuant/CI.yml?branch=dev&style=flat-square&label=CI)
-![Go](https://img.shields.io/github/go-mod/go-version/ACANX/FinvQuant?style=flat-square&label=Go)
-![Vue](https://img.shields.io/badge/Vue-3%20%7C%20Vite%208%20%7C%20Vuetify%204-42b883?style=flat-square)
-![License](https://img.shields.io/github/license/ACANX/FinvQuant?style=flat-square&label=License)
-![Last Commit](https://img.shields.io/github/last-commit/ACANX/FinvQuant?style=flat-square&label=Last%20Commit)
-![Language](https://img.shields.io/github/languages/top/ACANX/FinvQuant?style=flat-square&label=Top%20Language)
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/ACANX/FinvQuant?style=flat-square&label=Release&color=blue" alt="Release">
+  <img src="https://img.shields.io/github/v/tag/ACANX/FinvQuant?style=flat-square&label=Version" alt="Version">
+  <img src="https://img.shields.io/github/release-date/ACANX/FinvQuant?style=flat-square&label=Released&color=green" alt="Release Date">
+  <img src="https://img.shields.io/github/actions/workflow/status/ACANX/FinvQuant/CI.yml?branch=dev&style=flat-square&label=CI" alt="CI">
+  <img src="https://img.shields.io/github/last-commit/ACANX/FinvQuant?branch=dev&style=flat-square&label=Last%20Commit" alt="Last Commit">
+  <img src="https://img.shields.io/github/commit-activity/m/ACANX/FinvQuant?style=flat-square&label=Commits%2Fmo" alt="Commit Activity">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/go-mod/go-version/ACANX/FinvQuant?style=flat-square&label=Go" alt="Go">
+  <img src="https://img.shields.io/badge/Vue-3%20%7C%20Vite%208%20%7C%20Vuetify%204-42b883?style=flat-square" alt="Vue">
+  <img src="https://img.shields.io/badge/PostgreSQL-18-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Redis-8-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/GHCR-Image-0969DA?style=flat-square&logo=github&logoColor=white" alt="GHCR">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/license/ACANX/FinvQuant?style=flat-square&label=License" alt="License">
+  <img src="https://img.shields.io/github/languages/top/ACANX/FinvQuant?style=flat-square&label=Top%20Language" alt="Language">
+  <img src="https://img.shields.io/github/languages/code-size/ACANX/FinvQuant?style=flat-square&label=Code%20Size" alt="Code Size">
+  <img src="https://img.shields.io/github/repo-size/ACANX/FinvQuant?style=flat-square&label=Repo%20Size" alt="Repo Size">
+  <img src="https://img.shields.io/github/issues/ACANX/FinvQuant?style=flat-square&label=Issues" alt="Issues">
+  <img src="https://img.shields.io/github/issues-pr/ACANX/FinvQuant?style=flat-square&label=PRs" alt="PRs">
+  <img src="https://img.shields.io/github/stars/ACANX/FinvQuant?style=flat-square&label=Stars&color=yellow" alt="Stars">
+</p>
 ![Stars](https://img.shields.io/github/stars/ACANX/FinvQuant?style=flat-square&label=Stars)
 
 **量化策略交易平台** v0.1.0 — 前后端分离架构，支持通用量化回测全链路。
