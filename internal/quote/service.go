@@ -61,61 +61,36 @@ type Bar struct {
 	Remark    *string  `json:"remark"`     // 备注
 }
 
-// QueryBars 按证券代码 + 交易日（可多日回溯）分页查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
-// days 表示回溯最近 N 个交易日：取该证券代码 date 当天及之前最近 N 个有数据的交易日，days=1 仅查当天。
-// page 从 1 开始；pageSize 默认为 240（全天 4 小时交易时段约 240 根分钟线）。
-// 返回当前页 bars（按日期、时间升序）与满足条件的总条数 total。
-func (s *Service) QueryBars(ctx context.Context, secuCode string, date int, period string, days, page, pageSize int) ([]Bar, int, error) {
+// QueryBars 按证券代码 + ts 时间范围查询分钟级 K 线（周期目前仅支持 Min=1 分钟）。
+// startTS/endTS 为 UTC 秒，取 [startTS, endTS] 闭区间内全部记录（不分页），
+// 适配单日数据量可变的 A 股/港股/美股/24h 电子盘（如 GCMain 全天约 2181 根），
+// 避免固定 page_size 截断；拖动窗口即改变 ts 范围重新查询。
+// 返回按 ts 升序的全部 bars 与总条数 total。
+func (s *Service) QueryBars(ctx context.Context, secuCode, period string, startTS, endTS int64) ([]Bar, int, error) {
 	if secuCode == "" {
 		return nil, 0, fmt.Errorf("secu_code 不能为空")
-	}
-	if date <= 0 {
-		return nil, 0, fmt.Errorf("date 必须为有效的交易日期（yyyymmdd）")
 	}
 	// 周期目前仅支持 1 分钟（Min），其他周期暂不支持
 	if period != "" && period != "Min" {
 		return nil, 0, fmt.Errorf("周期 %s 暂不支持，目前仅支持 Min（1 分钟）", period)
 	}
-	if days < 1 {
-		days = 1
+	if startTS <= 0 || endTS < startTS {
+		return nil, 0, fmt.Errorf("时间范围非法：start_ts=%d end_ts=%d", startTS, endTS)
 	}
-	if days > 10 {
-		days = 10
-	}
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 {
-		pageSize = 240
-	}
-	if pageSize > 1000 {
-		pageSize = 1000
-	}
-
-	// 多日查询：date 当天及之前最近 days 个有数据的交易日（按 date 倒序去重取前 N）
-	dayFilter := `
-date IN (
-  SELECT DISTINCT date FROM finv_quote_secu_kline_min
-  WHERE secu_code = $2 AND date <= $3
-  ORDER BY date DESC
-  LIMIT $4
-)`
 
 	var total int
 	if err := s.pool.QueryRow(ctx, `
 SELECT COUNT(*)
 FROM finv_quote_secu_kline_min
-WHERE secu_code = $1 AND `+dayFilter, secuCode, secuCode, date, days).Scan(&total); err != nil {
+WHERE secu_code = $1 AND ts BETWEEN $2 AND $3`, secuCode, startTS, endTS).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
-	offset := (page - 1) * pageSize
 	rows, err := s.pool.Query(ctx, `
 SELECT ts, date, "time", open, high, low, close, volume, turnover, prev_close, remark
 FROM finv_quote_secu_kline_min
-WHERE secu_code = $1 AND `+dayFilter+`
-ORDER BY date ASC, ts ASC
-LIMIT $5 OFFSET $6`, secuCode, secuCode, date, days, pageSize, offset)
+WHERE secu_code = $1 AND ts BETWEEN $2 AND $3
+ORDER BY ts ASC`, secuCode, startTS, endTS)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -152,6 +127,23 @@ func computeChange(closeVal, prevClose *string) (*string, *string) {
 	return &changeStr, &pctStr
 }
 
+// DateToTS 将 yyyymmdd 转为 UTC 秒（当日 00:00）。
+func DateToTS(date int) int64 {
+	year := date / 10000
+	month := (date / 100) % 100
+	day := date % 100
+	t := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	return t.Unix()
+}
+
+// DateRangeToTS 将 yyyymmdd + 回溯天数（自然日）转为 ts 范围（UTC 秒，闭区间）。
+// 结束 = 该日 23:59:59，开始 = (结束日 - days + 1) 日 00:00:00。
+func DateRangeToTS(date, days int) (int64, int64) {
+	endDate := DateToTS(date)
+	startDate := endDate - int64(days-1)*86400
+	return startDate, endDate + 86400 - 1
+}
+
 // ImportRows 将解析后的行情行批量 upsert 到 finv_quote_secu_kline_min。
 // 字段级覆盖（FIELD）或整行覆盖（ROW）；发生覆盖时写入修正审计日志。
 // remark 为表单备注：非空时写入每行的 remark 列。
@@ -168,7 +160,7 @@ func (s *Service) ImportRows(ctx context.Context, rows []mvsv.Row, mode UpsertMo
 			rows[index].Remark = &value
 		}
 	}
-	batchID := fmt.Sprintf("import_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
+	batchID := fmt.Sprintf("IMPORT_%s_%s", rows[0].SecuCode, time.Now().UTC().Format("20060102150405"))
 
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {

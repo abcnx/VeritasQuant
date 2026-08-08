@@ -16,7 +16,7 @@
 
 ```powershell
 # 方式一：服务端版本接口
-Invoke-WebRequest http://localhost:16001/API/V1/version
+Invoke-WebRequest http://localhost:16001/API/V1/Version
 # 方式二：查看容器使用的镜像
 docker inspect finvquant --format '{{.Image}}'
 ```
@@ -64,6 +64,25 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env pull finvquan
 
 > **镜像 tag 规则**（CI 自动打，版本来自项目根 `VERSION` 文件）：分支推送（dev/main/FinvQuant）打 `latest` + `v{VERSION}-YYYYMMDDHHMM`（Asia/Shanghai，如 `v0.1.0-202608051901`）；推送 `v*` git tag（main 发布）打 `latest` + `v{VERSION}`（git tag 名，如 `v0.1.0`）。部署指定版本时把 `FINV_IMAGE_TAG` 改为对应 tag 即可（`docker images ghcr.io/acanx/finvquant` 可查看已拉取 tag）。
 
+### 3.2.1 本地源码构建升级（开发常用）
+
+> 改本地代码后想立即升级到最新本地代码，使用 `Deploy/upgrade.cmd` 一键完成（备份 → 构建 → 重建 → 验证）。
+
+```powershell
+# 模式 A：本地源码构建镜像并重建部署（默认；npm 使用国内镜像源 registry.npmmirror.com 解决网络问题）
+Deploy\upgrade.cmd
+
+# 模式 B：拉取 GHCR 已发布镜像并重建（不改本地代码）
+Deploy\upgrade.cmd --pull
+
+# 跳过数据库备份（仅应急；正常升级会先 pg_dump 到 Deploy\backup\）
+Deploy\upgrade.cmd --skip-backup
+```
+
+- 脚本在**仓库根目录**执行（自动 `pushd`），支持幂等重复运行。
+- `build:` 段 context 已指向仓库根（`Deploy/docker-compose.yml` 中 `context: ..`），本地构建时 npm 使用 `NPM_REGISTRY`（脚本顶部可改，默认 `https://registry.npmmirror.com`）加速并规避 `npm ci` 网络中断。
+- 升级异常需回滚时，使用 `Deploy\rollback.cmd`（回滚到 `.env` 中 `FINV_IMAGE_TAG` 指定的版本）。
+
 **3.3 重建服务端容器**
 
 ```powershell
@@ -82,12 +101,12 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs --tail=5
 
 | 验证项 | 地址/命令 | 预期 |
 |--------|-----------|------|
-| 服务端版本 | http://localhost:16001/API/V1/version | 返回新版本号 |
-| 存活/就绪 | http://localhost:16001/API/V1/health/live 与 /ready | 200 |
+| 服务端版本 | http://localhost:16001/API/V1/Version | 返回新版本号 |
+| 存活/就绪 | http://localhost:16001/API/V1/Health/Live 与 /Ready | 200 |
 | 前端 | http://localhost:16002 | 可打开 |
 | 迁移记录 | `docker exec fq-postgres psql -U finvquant -d finvquant -c "SELECT version FROM schema_version ORDER BY version;"` | 包含本次新增的版本号 |
 
-> 升级后首次启动会自动执行数据库迁移（默认超时 30 秒），期间 `/health/ready` 短暂不通过属正常；若迁移失败，`finvquant` 会启动失败并退出，见 [6. 常见问题](#6-常见问题)。
+> 升级后首次启动会自动执行数据库迁移（默认超时 30 秒），期间 `/Health/Ready` 短暂不通过属正常；若迁移失败，`finvquant` 会启动失败并退出，见 [6. 常见问题](#6-常见问题)。
 
 ## 4. 数据库自动迁移说明
 
@@ -95,6 +114,8 @@ docker compose -f Deploy/docker-compose.yml --env-file Deploy/.env logs --tail=5
 - 记录表：`schema_version`（`version` 主键 + `success` 标记）；已成功的版本不会重复执行，**支持重复启动（幂等）**。
 - 迁移在**单事务**内执行（脚本含 `BEGIN/COMMIT`），失败自动回滚并导致服务启动失败。
 - 新增迁移脚本只需放入 `Deploy/Migrations/`（随镜像发布），升级时服务启动即自动应用，无需手动 `psql`。
+
+> ⚠️ **量化回测模块（V22~V28 + V100019/V100020）需在全新库一次性应用**：该组迁移在 PR 内完成过改名与加列（无 checksum 校验），若曾在中间态部署过，请重建数据库或人工核对后再升级（详见 `Docs/DevSpec/BacktestStrategySpec.md` 第 13 章）。
 
 ## 5. 回滚方案
 

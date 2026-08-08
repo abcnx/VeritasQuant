@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { apiGet, apiPost } from '../api'
+import { apiGet, apiPost } from '../../../../api'
 
 // finv_security 证券代码行
 interface SecurityRow {
@@ -86,7 +86,7 @@ async function load() {
   error.value = ''
   try {
     const data = await apiGet<{ total: number; list: SecurityRow[] }>(
-      `/Meta/FinvQuant/Metadata/Security/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
+      `/Meta/Finv/Quant/Metadata/Security/List?page=${page.value}&page_size=${pageSize.value}&keyword=${encodeURIComponent(keyword.value)}`,
     )
     rows.value = data.list ?? []
     total.value = data.total ?? 0
@@ -139,7 +139,7 @@ async function save() {
     return
   }
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Security/Save', {
+    await apiPost('/Meta/Finv/Quant/Metadata/Security/Save', {
       usc: form.value.usc.trim(),
       exchange_code: form.value.exchange_code,
       market_code: form.value.market_code ?? 0,
@@ -165,7 +165,7 @@ async function toggle(row: SecurityRow) {
   error.value = ''
   const next = row.flag_enable === '1' ? '0' : '1'
   try {
-    await apiPost('/Meta/FinvQuant/Metadata/Security/Toggle', { usc: row.usc, flag_enable: next })
+    await apiPost('/Meta/Finv/Quant/Metadata/Security/Toggle', { usc: row.usc, flag_enable: next })
     row.flag_enable = next
     message.value = `已${next === '1' ? '启用' : '禁用'}证券 ${row.usc}`
   } catch (e) {
@@ -176,8 +176,8 @@ async function toggle(row: SecurityRow) {
 async function loadOptions() {
   try {
     const [exData, mkData] = await Promise.all([
-      apiGet<{ list: ExchangeOption[] }>('/Meta/FinvQuant/Metadata/Exchange/List?page=1&page_size=500'),
-      apiGet<{ list: MarketOption[] }>('/Meta/FinvQuant/Metadata/Market/List?page=1&page_size=500'),
+      apiGet<{ list: ExchangeOption[] }>('/Meta/Finv/Quant/Metadata/Exchange/List?page=1&page_size=500'),
+      apiGet<{ list: MarketOption[] }>('/Meta/Finv/Quant/Metadata/Market/List?page=1&page_size=500'),
     ])
     // 仅启用（flag_enable='1'）的记录入下拉；保持后端排序（启用优先）
     exchangeOptions.value = (exData.list ?? []).filter((e) => e.flag_enable === '1')
