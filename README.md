@@ -1,5 +1,15 @@
 # FinvQuant
 
+![Release](https://img.shields.io/github/v/release/ACANX/FinvQuant?style=flat-square&label=Release&color=blue)
+![Tag](https://img.shields.io/github/v/tag/ACANX/FinvQuant?style=flat-square&label=Version)
+![CI](https://img.shields.io/github/actions/workflow/status/ACANX/FinvQuant/CI.yml?branch=dev&style=flat-square&label=CI)
+![Go](https://img.shields.io/github/go-mod/go-version/ACANX/FinvQuant?style=flat-square&label=Go)
+![Vue](https://img.shields.io/badge/Vue-3%20%7C%20Vite%208%20%7C%20Vuetify%204-42b883?style=flat-square)
+![License](https://img.shields.io/github/license/ACANX/FinvQuant?style=flat-square&label=License)
+![Last Commit](https://img.shields.io/github/last-commit/ACANX/FinvQuant?style=flat-square&label=Last%20Commit)
+![Language](https://img.shields.io/github/languages/top/ACANX/FinvQuant?style=flat-square&label=Top%20Language)
+![Stars](https://img.shields.io/github/stars/ACANX/FinvQuant?style=flat-square&label=Stars)
+
 **量化策略交易平台** v0.1.0 — 前后端分离架构，支持通用量化回测全链路。
 
 - **服务端**：Go 1.25.3 + Gin + PostgreSQL 18 + Redis 8（端口 **16001**）
